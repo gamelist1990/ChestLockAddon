@@ -1,3 +1,7 @@
+## Download！！
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/gamelist1990/ChestLockAddon/total?style=flat-square&logo=https%3A%2F%2Fgithub.com%2Fgamelist1990%2FChestLockAddon%2Fblob%2Fmain%2FAllAddon%2Fpack_icon.png%3Fraw%3Dtrue)
+
+
 ## 概要
 
 このコードは、`!help` などのコマンドを実行できるアドオンです。`!chest`、`!dev`、`!lang` などのコマンドも追加されており、プレフィックス `!` は `handler.ts` で変更可能です。多言語にも対応しています。
