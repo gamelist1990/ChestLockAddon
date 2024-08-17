@@ -4,6 +4,18 @@ export const translations = {
     msgid: "PlayerNotFound!! Make sure you're really there",
     msgstr: ""
   },
+  "desabledCom": {
+    msgid: "Unregistered or disabled command",
+    msgstr: ""
+  },
+  "AllowTagCom": {
+    msgid: "Only players with an authorized tag can use it",
+    msgstr: ""
+  },
+  "invalidCom": {
+    msgid: "Invalid command. Please make sure it is correct Use:{commandName}",
+    msgstr: ""
+  },
   "Developer commands": {
     msgid: "Developer commands!!",
     msgstr: ""
