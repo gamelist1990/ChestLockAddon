@@ -36,6 +36,7 @@ interface CommandConfig {
   adminOnly: boolean;
   requireTag: string[];
 }
+
 export function isPlayer(playerName: string): Player | undefined {
   return world.getPlayers().find(player => player.name === playerName);
 }
@@ -43,10 +44,13 @@ export function isPlayer(playerName: string): Player | undefined {
 
 export function verifier(player: Player, setting: CommandConfig): boolean {
   if (setting.enabled !== true) {
+    player.sendMessage("§cこのコマンドは無効化されています。"); // コマンドが無効化されている場合のメッセージ
     return false;
   } else if (setting.adminOnly === true && !player.hasTag(c().admin)) {
+    player.sendMessage("§cこのコマンドを実行する権限がありません。"); // 管理者権限が必要な場合のメッセージ
     return false;
   } else if (setting.requireTag.length > 0 && !player.getTags().some((tag: string) => setting.requireTag.includes(tag))) {
+    player.sendMessage("§cこのコマンドを実行するために必要なタグがありません。"); // 特定のタグが必要な場合のメッセージ
     return false;
   }
   return true;
@@ -70,10 +74,10 @@ world.beforeEvents.chatSend.subscribe((event: any) => {
   if (commandOptions) {
     if (verifier(player, c().commands[commandName])) {
       commandOptions.executor(player, args);
-    }
+    } 
   } else {
     player.sendMessage(`§cコマンドが見つかりません: ${commandName}`);
   }
 
   event.cancel = true;
-});
+}); 
