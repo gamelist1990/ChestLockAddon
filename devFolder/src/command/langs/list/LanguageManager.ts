@@ -24,15 +24,14 @@ let playerLangList: Record<string, string> = {};
 // 言語設定を保存する関数
 export function savePlayerLanguage(player: Player, language: string) {
   playerLangList[player.id] = language;
-  const langListJson = JSON.stringify(playerLangList); // JSON 文字列に変換
-  world.setDynamicProperty("playerLangList", langListJson); // ダイナミックプロパティに保存
+  savePlayerLanguages(); // 変更を保存
 }
 
 // 言語設定をロードする関数
 export function loadPlayerLanguages() {
   const storedLangList = world.getDynamicProperty("playerLangList");
   if (storedLangList) {
-    playerLangList = JSON.parse(storedLangList as string); // JSON 文字列をパース
+    playerLangList = JSON.parse(storedLangList as string);
   }
 }
 
@@ -43,9 +42,10 @@ export function getAvailableLanguages() {
 export function showPlayerLanguage(player: Player) {
   player.sendMessage(`§aPlayer Language List: ${JSON.stringify(playerLangList)}`);
   console.warn(`Player Language List: ${JSON.stringify(playerLangList)}`);
-  return playerLangList; // playerLangList を返す
+  return playerLangList; 
 }
 
+// playerLangList を JSON 文字列として保存
 export function savePlayerLanguages() {
   const data = JSON.stringify(playerLangList);
   world.setDynamicProperty("playerLangList", data);
@@ -53,14 +53,14 @@ export function savePlayerLanguages() {
 
 export function resetPlayerLanguages(player: Player) {
   playerLangList = {};
-  savePlayerLanguages();
+  savePlayerLanguages(); // リセット後も保存
   player.sendMessage(translate(player, "lang_removeData"));
   console.warn("Player languages data has been reset.");
 }
 
 export function changeLanguage(player: Player, language: string) {
   if (availableLanguages.includes(language)) {
-    savePlayerLanguage(player, language);
+    savePlayerLanguage(player, language); 
     console.warn(`Language changed to ${language} for player ${player.id}`);
     return true;
   }
@@ -76,12 +76,11 @@ export function translate(player: Player | null, key: string, params?: Record<st
   const language = player ? getPlayerLanguage(player) : defaultLang;
   const langData = languageData[language];
 
-  let translatedText = key; // デフォルトではキーを返す
+  let translatedText = key; 
 
   if (langData && langData[key]) {
     translatedText = langData[key].msgstr || langData[key].msgid;
 
-    // パラメータを置換
     if (params) {
       for (const paramKey in params) {
         const paramValue = params[paramKey];
@@ -90,12 +89,10 @@ export function translate(player: Player | null, key: string, params?: Record<st
     }
   }
 
-  // プレイヤー名を置換
   if (player) {
     translatedText = translatedText.replace("{playerName}", player.name);
   }
 
-  // ターゲットプレイヤーが存在する場合は通知を送信
   if (targetPlayer) {
     targetPlayer.sendMessage(translatedText);
   }

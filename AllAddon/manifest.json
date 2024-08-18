@@ -14,7 +14,7 @@
       "uuid": "c0d44cfd-95ec-4219-8826-8adefa619391",
       "version": [0, 0, 1],
       "language": "javascript",
-      "entry": "scripts/index.js"
+      "entry": "scripts/Loader.js"
     }
   ],
   "dependencies": [

@@ -4,7 +4,10 @@
 
 [ダウンロードはこちら👈](https://github.com/gamelist1990/ChestLockAddon/releases)
 
+## Update
 
+実験機能でコマンド補間機能を追加してみました
+![alt text](image.png)
 
 ## 概要
 

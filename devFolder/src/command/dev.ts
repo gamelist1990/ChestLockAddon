@@ -3,7 +3,7 @@ import { Player } from "@minecraft/server";
 import { registerCommand, verifier } from "../Handler";
 import { c } from "../Util";
 import { showPlayerLanguage, resetPlayerLanguages } from "./langs/list/LanguageManager"; 
-import { showProtectedChestData, resetProtectedChests } from "./main"; 
+import { showProtectedChestData, resetProtectedChests } from "./chest"; 
 
 
 
