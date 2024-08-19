@@ -1,3 +1,6 @@
 devFolder/scripts/
 node_modules/
 .github
+AllAddon
+addon
+devFolder/src/command/langs/list/*.ts

@@ -64,7 +64,7 @@ export const translations = {
     msgstr: "§cこのコマンドを使用する権限がありません"
   },
   "chest_help": {
-    msgid: "§cInvalid command.\n§aChest protection command usage:.\n  §bchest lock - locks the chest\n§bchest info - displays information about the nearest chest\n§bchest unlock - unlocks the chest\n§bchest protect <lock/unlock> - toggles chest protection\n§bchest add <playername> - add a member to the chest\n§bchest remove <playername> - remove a member of a chest\n§bchest all - displays a list of chest members\n§b_______________________________________\n§bAuthor: Koukun - License AGPL-3.0 \n§bYoutubeURL - https://www.youtube.com/@PEXkoukunn",
+    msgid: "§cInvalid command.\n§aChest protection command usage:.\n§bchest lock - locks the chest\n§bchest info - displays information about the nearest chest\n§bchest unlock - unlocks the chest\n§bchest protect <lock/unlock> - toggles chest protection\n§bchest add <playername> - add a member to the chest\n§bchest remove <playername> - remove a member of a chest\n§bchest all - displays a list of chest members\n§b_______________________________________\n§bAuthor: Koukun - License AGPL-3.0 \n§bYoutubeURL - https://www.youtube.com/@PEXkoukunn",
     msgstr: "§c無効なコマンドです。\n§aチェスト保護コマンドの使用方法:\n  §bchest lock        - チェストをロックします\n  §bchest info       - 近くのチェストの情報を表示します\n  §bchest unlock      - チェストのロックを解除します\n  §bchest protect <lock/unlock> - チェストの保護状態を切り替えます\n  §bchest add <playername>   - チェストのメンバーを追加します\n  §bchest remove <playername>  - チェストのメンバーを削除します\n  §bchest all        - チェストのメンバー一覧を表示します\n  §b_______________________________________\n  §b作者: こう君        - License AGPL-3.0 \n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn\n  "
   },
   "nearby_chest_info": {

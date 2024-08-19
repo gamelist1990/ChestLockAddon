@@ -1,7 +1,7 @@
 {
-    "name": "matrix-anticheat",
-    "productName": "Matrix-AntiCheat",
-    "description": "The best Minecraft bedrock AntiCheat",
+    "name": "chestlock",
+    "productName": "chestLock",
+    "description": "The best chestlock",
     "private": true,
     "type": "module",
     "dependencies": {

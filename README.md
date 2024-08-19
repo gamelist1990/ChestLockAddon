@@ -7,7 +7,7 @@
 ## Update
 
 実験機能でコマンド補填機能を追加してみました
-![alt text](image.png)
+![alt text](image/image.png)
 
 開発者用に`index.js`と`index2.js`を追加しました
 翻訳に関して少しややこしくてen_US.jsonをメインで更新なんで

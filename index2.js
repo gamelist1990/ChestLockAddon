@@ -10,11 +10,9 @@ async function convertJsonToTs() {
       const jsonFilePath = path.join(srcFolder, `${language}.json`);
       const tsFilePath = path.join(srcFolder, `${language}.ts`);
 
-      // JSONファイルを読み込む
       const jsonData = await fs.readFile(jsonFilePath, 'utf8');
       const jsonContent = JSON.parse(jsonData);
 
-      // TypeScriptファイルの内容を作成
       let tsContent = 'export const translations = {\n';
       for (const key in jsonContent) {
         const msgid = JSON.stringify(jsonContent[key].msgid);
@@ -23,7 +21,6 @@ async function convertJsonToTs() {
       }
       tsContent += '};\n';
 
-      // TypeScriptファイルに書き込む（既存ファイルがあれば上書き）
       await fs.writeFile(tsFilePath, tsContent, 'utf8');
 
       console.log(`Converted ${jsonFilePath} to ${tsFilePath}`);

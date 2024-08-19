@@ -9,7 +9,6 @@ const enUSJsonPath = path.join(srcFolder, enUSFileName);
 
 async function mergeJsonFiles() {
   try {
-    // en_US.jsonを読み込む
     const enUSJsonData = await fs.readFile(enUSJsonPath, 'utf8');
     const enUSJson = JSON.parse(enUSJsonData);
 
@@ -18,12 +17,10 @@ async function mergeJsonFiles() {
 
       let targetJson = {};
       if (await fs.access(targetJsonPath).then(() => true).catch(() => false)) {
-        // ターゲットJSONファイルが存在する場合、その内容を読み込む
         const targetJsonData = await fs.readFile(targetJsonPath, 'utf8');
         targetJson = JSON.parse(targetJsonData);
       }
 
-      // マージされたJSONオブジェクトを作成する
       const mergedJson = {};
 
       for (const key of Object.keys(enUSJson)) {
@@ -33,7 +30,6 @@ async function mergeJsonFiles() {
         };
       }
 
-      // マージされたJSONオブジェクトをファイルに書き込む
       await fs.writeFile(targetJsonPath, JSON.stringify(mergedJson, null, 2), 'utf8');
 
       console.log(`Translation keys and msgids copied and synchronized successfully for: ${targetJsonPath}`);
