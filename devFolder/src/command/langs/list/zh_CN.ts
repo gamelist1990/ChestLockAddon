@@ -64,7 +64,7 @@ export const translations = {
     msgstr: "§c权限不足"
   },
   "chest_help": {
-    msgid: "§cInvalid command.\n§aChest protection command usage:.\n§bchest lock - locks the chest\n§bchest info - displays information about the nearest chest\n§bchest unlock - unlocks the chest\n§bchest protect <lock/unlock> - toggles chest protection\n§bchest add <playername> - add a member to the chest\n§bchest remove <playername> - remove a member of a chest\n§bchest all - displays a list of chest members\n§b_______________________________________\n§bAuthor: Koukun - License AGPL-3.0 \n§bYoutubeURL - https://www.youtube.com/@PEXkoukunn",
+    msgid: "§cInvalid command.\n§aChest protection command usage:.\n §bchest lock - locks the chest\n §bchest info - displays information about the nearest chest\n §bchest unlock - unlocks the chest\n §bchest protect <lock/unlock> - toggles chest protection\n §bchest add <playername> - add a member to the chest\n §bchest remove <playername> - remove a member of a chest\n §bchest all - displays a list of chest members\n §b_______________________________________\n §bAuthor: Koukun - License AGPL-3.0 \n §bYoutubeURL - https://www.youtube.com/@PEXkoukunn",
     msgstr: "§c无效的命令。\n§a箱子保护命令用法：\n§bchest lock - 锁定箱子\n§bchest info - 显示最近箱子的信息\n§bchest unlock - 解锁箱子\n§bchest protect <lock/unlock> - 切换箱子保护\n§bchest add <玩家名> - 添加成员到箱子\n§bchest remove <玩家名> - 从箱子中移除成员\n§bchest all - 显示箱子成员列表\n§b_______________________________________\n§b作者：Koukun - 许可证 AGPL-3.0\n§bYoutubeURL - https://www.youtube.com/@PEXkoukunn"
   },
   "nearby_chest_info": {

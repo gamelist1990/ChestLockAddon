@@ -10,7 +10,6 @@ interface ChestProtectionData {
 }
 
 const CHECK_INTERVAL = 20 * 60; // 1分 (20ティック/秒 * 60秒)
-//json形式
 let protectedChests: Record<string, ChestProtectionData> = {};
 
 // コマンド登録
@@ -219,33 +218,29 @@ system.run(() => {
     handleExplosion(eventData);
   });
 
+  world.beforeEvents.itemUseOn.subscribe((eventData: any) => {
+    handlePistonUse(eventData);
+  });
+
   system.runInterval(() => {
     for (const chestKey in protectedChests) {
       const chestLocation = parseChestKey(chestKey);
-  
-      // チェストの存在チェック
-      const currentBlock = world.getDimension("overworld").getBlock(chestLocation);
+        const currentBlock = world.getDimension("overworld").getBlock(chestLocation);
       if (!isChest(currentBlock)) {
         revertChest(chestLocation);
       }
     }
   }, 3); 
-  
-
-  // ピストンによるチェストの移動を制限
-  world.beforeEvents.itemUseOn.subscribe((eventData: any) => {
-    handlePistonUse(eventData);
-  });
 
   system.runInterval(() => {
     checkProtectedChests();
   }, CHECK_INTERVAL);
 });
 
-const RADIUS2 = 2; // 検知範囲1
-const RADIUS1 = 14; // 検知範囲2
-const RADIUS2_IDS = ["minecraft:hopper", "minecraft:hopper_minecart"]; // 検知範囲1のアイテムID
-const RADIUS1_IDS = ["minecraft:piston", "minecraft:sticky_piston"]; // 検知範囲2のアイテムID
+const RADIUS2 = 2; 
+const RADIUS1 = 14; 
+const RADIUS2_IDS = ["minecraft:hopper", "minecraft:hopper_minecart"]; 
+const RADIUS1_IDS = ["minecraft:piston", "minecraft:sticky_piston"]; 
 
 
 function handlePistonUse(eventData: any) {
@@ -421,15 +416,16 @@ function handleChestBreak(event: any) {
         saveProtectedChests();
         player.sendMessage(translate(player, "ProChestBreak"));
       } else {
-        event.cancel = true;
+        event.cancel = true; 
         player.sendMessage(translate(player, "isProChest"));
       }
     } else {
-      event.cancel = true;
+      event.cancel = true; 
       event.world.sendMessage("The chest was destroyed by a cause other than the player.");
     }
   }
 }
+
 
 // 爆発によるチェスト破壊を処理する関数
 function handleExplosion(eventData: any) {

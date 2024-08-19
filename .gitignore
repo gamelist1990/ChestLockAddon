@@ -3,4 +3,5 @@ node_modules
 .github
 AllAddon
 addon
+createAddon
 devFolder/src/command/langs/list/*.ts

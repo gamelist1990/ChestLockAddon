@@ -64,7 +64,7 @@ export const translations = {
     msgstr: ""
   },
   "chest_help": {
-    msgid: "§cInvalid command.\n§aChest protection command usage:.\n§bchest lock - locks the chest\n§bchest info - displays information about the nearest chest\n§bchest unlock - unlocks the chest\n§bchest protect <lock/unlock> - toggles chest protection\n§bchest add <playername> - add a member to the chest\n§bchest remove <playername> - remove a member of a chest\n§bchest all - displays a list of chest members\n§b_______________________________________\n§bAuthor: Koukun - License AGPL-3.0 \n§bYoutubeURL - https://www.youtube.com/@PEXkoukunn",
+    msgid: "§cInvalid command.\n§aChest protection command usage:.\n   §bchest lock - locks the chest\n   §bchest info - displays information about the nearest chest\n   §bchest unlock - unlocks the chest\n   §bchest protect <lock/unlock> - toggles chest protection\n   §bchest add <playername> - add a member to the chest\n   §bchest remove <playername> - remove a member of a chest\n   §bchest all - displays a list of chest members\n   §b_______________________________________\n   §bAuthor: Koukun - License AGPL-3.0 \n   §bYoutubeURL - https://www.youtube.com/@PEXkoukunn",
     msgstr: ""
   },
   "nearby_chest_info": {

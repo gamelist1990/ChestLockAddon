@@ -16,7 +16,7 @@ registerCommand({
     const helpMessages = getAllCommandNames();
     let helpMessage = translate(player, "available_commands") + ":\n"; 
     helpMessages.forEach((msg) => {
-      const commandDescription = translate(player, msg.description); // 翻訳キーを使って翻訳
+      const commandDescription = translate(player, msg.description); 
       helpMessage += `§b${prefix}${msg.name} - ${commandDescription}\n`;
     });
     player.sendMessage(helpMessage);
