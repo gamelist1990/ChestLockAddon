@@ -64,8 +64,24 @@ export const translations = {
     msgstr: "§cこのコマンドを使用する権限がありません"
   },
   "chest_help": {
-    msgid: "§cInvalid command.\n§aChest protection command usage:.\n   §bchest lock - locks the chest\n   §bchest info - displays information about the nearest chest\n   §bchest unlock - unlocks the chest\n   §bchest protect <lock/unlock> - toggles chest protection\n   §bchest add <playername> - add a member to the chest\n   §bchest remove <playername> - remove a member of a chest\n   §bchest all - displays a list of chest members\n   §b_______________________________________\n   §bAuthor: Koukun - License AGPL-3.0 \n   §bYoutubeURL - https://www.youtube.com/@PEXkoukunn",
-    msgstr: "§c無効なコマンドです。\n§aチェスト保護コマンドの使用方法:\n  §bchest lock        - チェストをロックします\n  §bchest info       - 近くのチェストの情報を表示します\n  §bchest unlock      - チェストのロックを解除します\n  §bchest protect <lock/unlock> - チェストの保護状態を切り替えます\n  §bchest add <playername>   - チェストのメンバーを追加します\n  §bchest remove <playername>  - チェストのメンバーを削除します\n  §bchest all        - チェストのメンバー一覧を表示します\n  §b_______________________________________\n  §b作者: こう君        - License AGPL-3.0 \n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn\n  "
+    msgid: "§cInvalid command.\n§aChest protection command usage:.\n  §bchest lock        - locks the chest\n  §bchest info       - displays information about the nearest chest\n  §bchest unlock      - unlocks the chest\n  §bchest protect <lock/unlock> - toggles chest protection\n  §bchest add <playername>   - add a member to the chest\n  §bchest remove <playername>  - remove a member of a chest\n  §bchest all        - displays a list of chest members\n  §bchest list        -displays a list of chest\n  §b_______________________________________\n  §bAuthor: Koukun        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn",
+    msgstr: "§c無効なコマンドです。\n§aチェスト保護コマンドの使用方法:\n  §bchest lock        - チェストをロックします\n  §bchest info       - 近くのチェストの情報を表示します\n  §bchest unlock      - チェストのロックを解除します\n  §bchest protect <lock/unlock> - チェストの保護状態を切り替えます\n  §bchest add <playername>   - チェストのメンバーを追加します\n  §bchest remove <playername>  - チェストのメンバーを削除します\n  §bchest all        - チェストのメンバー一覧を表示します\n  §bchest list        - 現在保護しているチェストのリストを表示します\n  §b_______________________________________\n  §b作者: こう君        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
+  },
+  "MaxChestLimitReached": {
+    msgid: "§cThe installation limit of {protectChest} has already been reached",
+    msgstr: "§c既に設置上限である{protectChest}に達しています"
+  },
+  "chestLocksCount": {
+    msgid: "§aYou are currently protecting {protectChest} chests",
+    msgstr: "§a現在{protectChest}個のチェストが保護されています。"
+  },
+  "ChestlistCom": {
+    msgid: "§aYou have protected {playerChests} chests:",
+    msgstr: "§aあなたは現在{playerChests}個のチェストを保護しています。"
+  },
+  "chestlocation": {
+    msgid: "§e- Location: {key}",
+    msgstr: "§e- 座標: {key}"
   },
   "nearby_chest_info": {
     msgid: "§a---- Nearby Chest Info ----",
@@ -128,8 +144,8 @@ export const translations = {
     msgstr: "§c 許可されていません"
   },
   "chest_lookstate": {
-    msgid: "§a chest protected",
-    msgstr: "§aチェストを保護しました"
+    msgid: "§a chest protected {lcokstate}",
+    msgstr: "§aチェストを保護しました{lcokstate}"
   },
   "chest_removeData": {
     msgid: "§aAll chest protection data has been reset.",

@@ -64,8 +64,24 @@ export const translations = {
     msgstr: "§c권한 부족"
   },
   "chest_help": {
-    msgid: "§cInvalid command.\n§aChest protection command usage:.\n §bchest lock - locks the chest\n §bchest info - displays information about the nearest chest\n §bchest unlock - unlocks the chest\n §bchest protect <lock/unlock> - toggles chest protection\n §bchest add <playername> - add a member to the chest\n §bchest remove <playername> - remove a member of a chest\n §bchest all - displays a list of chest members\n §b_______________________________________\n §bAuthor: Koukun - License AGPL-3.0 \n §bYoutubeURL - https://www.youtube.com/@PEXkoukunn",
-    msgstr: "§c잘못된 명령어입니다.\n§a상자 보호 명령어 사용법:\n§bchest lock - 상자 잠금\n§bchest info - 가장 가까운 상자 정보 표시\n§bchest unlock - 상자 잠금 해제\n§bchest protect <lock/unlock> - 상자 보호 토글\n§bchest add <플레이어 이름> - 상자에 멤버 추가\n§bchest remove <플레이어 이름> - 상자에서 멤버 제거\n§bchest all - 상자 멤버 목록 표시\n§b_______________________________________\n§b제작자: Koukun - 라이선스 AGPL-3.0 \n§b유튜브 URL - https://www.youtube.com/@PEXkoukunn"
+    msgid: "§cInvalid command.\n§aChest protection command usage:.\n  §bchest lock        - locks the chest\n  §bchest info       - displays information about the nearest chest\n  §bchest unlock      - unlocks the chest\n  §bchest protect <lock/unlock> - toggles chest protection\n  §bchest add <playername>   - add a member to the chest\n  §bchest remove <playername>  - remove a member of a chest\n  §bchest all        - displays a list of chest members\n  §bchest list        -displays a list of chest\n  §b_______________________________________\n  §bAuthor: Koukun        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn",
+    msgstr: "§c잘못된 명령어입니다.\n§a상자 보호 명령어 사용법:.\n  §bchest lock        - 상자 잠금\n  §bchest info       - 가장 가까운 상자 정보 표시\n  §bchest unlock      - 상자 잠금 해제\n  §bchest protect <lock/unlock> - 상자 보호 토글\n  §bchest add <playername>   - 상자에 멤버 추가\n  §bchest remove <playername>  - 상자의 멤버 제거\n  §bchest all        - 상자 멤버 목록 표시\n  §bchest list        - 상자 목록 표시\n  §b_______________________________________\n  §b제작자: Koukun        - 라이선스 AGPL-3.0\n  §b유튜브 URL         - https://www.youtube.com/@PEXkoukunn"
+  },
+  "MaxChestLimitReached": {
+    msgid: "§cThe installation limit of {protectChest} has already been reached",
+    msgstr: "§c{protectChest} 설치 제한에 도달했습니다"
+  },
+  "chestLocksCount": {
+    msgid: "§aYou are currently protecting {protectChest} chests",
+    msgstr: "§a현재 {protectChest}개의 상자를 보호하고 있습니다"
+  },
+  "ChestlistCom": {
+    msgid: "§aYou have protected {playerChests} chests:",
+    msgstr: "§a{playerChests}개의 상자를 보호하고 있습니다:"
+  },
+  "chestlocation": {
+    msgid: "§e- Location: {key}",
+    msgstr: "§e- 위치: {key}"
   },
   "nearby_chest_info": {
     msgid: "§a---- Nearby Chest Info ----",
@@ -128,8 +144,8 @@ export const translations = {
     msgstr: "§c 허용되지 않음"
   },
   "chest_lookstate": {
-    msgid: "§a chest protected",
-    msgstr: "§a 상자 보호됨"
+    msgid: "§a chest protected {lcokstate}",
+    msgstr: "§a 상자 보호됨 {lcokstate}"
   },
   "chest_removeData": {
     msgid: "§aAll chest protection data has been reset.",

@@ -64,8 +64,24 @@ export const translations = {
     msgstr: "§cНедостаточно прав"
   },
   "chest_help": {
-    msgid: "§cInvalid command.\n§aChest protection command usage:.\n §bchest lock - locks the chest\n §bchest info - displays information about the nearest chest\n §bchest unlock - unlocks the chest\n §bchest protect <lock/unlock> - toggles chest protection\n §bchest add <playername> - add a member to the chest\n §bchest remove <playername> - remove a member of a chest\n §bchest all - displays a list of chest members\n §b_______________________________________\n §bAuthor: Koukun - License AGPL-3.0 \n §bYoutubeURL - https://www.youtube.com/@PEXkoukunn",
-    msgstr: "§cНеверная команда.\n§aИспользование команды защиты сундука:\n§bchest lock - блокирует сундук\n§bchest info - отображает информацию о ближайшем сундуке\n§bchest unlock - разблокирует сундук\n§bchest protect <lock/unlock> - переключает защиту сундука\n§bchest add <имя_игрока> - добавить участника к сундуку\n§bchest remove <имя_игрока> - удалить участника из сундука\n§bchest all - отображает список участников сундука\n§b_______________________________________\n§bАвтор: Koukun - Лицензия AGPL-3.0 \n§bYoutubeURL - https://www.youtube.com/@PEXkoukunn"
+    msgid: "§cInvalid command.\n§aChest protection command usage:.\n  §bchest lock        - locks the chest\n  §bchest info       - displays information about the nearest chest\n  §bchest unlock      - unlocks the chest\n  §bchest protect <lock/unlock> - toggles chest protection\n  §bchest add <playername>   - add a member to the chest\n  §bchest remove <playername>  - remove a member of a chest\n  §bchest all        - displays a list of chest members\n  §bchest list        -displays a list of chest\n  §b_______________________________________\n  §bAuthor: Koukun        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn",
+    msgstr: "§cНеверная команда.\n§aИспользование команды защиты сундука:.\n  §bchest lock        - заблокировать сундук\n  §bchest info       - показать информацию о ближайшем сундуке\n  §bchest unlock      - разблокировать сундук\n  §bchest protect <lock/unlock> - переключить защиту сундука\n  §bchest add <playername>   - добавить участника в сундук\n  §bchest remove <playername>  - удалить участника из сундука\n  §bchest all        - показать список участников сундука\n  §bchest list        - показать список сундуков\n  §b_______________________________________\n  §bАвтор: Koukun        - Лицензия AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
+  },
+  "MaxChestLimitReached": {
+    msgid: "§cThe installation limit of {protectChest} has already been reached",
+    msgstr: "§cДостигнут предел установки {protectChest}"
+  },
+  "chestLocksCount": {
+    msgid: "§aYou are currently protecting {protectChest} chests",
+    msgstr: "§aВ настоящее время вы защищаете {protectChest} сундуков"
+  },
+  "ChestlistCom": {
+    msgid: "§aYou have protected {playerChests} chests:",
+    msgstr: "§aВы защитили {playerChests} сундуков:"
+  },
+  "chestlocation": {
+    msgid: "§e- Location: {key}",
+    msgstr: "§e- Местоположение: {key}"
   },
   "nearby_chest_info": {
     msgid: "§a---- Nearby Chest Info ----",
@@ -128,8 +144,8 @@ export const translations = {
     msgstr: "§c Не разрешено"
   },
   "chest_lookstate": {
-    msgid: "§a chest protected",
-    msgstr: "§a сундук защищен"
+    msgid: "§a chest protected {lcokstate}",
+    msgstr: "§a сундук защищен {lcokstate}"
   },
   "chest_removeData": {
     msgid: "§aAll chest protection data has been reset.",

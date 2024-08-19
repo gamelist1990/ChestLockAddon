@@ -73,11 +73,28 @@ registerCommand({
       case "all":
         listMembers(player);
         break;
+      case "list":
+        listProtectedChests(player);
+        break;
       default:
         sendInvalidCommandMessage(player);
     }
   },
 });
+
+function listProtectedChests(player: Player) {
+  const playerName = player.name;
+  const playerChests = Object.entries(protectedChests).filter(([, data]) => data.owner === playerName);
+
+  if (playerChests.length > 0) {
+    player.sendMessage(translate(player,`ChestlistCom`,{playerChests:`${playerChests.length}`}));
+    playerChests.forEach(([key]) => {
+      player.sendMessage(translate(player,`chestlocation`,{key:`${key}`}));
+    });
+  } else {
+    player.sendMessage(translate(player,`notFound_chest`));
+  }
+}
 
 function sendInvalidCommandMessage(player: Player) {
   const version = `§bVersion 0.3`
@@ -121,6 +138,17 @@ function showNearbyChestInfo(player: Player) {
   }
 }
 
+//オーナーが持つチェスト数を確認
+function countProtectedChestsByOwner(owner: string): number {
+  let count = 0;
+  for (const chestKey in protectedChests) {
+    if (protectedChests[chestKey].owner === owner) {
+      count++;
+    }
+  }
+  return count;
+}
+
 
 // チェストを保護する関数
 function protectChest(player: Player, lockState: boolean) {
@@ -135,28 +163,30 @@ function protectChest(player: Player, lockState: boolean) {
         if (lockState === false) {
           delete protectedChests[chestKey];
           saveProtectedChests();
-          player.sendMessage(translate(player,"chestProtectRemove"));
+          player.sendMessage(translate(player, "chestProtectRemove"));
         } else {
-          player.sendMessage(translate(player,"AlreadyProChest"));
+          player.sendMessage(translate(player, "AlreadyProChest"));
         }
       } else {
-        player.sendMessage(translate(player,"NotAllowed"));
+        player.sendMessage(translate(player, "NotAllowed"));
       }
     } else {
-      protectedChests[chestKey] = {
-        owner: player.name,
-        isLocked: lockState,
-        members: [],
-      };
-      saveProtectedChests();
-      player.sendMessage(translate(player, `chest_lookstate`));
-      player.sendMessage(`§a(${lockState ? "locked" : "unlocked"} !!)`);
-
-
-
+      const protectedChestCount = countProtectedChestsByOwner(player.name);
+      if (protectedChestCount >= 10) {
+        player.sendMessage(translate(player, "MaxChestLimitReached",{protectChest:`${protectedChestCount}`}));
+      } else {
+        protectedChests[chestKey] = {
+          owner: player.name,
+          isLocked: lockState,
+          members: [],
+        };
+        saveProtectedChests();
+        player.sendMessage(translate(player, `chest_lookstate`,{lcokstate:`§a(${lockState ? "locked" : "unlocked"} !!)`}));
+        player.sendMessage(translate(player,`chestLocksCount`,{protectChest:`${protectedChestCount+1}`}));
+      }
     }
   } else {
-    player.sendMessage(translate(player,"notFound_chest"));
+    player.sendMessage(translate(player, "notFound_chest"));
   }
 }
 

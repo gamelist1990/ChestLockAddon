@@ -64,8 +64,24 @@ export const translations = {
     msgstr: "§cEi ole valtuuksia"
   },
   "chest_help": {
-    msgid: "§cInvalid command.\n§aChest protection command usage:.\n §bchest lock - locks the chest\n §bchest info - displays information about the nearest chest\n §bchest unlock - unlocks the chest\n §bchest protect <lock/unlock> - toggles chest protection\n §bchest add <playername> - add a member to the chest\n §bchest remove <playername> - remove a member of a chest\n §bchest all - displays a list of chest members\n §b_______________________________________\n §bAuthor: Koukun - License AGPL-3.0 \n §bYoutubeURL - https://www.youtube.com/@PEXkoukunn",
-    msgstr: "§cVirheellinen komento.\n§aArkkujen suojauksen komentojen käyttö:.\n§bchest lock - lukitsee arkun\n§bchest info - näyttää tiedot lähimmästä arkusta\n§bchest unlock - avaa arkun lukituksen\n§bchest protect <lock/unlock> - vaihtaa arkun suojausta\n§bchest add <pelaajan_nimi> - lisää jäsenen arkkuun\n§bchest remove <pelaajan_nimi> - poistaa jäsenen arkusta\n§bchest all - näyttää listan arkun jäsenistä\n§b_______________________________________\n§bTekijä: Koukun - Lisenssi AGPL-3.0 \n§bYoutubeURL - https://www.youtube.com/@PEXkoukunn"
+    msgid: "§cInvalid command.\n§aChest protection command usage:.\n  §bchest lock        - locks the chest\n  §bchest info       - displays information about the nearest chest\n  §bchest unlock      - unlocks the chest\n  §bchest protect <lock/unlock> - toggles chest protection\n  §bchest add <playername>   - add a member to the chest\n  §bchest remove <playername>  - remove a member of a chest\n  §bchest all        - displays a list of chest members\n  §bchest list        -displays a list of chest\n  §b_______________________________________\n  §bAuthor: Koukun        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn",
+    msgstr: "§cVirheellinen komento.\n§aArkun suojauksen komennon käyttö:.\n §bchest lock - lukitsee arkun\n §bchest info - näyttää tiedot lähimmästä arkusta\n §bchest unlock - avaa arkun\n §bchest protect <lock/unlock> - kytkee arkun suojauksen päälle tai pois\n §bchest add <pelaajan nimi> - lisää jäsenen arkkuun\n §bchest remove <pelaajan nimi> - poistaa jäsenen arkusta\n §bchest all - näyttää listan arkun jäsenistä\n   §bchest list -näyttää listan arkuista\n   §b_______________________________________\n §bTekijä: Koukun - Lisenssi AGPL-3.0 \n §bYoutubeURL - https://www.youtube.com/@PEXkoukunn"
+  },
+  "MaxChestLimitReached": {
+    msgid: "§cThe installation limit of {protectChest} has already been reached",
+    msgstr: "§c{protectChest} asennusraja on jo saavutettu"
+  },
+  "chestLocksCount": {
+    msgid: "§aYou are currently protecting {protectChest} chests",
+    msgstr: "§aSuojaat tällä hetkellä {protectChest} arkkua"
+  },
+  "ChestlistCom": {
+    msgid: "§aYou have protected {playerChests} chests:",
+    msgstr: "§aOlet suojannut {playerChests} arkkua:"
+  },
+  "chestlocation": {
+    msgid: "§e- Location: {key}",
+    msgstr: "§e- Sijainti: {key}"
   },
   "nearby_chest_info": {
     msgid: "§a---- Nearby Chest Info ----",
@@ -128,8 +144,8 @@ export const translations = {
     msgstr: "§c Ei sallittu"
   },
   "chest_lookstate": {
-    msgid: "§a chest protected",
-    msgstr: "§a arkku suojattu"
+    msgid: "§a chest protected {lcokstate}",
+    msgstr: "§a arkku suojattu {lcokstate}"
   },
   "chest_removeData": {
     msgid: "§aAll chest protection data has been reset.",
