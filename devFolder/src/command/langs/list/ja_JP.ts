@@ -25,7 +25,7 @@ export const translations = {
   },
   "available_commands": {
     msgid: "Current available commands",
-    msgstr: "現在使用可能なコマンド"
+    msgstr: "§6現在使用可能なコマンド"
   },
   "help_command_description": {
     msgid: "help command",

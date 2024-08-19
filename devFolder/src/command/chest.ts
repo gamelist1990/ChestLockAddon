@@ -97,7 +97,7 @@ function listProtectedChests(player: Player) {
 }
 
 function sendInvalidCommandMessage(player: Player) {
-  const version = `§bVersion 0.3`
+  const version = `§bVersion 0.6`
   const message = translate(player, "chest_help")
 
 

@@ -24,5 +24,13 @@ if %errorlevel% neq 0 (
   exit /b %errorlevel%
 )
 
+echo tsc を実行中...
+tsc
+
+if %errorlevel% neq 0 (
+  echo tsc に失敗しました
+  exit /b %errorlevel%
+)
+
 echo 全ての処理が完了しました
 pause
