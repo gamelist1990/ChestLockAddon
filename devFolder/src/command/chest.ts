@@ -272,8 +272,6 @@ system.run(() => {
 
 
 
-
-
 const RADIUS2 = 2; 
 const RADIUS1 = 14; 
 const RADIUS2_IDS = ["minecraft:hopper", "minecraft:hopper_minecart"]; 
@@ -290,25 +288,44 @@ function handlePistonUse(eventData: any) {
   const itemId = itemStack.typeId;
   const blockLocation = eventData.block.location;
 
-  if (RADIUS2_IDS.includes(itemId)) {
-      if (!isWithinDetectionArea(blockLocation, RADIUS2)) return;
-  } else if (RADIUS1_IDS.includes(itemId)) {
-      if (!isWithinDetectionArea(blockLocation, RADIUS1)) return;
-  } else {
-      return;
+  if ((RADIUS2_IDS.includes(itemId) && isWithinDetectionArea(blockLocation, RADIUS2)) || 
+      (RADIUS1_IDS.includes(itemId) && isWithinDetectionArea(blockLocation, RADIUS1))) {
+
+    // ピストン設置位置の周辺にある保護されたチェストを探索
+    let isOwner = false;
+    for (let x = -1; x <= 1; x++) {
+      for (let y = -1; y <= 1; y++) {
+        for (let z = -1; z <= 1; z++) {
+          const nearbyLocation = {
+            x: blockLocation.x + x,
+            y: blockLocation.y + y,
+            z: blockLocation.z + z,
+          };
+          const chestKey = getChestKey(nearbyLocation);
+          const chestData = protectedChests[chestKey];
+          if (chestData && chestData.owner === player.name) {
+            isOwner = true;
+            break;
+          }
+        }
+        if (isOwner) break;
+      }
+      if (isOwner) break;
+    }
+
+    // オーナーではない場合のみキャンセル
+    if (!isOwner) {
+      if (isMovingTowardsChest(playerActions[player.name])) {
+        eventData.cancel = true;
+        player.sendMessage(translate(player, "cannotPlaceItem"));
+      }
+    }
   }
 
   if (!playerActions[player.name]) {
-      playerActions[player.name] = [];
+    playerActions[player.name] = [];
   }
   playerActions[player.name].push(blockLocation);
-
-
-
-  if (isMovingTowardsChest(playerActions[player.name])) {
-      eventData.cancel = true;
-      player.sendMessage(translate(player, "cannotPlaceItem"));
-  }
 }
 
 
@@ -345,6 +362,8 @@ function isProtectedChest(location: Vector3): boolean {
   const key = `${location.x},${location.y},${location.z}`;
   return protectedChests.hasOwnProperty(key);
 }
+
+
 
 
 async function revertChest(location: Vector3) {
