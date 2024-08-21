@@ -1,10 +1,13 @@
 // main.js
 import { world } from "@minecraft/server";
 import { loadPlayerLanguages } from "./command/langs/list/LanguageManager"; 
+import { loadProtectedChests } from "./command/chest"; 
 
 world.afterEvents.worldInitialize.subscribe(() => {
   loadPlayerLanguages();
-  console.warn("Player languages data has been loaded");
+  loadProtectedChests();
+
+  console.warn("Full data has been loaded");
 });
 
 //Command

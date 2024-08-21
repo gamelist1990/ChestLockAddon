@@ -150,6 +150,8 @@ function countProtectedChestsByOwner(owner: string): number {
 }
 
 
+
+
 // チェストを保護する関数
 function protectChest(player: Player, lockState: boolean) {
   const nearbyChestLocation = findNearbyChest(player);
@@ -267,6 +269,11 @@ system.run(() => {
   }, CHECK_INTERVAL);
 });
 
+
+
+
+
+
 const RADIUS2 = 2; 
 const RADIUS1 = 14; 
 const RADIUS2_IDS = ["minecraft:hopper", "minecraft:hopper_minecart"]; 
@@ -296,12 +303,7 @@ function handlePistonUse(eventData: any) {
   }
   playerActions[player.name].push(blockLocation);
 
-  // Check if the player is the owner or a member
-  const chestKey = getChestKey(blockLocation);
-  const chestData = protectedChests[chestKey];
-  if (chestData && (chestData.owner === player.name || chestData.members.includes(player.name))) {
-      return; // Allow the owner or member to place the piston
-  }
+
 
   if (isMovingTowardsChest(playerActions[player.name])) {
       eventData.cancel = true;
@@ -662,7 +664,7 @@ function saveProtectedChests() {
 }
 
 // データの読み込み関数
-function loadProtectedChests() {
+export function loadProtectedChests() {
   const data = world.getDynamicProperty("protectedChests");
   if (data && typeof data === 'string') {
     protectedChests = JSON.parse(data);
