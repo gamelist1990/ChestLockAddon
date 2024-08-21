@@ -5,11 +5,11 @@ export const translations = {
   },
   "test_command_description": {
     msgid: "Test Command",
-    msgstr: ""
+    msgstr: "テストコマンド(実験機能です)"
   },
   "ui_command_description": {
     msgid: "GUI Command",
-    msgstr: ""
+    msgstr: "UIを表示します(Switch/PS4/5用)"
   },
   "ChooseCom": {
     msgid: "§2Select the command:",
