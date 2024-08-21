@@ -1,6 +1,6 @@
 import { Player, world } from "@minecraft/server";
 import { c } from "../Modules/Util";
-import { registerCommand, verifier,prefix } from "../Modules/Handler";
+import { registerCommand, verifier } from "../Modules/Handler";
 
 // === 辞書データ ===
 interface DictionaryEntry {
@@ -9,95 +9,270 @@ interface DictionaryEntry {
 }
 
 const dictionaryData: DictionaryEntry[] = [
-  { hiragana: "にほん", kanji: "日本" },
-  { hiragana: "なんで", kanji: "何で" },
-  { hiragana: "しら", kanji: "知ら" },
-  { hiragana: "いみ", kanji: "意味" },
-  { hiragana: "あさ", kanji: "朝" },
-  { hiragana: "はな", kanji: "花" },
-  { hiragana: "たいせつ", kanji: "大切" },
-  { hiragana: "ともだち", kanji: "友達" },
-  { hiragana: "べんきょう", kanji: "勉強" },
-  { hiragana: "ごはん", kanji: "ご飯" },
-  { hiragana: "しごと", kanji: "仕事" },
-  { hiragana: "でんわ", kanji: "電話" },
-  { hiragana: "みず", kanji: "水" },
-  { hiragana: "にち", kanji: "日" },
-  { hiragana: "つき", kanji: "月" },
-  { hiragana: "ほし", kanji: "星" },
-  { hiragana: "じかん", kanji: "時間" },
-  { hiragana: "せんせい", kanji: "先生" },
-  { hiragana: "がっこう", kanji: "学校" },
-  { hiragana: "くうき", kanji: "空気" },
-  { hiragana: "たいよう", kanji: "太陽" },
-  { hiragana: "ほしぞら", kanji: "星空" },
-  { hiragana: "あめ", kanji: "雨" },
-  { hiragana: "ゆき", kanji: "雪" },
-  { hiragana: "かぜ", kanji: "風" },
-  { hiragana: "うみ", kanji: "海" },
-  { hiragana: "やま", kanji: "山" },
-  { hiragana: "どうぶつ", kanji: "動物" },
-  { hiragana: "とり", kanji: "鳥" },
-  { hiragana: "さかな", kanji: "魚" },
-  { hiragana: "いぬ", kanji: "犬" },
-  { hiragana: "ねこ", kanji: "猫" },
-  { hiragana: "くるま", kanji: "車" },
-  { hiragana: "いえ", kanji: "家" },
-  { hiragana: "ひと", kanji: "人" },
-  { hiragana: "おとこ", kanji: "男" },
-  { hiragana: "おんな", kanji: "女" },
-  { hiragana: "こども", kanji: "子供" },
-  { hiragana: "あたらしい", kanji: "新しい" },
-  { hiragana: "おもしろい", kanji: "面白い" },
-  { hiragana: "げんき", kanji: "元気" },
-  { hiragana: "つかれた", kanji: "疲れた" },
-  { hiragana: "おいしい", kanji: "美味しい" },
-  { hiragana: "きたない", kanji: "汚い" },
-  { hiragana: "きれい", kanji: "綺麗" },
-  { hiragana: "つよい", kanji: "強い" },
-  { hiragana: "よわい", kanji: "弱い" },
-  { hiragana: "おおきい", kanji: "大きい" },
-  { hiragana: "ちいさい", kanji: "小さい" },
-  { hiragana: "あつい", kanji: "暑い" }, 
-  { hiragana: "つめたい", kanji: "冷たい" },
-  { hiragana: "あかるい", kanji: "明るい" },
-  { hiragana: "くらいい", kanji: "暗い" },
-  { hiragana: "ふるい", kanji: "古い" },
-  { hiragana: "たのしい", kanji: "楽しい" },
-  { hiragana: "かなしい", kanji: "悲しい" },
-  { hiragana: "びょうき", kanji: "病気" },
-  { hiragana: "たいへん", kanji: "大変" },
-  { hiragana: "かんたん", kanji: "簡単" },
-  { hiragana: "じょうず", kanji: "上手" },
-  { hiragana: "へた", kanji: "下手" },
-  { hiragana: "はやい", kanji: "早い" },
-  { hiragana: "おそい", kanji: "遅い" },
-  { hiragana: "まっすぐ", kanji: "真っ直ぐ" },
-  { hiragana: "まがった", kanji: "曲がった" },
-  { hiragana: "さむい", kanji: "寒い" },
-  { hiragana: "よごれ", kanji: "汚れ" },
-  { hiragana: "かわいい", kanji: "可愛い" },
-  { hiragana: "やさしい", kanji: "優しい" },
-  { hiragana: "きびしい", kanji: "厳しい" },
-  { hiragana: "しずか", kanji: "静か" },
-  { hiragana: "うるさい", kanji: "うるさい" },
-  { hiragana: "まずい", kanji: "まずい" },
-  { hiragana: "あまい", kanji: "甘い" },
-  { hiragana: "すっぱい", kanji: "酸っぱい" },
-  { hiragana: "からい", kanji: "辛い" },
-  { hiragana: "にがい", kanji: "苦い" },
-  { hiragana: "あたたかい", kanji: "温かい" },
-  { hiragana: "おおい", kanji: "多い" },
-  { hiragana: "すくない", kanji: "少ない" },
-  { hiragana: "むずかしい", kanji: "難しい" }
+  { kanji: "日本", hiragana: "にほん" },
+  { kanji: "何で", hiragana: "なんで" },
+  { kanji: "知ら", hiragana: "しら" },
+  { kanji: "意味", hiragana: "いみ" },
+  { kanji: "朝", hiragana: "あさ" },
+  { kanji: "花", hiragana: "はな" },
+  { kanji: "大切", hiragana: "たいせつ" },
+  { kanji: "友達", hiragana: "ともだち" },
+  { kanji: "勉強", hiragana: "べんきょう" },
+  { kanji: "ご飯", hiragana: "ごはん" },
+  { kanji: "仕事", hiragana: "しごと" },
+  { kanji: "電話", hiragana: "でんわ" },
+  { kanji: "水", hiragana: "みず" },
+  { kanji: "日", hiragana: "にち" },
+  { kanji: "月", hiragana: "つき" },
+  { kanji: "星", hiragana: "ほし" },
+  { kanji: "時間", hiragana: "じかん" },
+  { kanji: "先生", hiragana: "せんせい" },
+  { kanji: "学校", hiragana: "がっこう" },
+  { kanji: "空気", hiragana: "くうき" },
+  { kanji: "太陽", hiragana: "たいよう" },
+  { kanji: "星空", hiragana: "ほしぞら" },
+  { kanji: "雨", hiragana: "あめ" },
+  { kanji: "雪", hiragana: "ゆき" },
+  { kanji: "風", hiragana: "かぜ" },
+  { kanji: "海", hiragana: "うみ" },
+  { kanji: "山", hiragana: "やま" },
+  { kanji: "動物", hiragana: "どうぶつ" },
+  { kanji: "魚", hiragana: "さかな" },
+  { kanji: "犬", hiragana: "いぬ" },
+  { kanji: "猫", hiragana: "ねこ" },
+  { kanji: "車", hiragana: "くるま" },
+  { kanji: "家", hiragana: "いえ" },
+  { kanji: "人", hiragana: "ひと" },
+  { kanji: "男", hiragana: "おとこ" },
+  { kanji: "女", hiragana: "おんな" },
+  { kanji: "子供", hiragana: "こども" },
+  { kanji: "新しい", hiragana: "あたらしい" },
+  { kanji: "面白い", hiragana: "おもしろい" },
+  { kanji: "元気", hiragana: "げんき" },
+  { kanji: "疲れた", hiragana: "つかれた" },
+  { kanji: "美味しい", hiragana: "おいしい" },
+  { kanji: "汚い", hiragana: "きたない" },
+  { kanji: "綺麗", hiragana: "きれい" },
+  { kanji: "強い", hiragana: "つよい" },
+  { kanji: "弱い", hiragana: "よわい" },
+  { kanji: "大きい", hiragana: "おおきい" },
+  { kanji: "小さい", hiragana: "ちいさい" },
+  { kanji: "暑い", hiragana: "あつい" },
+  { kanji: "冷たい", hiragana: "つめたい" },
+  { kanji: "明るい", hiragana: "あかるい" },
+  { kanji: "暗い", hiragana: "くらいい" },
+  { kanji: "古い", hiragana: "ふるい" },
+  { kanji: "楽しい", hiragana: "たのしい" },
+  { kanji: "悲しい", hiragana: "かなしい" },
+  { kanji: "病気", hiragana: "びょうき" },
+  { kanji: "大変", hiragana: "たいへん" },
+  { kanji: "簡単", hiragana: "かんたん" },
+  { kanji: "上手", hiragana: "じょうず" },
+  { kanji: "下手", hiragana: "へた" },
+  { kanji: "早い", hiragana: "はやい" },
+  { kanji: "遅い", hiragana: "おそい" },
+  { kanji: "真っ直ぐ", hiragana: "まっすぐ" },
+  { kanji: "曲がった", hiragana: "まがった" },
+  { kanji: "寒い", hiragana: "さむい" },
+  { kanji: "汚れ", hiragana: "よごれ" },
+  { kanji: "可愛い", hiragana: "かわいい" },
+  { kanji: "優しい", hiragana: "やさしい" },
+  { kanji: "厳しい", hiragana: "きびしい" },
+  { kanji: "静か", hiragana: "しずか" },
+  { kanji: "うるさい", hiragana: "うるさい" },
+  { kanji: "まずい", hiragana: "まずい" },
+  { kanji: "甘い", hiragana: "あまい" },
+  { kanji: "酸っぱい", hiragana: "すっぱい" },
+  { kanji: "辛い", hiragana: "からい" },
+  { kanji: "苦い", hiragana: "にがい" },
+  { kanji: "温かい", hiragana: "あたたかい" },
+  { kanji: "多い", hiragana: "おおい" },
+  { kanji: "少ない", hiragana: "すくない" },
+  { kanji: "難しい", hiragana: "むずかしい" },
+  { kanji: "私", hiragana: "わたし" },
+  { kanji: "歩く", hiragana: "あるく" },
+  { kanji: "食べる", hiragana: "たべる" },
+  { kanji: "寝る", hiragana: "ねる" },
+  { kanji: "見る", hiragana: "みる" },
+  { kanji: "聞く", hiragana: "きく" },
+  { kanji: "話す", hiragana: "はなす" },
+  { kanji: "読む", hiragana: "よむ" },
+  { kanji: "書く", hiragana: "かく" },
+  { kanji: "行く", hiragana: "いく" },
+  { kanji: "来る", hiragana: "くる" },
+  { kanji: "分かる", hiragana: "わかる" },
+  { kanji: "出来る", hiragana: "できる" },
+  { kanji: "好き", hiragana: "すき" },
+  { kanji: "嫌い", hiragana: "きらい" },
+  { kanji: "欲しい", hiragana: "ほしい" },
+  //ゲーム
+  { kanji: "攻略", hiragana: "こうりゃく" },
+  { kanji: "レベル", hiragana: "れべる" },
+  { kanji: "アイテム", hiragana: "あいてむ" },
+  { kanji: "スキル", hiragana: "すきる" },
+  { kanji: "クエスト", hiragana: "くえすと" },
+  { kanji: "パーティー", hiragana: "ぱーてぃー" },
+  { kanji: "ボス", hiragana: "ぼす" },
+  { kanji: "ダンジョン", hiragana: "だんじょん" },
+  { kanji: "経験値", hiragana: "けいけんち" },
+  { kanji: "ダメージ", hiragana: "だめーじ" },
+  { kanji: "回復", hiragana: "かいふく" },
+  { kanji: "魔法", hiragana: "まほう" },
+
+  // 中級・上級・日常会話
+  { kanji: "想像", hiragana: "そうぞう" },
+  { kanji: "創造", hiragana: "そうぞう" },
+  { kanji: "解決", hiragana: "かいけつ" },
+  { kanji: "影響", hiragana: "えいきょう" },
+  { kanji: "社会", hiragana: "しゃかい" },
+  { kanji: "経済", hiragana: "けいざい" },
+  { kanji: "政治", hiragana: "せいじ" },
+  { kanji: "文化", hiragana: "ぶんか" },
+  { kanji: "歴史", hiragana: "れきし" },
+  { kanji: "環境", hiragana: "かんきょう" },
+  { kanji: "技術", hiragana: "ぎじゅつ" },
+  { kanji: "情報", hiragana: "じょうほう" },
+  { kanji: "教育", hiragana: "きょういく" },
+  { kanji: "医療", hiragana: "いりょう" },
+  { kanji: "旅行", hiragana: "りょこう" },
+  { kanji: "食事", hiragana: "しょくじ" },
+  { kanji: "趣味", hiragana: "しゅみ" },
+  { kanji: "将来", hiragana: "しょうらい" },
+  { kanji: "約束", hiragana: "やくそく" },
+  { kanji: "準備", hiragana: "じゅんび" },
+  { kanji: "心配", hiragana: "しんぱい" },
+  { kanji: "頑張る", hiragana: "がんばる" },
+  { kanji: "手伝う", hiragana: "てつだう" },
+  { kanji: "楽しむ", hiragana: "たのしむ" },
+  { kanji: "理解する", hiragana: "りかいする" },
+  { kanji: "説明する", hiragana: "せつめいする" },
+  //Minecraft
+
+  { kanji: "ブロック", hiragana: "ぶろっく" },
+  { kanji: "鉱石", hiragana: "こうせき" },
+  { kanji: "クラフト", hiragana: "くらふと" },
+  { kanji: "クリーパー", hiragana: "くりーぱー" },
+  { kanji: "ゾンビ", hiragana: "ぞんび" },
+  { kanji: "スケルトン", hiragana: "すけるとん" },
+  { kanji: "エンダーマン", hiragana: "えんだーまん" },
+  { kanji: "ネザー", hiragana: "ねざー" },
+  { kanji: "エンド", hiragana: "えんど" },
+  { kanji: "ポーション", hiragana: "ぽーしょん" },
+  { kanji: "エンチャント", hiragana: "えんちゃんとする" },
+  { kanji: "レッドストーン", hiragana: "れっどすとーん" },
+  { kanji: "ダイヤ", hiragana: "だいや" },
+  { kanji: "鉄", hiragana: "てつ" },
+  { kanji: "金", hiragana: "きん" },
+  { kanji: "村人", hiragana: "むらびと" },
+  { kanji: "サバイバル", hiragana: "さばいばる" },
+  { kanji: "クリエイティブ", hiragana: "くりえいてぃぶ" },
+  { kanji: "トライアルジャンバー", hiragana: "とらいあるじゃんばー" },
+  { kanji: "エンダードラゴン", hiragana: "えんだーどらごん" },
+  { kanji: "ウィザー", hiragana: "うぃざー" },
+  { kanji: "古代の残骸", hiragana: "こだいのざんがい" },
+  { kanji: "ネザライト", hiragana: "ねざらいと" },
+  { kanji: "ビーコン", hiragana: "びーこん" },
+  { kanji: "コンジット", hiragana: "こんじっと" },
+  { kanji: "シュルカーボックス", hiragana: "しゅるかーぼっくす" },
+  { kanji: "エリトラ", hiragana: "えりとら" },
+  { kanji: "エンダーパール", hiragana: "えんだーぱーる" },
+  { kanji: "醸造台", hiragana: "じょうぞうだい" },
+  { kanji: "かまど", hiragana: "かまど" },
+  { kanji: "作業台", hiragana: "さぎょうだい" },
+  { kanji: "エンチャントテーブル", hiragana: "えんちゃんとするてーぶる" },
+  { kanji: "村", hiragana: "むら" },
+  { kanji: "要塞", hiragana: "ようさい" },
+  { kanji: "寺院", hiragana: "じいん" },
+  { kanji: "海底神殿", hiragana: "かいていしんでん" },
+  { kanji: "森の洋館", hiragana: "もりのようかん" },
+  { kanji: "ピストン", hiragana: "ぴすとん" },
+  { kanji: "オブザーバー", hiragana: "おぶざーばー" },
+  { kanji: "レッドストーンリピーター", hiragana: "れっどすとーんりぴーたー" },
+  { kanji: "レッドストーンコンパレーター", hiragana: "れっどすとーんこんぱれーたー" },
+  { kanji: "ホッパー", hiragana: "ほっぱー" },
+  { kanji: "ドロッパー", hiragana: "どろっぱー" },
+  { kanji: "ディスペンサー", hiragana: "でぃすぺんさー" },
+  { kanji: "TNT", hiragana: "てぃーえぬてぃー" },
+  { kanji: "レール", hiragana: "れーる" },
+  { kanji: "トロッコ", hiragana: "とろっこ" },
+  { kanji: "ボート", hiragana: "ぼーと" },
+  { kanji: "馬", hiragana: "うま" },
+  { kanji: "豚", hiragana: "ぶた" },
+  { kanji: "牛", hiragana: "うし" },
+  { kanji: "羊", hiragana: "ひつじ" },
+  { kanji: "鶏", hiragana: "にわとり" },
+  { kanji: "オオカミ", hiragana: "おおかみ" },
+  { kanji: "猫", hiragana: "ねこ" },
+  { kanji: "パンダ", hiragana: "ぱんだ" },
+  { kanji: "キツネ", hiragana: "きつね" },
+  { kanji: "ウサギ", hiragana: "うさぎ" },
+  { kanji: "カメ", hiragana: "かめ" },
+  { kanji: "魚", hiragana: "さかな" },
+  { kanji: "タツノオトシゴ", hiragana: "たつのおとしご" },
+  { kanji: "イルカ", hiragana: "いるか" },
+  { kanji: "ホッキョクグマ", hiragana: "ほっきょくぐま" },
+  { kanji: "ラマ", hiragana: "らま" },
+  { kanji: "ハチ", hiragana: "はち" },
+  { kanji: "アレイ", hiragana: "あれい" },
+  { kanji: "石", hiragana: "いし" },
+  { kanji: "土", hiragana: "つち" },
+  { kanji: "砂", hiragana: "すな" },
+  { kanji: "砂利", hiragana: "じゃり" },
+  { kanji: "花", hiragana: "はな" },
+  { kanji: "キノコ", hiragana: "きのこ" },
+  { kanji: "サトウキビ", hiragana: "さとうきび" },
+  { kanji: "カボチャ", hiragana: "かぼちゃ" },
+  { kanji: "スイカ", hiragana: "すいか" },
+  { kanji: "小麦", hiragana: "こむぎ" },
+  { kanji: "ニンジン", hiragana: "にんじん" },
+  { kanji: "ジャガイモ", hiragana: "じゃがいも" },
+  { kanji: "ビートルート", hiragana: "びーとるーと" },
+  { kanji: "オーク", hiragana: "おーく" },
+  { kanji: "シラカバ", hiragana: "しらかば"},
+  { kanji: "黒曜石", hiragana: "こくようせき" },
+　{ kanji: "グローストーン", hiragana: "ぐろーすとーん" },
+　{ kanji: "クォーツ", hiragana: "くぉーつ" },
+　{ kanji: "ネザーウォート", hiragana: "ねざーうぉーと" },
+　{ kanji: "ソウルサンド", hiragana: "そうるさんど" },
+　{ kanji: "マグマブロック", hiragana: "まぐまぶろっく" },
+　{ kanji: "ネザーラック", hiragana: "ねざーらっく" },
+　{ kanji: "グロウストーンダスト", hiragana: "ぐろーすとーんだすと"},
+  { kanji: "エメラルド", hiragana: "えめらるど"},
+
+   //色々~
+   { kanji: "大体", hiragana: "だいたい"},
+   { kanji: "ローマ字", hiragana: "ろ-まじ"},
+   { kanji: "対応", hiragana: "たいおう"},
+   { kanji: "ベータ", hiragana: "べ-た"},
+   { kanji: "必要", hiragana: "ひつよう"},
+   { kanji: "広告", hiragana: "こうこく"},
+   { kanji: "見た", hiragana: "みた"},
+   { kanji: "色々", hiragana: "いろいろ"},
+   { kanji: "追加", hiragana: "ついか"},
+   { kanji: "洞窟", hiragana: "どうくつ"},
+   { kanji: "掘る", hiragana: "ほる"},
+   { kanji: "掘り", hiragana: "掘り"},
+   { kanji: "探", hiragana: "さが"},
+   { kanji: "暇", hiragana: "ひま"},
+   { kanji: "自由", hiragana: "じゆう"},
+   { kanji: "沢山", hiragana: "たくさん"},
+   { kanji: "世界", hiragana: "せかい"},
+   { kanji: "問題", hiragana: "もんだい"},
+   { kanji: "していくよ", hiragana: "していくよ"},
+   { kanji: "不足", hiragana: "していくよ"},
+   { kanji: "日本語", hiragana: "にほんご"},
+   { kanji: "英語", hiragana: "えいご"},
+   { kanji: "変換", hiragana: "へんかん"},
+   
+
 ];
 
 const dictionary: { [key: string]: string[] } = {};
-dictionaryData.forEach(({ hiragana, kanji }) => {
-  if (!dictionary[kanji]) {
-    dictionary[kanji] = [];
+dictionaryData.forEach(({ kanji, hiragana }) => {
+  if (!dictionary[hiragana]) {
+    dictionary[hiragana] = [];
   }
-  dictionary[kanji].push(hiragana);
+  dictionary[hiragana].push(kanji);
 });
 
 // === ローマ字変換テーブル ===
@@ -191,9 +366,9 @@ const conversionTable: { [key: string]: string[] } = {
   "kyo": ["きょ", "キョ", "kyo"],
 
   // "S" sounds with "ya", "yu", "yo"
-  "sha": ["しゃ", "シャ", "sha"],
-  "shu": ["しゅ", "シュ", "shu"],
-  "sho": ["しょ", "ショ", "sho"],
+  "sya": ["しゃ", "シャ", "sya"],
+  "syu": ["しゅ", "シュ", "syu"],
+  "syo": ["しょ", "ショ", "syo"],
 
   // "Ch" sounds with "ya", "yu", "yo"
   "cha": ["ちゃ", "チャ", "cha"],
@@ -254,6 +429,7 @@ const conversionTable: { [key: string]: string[] } = {
   "xi": ["ぃ", "イ", "xi"], 
   "ltu": ["っ", "イ", "ltu"],
   "xtu": ["っ", "イ", "xtu"], 
+  "xa": ["ぁ", "ァ", "xa"], 
 
 
   // Long Sound Mark
@@ -294,15 +470,17 @@ function splitIntoWords(text: string): string[] {
   for (let i = 0; i < text.length; i++) {
     currentWord += text[i];
     let longestMatch = "";
+    // ひらがなだけでなく、漢字も辞書と照合
     for (const word in dictionary) {
-      if (
-        currentWord === word &&
-        word.length > longestMatch.length
-      ) {
+      if (currentWord.endsWith(word) && word.length > longestMatch.length) {
         longestMatch = word;
       }
     }
     if (longestMatch) {
+      // マッチした単語より前の文字列を処理
+      if (currentWord.length > longestMatch.length) {
+        words.push(currentWord.substring(0, currentWord.length - longestMatch.length));
+      }
       words.push(longestMatch);
       currentWord = "";
     }
@@ -313,22 +491,28 @@ function splitIntoWords(text: string): string[] {
   return words;
 }
 
-// === ローマ字変換関数 (再構築版) ===
-function convertRomajiToJapanese(romaji: string): string {
-  if (romaji.startsWith(`${prefix}`)) {
-    return romaji; // prefixで始まる文字は除外
-  }
-  const hiraganaText = romajiToHiragana(romaji);
+// === ひらがなから漢字への変換 (最長一致検索) ===
+function hiraganaToKanji(hiraganaText: string): string {
   const words = splitIntoWords(hiraganaText);
   let result = "";
   for (const word of words) {
     if (dictionary[word]) {
       result += dictionary[word][0]; // 最初の候補を採用
     } else {
-      result += word; // 辞書にない場合はそのまま
+      result += word; 
     }
   }
   return result;
+}
+
+// === ローマ字変換関数 (修正版) ===
+function convertRomajiToJapanese(romaji: string): string {
+  if (romaji.startsWith("!")) {
+    return romaji; 
+  }
+  const hiraganaText = romajiToHiragana(romaji);
+  const kanjiText = hiraganaToKanji(hiraganaText);
+  return kanjiText;
 }
 
 let romajiConversionEnabled = false;
@@ -341,7 +525,7 @@ world.beforeEvents.chatSend.subscribe((event: any) => {
 
   const isEnabled = playerConversionStatus.get(player) ?? romajiConversionEnabled;
 
-  if (isEnabled) {
+  if (isEnabled && !event.message.startsWith("!")) { 
     const originalMessage = event.message;
     const convertedMessage = convertRomajiToJapanese(originalMessage);
 
