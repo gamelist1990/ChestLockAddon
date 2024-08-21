@@ -3,7 +3,7 @@ import path from 'path';
 
 const srcFolder = 'devFolder/src/command/langs/list';
 const enUSFileName = 'en_US.json';
-const targetLanguages = ['ja_JP','fi_FI','ko_KR','ru_RU','zh_CN'];
+const targetLanguages = ['ja_JP','fi_FI','ko_KR','ru_RU','zh_CN','Why'];
 
 const enUSJsonPath = path.join(srcFolder, enUSFileName);
 

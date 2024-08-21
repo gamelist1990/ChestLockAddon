@@ -7,11 +7,23 @@ world.afterEvents.worldInitialize.subscribe(() => {
   console.warn("Player languages data has been loaded");
 });
 
-import './Handler'; 
+//Command
 import './command/chest';
 import './command/help';
-import './command/langs/lang';
 import './command/dev';
+import './command/test';
+import './command/openUI';
+
+//lang
+import './command/langs/lang';
+
+
+//GUI
+import './command/gui/ui';
+
+
+//Modules
+import './Handler'; 
 import './Util'; 
 
 console.warn("Plugin has been Loaded");

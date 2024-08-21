@@ -3,6 +3,90 @@ export const translations = {
     msgid: "§cPlayerNotFound!! Make sure you're really there",
     msgstr: "§c找不到玩家！！请确保你真的在那里"
   },
+  "ChooseCom": {
+    msgid: "§2Select the command:",
+    msgstr: ""
+  },
+  "ChestCom": {
+    msgid: "§2Select the chest:",
+    msgstr: ""
+  },
+  "Chestinfo": {
+    msgid: "§0See nearby chests",
+    msgstr: ""
+  },
+  "Chestlock": {
+    msgid: "§0lock system",
+    msgstr: ""
+  },
+  "ChestMember": {
+    msgid: "§0Member system",
+    msgstr: ""
+  },
+  "back": {
+    msgid: "§2back",
+    msgstr: ""
+  },
+  "lockinfo": {
+    msgid: "§2Select the type of lock:",
+    msgstr: ""
+  },
+  "locking": {
+    msgid: "§alocking!",
+    msgstr: ""
+  },
+  "unlocking": {
+    msgid: "§cunlocking!",
+    msgstr: ""
+  },
+  "ProtectChest": {
+    msgid: "§0Protection Chest Status",
+    msgstr: ""
+  },
+  "MemberChoose": {
+    msgid: "§2Choose your member's:",
+    msgstr: ""
+  },
+  "MemberAdd": {
+    msgid: "§0Member Add",
+    msgstr: ""
+  },
+  "MemberRemove": {
+    msgid: "§0Member Remove",
+    msgstr: ""
+  },
+  "Memberall": {
+    msgid: "§0Member list",
+    msgstr: ""
+  },
+  "AddMemberSelect": {
+    msgid: "§2Select the member you wish to add:",
+    msgstr: ""
+  },
+  "RemoveMemberSelect": {
+    msgid: "§2Select the member you wish to Remove:",
+    msgstr: ""
+  },
+  "SelectLang": {
+    msgid: "§2Select an operation from the language menu:",
+    msgstr: ""
+  },
+  "langList": {
+    msgid: "§0lang List",
+    msgstr: ""
+  },
+  "langChange": {
+    msgid: "§0lang Change",
+    msgstr: ""
+  },
+  "langChange1": {
+    msgid: "§2Please select the language you wish to change:",
+    msgstr: ""
+  },
+  "FromError": {
+    msgid: "§cAn error occurred while displaying the form:",
+    msgstr: ""
+  },
   "desabledCom": {
     msgid: "§cUnregistered or disabled command",
     msgstr: "§c未注册或已禁用命令"

@@ -3,6 +3,90 @@
     "msgid": "§cPlayerNotFound!! Make sure you're really there",
     "msgstr": "§cこのプレイヤーが見つかりません！！"
   },
+  "ChooseCom": {
+    "msgid": "§2Select the command:",
+    "msgstr": "§2使用したいコマンドを選択してね:"
+  },
+  "ChestCom": {
+    "msgid": "§2Select the chest:",
+    "msgstr": "§2使用したい内容を選択:"
+  },
+  "Chestinfo": {
+    "msgid": "§0See nearby chests",
+    "msgstr": "§0近くのチェストの情報を見る"
+  },
+  "Chestlock": {
+    "msgid": "§0lock system",
+    "msgstr": "§0ロック機能系"
+  },
+  "ChestMember": {
+    "msgid": "§0Member system",
+    "msgstr": "§0メンバー操作系"
+  },
+  "back": {
+    "msgid": "§2back",
+    "msgstr": "§2戻る"
+  },
+  "lockinfo": {
+    "msgid": "§2Select the type of lock:",
+    "msgstr": "§2ロックの種類を選択してください:"
+  },
+  "locking": {
+    "msgid": "§alocking!",
+    "msgstr": "§aロック!"
+  },
+  "unlocking": {
+    "msgid": "§cunlocking!",
+    "msgstr": "§cロック解除!"
+  },
+  "ProtectChest": {
+    "msgid": "§0Protection Chest Status",
+    "msgstr": "§0保護チェストのステータス"
+  },
+  "MemberChoose": {
+    "msgid": "§2Choose your member's:",
+    "msgstr": "§2操作するボタンを選択してください:"
+  },
+  "MemberAdd": {
+    "msgid": "§0Member Add",
+    "msgstr": "§0メンバーを追加"
+  },
+  "MemberRemove": {
+    "msgid": "§0Member Remove",
+    "msgstr": "§0メンバーを削除"
+  },
+  "Memberall": {
+    "msgid": "§0Member list",
+    "msgstr": "§0メンバーリスト"
+  },
+  "AddMemberSelect": {
+    "msgid": "§2Select the member you wish to add:",
+    "msgstr": "§2追加したいメンバーを選択してください:"
+  },
+  "RemoveMemberSelect": {
+    "msgid": "§2Select the member you wish to Remove:",
+    "msgstr": "§2削除したいメンバーを選択してください:"
+  },
+  "SelectLang": {
+    "msgid": "§2Select an operation from the language menu:",
+    "msgstr": "§2言語メニューから操作を選択してください:"
+  },
+  "langList": {
+    "msgid": "§0lang List",
+    "msgstr": "§0言語対応リスト"
+  },
+  "langChange": {
+    "msgid": "§0lang Change",
+    "msgstr": "§0言語変更"
+  },
+  "langChange1": {
+    "msgid": "§2Please select the language you wish to change:",
+    "msgstr": "§2変更したい言語を選択してください:"
+  },
+  "FromError": {
+    "msgid": "§cAn error occurred while displaying the form:",
+    "msgstr": "§cフォームの表示中にエラーが発生しました"
+  },
   "desabledCom": {
     "msgid": "§cUnregistered or disabled command",
     "msgstr": "§c無効なコマンド"

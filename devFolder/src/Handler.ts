@@ -56,11 +56,12 @@ export function verifier(player: Player, setting: CommandConfig): boolean {
   return true;
 }
 
-function suggestCommand(player: Player, commandName: string) {
+export function suggestCommand(player: Player, commandName: string) {
   const possibleCommands = Object.keys(commands).filter(cmd => {
     const distance = levenshteinDistance(cmd, commandName);
     return distance <= 2; // 調整可能
   });
+  console.log(commandName);
 
   if (possibleCommands.length > 0) {
     player.sendMessage(translate(player,"desableComSuggest",{ possibleCommands:`${possibleCommands[0]}`, prefix:`${prefix}`}))
@@ -135,3 +136,24 @@ world.beforeEvents.chatSend.subscribe((event: any) => {
 
   event.cancel = true;
 });
+
+/**
+ * 外部からコマンドを実行するための関数
+ * @param playerName 実行するプレイヤー名
+ * @param commandName コマンド名
+ * @param args コマンドの引数
+ */
+export function runCommand(playerName: string, commandName: string, args: string[] = []) {
+  const player = isPlayer(playerName);
+  if (!player) return; // プレイヤーが見つからない場合は何もしない
+
+  const commandOptions = commands[commandName];
+
+  if (commandOptions) {
+    if (verifier(player, c().commands[commandName])) {
+      commandOptions.executor(player, args);
+    }
+  } else {
+    player.sendMessage(translate(player, "invalidCom", { commandName: `${commandName}` }));
+  }
+}

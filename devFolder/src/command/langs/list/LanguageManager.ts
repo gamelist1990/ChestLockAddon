@@ -5,15 +5,18 @@ import { translations as zh_CN } from "./zh_CN";
 import { translations as ru_RU } from "./ru_RU";
 import { translations as ko_KR } from "./ko_KR";
 import { translations as fi_FI } from "./fi_FI";
+import { translations as Why } from "./Why";
 
-const availableLanguages = ["en_US", "ja_JP", "zh_CN", "ru_RU", "ko_KR", "fi_FI"];
+
+const availableLanguages = ["en_US", "ja_JP", "zh_CN", "ru_RU", "ko_KR", "fi_FI","Why"];
 const languageData: { [key: string]: { [key: string]: { msgid: string; msgstr: string } } } = {
   "ja_JP": ja_JP,
   "en_US": en_US,
   "zh_CN": zh_CN,
   "ru_RU": ru_RU,
   "ko_KR": ko_KR,
-  "fi_FI": fi_FI
+  "fi_FI": fi_FI,
+  "Why": Why
 };
 
 const defaultLang = "ja_JP"; // デフォルトの言語を固定
@@ -98,4 +101,21 @@ export function translate(player: Player | null, key: string, params?: Record<st
   }
 
   return translatedText;
+}
+
+
+export function rawTranslate(player: Player | null, key: string, params?: Record<string, any>): string {
+  const language = player ? getPlayerLanguage(player) : defaultLang;
+  const langData = languageData[language];
+
+  if (langData && langData[key]) {
+    const translatedText = langData[key].msgstr || langData[key].msgid;
+
+    // JSON.stringify を使用して文字列に変換
+    return JSON.stringify({ rawtext: [{ translate: translatedText, with: Object.values(params || {}) }] });
+  } else {
+    // 翻訳が見つからない場合はキーをそのまま返し、ログを出力
+    console.warn(`Translation not found for key '${key}' in language '${language}'.`);
+    return JSON.stringify({ rawtext: [{ translate: key }] });
+  }
 }

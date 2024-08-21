@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 const srcFolder = 'devFolder/src/command/langs/list';
-const targetLanguages = ['en_US', 'ja_JP', 'fi_FI', 'ko_KR', 'ru_RU', 'zh_CN'];
+const targetLanguages = ['en_US', 'ja_JP', 'fi_FI', 'ko_KR', 'ru_RU', 'zh_CN','Why'];
 
 async function convertJsonToTs() {
   try {

@@ -284,22 +284,31 @@ function handlePistonUse(eventData: any) {
   const blockLocation = eventData.block.location;
 
   if (RADIUS2_IDS.includes(itemId)) {
-    if (!isWithinDetectionArea(blockLocation, RADIUS2)) return;
+      if (!isWithinDetectionArea(blockLocation, RADIUS2)) return;
   } else if (RADIUS1_IDS.includes(itemId)) {
-    if (!isWithinDetectionArea(blockLocation, RADIUS1)) return;
+      if (!isWithinDetectionArea(blockLocation, RADIUS1)) return;
   } else {
-    return;
+      return;
   }
 
   if (!playerActions[player.name]) {
-    playerActions[player.name] = [];
+      playerActions[player.name] = [];
   }
   playerActions[player.name].push(blockLocation);
+
+  // Check if the player is the owner or a member
+  const chestKey = getChestKey(blockLocation);
+  const chestData = protectedChests[chestKey];
+  if (chestData && (chestData.owner === player.name || chestData.members.includes(player.name))) {
+      return; // Allow the owner or member to place the piston
+  }
+
   if (isMovingTowardsChest(playerActions[player.name])) {
-    eventData.cancel = true;
-    player.sendMessage(translate(player, "cannotPlaceItem"));
+      eventData.cancel = true;
+      player.sendMessage(translate(player, "cannotPlaceItem"));
   }
 }
+
 
 // 検知範囲内かどうか判定
 function isWithinDetectionArea(location: Vector3, radius: number): boolean {

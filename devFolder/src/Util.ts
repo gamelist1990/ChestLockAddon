@@ -26,6 +26,16 @@ export const c = (): { commands: { [key: string]: CommandConfig }, admin: string
       adminOnly: true,
       requireTag: [],
     },
+    test: {
+      enabled: true,
+      adminOnly: false,
+      requireTag: ["beta"],
+    },
+    ui: {
+      enabled: true,
+      adminOnly: false,
+      requireTag: [],
+    },
   },
   
   admin: "op",
