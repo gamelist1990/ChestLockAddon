@@ -26,7 +26,9 @@ import './command/gui/ui';
 
 
 //Modules
-import './Handler'; 
-import './Util'; 
+import './Modules/Handler'; 
+import './Modules/Util';
+import './Modules/version'; 
+
 
 console.warn("Plugin has been Loaded");

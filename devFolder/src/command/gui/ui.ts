@@ -1,6 +1,6 @@
 import { ActionFormData } from "@minecraft/server-ui";
 import { Player } from "@minecraft/server";
-import { runCommand } from "../../Handler";
+import { runCommand } from "../../Modules/Handler";
 import { getAvailableLanguages,translate } from "../langs/list/LanguageManager";
 
 

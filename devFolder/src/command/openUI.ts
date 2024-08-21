@@ -1,5 +1,5 @@
-import { c } from "../Util";
-import { registerCommand, verifier } from "../Handler";
+import { c } from "../Modules/Util";
+import { registerCommand, verifier } from "../Modules/Handler";
 import { showBasicUI } from "./gui/ui";
 import { Player, system } from "@minecraft/server";
 

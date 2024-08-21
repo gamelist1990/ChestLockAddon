@@ -1,5 +1,6 @@
-import { registerCommand, verifier,isPlayer } from "../Handler";
-import { c } from "../Util";
+import { registerCommand, verifier,isPlayer } from "../Modules/Handler";
+import { c } from "../Modules/Util";
+import { ver } from "../Modules/version";
 import { world, Player, system, Vector3} from "@minecraft/server";
 import { translate } from "./langs/list/LanguageManager"
 
@@ -97,7 +98,7 @@ function listProtectedChests(player: Player) {
 }
 
 function sendInvalidCommandMessage(player: Player) {
-  const version = `§bVersion 0.6`
+  const version = `§bVersion ${ver}`
   const message = translate(player, "chest_help")
 
 

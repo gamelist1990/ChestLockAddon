@@ -1,6 +1,6 @@
 import { Player } from "@minecraft/server";
-import { c } from "../../Util";
-import { registerCommand, verifier, } from "../../Handler";
+import { c } from "../../Modules/Util";
+import { registerCommand, verifier, } from "../../Modules/Handler";
 import { getAvailableLanguages, changeLanguage,translate } from "./list/LanguageManager"; // 言語管理の関数をインポート
 
 

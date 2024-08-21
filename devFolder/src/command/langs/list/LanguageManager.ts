@@ -5,10 +5,9 @@ import { translations as zh_CN } from "./zh_CN";
 import { translations as ru_RU } from "./ru_RU";
 import { translations as ko_KR } from "./ko_KR";
 import { translations as fi_FI } from "./fi_FI";
-import { translations as Why } from "./Why";
 
 
-const availableLanguages = ["en_US", "ja_JP", "zh_CN", "ru_RU", "ko_KR", "fi_FI","Why"];
+const availableLanguages = ["en_US", "ja_JP", "zh_CN", "ru_RU", "ko_KR", "fi_FI"];
 const languageData: { [key: string]: { [key: string]: { msgid: string; msgstr: string } } } = {
   "ja_JP": ja_JP,
   "en_US": en_US,
@@ -16,7 +15,6 @@ const languageData: { [key: string]: { [key: string]: { msgid: string; msgstr: s
   "ru_RU": ru_RU,
   "ko_KR": ko_KR,
   "fi_FI": fi_FI,
-  "Why": Why
 };
 
 const defaultLang = "ja_JP"; // デフォルトの言語を固定

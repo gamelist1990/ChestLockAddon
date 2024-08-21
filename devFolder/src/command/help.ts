@@ -1,6 +1,7 @@
 import { Player } from "@minecraft/server";
-import { c } from "../Util";
-import { registerCommand, getAllCommandNames, verifier, prefix } from "../Handler"; // コマンドが登録されているファイルをインポート
+import { c } from "../Modules/Util";
+import { ver } from "../Modules/version";
+import { registerCommand, getAllCommandNames, verifier, prefix } from "../Modules/Handler"; // コマンドが登録されているファイルをインポート
 import { translate } from "./langs/list/LanguageManager";
 
 
@@ -15,7 +16,7 @@ registerCommand({
   require: (player: Player) => verifier(player, c().commands["help"]),
   executor: (player: Player) => {
     const helpMessages = getAllCommandNames();
-    const version = "§aVer.0.7"
+    const version = `§aVer.${ver}`
     let helpMessage = translate(player, "available_commands") + ":\n"; 
     helpMessages.forEach((msg) => {
       const commandDescription = translate(player, msg.description); 

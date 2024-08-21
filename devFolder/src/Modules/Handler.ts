@@ -1,6 +1,6 @@
 import { Player, world } from "@minecraft/server";
 import { c } from "./Util";
-import { translate } from "./command/langs/list/LanguageManager"; 
+import { translate } from "../command/langs/list/LanguageManager"; 
 
 export const prefix = "!";
 
