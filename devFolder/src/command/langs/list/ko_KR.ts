@@ -3,6 +3,14 @@ export const translations = {
     msgid: "§cPlayerNotFound!! Make sure you're really there",
     msgstr: "§c플레이어를 찾을 수 없습니다!! 당신이 정말로 거기 있는지 확인하세요"
   },
+  "test_command_description": {
+    msgid: "Test Command",
+    msgstr: ""
+  },
+  "ui_command_description": {
+    msgid: "GUI Command",
+    msgstr: ""
+  },
   "ChooseCom": {
     msgid: "§2Select the command:",
     msgstr: ""

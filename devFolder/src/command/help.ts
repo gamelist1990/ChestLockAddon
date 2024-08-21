@@ -15,7 +15,7 @@ registerCommand({
   require: (player: Player) => verifier(player, c().commands["help"]),
   executor: (player: Player) => {
     const helpMessages = getAllCommandNames();
-    const version = "§aVer.0.6"
+    const version = "§aVer.0.7"
     let helpMessage = translate(player, "available_commands") + ":\n"; 
     helpMessages.forEach((msg) => {
       const commandDescription = translate(player, msg.description); 

@@ -3,6 +3,14 @@ export const translations = {
     msgid: "§cPlayerNotFound!! Make sure you're really there",
     msgstr: "§cИгрок не найден!! Убедитесь, что вы действительно там"
   },
+  "test_command_description": {
+    msgid: "Test Command",
+    msgstr: ""
+  },
+  "ui_command_description": {
+    msgid: "GUI Command",
+    msgstr: ""
+  },
   "ChooseCom": {
     msgid: "§2Select the command:",
     msgstr: ""

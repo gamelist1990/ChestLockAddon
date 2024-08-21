@@ -3,6 +3,14 @@
     "msgid": "§cPlayerNotFound!! Make sure you're really there",
     "msgstr": "§cHoshi no michi ni wa, kimi wa inai🌟"
   },
+  "test_command_description": {
+    "msgid": "Test Command",
+    "msgstr": ""
+  },
+  "ui_command_description": {
+    "msgid": "GUI Command",
+    "msgstr": ""
+  },
   "ChooseCom": {
     "msgid": "§2Select the command:",
     "msgstr": ""
