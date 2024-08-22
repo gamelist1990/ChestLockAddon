@@ -14,7 +14,6 @@ const dictionaryData: DictionaryEntry[] = [
   { kanji: "知ら", hiragana: "しら" },
   { kanji: "意味", hiragana: "いみ" },
   { kanji: "朝", hiragana: "あさ" },
-  { kanji: "花", hiragana: "はな" },
   { kanji: "大切", hiragana: "たいせつ" },
   { kanji: "友達", hiragana: "ともだち" },
   { kanji: "勉強", hiragana: "べんきょう" },
@@ -41,8 +40,8 @@ const dictionaryData: DictionaryEntry[] = [
   { kanji: "犬", hiragana: "いぬ" },
   { kanji: "猫", hiragana: "ねこ" },
   { kanji: "車", hiragana: "くるま" },
-  { kanji: "家", hiragana: "いえ" },
-  { kanji: "人", hiragana: "ひと" },
+  { kanji: "お家", hiragana: "おうち" },
+  { kanji: "", hiragana: "ひと" },
   { kanji: "男", hiragana: "おとこ" },
   { kanji: "女", hiragana: "おんな" },
   { kanji: "子供", hiragana: "こども" },
@@ -91,7 +90,7 @@ const dictionaryData: DictionaryEntry[] = [
   { kanji: "難しい", hiragana: "むずかしい" },
   { kanji: "私", hiragana: "わたし" },
   { kanji: "歩く", hiragana: "あるく" },
-  { kanji: "食べる", hiragana: "たべる" },
+  { kanji: "食べ", hiragana: "たべ" },
   { kanji: "寝る", hiragana: "ねる" },
   { kanji: "見る", hiragana: "みる" },
   { kanji: "聞く", hiragana: "きく" },
@@ -156,7 +155,8 @@ const dictionaryData: DictionaryEntry[] = [
   { kanji: "スケルトン", hiragana: "すけるとん" },
   { kanji: "エンダーマン", hiragana: "えんだーまん" },
   { kanji: "ネザー", hiragana: "ねざー" },
-  { kanji: "エンド", hiragana: "えんど" },
+  { kanji: "エンド", hiragana: "えんどら" },
+  { kanji: "エンドラ", hiragana: "えんど" },
   { kanji: "ポーション", hiragana: "ぽーしょん" },
   { kanji: "エンチャント", hiragana: "えんちゃんとする" },
   { kanji: "レッドストーン", hiragana: "れっどすとーん" },
@@ -238,6 +238,8 @@ const dictionaryData: DictionaryEntry[] = [
 　{ kanji: "ネザーラック", hiragana: "ねざーらっく" },
 　{ kanji: "グロウストーンダスト", hiragana: "ぐろーすとーんだすと"},
   { kanji: "エメラルド", hiragana: "えめらるど"},
+  { kanji: "アイアンゴーレム", hiragana: "あいあんごーれむ"},
+  { kanji: "石炭", hiragana: "せきたん"},
 
    //色々~
    { kanji: "大体", hiragana: "だいたい"},
@@ -263,6 +265,21 @@ const dictionaryData: DictionaryEntry[] = [
    { kanji: "日本語", hiragana: "にほんご"},
    { kanji: "英語", hiragana: "えいご"},
    { kanji: "変換", hiragana: "へんかん"},
+   { kanji: "人", hiragana: "びと"},
+   { kanji: "後々", hiragana: "のちのち"},
+   { kanji: "辞書", hiragana: "じしょ"},
+   { kanji: "登録", hiragana: "とうろく"},
+   { kanji: "一部", hiragana: "いちぶ"},
+   { kanji: "人間", hiragana: "にんげん"},
+   { kanji: "何", hiragana: "なに"},
+   { kanji: "後は", hiragana: "あとは"},
+   { kanji: "無け", hiragana: "なけ"},
+   { kanji: "無い", hiragana: "ない"},
+   { kanji: "倒し", hiragana: "たおし"},
+   { kanji: "倒す", hiragana: "たおす"},
+   { kanji: "討伐", hiragana: "とうばつ"},
+   { kanji: "行って", hiragana: "いって"},
+   { kanji: "誰か", hiragana: "誰か"},
    
 
 ];
@@ -433,7 +450,9 @@ const conversionTable: { [key: string]: string[] } = {
 
 
   // Long Sound Mark
-  "ー": ["ー", "ー", "-"],
+  "-": ["ー", "ー", "-"],
+  "!": ["！", "！", "!"],
+  "?": ["？", "？", "!"],
 };
 
 
