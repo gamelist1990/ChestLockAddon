@@ -275,10 +275,6 @@ export const translations = {
     msgid: "§a This chest is already protected",
     msgstr: "§a 이 상자는 이미 보호되고 있습니다"
   },
-  "NotAllowed": {
-    msgid: "§c Not allowed",
-    msgstr: "§c 허용되지 않음"
-  },
   "chest_lookstate": {
     msgid: "§a chest protected {lcokstate}",
     msgstr: "§a 상자 보호됨 {lcokstate}"

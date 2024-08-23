@@ -171,7 +171,7 @@ function protectChest(player: Player, lockState: boolean) {
           player.sendMessage(translate(player, "AlreadyProChest"));
         }
       } else {
-        player.sendMessage(translate(player, "NotAllowed"));
+        player.sendMessage(translate(player, "NotChest"));
       }
     } else {
       const protectedChestCount = countProtectedChestsByOwner(player.name);

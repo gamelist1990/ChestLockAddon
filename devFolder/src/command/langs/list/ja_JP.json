@@ -303,10 +303,6 @@
     "msgid": "§a This chest is already protected",
     "msgstr": "§a このチェストは既に保護されています。"
   },
-  "NotAllowed": {
-    "msgid": "§c Not allowed",
-    "msgstr": "§c 許可されていません"
-  },
   "chest_lookstate": {
     "msgid": "§a chest protected {lcokstate}",
     "msgstr": "§aチェストを保護しました{lcokstate}"

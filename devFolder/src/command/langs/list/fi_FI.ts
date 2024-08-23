@@ -275,10 +275,6 @@ export const translations = {
     msgid: "§a This chest is already protected",
     msgstr: "§a Tämä arkku on jo suojattu"
   },
-  "NotAllowed": {
-    msgid: "§c Not allowed",
-    msgstr: "§c Ei sallittu"
-  },
   "chest_lookstate": {
     msgid: "§a chest protected {lcokstate}",
     msgstr: "§a arkku suojattu {lcokstate}"
