@@ -198,7 +198,6 @@ const dictionaryData: DictionaryEntry[] = [
   { kanji: "ボート", hiragana: "ぼーと" },
   { kanji: "馬", hiragana: "うま" },
   { kanji: "豚", hiragana: "ぶた" },
-  { kanji: "牛", hiragana: "うし" },
   { kanji: "羊", hiragana: "ひつじ" },
   { kanji: "鶏", hiragana: "にわとり" },
   { kanji: "オオカミ", hiragana: "おおかみ" },
@@ -241,6 +240,7 @@ const dictionaryData: DictionaryEntry[] = [
   { kanji: "アイアンゴーレム", hiragana: "あいあんごーれむ"},
   { kanji: "石炭", hiragana: "せきたん"},
   { kanji: "ネザゲ", hiragana: "ねざげ"},
+  { kanji: "方仮名", hiragana: "かたがな"},
 
    //色々~
     { kanji: "大体", hiragana: "だいたい" },
@@ -296,6 +296,8 @@ const dictionaryData: DictionaryEntry[] = [
     { kanji: "寝よ", hiragana: "ねよ" },
     { kanji: "主", hiragana: "あるじ" },
     { kanji: "主", hiragana: "ぬし" },
+    { kanji: "更新", hiragana: "こうしん" },
+    { kanji: "牛", hiragana: "うし" },
    
 
 ];
@@ -338,7 +340,7 @@ const conversionTable: { [key: string]: string[] } = {
   "no": ["の", "ノ", "no"],
   "ha": ["は", "ハ", "ha"],
   "hi": ["ひ", "ヒ", "hi"],
-  "fu": ["ふ", "フ", "fu"],
+  "hu": ["ふ", "フ", "hu"],
   "he": ["へ", "ヘ", "he"],
   "ho": ["ほ", "ホ", "ho"],
   "ma": ["ま", "マ", "ma"],
@@ -367,6 +369,7 @@ const conversionTable: { [key: string]: string[] } = {
 
   // "Z" sounds
   "za": ["ざ", "ザ", "za"],
+  "ji": ["じ", "ジ", "ji"],
   "zi": ["じ", "ジ", "zi"],
   "zu": ["ず", "ズ", "zu"],
   "ze": ["ぜ", "ゼ", "ze"],
@@ -435,6 +438,7 @@ const conversionTable: { [key: string]: string[] } = {
 
   // "J" sounds with "ya", "yu", "yo"
   "ja": ["じゃ", "ジャ", "ja"],
+  "je": ["じぇ", "ジャ", "je"],
   "ju": ["じゅ", "ジュ", "ju"],
   "jo": ["じょ", "ジョ", "jo"],
 
@@ -449,20 +453,40 @@ const conversionTable: { [key: string]: string[] } = {
   "pyo": ["ぴょ", "ピョ", "pyo"],
 
   // Double Consonant Sounds (before 'k' sounds)
-  "kka": ["っか", "ッカ"],
-  "kki": ["っき", "ッキ"],
-  "kku": ["っく", "ック"],
-  "kke": ["っけ", "ッケ"],
-  "kko": ["っこ", "ッコ"],
+  "kka": ["っか", "null"],
+  "kki": ["っき", "null"],
+  "kku": ["っく", "null"],
+  "kke": ["っけ", "null"],
+  "kko": ["っこ", "null"],
+
+  "ssa": ["っさ", "null"],
+  "ssi": ["っし", "null"],
+  "ssu": ["っす", "null"],
+  "sse": ["っせ", "null"],
+  "sso": ["っそ", "null"],
+
+  "tta": ["った", "null"],
+  "tti": ["っち", "null"],
+  "ttu": ["っつ", "null"],
+  "tte": ["って", "null"],
+  "tto": ["っと", "null"],
+
+
+
 
 
   // Custom
 
-  "fi": ["フィ", "フィ", "fi"],  
+  "fi": ["ふぃ", "フィ", "fi"],  
+  "fe": ["ふぇ", "フィ", "fi"],  
+  "fo": ["ふぉ", "フィ", "fi"],  
   "xi": ["ぃ", "イ", "xi"], 
+  "li": ["ぃ", "イ", "li"], 
   "ltu": ["っ", "イ", "ltu"],
   "xtu": ["っ", "イ", "xtu"], 
-  "xa": ["ぁ", "ァ", "xa"], 
+  "xa": ["ぁ", "ァ", "xa"],
+  "le": ["ぇ", "ェ", "le"], 
+  "xe": ["ぇ", "ェ", "xe"],
 
 
   // Long Sound Mark
@@ -498,33 +522,41 @@ function romajiToHiragana(romaji: string): string {
     return result;
   }
 
-// === 最長一致検索による単語分割 ===
+// === 最長一致検索による単語分割 (改良版) ===
 function splitIntoWords(text: string): string[] {
   const words: string[] = [];
   let currentWord = "";
-  for (let i = 0; i < text.length; i++) {
-    currentWord += text[i];
+  let i = 0;
+
+  while (i < text.length) {
     let longestMatch = "";
-    // ひらがなだけでなく、漢字も辞書と照合
     for (const word in dictionary) {
-      if (currentWord.endsWith(word) && word.length > longestMatch.length) {
+      if (text.substring(i, i + word.length) === word && word.length > longestMatch.length) {
         longestMatch = word;
       }
     }
+
     if (longestMatch) {
-      // マッチした単語より前の文字列を処理
-      if (currentWord.length > longestMatch.length) {
-        words.push(currentWord.substring(0, currentWord.length - longestMatch.length));
+      if (currentWord) {
+        words.push(currentWord);
+        currentWord = "";
       }
       words.push(longestMatch);
-      currentWord = "";
+      i += longestMatch.length;
+    } else {
+      currentWord += text[i];
+      i++;
     }
   }
+
   if (currentWord) {
     words.push(currentWord);
   }
+
   return words;
 }
+
+
 
 // === ひらがなから漢字への変換 (最長一致検索) ===
 function hiraganaToKanji(hiraganaText: string): string {
@@ -532,13 +564,16 @@ function hiraganaToKanji(hiraganaText: string): string {
   let result = "";
   for (const word of words) {
     if (dictionary[word]) {
-      result += dictionary[word][0]; // 最初の候補を採用
+      // 辞書のエントリを長さの降順にソート
+      const sortedEntries = dictionary[word].sort((a, b) => b.length - a.length);
+      result += sortedEntries[0]; // 最も長い一致を使用
     } else {
       result += word; 
     }
   }
   return result;
 }
+
 
 // === ローマ字変換関数 (修正版) ===
 function convertRomajiToJapanese(romaji: string): string {
