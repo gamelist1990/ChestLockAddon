@@ -2,6 +2,8 @@ import { c } from "../Modules/Util";
 import { registerCommand, verifier } from "../Modules/Handler";
 import { showBasicUI } from "./gui/ui";
 import { Player, system } from "@minecraft/server";
+import { translate } from "./langs/list/LanguageManager";
+
 
 registerCommand({
     name: "ui",
@@ -11,7 +13,7 @@ registerCommand({
     minArgs: 0,
     require: (player: Player) => verifier(player, c().commands["ui"]),
     executor: (player: Player) => {
-        player.sendMessage("Close chat panel | チャット欄を閉じてください")
+        player.sendMessage(translate(player,"closeChat"))
     system.runTimeout(() => {
         showBasicUI(player);
       }, 0);

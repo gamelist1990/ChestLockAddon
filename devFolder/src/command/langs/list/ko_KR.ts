@@ -3,6 +3,106 @@ export const translations = {
     msgid: "§cPlayerNotFound!! Make sure you're really there",
     msgstr: "§c플레이어를 찾을 수 없습니다!! 당신이 정말로 거기 있는지 확인하세요"
   },
+  "TpaRequesMenu": {
+    msgid: "§2Welcome to tpa MenuCurrent requests:{requestList} people",
+    msgstr: ""
+  },
+  "SendTpa": {
+    msgid: "§0Send a TPARequest",
+    msgstr: ""
+  },
+  "ShowTpaRequests": {
+    msgid: "§0Confirm TP request addressed to me",
+    msgstr: ""
+  },
+  "NoTpaRequests": {
+    msgid: "§cNo TP request has been sent to you",
+    msgstr: ""
+  },
+  "SelectTpaRequest": {
+    msgid: "§2TPRequest has arrived, please select the player you accept",
+    msgstr: ""
+  },
+  "SendTpaSelect": {
+    msgid: "§2Select the player to whom you would like to send a request",
+    msgstr: ""
+  },
+  "uihelp": {
+    msgid: "§0HelpMenu",
+    msgstr: ""
+  },
+  "uichest": {
+    msgid: "§0ChestMenu(BETA)",
+    msgstr: ""
+  },
+  "uilang": {
+    msgid: "§0LangMenu",
+    msgstr: ""
+  },
+  "uijpch": {
+    msgid: "§0jpchMenu(BETA)",
+    msgstr: ""
+  },
+  "uitpa": {
+    msgid: "§0Tpa Menu(BETA)",
+    msgstr: ""
+  },
+  "closeChat": {
+    msgid: "§a==Close The Chat Panel==",
+    msgstr: ""
+  },
+  "Tpcommand": {
+    msgid: "You can send a request and TP it",
+    msgstr: ""
+  },
+  "tpaRequestSent": {
+    msgid: "§aTPA request sent to {playerName}",
+    msgstr: ""
+  },
+  "tpaRequestAlreadySent": {
+    msgid: "§cThe cTPA request has already been sent to {playerName}!",
+    msgstr: ""
+  },
+  "tpaRequestReceived": {
+    msgid: "§2Received a TPA request from {playerName}.",
+    msgstr: ""
+  },
+  "noPendingTpaRequests": {
+    msgid: "§3You have no pending TPA requests.",
+    msgstr: ""
+  },
+  "invalidTpaRequest": {
+    msgid: "§cInvalid TPA request",
+    msgstr: ""
+  },
+  "requesterNotFound": {
+    msgid: "§cRequester not found",
+    msgstr: ""
+  },
+  "teleportedToPlayer": {
+    msgid: "§aTeleported to {playerName}",
+    msgstr: ""
+  },
+  "tpaRequestAccepted": {
+    msgid: "§a{playerName} has accepted your TPA request",
+    msgstr: ""
+  },
+  "tpaRequestAcceptes": {
+    msgid: "§aTPA request from {playerName} accepted!",
+    msgstr: ""
+  },
+  "cannotTpaToSelf": {
+    msgid: "§cYou cannot send a TPA request to yourself",
+    msgstr: ""
+  },
+  "invalidTpaCommandUsage": {
+    msgid: "§3Invalid usage. Use tpa -r <player> to send a request, or tpa -a <player> to accept",
+    msgstr: ""
+  },
+  "tpaRequestTimedOut": {
+    msgid: "§3TPA request from {playerName} has timed out",
+    msgstr: ""
+  },
   "jpchCom": {
     msgid: "§2Functions like LunaChat",
     msgstr: ""

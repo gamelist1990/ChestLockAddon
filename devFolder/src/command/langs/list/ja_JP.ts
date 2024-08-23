@@ -3,6 +3,106 @@ export const translations = {
     msgid: "§cPlayerNotFound!! Make sure you're really there",
     msgstr: "§cこのプレイヤーが見つかりません！！"
   },
+  "TpaRequesMenu": {
+    msgid: "§2Welcome to tpa MenuCurrent requests:{requestList} people",
+    msgstr: "§2tpaメニューへようこそ現在のリクエスト人数は:{requestList}人"
+  },
+  "SendTpa": {
+    msgid: "§0Send a TPARequest",
+    msgstr: "§0TPリクエストを送る"
+  },
+  "ShowTpaRequests": {
+    msgid: "§0Confirm TP request addressed to me",
+    msgstr: "§0自分宛のTPリクエストを確認"
+  },
+  "NoTpaRequests": {
+    msgid: "§cNo TP request has been sent to you",
+    msgstr: "§c自分宛にTPリクエストは届いていませんでした"
+  },
+  "SelectTpaRequest": {
+    msgid: "§2TPRequest has arrived, please select the player you accept",
+    msgstr: "§2TPリクエストを受け取りました。受け入れるプレイヤーを選択してください"
+  },
+  "SendTpaSelect": {
+    msgid: "§2Select the player to whom you would like to send a request",
+    msgstr: "§2TPリクエストを送信したいプレイヤーを選択してください"
+  },
+  "uihelp": {
+    msgid: "§0HelpMenu",
+    msgstr: "§0ヘルプメニュー！"
+  },
+  "uichest": {
+    msgid: "§0ChestMenu(BETA)",
+    msgstr: "§0チェストロックメニュー(BETA)"
+  },
+  "uilang": {
+    msgid: "§0LangMenu",
+    msgstr: "§0言語メニュー"
+  },
+  "uijpch": {
+    msgid: "§0jpchMenu(BETA)",
+    msgstr: "§0JPCHメニュー(BETA)"
+  },
+  "uitpa": {
+    msgid: "§0Tpa Menu(BETA)",
+    msgstr: "§0TPリクエストメニュー(BETA)"
+  },
+  "closeChat": {
+    msgid: "§a==Close The Chat Panel==",
+    msgstr: "§a==チャット欄を閉じて下さい=="
+  },
+  "Tpcommand": {
+    msgid: "You can send a request and TP it",
+    msgstr: "このコマンドではリクエストを送信してTPすることができます"
+  },
+  "tpaRequestSent": {
+    msgid: "§aTPA request sent to {playerName}",
+    msgstr: "§aTPA リクエストが {playerName} に送信されました【有効期限は一分間です】"
+  },
+  "tpaRequestAlreadySent": {
+    msgid: "§cThe cTPA request has already been sent to {playerName}!",
+    msgstr: "§cTPA リクエストは既に{playerName}宛てに送信されています！"
+  },
+  "tpaRequestReceived": {
+    msgid: "§2Received a TPA request from {playerName}.",
+    msgstr: "§2 【{playerName}】から TPA リクエストを受け取りました"
+  },
+  "noPendingTpaRequests": {
+    msgid: "§3You have no pending TPA requests.",
+    msgstr: "§3保留中の TPA リクエストはありません"
+  },
+  "invalidTpaRequest": {
+    msgid: "§cInvalid TPA request",
+    msgstr: "§c無効な TPA リクエストです(期限切れ)"
+  },
+  "requesterNotFound": {
+    msgid: "§cRequester not found",
+    msgstr: "§cリクエストした人が見つかりません"
+  },
+  "teleportedToPlayer": {
+    msgid: "§aTeleported to {playerName}",
+    msgstr: "§a{playerName} にテレポートしました"
+  },
+  "tpaRequestAccepted": {
+    msgid: "§a{playerName} has accepted your TPA request",
+    msgstr: "§a{playerName} があなたのTPAリクエストを受け入れました"
+  },
+  "tpaRequestAcceptes": {
+    msgid: "§aTPA request from {playerName} accepted!",
+    msgstr: "§a{playerName}からのTPAリクエストを受け入れました！"
+  },
+  "cannotTpaToSelf": {
+    msgid: "§cYou cannot send a TPA request to yourself",
+    msgstr: "§cTPA リクエストを自分自身に送信することはできません"
+  },
+  "invalidTpaCommandUsage": {
+    msgid: "§3Invalid usage. Use tpa -r <player> to send a request, or tpa -a <player> to accept",
+    msgstr: "§3無効な使用法です tpa -r <player> を使用してリクエストを送信するか、 tpa -a <player> を使用して受け入れる事ができます"
+  },
+  "tpaRequestTimedOut": {
+    msgid: "§3TPA request from {playerName} has timed out",
+    msgstr: "§6 {playerName} からの TPA リクエストがタイムアウトしました！"
+  },
   "jpchCom": {
     msgid: "§2Functions like LunaChat",
     msgstr: "§2LunaChatと似たようなやつ(実験機能)"

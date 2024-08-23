@@ -30,6 +30,7 @@ import './command/jpch';
 import './command/openUI';
 import './command/packet';
 import './command/list';
+import './command/tpa';
 import './command/itemUI';
 
 

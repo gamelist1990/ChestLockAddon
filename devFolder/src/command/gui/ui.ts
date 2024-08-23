@@ -1,19 +1,22 @@
 import { ActionFormData } from "@minecraft/server-ui";
 import { Player } from "@minecraft/server";
 import { runCommand } from "../../Modules/Handler";
+import { getTpaRequests } from "../tpa";
+import { getAllPlayerNames } from "../../Modules/Util";
 import { getAvailableLanguages,translate } from "../langs/list/LanguageManager";
 
 
 export function showBasicUI(player: Player): Promise<void> {
   player.playSound("mob.chicken.plop");
   const form = new ActionFormData()
-    .title("Main Menu")
-    .body(translate(player, "ChooseCom"))
-    .button("help")
-    .button("chest")
-    .button("lang")
-    .button("jpch")
-    .button("Exit");
+  .title("Main Menu")
+  .body(translate(player, "ChooseCom"))
+  .button(translate(player, "uihelp"), "textures/items/book_writable") 
+  .button(translate(player, "uichest"), "textures/blocks/chest_front")
+  .button(translate(player, "uilang"), "textures/ui/language_glyph_color") 
+  .button(translate(player, "uijpch"), "textures/ui/chat_send") 
+  .button(translate(player, "uitpa"), "textures/items/ender_pearl") 
+  .button("Exit"); 
 
   //@ts-ignore
   return form.show(player)
@@ -33,6 +36,9 @@ export function showBasicUI(player: Player): Promise<void> {
             break;
           case 3:
             showjpchMenu(player);
+            break;
+          case 4:
+            showTpaMenu(player);
             break;
         }
       }
@@ -326,5 +332,112 @@ function showjpchMenu(player: Player): Promise<void> {
     .catch((error: Error) => {
       console.error(translate(player,"FromError"), error);
       player.sendMessage(translate(player,"FromError") + error.message);
+    });
+}
+
+
+
+function showTpaMenu(player: Player): Promise<void> {
+  player.playSound("mob.chicken.plop");
+
+  const requests = getTpaRequests(player.name);
+
+  const form = new ActionFormData()
+    .title("TPA Menu")
+    .body(translate(player, "TpaRequesMenu", { requestList: `${requests.length}` })) 
+    .button(translate(player, "SendTpa")) 
+    .button(translate(player, "ShowTpaRequests")) 
+    .button(translate(player, "back")); 
+
+  //@ts-ignore
+  return form.show(player)
+    .then((response) => {
+      if (response.canceled) {
+      } else {
+        if (response.selection === 0) {
+          showSendTpaMenu(player);
+        } else if (response.selection === 1) {
+          showTpaRequestsMenu(player, requests);
+        } else if (response.selection === 2) {
+          showBasicUI(player);
+        } 
+      }
+    })
+    .catch((error: Error) => {
+      console.error(translate(player, "FromError"), error);
+      player.sendMessage(translate(player, "FromError") + error.message);
+    });
+}
+
+function showTpaRequestsMenu(player: Player, requests: string[]): Promise<void> {
+  player.playSound("mob.chicken.plop");
+
+  const form = new ActionFormData()
+    .title("TPA Requests");
+
+  if (requests.length === 0) {
+    form.body(translate(player, "NoTpaRequests")); 
+  } else {
+    // リクエストがある場合
+    form.body(translate(player, "SelectTpaRequest")); // リクエストを選択するよう促すメッセージを表示
+    requests.forEach((requester) => {
+      form.button(requester); // 各リクエスト元プレイヤーの名前がボタンになる
+    });
+  }
+
+  form.button(translate(player, "back")); // TPAメニューに戻るボタン
+
+  //@ts-ignore
+  return form.show(player)
+    .then((response) => {
+      if (response.canceled) {
+        // キャンセル時の処理
+      } else {
+        if (requests.length > 0 && response.selection !== undefined && response.selection >= 0 && response.selection < requests.length) {
+          const requesterName = requests[response.selection];
+          runCommand(player.name, "tpa", ["-a", requesterName]); // TPAリクエストを承認
+        } else if (response.selection === requests.length) {
+          showTpaMenu(player); // TPAメニューに戻る
+        }
+      }
+    })
+    .catch((error: Error) => {
+      console.error(translate(player, "FromError"), error);
+      player.sendMessage(translate(player, "FromError") + error.message);
+    });
+}
+
+function showSendTpaMenu(player: Player): Promise<void> {
+  player.playSound("mob.chicken.plop");
+
+  const playerNames = getAllPlayerNames(player); 
+
+  const form = new ActionFormData()
+    .title("Send TPA Request")
+    .body(translate(player, "SendTpaSelect")); 
+
+  playerNames.forEach((playerName) => { 
+    form.button(playerName);
+  });
+
+  form.button(translate(player, "back"));
+
+  //@ts-ignore
+  return form.show(player)
+    .then((response) => {
+      if (response.canceled) {
+      } else {
+        if (response.selection !== undefined && response.selection >= 0 && response.selection < playerNames.length) {
+          const targetPlayerName = playerNames[response.selection];
+          runCommand(player.name, "tpa", ["-r", targetPlayerName]); 
+        } else if (response.selection === playerNames.length) {
+          showTpaMenu(player); 
+        } else {
+        }
+      }
+    })
+    .catch((error: Error) => {
+      console.error(translate(player, "FromError"), error);
+      player.sendMessage(translate(player, "FromError") + error.message);
     });
 }

@@ -51,6 +51,11 @@ export const c = (): { commands: { [key: string]: CommandConfig }, admin: string
     },
     anticheat: {
       enabled: true,
+      adminOnly: true,
+      requireTag: [],
+    },
+    tpa: {
+      enabled: true,
       adminOnly: false,
       requireTag: [],
     },
@@ -77,3 +82,11 @@ export function getGamemode(playerName: string) {
 }
 
 export const getPing = (player: Player) => player.pingTick ?? 0;
+
+
+export function getAllPlayerNames(currentPlayer: Player): string[] {
+  const players = world.getPlayers();
+  return players
+    .filter((p) => p.name !== currentPlayer.name) 
+    .map((p) => p.nameTag); 
+}
