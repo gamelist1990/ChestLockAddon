@@ -5,12 +5,14 @@ import { getAvailableLanguages,translate } from "../langs/list/LanguageManager";
 
 
 export function showBasicUI(player: Player): Promise<void> {
+  player.playSound("mob.chicken.plop");
   const form = new ActionFormData()
     .title("Main Menu")
     .body(translate(player, "ChooseCom"))
     .button("help")
     .button("chest")
     .button("lang")
+    .button("jpch")
     .button("Exit");
 
   //@ts-ignore
@@ -29,6 +31,9 @@ export function showBasicUI(player: Player): Promise<void> {
           case 2:
             showLangMenu(player);
             break;
+          case 3:
+            showjpchMenu(player);
+            break;
         }
       }
     })
@@ -38,7 +43,10 @@ export function showBasicUI(player: Player): Promise<void> {
     });
 }
 
+
+
 function showChestMenu(player: Player): Promise<void> {
+  player.playSound("mob.chicken.plop");
   const form = new ActionFormData()
     .title("Chest Menu")
     .body(translate(player,"ChestCom"))
@@ -78,6 +86,7 @@ function showChestMenu(player: Player): Promise<void> {
 
 
 function showLockMenu(player: Player): Promise<void> {
+  player.playSound("mob.chicken.plop");
   const form = new ActionFormData()
     .title("Lock Menu")
     .body(translate(player,"lockinfo"))
@@ -114,6 +123,7 @@ function showLockMenu(player: Player): Promise<void> {
 }
 
 function showMemberMenu(player: Player): Promise<void> {
+  player.playSound("mob.chicken.plop");
   const form = new ActionFormData()
     .title("Member Menu")
     .body(translate(player,"MemberChoose"))
@@ -151,6 +161,7 @@ function showMemberMenu(player: Player): Promise<void> {
 
 
 function showAddMemberMenu(player: Player): Promise<void> {
+  player.playSound("mob.chicken.plop");
   const onlinePlayers = player.dimension.getPlayers();
   const form = new ActionFormData()
     .title("Add Member")
@@ -184,6 +195,7 @@ function showAddMemberMenu(player: Player): Promise<void> {
 }
 
 function showRemoveMemberMenu(player: Player): Promise<void> {
+  player.playSound("mob.chicken.plop");
   const onlinePlayers = player.dimension.getPlayers();
   const form = new ActionFormData()
     .title("Remove Member")
@@ -218,6 +230,7 @@ function showRemoveMemberMenu(player: Player): Promise<void> {
 
 
 function showLangMenu(player: Player): Promise<void> {
+  player.playSound("mob.chicken.plop");
   const form = new ActionFormData()
     .title("lang Menu")
     .body(translate(player,"SelectLang"))
@@ -250,6 +263,7 @@ function showLangMenu(player: Player): Promise<void> {
 }
 
 function showChangeLangMenu(player: Player): Promise<void> {
+  player.playSound("mob.chicken.plop");
   const availableLanguages = getAvailableLanguages();
   const form = new ActionFormData()
     .title("Change Language")
@@ -272,6 +286,40 @@ function showChangeLangMenu(player: Player): Promise<void> {
         } else if (response.selection === availableLanguages.length) {
           showLangMenu(player); 
         } else {
+        }
+      }
+    })
+    .catch((error: Error) => {
+      console.error(translate(player,"FromError"), error);
+      player.sendMessage(translate(player,"FromError") + error.message);
+    });
+}
+
+
+function showjpchMenu(player: Player): Promise<void> {
+  player.playSound("mob.chicken.plop");
+  const form = new ActionFormData()
+    .title("Jpch Menu")
+    .body(translate(player,"jpchCom"))
+    .button(translate(player,"jpenable"))
+    .button(translate(player,"jpdisable"))
+    .button(translate(player,"back"));
+
+  //@ts-ignore
+  return form.show(player)
+    .then((response) => {
+      if (response.canceled) {
+      } else {
+        switch (response.selection) {
+          case 0:
+            runCommand(player.name,"jpch",["-true"]); 
+            break;
+          case 1:
+            runCommand(player.name,"jpch",["-false"]); 
+            break;
+          case 2:
+            showBasicUI(player);
+            break;
         }
       }
     })

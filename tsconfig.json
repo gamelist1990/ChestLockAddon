@@ -11,6 +11,8 @@
         "moduleResolution": "node",
         "lib": ["ESNext"],
         "noEmit": false,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators":true,
         "strict": true,
         "allowJs": true,
         "checkJs": false,

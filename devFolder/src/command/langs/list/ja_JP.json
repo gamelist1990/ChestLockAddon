@@ -3,12 +3,56 @@
     "msgid": "§cPlayerNotFound!! Make sure you're really there",
     "msgstr": "§cこのプレイヤーが見つかりません！！"
   },
-  "test_command_description": {
-    "msgid": "Test Command",
-    "msgstr": "テストコマンド(実験機能です)"
+  "jpchCom": {
+    "msgid": "§2Functions like LunaChat",
+    "msgstr": "§2LunaChatと似たようなやつ(実験機能)"
+  },
+  "jpenable": {
+    "msgid": "§aEnable Function",
+    "msgstr": "§a有効化"
+  },
+  "jpdisable": {
+    "msgid": "§cDisable function",
+    "msgstr": "§c無効化"
+  },
+  "AccesItemUI": {
+    "msgid": "itemUI command (accesses Chest Lock UI)",
+    "msgstr": "itemUI コマンド (Chest Lock UI にアクセスします)"
+  },
+  "FullInv": {
+    "msgid": "§cYour inventory is full and items cannot be granted",
+    "msgstr": "§cインベントリがいっぱいのためアイテムを付与できません"
+  },
+  "AlreadyInv": {
+    "msgid": "§cUIitem already exists in your inventory",
+    "msgstr": "§cUIitem は既にインベントリに存在します"
+  },
+  "AddInv": {
+    "msgid": "§aYou have added an item to your inventory! (please check)",
+    "msgstr": "§aインベントリにアイテムが追加されました。 （チェックしてください）"
+  },
+  "Displayplayerinformation": {
+    "msgid": "List command (displays player information)",
+    "msgstr": "Listコマンド（プレイヤー情報を表示）"
+  },
+  "commands.list.usage": {
+    "msgid": "§aUsage: list show <playerName> Or list all",
+    "msgstr": "§a使用法: list show <playerName> または list all"
+  },
+  "commands.list.playerInfo": {
+    "msgid": "§6==== Player Info =====\n §2Name: §f{TragetName},\n §2ID: §f{TargetID},\n §2Location: §f({TargetX}, {TargetY}, {TargetZ}),\n §2Health: §f{health},\n §2Game Mode:§f {GameMode},\n §2Ping: {ping}\n §6===========",
+    "msgstr": "§6==== プレイヤー情報 =====\n §2名前: §f{TargetName},\n §2ID: §f{TargetID},\n §2場所: §f({TargetX}, {TargetY} 、{TargetZ})、\n §2ヘルス: §f{ヘルス}、\n §2ゲームモード:§f {GameMode}、\n §2Ping: {ping}\n §6==========="
+  },
+  "commands.list.playerNotFound": {
+    "msgid": "§cPlayer not found: {tragetplayer}",
+    "msgstr": "§cプレーヤーが見つかりません: {tragetplayer}"
+  },
+  "jpch_command_description": {
+    "msgid": "jpch command (experimental feature)",
+    "msgstr": "LunaChat風のローマ字から日本語に変換する機能です（実験的)"
   },
   "ui_command_description": {
-    "msgid": "GUI Command",
+    "msgid": "ui command (this command displays a GUI with ActionForm)",
     "msgstr": "UIを表示します(Switch/PS4/5用)"
   },
   "ChooseCom": {
@@ -112,15 +156,15 @@
     "msgstr": "§6無効なコマンドです。正しいことを確認してください。使用されたコマンド:{commandName}"
   },
   "Developer commands": {
-    "msgid": "Developer commands!!",
+    "msgid": "dev command (this command provides developers and administrators with the ability to reset and verify dynamic properties)",
     "msgstr": "デベロッパー専用コマンド(tag OPが必要)"
   },
   "available_commands": {
-    "msgid": "Current available commands",
+    "msgid": "§6Current available commands",
     "msgstr": "§6現在使用可能なコマンド"
   },
   "help_command_description": {
-    "msgid": "help command",
+    "msgid": "help command (this command displays help as you can see)",
     "msgstr": "helpコマンド(登録されたコマンドを表示します）"
   },
   "lang_removeData": {
@@ -128,7 +172,7 @@
     "msgstr": "言語データの削除が完了しました"
   },
   "lang_docs": {
-    "msgid": "lang Command",
+    "msgid": "lang command (this command switches the language)",
     "msgstr": "Lang コマンド(言語を変更できます)"
   },
   "lang_list": {

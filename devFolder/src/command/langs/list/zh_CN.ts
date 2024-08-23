@@ -3,12 +3,56 @@ export const translations = {
     msgid: "§cPlayerNotFound!! Make sure you're really there",
     msgstr: "§c找不到玩家！！请确保你真的在那里"
   },
-  "test_command_description": {
-    msgid: "Test Command",
+  "jpchCom": {
+    msgid: "§2Functions like LunaChat",
+    msgstr: ""
+  },
+  "jpenable": {
+    msgid: "§aEnable Function",
+    msgstr: ""
+  },
+  "jpdisable": {
+    msgid: "§cDisable function",
+    msgstr: ""
+  },
+  "AccesItemUI": {
+    msgid: "itemUI command (accesses Chest Lock UI)",
+    msgstr: ""
+  },
+  "FullInv": {
+    msgid: "§cYour inventory is full and items cannot be granted",
+    msgstr: ""
+  },
+  "AlreadyInv": {
+    msgid: "§cUIitem already exists in your inventory",
+    msgstr: ""
+  },
+  "AddInv": {
+    msgid: "§aYou have added an item to your inventory! (please check)",
+    msgstr: ""
+  },
+  "Displayplayerinformation": {
+    msgid: "List command (displays player information)",
+    msgstr: ""
+  },
+  "commands.list.usage": {
+    msgid: "§aUsage: list show <playerName> Or list all",
+    msgstr: ""
+  },
+  "commands.list.playerInfo": {
+    msgid: "§6==== Player Info =====\n §2Name: §f{TragetName},\n §2ID: §f{TargetID},\n §2Location: §f({TargetX}, {TargetY}, {TargetZ}),\n §2Health: §f{health},\n §2Game Mode:§f {GameMode},\n §2Ping: {ping}\n §6===========",
+    msgstr: ""
+  },
+  "commands.list.playerNotFound": {
+    msgid: "§cPlayer not found: {tragetplayer}",
+    msgstr: ""
+  },
+  "jpch_command_description": {
+    msgid: "jpch command (experimental feature)",
     msgstr: ""
   },
   "ui_command_description": {
-    msgid: "GUI Command",
+    msgid: "ui command (this command displays a GUI with ActionForm)",
     msgstr: ""
   },
   "ChooseCom": {
@@ -112,15 +156,15 @@ export const translations = {
     msgstr: "§6无效的命令。请确保它是正确的。使用的命令：{commandName}"
   },
   "Developer commands": {
-    msgid: "Developer commands!!",
+    msgid: "dev command (this command provides developers and administrators with the ability to reset and verify dynamic properties)",
     msgstr: "开发者命令！！"
   },
   "available_commands": {
-    msgid: "Current available commands",
+    msgid: "§6Current available commands",
     msgstr: "当前可用命令"
   },
   "help_command_description": {
-    msgid: "help command",
+    msgid: "help command (this command displays help as you can see)",
     msgstr: "帮助命令"
   },
   "lang_removeData": {
@@ -128,7 +172,7 @@ export const translations = {
     msgstr: "语言数据删除完成"
   },
   "lang_docs": {
-    msgid: "lang Command",
+    msgid: "lang command (this command switches the language)",
     msgstr: "lang 命令"
   },
   "lang_list": {
