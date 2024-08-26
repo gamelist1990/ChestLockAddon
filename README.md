@@ -1,4 +1,8 @@
 
+## English Readme
+
+[Click here for English 👈](EN_README.md)
+
 ## Download⬇️
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/gamelist1990/ChestLockAddon/total?style=flat-square&logo=https%3A%2F%2Fgithub.com%2Fgamelist1990%2FChestLockAddon%2Fblob%2Fmain%2FAllAddon%2Fpack_icon.png%3Fraw%3Dtrue)
 
@@ -8,7 +12,14 @@
 
 **Version 0.9**このバージョンでは新機能TPAコマンドを追加しましたまたItemUIでUIを開けるようにしました
 
-**DATABASEシステムを追加してみました(実験)**
+**更新点**
+チェストおよびLangデータをデータベースシステムで完了するようにする為に
+Database.tsを追加しました
+またUIの改善とその他ファイルの整理を行いました
+
+
+このGUIは`!item` Or `!ui`で使用できます 内容的にはただ[Handler.ts](devFolder/src/Modules/Handler.ts)に定義している`runCommand`関数を使用しています(TPリクエストと言語設定は専用の処理を追加しているよ)
+![alt text](image/image.png)
 
 
 ## 概要

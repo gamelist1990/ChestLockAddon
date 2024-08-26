@@ -27,7 +27,7 @@ world.afterEvents.worldInitialize.subscribe(async () => {
 
   const endTime = Date.now();
   const loadTime = endTime - startTime;
-  console.warn(`Full data has been loaded in ${loadTime} ms`);
+  console.warn(`Plugin has been loaded in ${loadTime} ms`);
 });
 
 //Custom Item
@@ -39,4 +39,4 @@ world.afterEvents.itemUse.subscribe(({ itemStack: item, source: player }) => {
   }
 });
 
-console.warn("Plugin has been Loaded");
+console.warn("Full ChestLock Addon Data loaded!!");

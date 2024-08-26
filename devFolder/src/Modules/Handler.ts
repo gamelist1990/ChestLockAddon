@@ -137,6 +137,7 @@ world.beforeEvents.chatSend.subscribe((event: any) => {
   event.cancel = true;
 });
 
+
 /**
  * 外部からコマンドを実行するための関数
  * @param playerName 実行するプレイヤー名
