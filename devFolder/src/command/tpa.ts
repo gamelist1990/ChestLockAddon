@@ -2,6 +2,8 @@ import { c } from "../Modules/Util";
 import { registerCommand, verifier } from "../Modules/Handler";
 import { Player, world, system } from "@minecraft/server";
 import { translate } from "./langs/list/LanguageManager"; 
+import { handleTeleportCommand } from "./packet"; 
+
 
 // TPAリクエスト情報を格納するMap
 const tpaRequests = new Map<string, { target: string; timeoutTick: number }>();
@@ -75,11 +77,12 @@ function acceptTpaRequest(player: Player, requesterName: string) {
   
     // 遅延処理を追加 (例: 3秒遅延)
     system.runTimeout(() => {
+      handleTeleportCommand(requester);
       requester.teleport(player.location, { dimension: player.dimension });
       player.sendMessage(translate(player, "tpaRequestAcceptes", { playerName: requester.name}));
       translate(player, "tpaRequestAccepted", { playerName: player.name},requester);
       translate(player, "teleportedToPlayer", { playerName: player.name }, requester);
-    }, 3 * 10); // 20 ticks = 1 second
+    }, 1); // 20 ticks = 1 second
   }
 
 // 指定されたプレイヤーへのTPAリクエスト一覧を取得

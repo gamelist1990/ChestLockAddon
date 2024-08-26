@@ -220,8 +220,12 @@ function findNearbyChest(player: Player): any | null {
 
 
 export function showProtectedChestData(player: Player) {
+  const data = world.getDynamicProperty("protectedChests");
   player.sendMessage("§a---- Protected Chests Data ----");
   player.sendMessage(JSON.stringify(protectedChests));
+  player.sendMessage("\n");
+  player.sendMessage("§a---- Protected Chests Data By Dynamic ----");
+  player.sendMessage(JSON.stringify(data));
   console.warn(JSON.stringify(protectedChests));
 }
 
@@ -254,22 +258,22 @@ system.run(() => {
   world.beforeEvents.itemUseOn.subscribe((eventData: any) => {
     handlePistonUse(eventData);
   });
-
-  system.runInterval(() => {
-    for (const chestKey in protectedChests) {
-      const chestLocation = parseChestKey(chestKey);
-        const currentBlock = world.getDimension("overworld").getBlock(chestLocation);
-      if (!isChest(currentBlock)) {
-        revertChest(chestLocation);
-      }
-    }
-  }, 3); 
-
+  
   system.runInterval(() => {
     checkProtectedChests();
+    saveProtectedChests();
   }, CHECK_INTERVAL);
 });
 
+//system.runInterval(() => {
+//for (const chestKey in protectedChests) {
+//  const chestLocation = parseChestKey(chestKey);
+//    const currentBlock = world.getDimension("overworld").getBlock(chestLocation);
+//  if (!isChest(currentBlock)) {
+//   revertChest(chestLocation);
+//  }
+//}
+//}, 3); 
 
 
 
@@ -366,7 +370,7 @@ function isProtectedChest(location: Vector3): boolean {
 
 
 
-
+//@ts-ignore
 async function revertChest(location: Vector3) {
   const key = `${location.x},${location.y},${location.z}`;
   const chestData = protectedChests[key];

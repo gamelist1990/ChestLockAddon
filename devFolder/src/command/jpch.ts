@@ -298,6 +298,8 @@ const dictionaryData: DictionaryEntry[] = [
     { kanji: "主", hiragana: "ぬし" },
     { kanji: "更新", hiragana: "こうしん" },
     { kanji: "牛", hiragana: "うし" },
+    { kanji: "どうし", hiragana: "どうし" },
+    { kanji: "サポート", hiragana: "さぽーと" },
    
 
 ];
@@ -580,7 +582,35 @@ function convertRomajiToJapanese(romaji: string): string {
   if (romaji.startsWith("!")) {
     return romaji; 
   }
-  const hiraganaText = romajiToHiragana(romaji);
+
+  let result = "";
+  let insideQuotes = false;
+  let currentSegment = "";
+
+  for (let i = 0; i < romaji.length; i++) {
+    if (romaji[i] === '"') {
+      if (insideQuotes) {
+        result += '"' + currentSegment + '"';
+        currentSegment = "";
+      } else {
+        result += convertSegment(currentSegment);
+        currentSegment = "";
+      }
+      insideQuotes = !insideQuotes;
+    } else {
+      currentSegment += romaji[i];
+    }
+  }
+
+  if (currentSegment) {
+    result += insideQuotes ? currentSegment : convertSegment(currentSegment);
+  }
+
+  return result;
+}
+
+function convertSegment(segment: string): string {
+  const hiraganaText = romajiToHiragana(segment);
   const kanjiText = hiraganaToKanji(hiraganaText);
   return kanjiText;
 }

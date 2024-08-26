@@ -57,7 +57,7 @@
   },
   "tpaRequestSent": {
     "msgid": "§aTPA request sent to {playerName}",
-    "msgstr": "§aTPA リクエストが {playerName} に送信されました【有効期限は一分間です】"
+    "msgstr": "§b{playerName}§aにTPAリクエストを送信しました【受け入れの制限時間は一分間です】"
   },
   "tpaRequestAlreadySent": {
     "msgid": "§cThe cTPA request has already been sent to {playerName}!",
@@ -65,7 +65,7 @@
   },
   "tpaRequestReceived": {
     "msgid": "§2Received a TPA request from {playerName}.",
-    "msgstr": "§2 【{playerName}】から TPA リクエストを受け取りました"
+    "msgstr": "§b【{playerName}】§aからTPAリクエストを受け取りました"
   },
   "noPendingTpaRequests": {
     "msgid": "§3You have no pending TPA requests.",
@@ -81,15 +81,15 @@
   },
   "teleportedToPlayer": {
     "msgid": "§aTeleported to {playerName}",
-    "msgstr": "§a{playerName} にテレポートしました"
+    "msgstr": "§b{playerName}§aにテレポートしました"
   },
   "tpaRequestAccepted": {
     "msgid": "§a{playerName} has accepted your TPA request",
-    "msgstr": "§a{playerName} があなたのTPAリクエストを受け入れました"
+    "msgstr": "§b{playerName}§aがあなたのTPAリクエストを受け入れました"
   },
   "tpaRequestAcceptes": {
     "msgid": "§aTPA request from {playerName} accepted!",
-    "msgstr": "§a{playerName}からのTPAリクエストを受け入れました！"
+    "msgstr": "§b{playerName}§aからのTPAリクエストを受け入れました！"
   },
   "cannotTpaToSelf": {
     "msgid": "§cYou cannot send a TPA request to yourself",
@@ -101,7 +101,7 @@
   },
   "tpaRequestTimedOut": {
     "msgid": "§3TPA request from {playerName} has timed out",
-    "msgstr": "§6 {playerName} からの TPA リクエストがタイムアウトしました！"
+    "msgstr": "§b{playerName}§6に送ったTPAリクエストがタイムアウトしました！"
   },
   "jpchCom": {
     "msgid": "§2Functions like LunaChat",
