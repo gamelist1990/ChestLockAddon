@@ -1,8 +1,8 @@
 import { Player } from "@minecraft/server";
-import { c } from "../Modules/Util";
-import { ver } from "../Modules/version";
-import { registerCommand, getAllCommandNames, verifier, prefix } from "../Modules/Handler"; // コマンドが登録されているファイルをインポート
-import { translate } from "./langs/list/LanguageManager";
+import { c } from "../../Modules/Util";
+import { ver } from "../../Modules/version";
+import { registerCommand, getAllCommandNames, verifier, prefix } from "../../Modules/Handler"; // コマンドが登録されているファイルをインポート
+import { translate } from "../langs/list/LanguageManager";
 
 
 

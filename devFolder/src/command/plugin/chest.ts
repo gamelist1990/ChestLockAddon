@@ -1,8 +1,9 @@
-import { registerCommand, verifier,isPlayer } from "../Modules/Handler";
-import { c } from "../Modules/Util";
-import { ver } from "../Modules/version";
+import { registerCommand, verifier,isPlayer } from "../../Modules/Handler";
+import { c } from "../../Modules/Util";
+import { ver } from "../../Modules/version";
+import { saveData, loadData, chestLockAddonData } from "../../Modules/DataBase";
 import { world, Player, system, Vector3} from "@minecraft/server";
-import { translate } from "./langs/list/LanguageManager"
+import { translate } from "../langs/list/LanguageManager"
 
 interface ChestProtectionData {
   owner: string;
@@ -570,8 +571,7 @@ function toggleChestProtection(player: Player, state: string) {
       const newLockState = state === "lock";
       chestData.isLocked = newLockState;
       saveProtectedChests();
-      player.sendMessage(translate(player, "lockChange"));
-      player.sendMessage(`§a ${newLockState ? "locked" : "unlocked"}`);
+      player.sendMessage(translate(player, "lockChange",{lock:`${newLockState ? "locked" : "unlocked"}`}));
 
     } else {
       player.sendMessage(translate(player,"NotChest"));
@@ -596,8 +596,9 @@ function addMember(player: Player, memberName: string) {
         if (targetPlayer) {
           chestData.members.push(memberName);
           saveProtectedChests();
-          player.sendMessage(`§a${memberName}`);
-          player.sendMessage(translate(player, "AddM"));
+          player.sendMessage(translate(player, "AddM",{member: `${memberName}`,
+            chestLocation: `${nearbyChestLocation.x}, ${nearbyChestLocation.y}, ${nearbyChestLocation.z}`
+          }));
 
           // 追加されたプレイヤーに通知
           translate(player, "addYouM", {
@@ -606,12 +607,10 @@ function addMember(player: Player, memberName: string) {
           }, targetPlayer);
           
         } else {
-          player.sendMessage(`§c${memberName}`);
           player.sendMessage(translate(player, "PlayerNotFound"));
         }
       } else {
-        player.sendMessage(`§c${memberName}`);
-        player.sendMessage(translate(player, "MAlreday"));
+        player.sendMessage(translate(player, "MAlreday",{member:`${memberName}`}));
       }
     } else {
       player.sendMessage(translate(player, "NotChest"));
@@ -635,8 +634,7 @@ function removeMember(player: Player, memberName: string) {
       if (memberIndex !== -1) {
         chestData.members.splice(memberIndex, 1);
         saveProtectedChests();
-        player.sendMessage(`§a${memberName}`)
-        player.sendMessage(translate(player,"RemoveM"));
+        player.sendMessage(translate(player,"RemoveM",{member:`${memberName}`}));
 
         translate(player, "RemoveYouM", {
           playerName: player.name,
@@ -678,15 +676,20 @@ function listMembers(player: Player) {
 }
 
 // データの保存関数
-function saveProtectedChests() {
-  const data = JSON.stringify(protectedChests);
-  world.setDynamicProperty("protectedChests", data);
+//function saveProtectedChests() {
+//  const data = JSON.stringify(protectedChests);
+//  world.setDynamicProperty("protectedChests", data);
+//}
+
+function saveProtectedChests(): void {
+  saveData('protectedChests', protectedChests);
 }
 
 // データの読み込み関数
-export function loadProtectedChests() {
-  const data = world.getDynamicProperty("protectedChests");
-  if (data && typeof data === 'string') {
-    protectedChests = JSON.parse(data);
+export function loadProtectedChests(): void {
+  loadData();
+  const data = chestLockAddonData.protectedChests;
+  if (data && typeof data === 'object') {
+    protectedChests = data;
   }
 }

@@ -1,7 +1,7 @@
-import { c } from "../Modules/Util";
-import { registerCommand, verifier } from "../Modules/Handler";
+import { c } from "../../Modules/Util";
+import { registerCommand, verifier } from "../../Modules/Handler";
 import { Player, world, system } from "@minecraft/server";
-import { translate } from "./langs/list/LanguageManager"; 
+import { translate } from "../langs/list/LanguageManager"; 
 
 // TPAリクエスト情報を格納するMap
 const tpaRequests = new Map<string, { target: string; timeoutTick: number }>();

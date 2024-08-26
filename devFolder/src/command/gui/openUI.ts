@@ -1,8 +1,8 @@
-import { c } from "../Modules/Util";
-import { registerCommand, verifier } from "../Modules/Handler";
-import { showBasicUI } from "./gui/ui";
+import { c } from "../../Modules/Util";
+import { registerCommand, verifier } from "../../Modules/Handler";
+import { showBasicUI } from "./ui";
 import { Player, system } from "@minecraft/server";
-import { translate } from "./langs/list/LanguageManager";
+import { translate } from "../langs/list/LanguageManager";
 
 
 registerCommand({

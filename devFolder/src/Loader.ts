@@ -1,19 +1,36 @@
-// main.js
 import { world } from "@minecraft/server";
 import { loadPlayerLanguages } from "./command/langs/list/LanguageManager"; 
-import { loadProtectedChests } from "./command/chest";
+import { loadProtectedChests } from "./command/plugin/chest";
 import { showBasicUI } from './command/gui/ui';
 import { customCommandsConfig } from './command/itemUI';
 import { c } from './Modules/Util';
 
+const startTime = Date.now();
 
-world.afterEvents.worldInitialize.subscribe(() => {
-  loadPlayerLanguages();
-  loadProtectedChests();
+async function loadAllImports() {
+  try {
+    await import('./command/import');
+    await import('./Modules/import');
+  } catch (error) {
+    console.warn(`Error importing modules: ${(error as Error).message}`);
+  }
+}
 
-  console.warn("Full data has been loaded");
+world.afterEvents.worldInitialize.subscribe(async () => {
+  try {
+    loadPlayerLanguages();
+    loadProtectedChests();
+    await loadAllImports();
+  } catch (error) {
+    console.warn(`Error loading data: ${(error as Error).message}`);
+  }
+
+  const endTime = Date.now();
+  const loadTime = endTime - startTime;
+  console.warn(`Full data has been loaded in ${loadTime} ms`);
 });
 
+//Custom Item
 world.afterEvents.itemUse.subscribe(({ itemStack: item, source: player }) => {
   if (player.typeId !== "minecraft:player") return;
 
@@ -21,31 +38,5 @@ world.afterEvents.itemUse.subscribe(({ itemStack: item, source: player }) => {
     showBasicUI(player);
   }
 });
-
-//Command
-import './command/chest';
-import './command/help';
-import './command/dev';
-import './command/jpch';
-import './command/openUI';
-import './command/packet';
-import './command/list';
-import './command/tpa';
-import './command/itemUI';
-
-
-//lang
-import './command/langs/lang';
-
-
-//GUI
-import './command/gui/ui';
-
-
-//Modules
-import './Modules/Handler'; 
-import './Modules/Util';
-import './Modules/version'; 
-
 
 console.warn("Plugin has been Loaded");

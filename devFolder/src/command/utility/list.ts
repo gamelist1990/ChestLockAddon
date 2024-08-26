@@ -1,8 +1,8 @@
 import { world, Player, EntityHealthComponent } from "@minecraft/server";
-import { c } from "../Modules/Util";
-import { registerCommand, isPlayer, verifier } from "../Modules/Handler";
-import { getGamemode, getPing } from "../Modules/Util";
-import { translate } from "./langs/list/LanguageManager";
+import { c } from "../../Modules/Util";
+import { registerCommand, isPlayer, verifier } from "../../Modules/Handler";
+import { getGamemode, getPing } from "../../Modules/Util";
+import { translate } from "../langs/list/LanguageManager";
 
 registerCommand({
   name: "list",

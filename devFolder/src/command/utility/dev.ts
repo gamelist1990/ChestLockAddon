@@ -1,9 +1,9 @@
 // devCommands.js
 import { Player } from "@minecraft/server";
-import { registerCommand, verifier } from "../Modules/Handler";
-import { c } from "../Modules/Util";
-import { showPlayerLanguage, resetPlayerLanguages } from "./langs/list/LanguageManager"; 
-import { showProtectedChestData, resetProtectedChests } from "./chest"; 
+import { registerCommand, verifier } from "../../Modules/Handler";
+import { c } from "../../Modules/Util";
+import { showPlayerLanguage, resetPlayerLanguages } from "../langs/list/LanguageManager"; 
+import { showProtectedChestData, resetProtectedChests } from "../plugin/chest"; 
 
 
 

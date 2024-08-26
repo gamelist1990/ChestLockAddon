@@ -1,10 +1,12 @@
 import { Player, world } from "@minecraft/server";
+import { saveData,loadData,chestLockAddonData } from "../../../Modules/DataBase";
 import { translations as ja_JP } from "./ja_JP";
 import { translations as en_US } from "./en_US";
 import { translations as zh_CN } from "./zh_CN";
 import { translations as ru_RU } from "./ru_RU";
 import { translations as ko_KR } from "./ko_KR";
 import { translations as fi_FI } from "./fi_FI";
+
 
 
 const availableLanguages = ["en_US", "ja_JP", "zh_CN", "ru_RU", "ko_KR", "fi_FI"];
@@ -23,19 +25,19 @@ const defaultLang = "ja_JP"; // デフォルトの言語を固定
 let playerLangList: Record<string, string> = {};
 
 // 言語設定を保存する関数
-export function savePlayerLanguage(player: Player, language: string) {
+export function savePlayerLanguage(player: Player, language: string): void {
   playerLangList[player.id] = language;
-  savePlayerLanguages(); // 変更を保存
+  saveData('playerLangList', playerLangList); // 変更を保存
 }
 
 // 言語設定をロードする関数
-export function loadPlayerLanguages() {
-  const storedLangList = world.getDynamicProperty("playerLangList");
-  if (storedLangList) {
-    playerLangList = JSON.parse(storedLangList as string);
+export function loadPlayerLanguages(): void {
+  loadData();
+  const storedLangList = chestLockAddonData.playerLangList;
+  if (storedLangList && typeof storedLangList === 'object') {
+    playerLangList = storedLangList;
   }
 }
-
 export function getAvailableLanguages() {
   return availableLanguages;
 }
