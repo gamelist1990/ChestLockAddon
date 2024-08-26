@@ -396,7 +396,7 @@ export const translations = {
     msgstr: ""
   },
   "lockChange": {
-    msgid: "§a Protection state of chest is changed to",
+    msgid: "§a Protection state of chest is changed to {lock}",
     msgstr: ""
   },
   "NotChest": {
@@ -404,7 +404,7 @@ export const translations = {
     msgstr: ""
   },
   "AddM": {
-    msgid: "§a Added  as a member.",
+    msgid: "§a{member} Added  as a member location:{chestLocation}",
     msgstr: ""
   },
   "addYouM": {
@@ -416,11 +416,11 @@ export const translations = {
     msgstr: ""
   },
   "MAlreday": {
-    msgid: "§cis already a member. ",
+    msgid: "§c{member} is already a member. ",
     msgstr: ""
   },
   "RemoveM": {
-    msgid: "§aRemoved from members",
+    msgid: "§a{member} has Removed from members",
     msgstr: ""
   },
   "NotM": {

@@ -396,7 +396,7 @@ export const translations = {
     msgstr: "§a Защищенный сундук был уничтожен. Защищенные данные также удалены."
   },
   "lockChange": {
-    msgid: "§a Protection state of chest is changed to",
+    msgid: "§a Protection state of chest is changed to {lock}",
     msgstr: "§a Состояние защиты сундука изменено на"
   },
   "NotChest": {
@@ -404,7 +404,7 @@ export const translations = {
     msgstr: "§cУ вас нет прав на использование этого сундука."
   },
   "AddM": {
-    msgid: "§a Added  as a member.",
+    msgid: "§a{member} Added  as a member location:{chestLocation}",
     msgstr: "§a Добавлен как участник."
   },
   "addYouM": {
@@ -416,11 +416,11 @@ export const translations = {
     msgstr: "§a{playerName} удалил вас из участников следующих сундуков {chestLocation}"
   },
   "MAlreday": {
-    msgid: "§cis already a member. ",
+    msgid: "§c{member} is already a member. ",
     msgstr: "§cуже является участником."
   },
   "RemoveM": {
-    msgid: "§aRemoved from members",
+    msgid: "§a{member} has Removed from members",
     msgstr: "§aУдален из участников"
   },
   "NotM": {

@@ -424,7 +424,7 @@
     "msgstr": "§a 受保护的箱子已被破坏。受保护的数据也被删除。"
   },
   "lockChange": {
-    "msgid": "§a Protection state of chest is changed to",
+    "msgid": "§a Protection state of chest is changed to {lock}",
     "msgstr": "§a 箱子的保护状态已更改为"
   },
   "NotChest": {
@@ -432,7 +432,7 @@
     "msgstr": "§c你没有权限操作此箱子。"
   },
   "AddM": {
-    "msgid": "§a Added  as a member.",
+    "msgid": "§a{member} Added  as a member location:{chestLocation}",
     "msgstr": "§a 已添加为成员。"
   },
   "addYouM": {
@@ -444,11 +444,11 @@
     "msgstr": "§a{playerName} 已将您从以下箱子的成员中移除：{chestLocation}"
   },
   "MAlreday": {
-    "msgid": "§cis already a member. ",
+    "msgid": "§c{member} is already a member. ",
     "msgstr": "§c已经是成员。"
   },
   "RemoveM": {
-    "msgid": "§aRemoved from members",
+    "msgid": "§a{member} has Removed from members",
     "msgstr": "§a已从成员中移除"
   },
   "NotM": {

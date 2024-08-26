@@ -1,6 +1,6 @@
-import { world } from "@minecraft/server";
-import { loadPlayerLanguages } from "./command/langs/list/LanguageManager"; 
-import { loadProtectedChests } from "./command/plugin/chest";
+import { world } from '@minecraft/server';
+import { loadPlayerLanguages } from './command/langs/list/LanguageManager';
+import { loadProtectedChests } from './command/plugin/chest';
 import { showBasicUI } from './command/gui/ui';
 import { customCommandsConfig } from './command/itemUI';
 import { c } from './Modules/Util';
@@ -32,11 +32,16 @@ world.afterEvents.worldInitialize.subscribe(async () => {
 
 //Custom Item
 world.afterEvents.itemUse.subscribe(({ itemStack: item, source: player }) => {
-  if (player.typeId !== "minecraft:player") return;
+  if (player.typeId !== 'minecraft:player') return;
 
-  if (c().commands.item.enabled && item.typeId === customCommandsConfig.ui.ui_item && item.nameTag === customCommandsConfig.ui.ui_item_name && !c().commands.item.requireTag.some(tag => !player.hasTag(tag))) {
+  if (
+    c().commands.item.enabled &&
+    item.typeId === customCommandsConfig.ui.ui_item &&
+    item.nameTag === customCommandsConfig.ui.ui_item_name &&
+    !c().commands.item.requireTag.some((tag) => !player.hasTag(tag))
+  ) {
     showBasicUI(player);
   }
 });
 
-console.warn("Full ChestLock Addon Data loaded!!");
+console.warn('Full ChestLock Addon Data loaded!!');

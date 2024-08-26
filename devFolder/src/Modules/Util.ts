@@ -1,5 +1,4 @@
-import { Player, GameMode, world} from "@minecraft/server";
-
+import { Player, GameMode, world } from '@minecraft/server';
 
 interface CommandConfig {
   enabled: boolean;
@@ -8,7 +7,7 @@ interface CommandConfig {
 }
 
 //コマンド登録 関数C
-export const c = (): { commands: { [key: string]: CommandConfig }, admin: string } => ({
+export const c = (): { commands: { [key: string]: CommandConfig }; admin: string } => ({
   commands: {
     chest: {
       enabled: true,
@@ -56,22 +55,26 @@ export const c = (): { commands: { [key: string]: CommandConfig }, admin: string
       requireTag: [],
     },
   },
-  
-  admin: "op",
+
+  admin: 'op',
 });
 
-
 export function getGamemode(playerName: string) {
-  const gamemodes: GameMode[] = [GameMode.survival, GameMode.creative, GameMode.adventure, GameMode.spectator];
+  const gamemodes: GameMode[] = [
+    GameMode.survival,
+    GameMode.creative,
+    GameMode.adventure,
+    GameMode.spectator,
+  ];
 
   for (let i = 0; i < 4; i++) {
-      if (
-          world.getPlayers({
-              name: playerName,
-              gameMode: gamemodes[i],
-          }).length != 0
-      )
-          return i;
+    if (
+      world.getPlayers({
+        name: playerName,
+        gameMode: gamemodes[i],
+      }).length != 0
+    )
+      return i;
   }
 
   return 0;
@@ -79,10 +82,7 @@ export function getGamemode(playerName: string) {
 
 export const getPing = (player: Player) => player.pingTick ?? 0;
 
-
 export function getAllPlayerNames(currentPlayer: Player): string[] {
   const players = world.getPlayers();
-  return players
-    .filter((p) => p.name !== currentPlayer.name) 
-    .map((p) => p.nameTag); 
+  return players.filter((p) => p.name !== currentPlayer.name).map((p) => p.nameTag);
 }

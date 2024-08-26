@@ -1,25 +1,23 @@
-import { Player, world } from "@minecraft/server";
-import { saveData,loadData,chestLockAddonData } from "../../../Modules/DataBase";
-import { translations as ja_JP } from "./ja_JP";
-import { translations as en_US } from "./en_US";
-import { translations as zh_CN } from "./zh_CN";
-import { translations as ru_RU } from "./ru_RU";
-import { translations as ko_KR } from "./ko_KR";
-import { translations as fi_FI } from "./fi_FI";
+import { Player, world } from '@minecraft/server';
+import { saveData, loadData, chestLockAddonData } from '../../../Modules/DataBase';
+import { translations as ja_JP } from './ja_JP';
+import { translations as en_US } from './en_US';
+import { translations as zh_CN } from './zh_CN';
+import { translations as ru_RU } from './ru_RU';
+import { translations as ko_KR } from './ko_KR';
+import { translations as fi_FI } from './fi_FI';
 
-
-
-const availableLanguages = ["en_US", "ja_JP", "zh_CN", "ru_RU", "ko_KR", "fi_FI"];
+const availableLanguages = ['en_US', 'ja_JP', 'zh_CN', 'ru_RU', 'ko_KR', 'fi_FI'];
 const languageData: { [key: string]: { [key: string]: { msgid: string; msgstr: string } } } = {
-  "ja_JP": ja_JP,
-  "en_US": en_US,
-  "zh_CN": zh_CN,
-  "ru_RU": ru_RU,
-  "ko_KR": ko_KR,
-  "fi_FI": fi_FI,
+  ja_JP: ja_JP,
+  en_US: en_US,
+  zh_CN: zh_CN,
+  ru_RU: ru_RU,
+  ko_KR: ko_KR,
+  fi_FI: fi_FI,
 };
 
-const defaultLang = "ja_JP"; // デフォルトの言語を固定
+const defaultLang = 'ja_JP'; // デフォルトの言語を固定
 
 // プレイヤーの言語設定を保存するためのオブジェクト
 let playerLangList: Record<string, string> = {};
@@ -45,25 +43,25 @@ export function getAvailableLanguages() {
 export function showPlayerLanguage(player: Player) {
   player.sendMessage(`§aPlayer Language List: ${JSON.stringify(playerLangList)}`);
   console.warn(`Player Language List: ${JSON.stringify(playerLangList)}`);
-  return playerLangList; 
+  return playerLangList;
 }
 
 // playerLangList を JSON 文字列として保存
 export function savePlayerLanguages() {
   const data = JSON.stringify(playerLangList);
-  world.setDynamicProperty("playerLangList", data);
+  world.setDynamicProperty('playerLangList', data);
 }
 
 export function resetPlayerLanguages(player: Player) {
   playerLangList = {};
   savePlayerLanguages(); // リセット後も保存
-  player.sendMessage(translate(player, "lang_removeData"));
-  console.warn("Player languages data has been reset.");
+  player.sendMessage(translate(player, 'lang_removeData'));
+  console.warn('Player languages data has been reset.');
 }
 
 export function changeLanguage(player: Player, language: string) {
   if (availableLanguages.includes(language)) {
-    savePlayerLanguage(player, language); 
+    savePlayerLanguage(player, language);
     console.warn(`Language changed to ${language} for player ${player.id}`);
     return true;
   }
@@ -75,11 +73,16 @@ export function getPlayerLanguage(player: Player) {
   return playerLangList[player.id] || defaultLang;
 }
 
-export function translate(player: Player | null, key: string, params?: Record<string, any>, targetPlayer?: Player): string {
+export function translate(
+  player: Player | null,
+  key: string,
+  params?: Record<string, any>,
+  targetPlayer?: Player,
+): string {
   const language = player ? getPlayerLanguage(player) : defaultLang;
   const langData = languageData[language];
 
-  let translatedText = key; 
+  let translatedText = key;
 
   if (langData && langData[key]) {
     translatedText = langData[key].msgstr || langData[key].msgid;
@@ -93,7 +96,7 @@ export function translate(player: Player | null, key: string, params?: Record<st
   }
 
   if (player) {
-    translatedText = translatedText.replace("{playerName}", player.name);
+    translatedText = translatedText.replace('{playerName}', player.name);
   }
 
   if (targetPlayer) {
@@ -103,8 +106,11 @@ export function translate(player: Player | null, key: string, params?: Record<st
   return translatedText;
 }
 
-
-export function rawTranslate(player: Player | null, key: string, params?: Record<string, any>): string {
+export function rawTranslate(
+  player: Player | null,
+  key: string,
+  params?: Record<string, any>,
+): string {
   const language = player ? getPlayerLanguage(player) : defaultLang;
   const langData = languageData[language];
 
@@ -112,7 +118,9 @@ export function rawTranslate(player: Player | null, key: string, params?: Record
     const translatedText = langData[key].msgstr || langData[key].msgid;
 
     // JSON.stringify を使用して文字列に変換
-    return JSON.stringify({ rawtext: [{ translate: translatedText, with: Object.values(params || {}) }] });
+    return JSON.stringify({
+      rawtext: [{ translate: translatedText, with: Object.values(params || {}) }],
+    });
   } else {
     // 翻訳が見つからない場合はキーをそのまま返し、ログを出力
     console.warn(`Translation not found for key '${key}' in language '${language}'.`);

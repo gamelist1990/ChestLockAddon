@@ -1,21 +1,33 @@
-import { ItemStack, EnchantmentType, ItemComponentTypes, Player, EntityComponent, ItemEnchantableComponent, system,EntityInventoryComponent } from "@minecraft/server";
-import { registerCommand, verifier } from "../Modules/Handler";
-import { c } from "../Modules/Util";
-import { translate } from "./langs/list/LanguageManager";
+import {
+  ItemStack,
+  EnchantmentType,
+  ItemComponentTypes,
+  Player,
+  EntityComponent,
+  ItemEnchantableComponent,
+  system,
+  EntityInventoryComponent,
+} from '@minecraft/server';
+import { registerCommand, verifier } from '../Modules/Handler';
+import { c } from '../Modules/Util';
+import { translate } from './langs/list/LanguageManager';
 
 export const customCommandsConfig = {
   ui: {
-    ui_item: "minecraft:wooden_axe",
-    ui_item_name: "§r§6[§aChestLock§6]§r §fUI Item",
-    requiredTags: []
-  }
+    ui_item: 'minecraft:wooden_axe',
+    ui_item_name: '§r§6[§aChestLock§6]§r §fUI Item',
+    requiredTags: [],
+  },
 };
 
 function addItemToPlayerInventory(player: Player) {
+  const inventoryComponent = player.getComponent('minecraft:inventory') as EntityInventoryComponent;
 
-  const inventoryComponent = player.getComponent("minecraft:inventory") as EntityInventoryComponent;
-
-  if (!inventoryComponent || !(inventoryComponent instanceof EntityComponent) || !("container" in inventoryComponent)) {
+  if (
+    !inventoryComponent ||
+    !(inventoryComponent instanceof EntityComponent) ||
+    !('container' in inventoryComponent)
+  ) {
     return;
   }
 
@@ -26,13 +38,16 @@ function addItemToPlayerInventory(player: Player) {
   }
 
   if (container.emptySlotsCount === 0) {
-    return player.sendMessage(translate(player, "FullInv"));
+    return player.sendMessage(translate(player, 'FullInv'));
   }
 
   const currentItem = container.getItem(player.selectedSlotIndex);
 
-  if (currentItem?.typeId === customCommandsConfig.ui.ui_item && currentItem?.nameTag === customCommandsConfig.ui.ui_item_name) {
-    return player.sendMessage(translate(player, "AlreadyInv"));
+  if (
+    currentItem?.typeId === customCommandsConfig.ui.ui_item &&
+    currentItem?.nameTag === customCommandsConfig.ui.ui_item_name
+  ) {
+    return player.sendMessage(translate(player, 'AlreadyInv'));
   }
 
   const item = new ItemStack(customCommandsConfig.ui.ui_item, 1);
@@ -41,13 +56,15 @@ function addItemToPlayerInventory(player: Player) {
     system.run(() => {
       item.nameTag = customCommandsConfig.ui.ui_item_name;
     });
-  } catch (error) {
-  }
+  } catch (error) {}
   const enchantable = item.getComponent(ItemComponentTypes.Enchantable);
 
   if (enchantable instanceof ItemEnchantableComponent) {
     system.run(() => {
-      enchantable.addEnchantment({ type: new EnchantmentType("unbreaking"), level: 3 });
+      enchantable.addEnchantment({
+        type: new EnchantmentType('unbreaking'),
+        level: 3,
+      });
     });
   }
 
@@ -55,15 +72,15 @@ function addItemToPlayerInventory(player: Player) {
     container.addItem(item);
   });
 
-  player.sendMessage(translate(player, "AddInv"));
+  player.sendMessage(translate(player, 'AddInv'));
 }
 
 registerCommand({
-  name: "item",
-  description: "AccesItemUI",
+  name: 'item',
+  description: 'AccesItemUI',
   parent: false,
   maxArgs: 1,
   minArgs: 1,
-  require: (player: Player) => verifier(player, c().commands["item"]),
-  executor: (player: Player) => addItemToPlayerInventory(player)
+  require: (player: Player) => verifier(player, c().commands['item']),
+  executor: (player: Player) => addItemToPlayerInventory(player),
 });

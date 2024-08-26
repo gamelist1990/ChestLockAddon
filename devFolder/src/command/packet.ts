@@ -1,6 +1,6 @@
-import { c, getGamemode } from "../Modules/Util";
-import { registerCommand, verifier } from "../Modules/Handler";
-import { Player, world, system, Vector3, Entity } from "@minecraft/server";
+import { c, getGamemode } from '../Modules/Util';
+import { registerCommand, verifier } from '../Modules/Handler';
+import { Player, world, system, Vector3, Entity } from '@minecraft/server';
 
 // ----------------------------------
 // --- 設定 ---
@@ -15,7 +15,7 @@ const config = {
     maxDistance: 18,
     speedThreshold: 115, // 歩行速度の閾値 (ブロック/秒)
     //正当なテレポートを許可するための設定
-    allowedTeleportTicks: 20 // テレポートとみなす最大ティック数
+    allowedTeleportTicks: 20, // テレポートとみなす最大ティック数
   },
 };
 
@@ -48,7 +48,7 @@ interface PlayerData {
 world.afterEvents.entityDie.subscribe((event) => {
   const player = event.deadEntity as Player;
   if (player && player.id) {
-    delete playerData[player.id]; 
+    delete playerData[player.id];
   }
 });
 
@@ -61,7 +61,7 @@ function initializePlayerData(player: Player) {
     penaltyCooldown: 0,
     speed: 0,
     lastSpeedCheckTime: Date.now(),
-    isTeleporting: false, 
+    isTeleporting: false,
     lastTeleportTime: 0,
   };
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) を監視しています`);
@@ -76,7 +76,9 @@ function addPositionHistory(player: Player) {
 
   // デバッグログ出力
   if (config.debugMode) {
-    console.log(`[DEBUG] ${player.name} new position: ${player.location.x}, ${player.location.y}, ${player.location.z}`);
+    console.log(
+      `[DEBUG] ${player.name} new position: ${player.location.x}, ${player.location.y}, ${player.location.z}`,
+    );
   }
 
   // 一定時間以上前の履歴は削除
@@ -85,7 +87,6 @@ function addPositionHistory(player: Player) {
     data.positionHistory.shift();
   }
 }
-
 
 export function handleTeleportCommand(player: Player) {
   const data = playerData[player.id];
@@ -113,7 +114,7 @@ function executeRollback(player: Player) {
 }
 
 // SpeedHack検出
-function detectSpeedHack(player: Player): { cheatType: string, speed?: number } | null {
+function detectSpeedHack(player: Player): { cheatType: string; speed?: number } | null {
   const data = playerData[player.id];
   if (!data || data.isTeleporting) return null;
 
@@ -129,8 +130,8 @@ function detectSpeedHack(player: Player): { cheatType: string, speed?: number } 
     if (entity.typeId === 'minecraft:boat') {
       const distance = Math.sqrt(
         Math.pow(entity.location.x - player.location.x, 2) +
-        Math.pow(entity.location.y - player.location.y, 2) +
-        Math.pow(entity.location.z - player.location.z, 2)
+          Math.pow(entity.location.y - player.location.y, 2) +
+          Math.pow(entity.location.z - player.location.z, 2),
       );
       return distance <= 5; // Check if within 5 blocks
     }
@@ -147,11 +148,11 @@ function detectSpeedHack(player: Player): { cheatType: string, speed?: number } 
 
   // 移動距離の計算
   const previousPosition = data.positionHistory[data.positionHistory.length - 2];
-  if (!previousPosition) return null; 
+  if (!previousPosition) return null;
   const distance = Math.sqrt(
     Math.pow(player.location.x - previousPosition.x, 2) +
-    Math.pow(player.location.y - previousPosition.y, 2) +
-    Math.pow(player.location.z - previousPosition.z, 2)
+      Math.pow(player.location.y - previousPosition.y, 2) +
+      Math.pow(player.location.z - previousPosition.z, 2),
   );
 
   // 速度の計算
@@ -159,7 +160,7 @@ function detectSpeedHack(player: Player): { cheatType: string, speed?: number } 
 
   // SpeedHack検出
   if (speed > config.antiCheat.speedThreshold) {
-    return { cheatType: "SpeedHack", speed: speed };
+    return { cheatType: 'SpeedHack', speed: speed };
   }
 
   // データ更新
@@ -186,8 +187,8 @@ function detectClickTP(player: Player): { cheatType: string } | null {
     if (entity.typeId === 'minecraft:boat') {
       const distance = Math.sqrt(
         Math.pow(entity.location.x - player.location.x, 2) +
-        Math.pow(entity.location.y - player.location.y, 2) +
-        Math.pow(entity.location.z - player.location.z, 2)
+          Math.pow(entity.location.y - player.location.y, 2) +
+          Math.pow(entity.location.z - player.location.z, 2),
       );
       return distance <= 5; // Check if within 5 blocks
     }
@@ -201,8 +202,8 @@ function detectClickTP(player: Player): { cheatType: string } | null {
 
   const clickTpDistance = Math.sqrt(
     Math.pow(player.location.x - data.positionHistory[0].x, 2) +
-    Math.pow(player.location.y - data.positionHistory[0].y, 2) +
-    Math.pow(player.location.z - data.positionHistory[0].z, 2)
+      Math.pow(player.location.y - data.positionHistory[0].y, 2) +
+      Math.pow(player.location.z - data.positionHistory[0].z, 2),
   );
 
   // 最近テレポートした場合、正当なテレポートとみなす
@@ -211,7 +212,7 @@ function detectClickTP(player: Player): { cheatType: string } | null {
   }
 
   if (clickTpDistance > config.antiCheat.clickTpThreshold) {
-    return { cheatType: "ClickTP" };
+    return { cheatType: 'ClickTP' };
   }
 
   return null;
@@ -253,13 +254,13 @@ function runTick() {
 }
 
 // チート検出時の処理
-function handleCheatDetection(player: Player, detection: { cheatType: string, speed?: number }) {
+function handleCheatDetection(player: Player, detection: { cheatType: string; speed?: number }) {
   const data = playerData[player.id];
   if (data) {
     data.violationCount++;
     if (data.violationCount >= config.antiCheat.detectionThreshold) {
       let logMessage = `プレイヤー ${player.name} (ID: ${player.id}) が ${detection.cheatType} を使用している可能性があります`;
-      if (detection.cheatType === "SpeedHack" && detection.speed) {
+      if (detection.cheatType === 'SpeedHack' && detection.speed) {
         logMessage += ` (速度: ${detection.speed.toFixed(2)} blocks/sec)`;
       }
       console.warn(logMessage);
@@ -274,11 +275,6 @@ function handleCheatDetection(player: Player, detection: { cheatType: string, sp
   }
 }
 
-
-
-
-
-
 // 簡潔なプレイヤーデータのログ出力
 //@ts-ignore
 function logPlayerData() {
@@ -287,11 +283,11 @@ function logPlayerData() {
       playerId,
       {
         latestPosition: data.positionHistory[data.positionHistory.length - 1],
-          lastTime: data.lastTime,
+        lastTime: data.lastTime,
         violationCount: data.violationCount,
         penaltyCooldown: data.penaltyCooldown,
       },
-    ])
+    ]),
   );
   console.warn(`[DEBUG] playerData: ${JSON.stringify(simplifiedData, null, 2)}`);
 }
@@ -301,23 +297,23 @@ function logPlayerData() {
 // ----------------------------------
 
 registerCommand({
-  name: "anticheat",
-  description: "チート対策を有効/無効にします",
+  name: 'anticheat',
+  description: 'チート対策を有効/無効にします',
   parent: false,
   maxArgs: 1,
   minArgs: 1,
-  require: (player: Player) => verifier(player, c().commands["anticheat"]), // 権限確認
+  require: (player: Player) => verifier(player, c().commands['anticheat']), // 権限確認
   executor: (player: Player, args: string[]) => {
-    if (args[0] === "on") {
+    if (args[0] === 'on') {
       monitoring = true;
       world.getPlayers().forEach((p) => initializePlayerData(p));
       system.run(runTick);
-      player.sendMessage("チート対策を有効にしました");
-    } else if (args[0] === "off") {
+      player.sendMessage('チート対策を有効にしました');
+    } else if (args[0] === 'off') {
       monitoring = false;
-      player.sendMessage("チート対策を無効にしました");
+      player.sendMessage('チート対策を無効にしました');
     } else {
-      player.sendMessage("無効な引数です。on または off を指定してください");
+      player.sendMessage('無効な引数です。on または off を指定してください');
     }
   },
 });

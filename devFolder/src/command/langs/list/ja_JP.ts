@@ -396,7 +396,7 @@ export const translations = {
     msgstr: "§a保護されたチェストを破壊しました。保護データも削除されました。"
   },
   "lockChange": {
-    msgid: "§a Protection state of chest is changed to",
+    msgid: "§a Protection state of chest is changed to {lock}",
     msgstr: "§aチェストの保護状態を変更しました"
   },
   "NotChest": {
@@ -404,7 +404,7 @@ export const translations = {
     msgstr: "§cこのチェストを操作する権限がありません"
   },
   "AddM": {
-    msgid: "§a Added  as a member.",
+    msgid: "§a{member} Added  as a member location:{chestLocation}",
     msgstr: "§aをメンバーに追加しました。"
   },
   "addYouM": {
@@ -416,11 +416,11 @@ export const translations = {
     msgstr: "§a{playerName}があなたを以下のチェストのメンバーから削除しました:\n{chestLocation}のチェスト"
   },
   "MAlreday": {
-    msgid: "§cis already a member. ",
+    msgid: "§c{member} is already a member. ",
     msgstr: "§cは既にメンバーです"
   },
   "RemoveM": {
-    msgid: "§aRemoved from members",
+    msgid: "§a{member} has Removed from members",
     msgstr: "§aをメンバーから削除しました"
   },
   "NotM": {

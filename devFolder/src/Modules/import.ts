@@ -1,4 +1,4 @@
-import './Handler'; 
+import './Handler';
 import './Util';
-import './version'; 
-import './DataBase'; 
+import './version';
+import './DataBase';

@@ -424,7 +424,7 @@
     "msgstr": "§a 보호된 상자가 파괴되었습니다. 보호된 데이터도 삭제되었습니다."
   },
   "lockChange": {
-    "msgid": "§a Protection state of chest is changed to",
+    "msgid": "§a Protection state of chest is changed to {lock}",
     "msgstr": "§a 상자의 보호 상태가 다음으로 변경되었습니다"
   },
   "NotChest": {
@@ -432,7 +432,7 @@
     "msgstr": "§c이 상자를 조작할 권한이 없습니다."
   },
   "AddM": {
-    "msgid": "§a Added  as a member.",
+    "msgid": "§a{member} Added  as a member location:{chestLocation}",
     "msgstr": "§a 멤버로 추가되었습니다."
   },
   "addYouM": {
@@ -444,11 +444,11 @@
     "msgstr": "§a{playerName}님이 당신을 다음 상자의 멤버에서 제거했습니다: {chestLocation}"
   },
   "MAlreday": {
-    "msgid": "§cis already a member. ",
+    "msgid": "§c{member} is already a member. ",
     "msgstr": "§c이미 멤버입니다."
   },
   "RemoveM": {
-    "msgid": "§aRemoved from members",
+    "msgid": "§a{member} has Removed from members",
     "msgstr": "§a멤버에서 제거됨"
   },
   "NotM": {
