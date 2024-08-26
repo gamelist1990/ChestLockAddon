@@ -7,6 +7,7 @@ interface CommandConfig {
   requireTag: string[];
 }
 
+//コマンド登録 関数C
 export const c = (): { commands: { [key: string]: CommandConfig }, admin: string } => ({
   commands: {
     chest: {
@@ -47,11 +48,6 @@ export const c = (): { commands: { [key: string]: CommandConfig }, admin: string
     item: {
       enabled: true,
       adminOnly: false,
-      requireTag: [],
-    },
-    anticheat: {
-      enabled: true,
-      adminOnly: true,
       requireTag: [],
     },
     tpa: {

@@ -1,4 +1,8 @@
 
+## English Readme
+
+[Click here for English 👈](EN_README.md)
+
 ## Download⬇️
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/gamelist1990/ChestLockAddon/total?style=flat-square&logo=https%3A%2F%2Fgithub.com%2Fgamelist1990%2FChestLockAddon%2Fblob%2Fmain%2FAllAddon%2Fpack_icon.png%3Fraw%3Dtrue)
 
@@ -6,11 +10,17 @@
 
 ## Update
 
-実験機能でコマンド補填機能を追加してみました
+**Version 0.9**このバージョンでは新機能TPAコマンドを追加しましたまたItemUIでUIを開けるようにしました
+
+**更新点**
+チェストおよびLangデータをデータベースシステムで完了するようにする為に
+Database.tsを追加しました
+またUIの改善とその他ファイルの整理を行いました
+
+
+このGUIは`!item` Or `!ui`で使用できます 内容的にはただ[Handler.ts](devFolder/src/Modules/Handler.ts)に定義している`runCommand`関数を使用しています(TPリクエストと言語設定は専用の処理を追加しているよ)
 ![alt text](image/image.png)
 
-
-2024/08/22時点で0.8のversionにアップデートに関するアプデを進めています
 
 ## 概要
 
@@ -23,7 +33,13 @@
 * **`!lang`**:  Lang コマンド - 言語設定を変更します。
 * **`!dev`**:  デベロッパー専用コマンド -  tag OPが必要。
 * **`!ui`**:  ps4/5用にuiコマンドを追加しました
-* **`!test`**: タグbetaが必要ですまたLunaChat総合版の実験です
+* **`!jpch`**: タグbetaが必要ですまたLunaChat総合版の実験です
+* **`!item`**: UIを開くアイテムをゲットできます
+* **`!tpa`**: TPリクエストを送る事ができます
+* **`!list`**: プレイヤーの情報を表示できます
+
+
+
 * その他、コマンドは今後追加予定です。
 
 ## プレフィックスの変更
@@ -51,4 +67,5 @@
 
 ## その他
 
-現在も更新中です！
+言語フォルダはsrc/command/langs/listにあります
+(jsonに翻訳キーを定義してね)

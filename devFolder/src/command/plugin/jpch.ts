@@ -1,6 +1,6 @@
 import { Player, world } from "@minecraft/server";
-import { c } from "../Modules/Util";
-import { registerCommand, verifier } from "../Modules/Handler";
+import { c } from "../../Modules/Util";
+import { registerCommand, verifier } from "../../Modules/Handler";
 
 // === 辞書データ ===
 interface DictionaryEntry {

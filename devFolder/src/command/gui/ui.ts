@@ -1,7 +1,7 @@
 import { ActionFormData } from "@minecraft/server-ui";
 import { Player } from "@minecraft/server";
 import { runCommand } from "../../Modules/Handler";
-import { getTpaRequests } from "../tpa";
+import { getTpaRequests } from "../utility/tpa";
 import { getAllPlayerNames } from "../../Modules/Util";
 import { getAvailableLanguages,translate } from "../langs/list/LanguageManager";
 
