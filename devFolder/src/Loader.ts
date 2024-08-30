@@ -1,8 +1,11 @@
 import { world } from '@minecraft/server';
 import { loadPlayerLanguages } from './command/langs/list/LanguageManager';
 import { loadProtectedChests } from './command/plugin/chest';
+import { loadGate } from './command/plugin/warpgate';
+import { loadjoinModules } from './command/utility/join';
 import { showBasicUI } from './command/gui/ui';
 import { customCommandsConfig } from './command/itemUI';
+
 import { c } from './Modules/Util';
 
 const startTime = Date.now();
@@ -18,6 +21,8 @@ async function loadAllImports() {
 
 world.afterEvents.worldInitialize.subscribe(async () => {
   try {
+    loadGate();
+    loadjoinModules();
     loadPlayerLanguages();
     loadProtectedChests();
     await loadAllImports();

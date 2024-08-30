@@ -54,6 +54,17 @@ export const c = (): { commands: { [key: string]: CommandConfig }; admin: string
       adminOnly: false,
       requireTag: [],
     },
+    join: {
+      enabled: true,
+      adminOnly: true,
+      requireTag: [],
+    },
+    warpgate: {
+      enabled: true,
+      adminOnly: true,
+      requireTag: [],
+    },
+    
   },
 
   admin: 'op',

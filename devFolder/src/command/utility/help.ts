@@ -12,7 +12,7 @@ registerCommand({
   minArgs: 0,
   require: (player: Player) => verifier(player, c().commands['help']),
   executor: (player: Player) => {
-    const helpMessages = getAllCommandNames();
+    const helpMessages = getAllCommandNames(player);
     const version = `§aVer.${ver}`;
     let helpMessage = translate(player, 'available_commands') + ':\n';
     helpMessages.forEach((msg) => {

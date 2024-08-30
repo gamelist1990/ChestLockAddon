@@ -333,8 +333,12 @@ function handlePistonUse(eventData: any) {
   if (!playerActions[player.name]) {
     playerActions[player.name] = [];
   }
-  playerActions[player.name].push(blockLocation);
+  if (isMovingTowardsChest(playerActions[player.name])) {
+    eventData.cancel = true;
+    player.sendMessage(translate(player, 'cannotPlaceItem'));
+  }
 }
+
 
 // 検知範囲内かどうか判定
 function isWithinDetectionArea(location: Vector3, radius: number): boolean {

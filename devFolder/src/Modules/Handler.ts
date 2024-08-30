@@ -31,8 +31,30 @@ export function registerCommand(options: {
   commands[options.name] = options;
 }
 
-export function getAllCommandNames() {
-  return Object.values(commands).map(({ name, description }) => ({ name, description }));
+export function getAllCommandNames(player?: Player) {
+  return Object.values(commands)
+    .filter((command) => {
+      // player が指定されていない場合はすべてのコマンドを返す
+      if (!player) return true;
+
+      const commandConfig = c().commands[command.name];
+
+      // adminOnly が true かつプレイヤーが管理者でない場合は除外
+      if (commandConfig.adminOnly && !player.hasTag(c().admin)) {
+        return false;
+      }
+
+      // requireTag が設定されている場合は、プレイヤーがすべてのタグを持っているか確認
+      if (
+        commandConfig.requireTag.length > 0 &&
+        !commandConfig.requireTag.some((tag) => player.hasTag(tag)) 
+      ) {
+        return false;
+      }
+
+      return true;
+    })
+    .map(({ name, description }) => ({ name, description }));
 }
 
 interface CommandConfig {

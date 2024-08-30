@@ -3,6 +3,110 @@ export const translations = {
     msgid: "§cPlayerNotFound!! Make sure you're really there",
     msgstr: ""
   },
+  "TheFirestBlock": {
+    msgid: "§a1 The first block has been recorded. Destroy the block again.",
+    msgstr: ""
+  },
+  "TheSecond": {
+    msgid: "§a2 second block has been recorded. Warp gate has been set.",
+    msgstr: ""
+  },
+  "WarpUsage": {
+    msgid: "§c usage: warpgate -create <gate name> <x> <y> <z",
+    msgstr: ""
+  },
+  "AlreadyWarp": {
+    msgid: "§cA warp gate of that name already exists.",
+    msgstr: ""
+  },
+  "CreateGate": {
+    msgid: "§aCreate a warp gate {gatename} \n §aNext, destroy the two blocks to specify the extent of the gate.",
+    msgstr: ""
+  },
+  "NotWarp": {
+    msgid: "§cThe gate with the specified name does not exist",
+    msgstr: ""
+  },
+  "deleteWarp": {
+    msgid: "§a gate removed: {gatename}",
+    msgstr: ""
+  },
+  "NotWarpSetting": {
+    msgid: "§cNo warp gate is set.",
+    msgstr: ""
+  },
+  "listGate": {
+    msgid: "§a List of warp gates:\n",
+    msgstr: ""
+  },
+  "warpgateCom": {
+    msgid: "Warp gate can be set",
+    msgstr: ""
+  },
+  "UsageGate": {
+    msgid: "§c invalid subcommand usage {prefix}warpgate <-create/delete/list> [name] |\n§c create command Only -create [name] [x,y,z]",
+    msgstr: ""
+  },
+  "TPGATE": {
+    msgid: "§a Teleported to warp gate {gate}.",
+    msgstr: ""
+  },
+  "Joincommand": {
+    msgid: "Displays a message when joining a world",
+    msgstr: ""
+  },
+  "Joinenabled": {
+    msgid: "§aEnabled messages when joining worlds",
+    msgstr: ""
+  },
+  "Joindisabled": {
+    msgid: "§cDisabled messages when joining worlds.",
+    msgstr: ""
+  },
+  "Invalid": {
+    msgid: "§cInvalid argument.",
+    msgstr: ""
+  },
+  "UsageJoin": {
+    msgid: "§cUsage is join <-ture/-false/-settings>",
+    msgstr: ""
+  },
+  "welcome": {
+    msgid: "§7 Welcome! My Server",
+    msgstr: ""
+  },
+  "Rulejoin": {
+    msgid: "§6 Server Rules!!",
+    msgstr: ""
+  },
+  "RulesNumber": {
+    msgid: "§bNumber of Rules",
+    msgstr: ""
+  },
+  "RulesEnter": {
+    msgid: "§0Enter the number of rules",
+    msgstr: ""
+  },
+  "RuleSettings": {
+    msgid: "§6Rule Settings",
+    msgstr: ""
+  },
+  "Rules": {
+    msgid: "§bRule {i}",
+    msgstr: ""
+  },
+  "RuleEnter2": {
+    msgid: "§0Enter rule {i}",
+    msgstr: ""
+  },
+  "RuleUpdate": {
+    msgid: "§aRules updated!",
+    msgstr: ""
+  },
+  "joinSettings": {
+    msgid: "§6Join Log Settings",
+    msgstr: ""
+  },
   "TpaRequesMenu": {
     msgid: "§2Welcome to tpa MenuCurrent requests:{requestList} people",
     msgstr: ""

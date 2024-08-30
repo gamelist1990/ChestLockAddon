@@ -3,6 +3,110 @@ export const translations = {
     msgid: "§cPlayerNotFound!! Make sure you're really there",
     msgstr: "§cこのプレイヤーが見つかりません！！"
   },
+  "TheFirestBlock": {
+    msgid: "§a1 The first block has been recorded. Destroy the block again.",
+    msgstr: "§a1 最初のブロックが記録されました。次のブロックを選択してください."
+  },
+  "TheSecond": {
+    msgid: "§a2 second block has been recorded. Warp gate has been set.",
+    msgstr: "§a2二個目のブロックが記録に成功したため。ワープゲートの設定が完了しました"
+  },
+  "WarpUsage": {
+    msgid: "§c usage: warpgate -create <gate name> <x> <y> <z",
+    msgstr: ""
+  },
+  "AlreadyWarp": {
+    msgid: "§cA warp gate of that name already exists.",
+    msgstr: "§cその名前のワープゲートは既に存在しています。"
+  },
+  "CreateGate": {
+    msgid: "§aCreate a warp gate {gatename} \n §aNext, destroy the two blocks to specify the extent of the gate.",
+    msgstr: "§aワープゲートを{gatename}で作成します \n §次に、ゲートの範囲を指定するために2つのブロックを壊して下さい"
+  },
+  "NotWarp": {
+    msgid: "§cThe gate with the specified name does not exist",
+    msgstr: "§c指定された名前のゲートは存在しません。"
+  },
+  "deleteWarp": {
+    msgid: "§a gate removed: {gatename}",
+    msgstr: "§aゲートの削除に成功しました: {gatename}。"
+  },
+  "NotWarpSetting": {
+    msgid: "§cNo warp gate is set.",
+    msgstr: "§cワープゲートが設定されていません"
+  },
+  "listGate": {
+    msgid: "§a List of warp gates:\n",
+    msgstr: "§aワープゲートのリスト:\n"
+  },
+  "warpgateCom": {
+    msgid: "Warp gate can be set",
+    msgstr: "ワープゲートを作る事ができます"
+  },
+  "UsageGate": {
+    msgid: "§c invalid subcommand usage {prefix}warpgate <-create/delete/list> [name] |\n§c create command Only -create [name] [x,y,z]",
+    msgstr: "§c 無効なサブコマンドです使い方は {prefix}warpgate <-create/delete/list> [name] |\n§c ただ-create引数の時はこのようにしてください -create [name] [x,y,z]."
+  },
+  "TPGATE": {
+    msgid: "§a Teleported to warp gate {gate}.",
+    msgstr: "§a ワープゲート{gate}にテレポートしました"
+  },
+  "Joincommand": {
+    msgid: "Displays a message when joining a world",
+    msgstr: "プレイヤー参加時にメッセージを出します"
+  },
+  "Joinenabled": {
+    msgid: "§aEnabled messages when joining worlds",
+    msgstr: "§aワールドに参加メッセージを有効にしました"
+  },
+  "Joindisabled": {
+    msgid: "§cDisabled messages when joining worlds.",
+    msgstr: "§cワールド参加メッセージを無効にしました."
+  },
+  "Invalid": {
+    msgid: "§cInvalid argument.",
+    msgstr: "§c不明な値です"
+  },
+  "UsageJoin": {
+    msgid: "§cUsage is join <-ture/-false/-settings>",
+    msgstr: "§c使用法はjoin <-true/-false/-settings>　です"
+  },
+  "welcome": {
+    msgid: "§7 Welcome! My Server",
+    msgstr: "§a==ようこそ！！ゆっくりしていってね=="
+  },
+  "Rulejoin": {
+    msgid: "§6 Server Rules!!",
+    msgstr: "このサーバーのルール！"
+  },
+  "RulesNumber": {
+    msgid: "§bNumber of Rules",
+    msgstr: "§bルールの数を入力(4ぐらいがオススメ)"
+  },
+  "RulesEnter": {
+    msgid: "§0Enter the number of rules",
+    msgstr: "§0ここに入力!!"
+  },
+  "RuleSettings": {
+    msgid: "§6Rule Settings",
+    msgstr: "ルール設定"
+  },
+  "Rules": {
+    msgid: "§bRule {i}",
+    msgstr: "§bルール {i}"
+  },
+  "RuleEnter2": {
+    msgid: "§0Enter rule {i}",
+    msgstr: "§0ルールの内容を入力 {i}"
+  },
+  "RuleUpdate": {
+    msgid: "§aRules updated!",
+    msgstr: "§aルールを更新しました"
+  },
+  "joinSettings": {
+    msgid: "§6Join Log Settings",
+    msgstr: "参加ログ設定！"
+  },
   "TpaRequesMenu": {
     msgid: "§2Welcome to tpa MenuCurrent requests:{requestList} people",
     msgstr: "§2tpaメニューへようこそ現在のリクエスト人数は:{requestList}人"
