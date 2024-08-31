@@ -5,8 +5,8 @@ import { loadGate } from './command/plugin/warpgate';
 import { loadjoinModules } from './command/utility/join';
 import { showBasicUI } from './command/gui/ui';
 import { customCommandsConfig } from './command/itemUI';
-
 import { c } from './Modules/Util';
+import { RunAntiCheat } from './command/packet';
 
 const startTime = Date.now();
 
@@ -21,6 +21,7 @@ async function loadAllImports() {
 
 world.afterEvents.worldInitialize.subscribe(async () => {
   try {
+    RunAntiCheat();
     loadGate();
     loadjoinModules();
     loadPlayerLanguages();

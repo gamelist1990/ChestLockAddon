@@ -69,6 +69,11 @@ export const c = (): { commands: { [key: string]: CommandConfig }; admin: string
       adminOnly: true,
       requireTag: [],
     },
+    anticheat: {
+      enabled: true,
+      adminOnly: true,
+      requireTag: [],
+    },
     
   },
 

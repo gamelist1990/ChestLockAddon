@@ -301,7 +301,7 @@ registerCommand({
         const blockId = args[2];
         if (isValidBlockId(blockId)) {
           playerDataTool[player.name] = { tool: 'walls', blockId };
-          player.sendMessage(translate(player, "WallsToolSelected", { radius: `${radius}`, blockId: `${blockId}` })); // 翻訳キーを使用、データを渡す
+          player.sendMessage(translate(player, "WallsToolSelected", {blockId: `${blockId}` })); // 翻訳キーを使用、データを渡す
         } else {
           player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
         }
