@@ -1,6 +1,7 @@
 import { c } from '../../Modules/Util';
 import { registerCommand, verifier, prefix, runCommand } from '../../Modules/Handler';
 import { Player, world, system, BlockTypes, EntityInventoryComponent } from '@minecraft/server';
+import { translate } from '../langs/list/LanguageManager'; // 翻訳機能を追加
 
 // プレイヤーごとの選択範囲と選択状態を格納する変数
 const playerData: { [playerName: string]: { pos1: any, pos2: any, selecting: boolean, commandArgs: string[] } } = {};
@@ -44,11 +45,11 @@ function handleBlockBreakForSelection(player: Player, blockLocation: any): void 
   // 1点目と2点目を設定
   if (!selection.pos1) {
     selection.pos1 = blockLocation;
-    player.sendMessage("§a>>§7 最初の地点を設定しました。");
+    player.sendMessage(translate(player, "FirstPointSet")); // 翻訳キーを使用
   } else if (!selection.pos2) {
     selection.pos2 = blockLocation;
-    player.sendMessage("§a>>§7 2つ目の地点を設定しました。");
-    player.sendMessage("§a>>§7 範囲選択が完了しました。");
+    player.sendMessage(translate(player, "SecondPointSet")); // 翻訳キーを使用
+    player.sendMessage(translate(player, "SelectionCompleted")); // 翻訳キーを使用
     selection.selecting = false; // 範囲選択終了
 
     // 範囲選択完了後に、コマンドで指定された処理を実行
@@ -62,7 +63,7 @@ function handleBlockBreakForSingleSelection(player: Player, blockLocation: any):
 
   // 点を設定
   selection.pos1 = blockLocation;
-  player.sendMessage("§a>>§7 地点を設定しました。");
+  player.sendMessage(translate(player, "PointSet")); // 翻訳キーを使用
   selection.selecting = false; // 範囲選択終了
 
   // 範囲選択完了後に、コマンドで指定された処理を実行
@@ -215,32 +216,33 @@ function executeCommandAfterSelection(player: Player) {
       if (tool === 'walls') {
         if (isValidBlockId(blockId)) {
           createWalls(data.pos1, data.pos2, blockId);
-          player.sendMessage("§a>>§7 壁を作成しました。");
+          player.sendMessage(translate(player, "WallsCreated")); // 翻訳キーを使用
           system.runTimeout(() => { 
             runCommand(player.name,'edit',['-start']);
           },20);
         } else {
-          player.sendMessage("§c>>§7 無効なブロックIDです。");
+          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
         }
       } else if (tool === 'outline') {
         if (isValidBlockId(blockId)) {
-          const radius = toolData.outlineRadius || 5; // playerDataTool から半径を取得
+          const radius = toolData.outlineRadius || 5; 
           createOutline(data.pos1, radius, blockId);
-          player.sendMessage("§a>>§7 アウトラインを作成しました。");
+          player.sendMessage(translate(player, "OutlineCreated")); // 翻訳キーを使用
           system.runTimeout(() => { 
             runCommand(player.name,'edit',['-start']);
           },20);
         } else {
-          player.sendMessage("§c>>§7 無効なブロックIDです。");
+          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
         }
       } else if (tool === 'filledCircle') {
         if (isValidBlockId(blockId)) {
           // filledCircleRadius が設定されている場合はそれを使用、そうでなければデフォルト値 5 を使用
           const radius = toolData.filledCircleRadius || 5; // playerDataTool から半径を取得
           createFilledCircle(data.pos1, radius, blockId);
-          player.sendMessage("§a>>§7 中を埋めた円を作成しました。");
+          player.sendMessage(translate(player, "FilledCircleCreated")); // 翻訳キーを使用
+          runCommand(player.name,'edit',['-start']);
         } else {
-          player.sendMessage("§c>>§7 無効なブロックIDです。");
+          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
         }
       }
 
@@ -253,9 +255,9 @@ function executeCommandAfterSelection(player: Player) {
 
       if (isValidBlockId(blockId)) {
         fillBlocks(data.pos1, data.pos2, blockId);
-        player.sendMessage("§a>>§7 指定したブロックで範囲内が設定されました。");
+        player.sendMessage(translate(player, "RangeSet", { blockId: blockId })); // 翻訳キーを使用、データを渡す
       } else {
-        player.sendMessage("§c>>§7 無効なブロックIDです。");
+        player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
       }
 
       // -set を使用した場合はプレイヤーデータを削除
@@ -264,14 +266,14 @@ function executeCommandAfterSelection(player: Player) {
     } else if (args[0] === '-clear') {
       // -clear の処理
       fillBlocks(data.pos1, data.pos2, "minecraft:air");
-      player.sendMessage("§a>>§7 範囲内がクリアされました。");
+      player.sendMessage(translate(player, "RangeCleared")); // 翻訳キーを使用
 
       // -clear を使用した場合はプレイヤーデータを削除
       delete playerData[player.name];
 
     } else {
       // 不正な引数の場合はエラーメッセージを表示
-      player.sendMessage(`§c>>§7 コマンドの使用方法: /${prefix}edit -set <ブロックID> | /${prefix}edit -clear | /${prefix}edit tool <オプション>`);
+      player.sendMessage(translate(player, "InvalidCommandUsage", { prefix: `${prefix}` })); // 翻訳キーを使用、データを渡す
     }
 
     // プレイヤーデータ自体は削除しない (ツール使用時のみ削除)
@@ -299,9 +301,9 @@ registerCommand({
         const blockId = args[2];
         if (isValidBlockId(blockId)) {
           playerDataTool[player.name] = { tool: 'walls', blockId };
-          player.sendMessage(`§a>>§7 walls ツールを選択しました。 (ブロックID: ${blockId})`);
+          player.sendMessage(translate(player, "WallsToolSelected", { radius: `${radius}`, blockId: `${blockId}` })); // 翻訳キーを使用、データを渡す
         } else {
-          player.sendMessage("§c>>§7 無効なブロックIDです。");
+          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
         }
       } else if (args[1] === '-outline' && args.length === 4 && !isNaN(parseInt(args[2]))) {
         // outline ツールで半径とブロックIDを指定
@@ -309,9 +311,9 @@ registerCommand({
         const blockId = args[3];
         if (isValidBlockId(blockId)) {
           playerDataTool[player.name] = { tool: 'outline', blockId, outlineRadius: radius }; // playerDataTool に半径を保存
-          player.sendMessage(`§a>>§7 outline ツールを選択しました。 (半径: ${radius}, ブロックID: ${blockId})`);
+          player.sendMessage(translate(player, "OutlineToolSelected", { radius: `${radius}`, blockId: `${blockId}` })); // 翻訳キーを使用、データを渡す
         } else {
-          player.sendMessage("§c>>§7 無効なブロックIDです。");
+          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
         }
       } else if (args[1] === '-filledCircle' && args.length === 4 && !isNaN(parseInt(args[2]))) {
         // filledCircle ツールで半径とブロックIDを指定
@@ -319,16 +321,16 @@ registerCommand({
         const blockId = args[3];
         if (isValidBlockId(blockId)) {
           playerDataTool[player.name] = { tool: 'filledCircle', blockId, filledCircleRadius: radius }; // playerDataTool に半径を保存
-          player.sendMessage(`§a>>§7 filledCircle ツールを選択しました。 (半径: ${radius}, ブロックID: ${blockId})`);
+          player.sendMessage(translate(player, "FilledCircleToolSelected", { radius: `${radius}`, blockId: `${blockId}` })); // 翻訳キーを使用、データを渡す
         } else {
-          player.sendMessage("§c>>§7 無効なブロックIDです。");
+          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
         }
       } else if (args[1] === '-exit') {
         // ツールを終了
         delete playerDataTool[player.name];
-        player.sendMessage("§a>>§7 ツールを終了しました。");
+        player.sendMessage(translate(player, "ToolExited")); // 翻訳キーを使用
       } else {
-        player.sendMessage(`§c>>§7 ツールオプション: -wall <ブロックID>, -outline <半径> <ブロックID>, -filledCircle <半径> <ブロックID>, -exit`);
+        player.sendMessage(translate(player, "ToolOptions")); // 翻訳キーを使用
       }
 
     } else if (args[0] === '-set' && args.length === 2) { 
@@ -336,24 +338,22 @@ registerCommand({
       // 範囲選択を開始
       data.commandArgs = args; // コマンド引数を保存
       data.selecting = true;
-      player.sendMessage("§a>>§7 範囲選択を開始しました。ブロックを2つ破壊してください。");
+      player.sendMessage(translate(player, "StartRangeSelection2")); // 翻訳キーを使用
 
     } else if (args[0] === '-clear') {
       // -clear コマンド
       // 範囲選択を開始
       data.commandArgs = args; // コマンド引数を保存
       data.selecting = true;
-      player.sendMessage("§a>>§7 範囲選択を開始しました。ブロックを2つ破壊してください。");
+      player.sendMessage(translate(player, "StartRangeSelection2")); // 翻訳キーを使用
 
     } else if (args[0] === '-start') { // !edit -start コマンドの処理を追加
       data.selecting = true;
-      player.sendMessage("§a>>§7 範囲選択を開始しました。木のクワを持ちブロックを破壊してください");
+      player.sendMessage(translate(player, "StartRangeSelection")); // 翻訳キーを使用
 
     } else {
       // 不正な引数の場合はエラーメッセージを表示
-      player.sendMessage(
-        `§c>>§7 コマンドの使用方法: /${prefix}edit -set <ブロックID> | /${prefix}edit -clear | /${prefix}edit tool <オプション> | /${prefix}edit start`
-      );
+      player.sendMessage(translate(player, "InvalidCommandUsage", { prefix: `${prefix}` })); // 翻訳キーを使用、データを渡す
     }
   },
-});
+}); 

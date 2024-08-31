@@ -65,12 +65,23 @@ registerCommand({
 });
 
 
+// プレイヤーが参加したときに一度だけメッセージを表示するためのフラグ
+const playersShownMessage: { [playerName: string]: boolean } = {};
+
 world.afterEvents.playerSpawn.subscribe((event: any) => {
   const  { player } = event;
-  system.runTimeout(() => {
-    showJoinMessage(player);
- 
-  }, 120); 
+
+  // プレイヤーの名前を取得
+  const playerName = player.name;
+
+  // プレイヤーがすでにメッセージを表示されているか確認
+  if (!playersShownMessage[playerName]) {
+    system.runTimeout(() => {
+      showJoinMessage(player);
+      // メッセージを表示したことを記録
+      playersShownMessage[playerName] = true;
+    }, 120); 
+  }
 }); 
 
 

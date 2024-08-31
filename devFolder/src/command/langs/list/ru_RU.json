@@ -1,4 +1,76 @@
 {
+  "FirstPointSet": {
+    "msgid": ">> First point set.",
+    "msgstr": ""
+  },
+  "SecondPointSet": {
+    "msgid": ">> Second point set.",
+    "msgstr": ""
+  },
+  "SelectionCompleted": {
+    "msgid": ">> Selection completed.",
+    "msgstr": ""
+  },
+  "PointSet": {
+    "msgid": ">> Point set.",
+    "msgstr": ""
+  },
+  "WallsCreated": {
+    "msgid": ">> Walls created.",
+    "msgstr": ""
+  },
+  "InvalidBlockId": {
+    "msgid": ">> Invalid block ID.",
+    "msgstr": ""
+  },
+  "OutlineCreated": {
+    "msgid": ">> Outline created.",
+    "msgstr": ""
+  },
+  "FilledCircleCreated": {
+    "msgid": ">> Filled circle created.",
+    "msgstr": ""
+  },
+  "RangeSet": {
+    "msgid": ">> Range set with the specified block ({blockId}).",
+    "msgstr": ""
+  },
+  "RangeCleared": {
+    "msgid": ">> Range cleared.",
+    "msgstr": ""
+  },
+  "WallsToolSelected": {
+    "msgid": ">> Walls tool selected. (Block ID: {blockId})",
+    "msgstr": ""
+  },
+  "OutlineToolSelected": {
+    "msgid": ">> Outline tool selected. (Radius: {radius}, Block ID: {blockId})",
+    "msgstr": ""
+  },
+  "FilledCircleToolSelected": {
+    "msgid": ">> Filled circle tool selected. (Radius: {radius}, Block ID: {blockId})",
+    "msgstr": ""
+  },
+  "ToolExited": {
+    "msgid": ">> Tool exited.",
+    "msgstr": ""
+  },
+  "ToolOptions": {
+    "msgid": ">> Tool options: -wall <blockID>, -outline <radius> <blockID>, -filledCircle <radius> <blockID>, -exit",
+    "msgstr": ""
+  },
+  "StartRangeSelection2": {
+    "msgid": ">> Range selection started. Please break two blocks.",
+    "msgstr": ""
+  },
+  "StartRangeSelection": {
+    "msgid": ">> Range selection started. Hold a wooden hoe and break a block.",
+    "msgstr": ""
+  },
+  "InvalidCommandUsage": {
+    "msgid": ">> Invalid command usage: /{prefix}edit -set <blockID> | /{prefix}edit -clear | /{prefix}edit tool <options> | /{prefix}edit start",
+    "msgstr": ""
+  },
   "PlayerNotFound": {
     "msgid": "§cPlayerNotFound!! Make sure you're really there",
     "msgstr": "§cИгрок не найден!! Убедитесь, что вы действительно там"

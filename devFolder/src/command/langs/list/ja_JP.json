@@ -1,4 +1,76 @@
 {
+  "FirstPointSet": {
+    "msgid": ">> First point set.",
+    "msgstr": ">> 最初の地点を設定しました。"
+  },
+  "SecondPointSet": {
+    "msgid": ">> Second point set.",
+    "msgstr": ">> 2つ目の地点を設定しました。"
+  },
+  "SelectionCompleted": {
+    "msgid": ">> Selection completed.",
+    "msgstr": ">> 範囲選択が完了しました。"
+  },
+  "PointSet": {
+    "msgid": ">> Point set.",
+    "msgstr": ">> 地点を設定しました。"
+  },
+  "WallsCreated": {
+    "msgid": ">> Walls created.",
+    "msgstr": ">> 壁を作成しました。"
+  },
+  "InvalidBlockId": {
+    "msgid": ">> Invalid block ID.",
+    "msgstr": ">> 無効なブロックIDです。"
+  },
+  "OutlineCreated": {
+    "msgid": ">> Outline created.",
+    "msgstr": ">> アウトラインを作成しました。"
+  },
+  "FilledCircleCreated": {
+    "msgid": ">> Filled circle created.",
+    "msgstr": ">> 中を埋めた円を作成しました。"
+  },
+  "RangeSet": {
+    "msgid": ">> Range set with the specified block ({blockId}).",
+    "msgstr": ">> 指定したブロック({blockId})で範囲内が設定されました。"
+  },
+  "RangeCleared": {
+    "msgid": ">> Range cleared.",
+    "msgstr": ">> 範囲内がクリアされました。"
+  },
+  "WallsToolSelected": {
+    "msgid": ">> Walls tool selected. (Block ID: {blockId})",
+    "msgstr": ">> walls ツールを選択しました。 (ブロックID: {blockId})"
+  },
+  "OutlineToolSelected": {
+    "msgid": ">> Outline tool selected. (Radius: {radius}, Block ID: {blockId})",
+    "msgstr": ">> outline ツールを選択しました。 (半径: {radius}, ブロックID: {blockId})"
+  },
+  "FilledCircleToolSelected": {
+    "msgid": ">> Filled circle tool selected. (Radius: {radius}, Block ID: {blockId})",
+    "msgstr": ">> filledCircle ツールを選択しました。 (半径: {radius}, ブロックID: {blockId})"
+  },
+  "ToolExited": {
+    "msgid": ">> Tool exited.",
+    "msgstr": ">> ツールを終了しました。"
+  },
+  "ToolOptions": {
+    "msgid": ">> Tool options: -wall <blockID>, -outline <radius> <blockID>, -filledCircle <radius> <blockID>, -exit",
+    "msgstr": ">> ツールオプション: -wall <ブロックID>, -outline <半径> <ブロックID>, -filledCircle <半径> <ブロックID>, -exit"
+  },
+  "StartRangeSelection2": {
+    "msgid": ">> Range selection started. Please break two blocks.",
+    "msgstr": ">> 範囲選択を開始しました。ブロックを2つ破壊してください。"
+  },
+  "StartRangeSelection": {
+    "msgid": ">> Range selection started. Hold a wooden hoe and break a block.",
+    "msgstr": ">> 範囲選択を開始しました。木のクワを持ちブロックを破壊してください"
+  },
+  "InvalidCommandUsage": {
+    "msgid": ">> Invalid command usage: /{prefix}edit -set <blockID> | /{prefix}edit -clear | /{prefix}edit tool <options> | /{prefix}edit start",
+    "msgstr": ">> コマンドの使用方法: {prefix}edit -set <ブロックID> | {prefix}edit -clear | {prefix}edit tool <オプション> | {prefix}edit start"
+  },
   "PlayerNotFound": {
     "msgid": "§cPlayerNotFound!! Make sure you're really there",
     "msgstr": "§cこのプレイヤーが見つかりません！！"
@@ -13,7 +85,7 @@
   },
   "WarpUsage": {
     "msgid": "§c usage: warpgate -create <gate name> <x> <y> <z",
-    "msgstr": ""
+    "msgstr": "§c使用方法は: warpgate -create <gate name> <x> <y> <z>だよ"
   },
   "AlreadyWarp": {
     "msgid": "§cA warp gate of that name already exists.",
