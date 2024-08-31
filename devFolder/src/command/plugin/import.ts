@@ -1,3 +1,4 @@
 import './chest';
 import './jpch';
-import './warpgate'
+import './warpgate';
+import './edit';

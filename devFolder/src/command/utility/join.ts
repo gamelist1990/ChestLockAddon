@@ -68,8 +68,6 @@ registerCommand({
 world.afterEvents.playerSpawn.subscribe((event: any) => {
   const  { player } = event;
   system.runTimeout(() => {
-
-    console.warn(JSON.stringify(player,null,2))
     showJoinMessage(player);
  
   }, 120); 

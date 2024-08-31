@@ -64,6 +64,11 @@ export const c = (): { commands: { [key: string]: CommandConfig }; admin: string
       adminOnly: true,
       requireTag: [],
     },
+    edit: {
+      enabled: true,
+      adminOnly: true,
+      requireTag: [],
+    },
     
   },
 
