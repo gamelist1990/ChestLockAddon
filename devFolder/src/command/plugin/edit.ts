@@ -116,7 +116,7 @@ function fillBlocks(pos1: any, pos2: any, blockId: string) {
     if (currentCommandIndex < commands.length) {
       const command = commands[currentCommandIndex];
       world.getDimension('overworld').runCommand(command);
-      console.warn(`Executed command: ${command}`);
+     // console.warn(`Executed command: ${command}`);
       currentCommandIndex++;
     }
   }, 1); // 1tick ごとに実行
