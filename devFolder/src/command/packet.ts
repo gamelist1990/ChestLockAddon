@@ -1,6 +1,6 @@
 import { c, getGamemode } from '../Modules/Util';
 import { registerCommand, verifier } from '../Modules/Handler';
-import { Player, world, system, Vector3, Entity } from '@minecraft/server';
+import { Player, world, system, Vector3, Entity,Effect } from '@minecraft/server';
 
 // ----------------------------------
 // --- 設定 ---
@@ -122,6 +122,15 @@ function executeRollback(player: Player) {
   data.lastTeleportTime = 0;
 }
 
+
+function hasAnyEffectExcept(player: Player, excludedEffects: string[]): boolean {
+  // プレイヤーのエフェクトを取得
+  const effects: Effect[] = player.getEffects();
+
+  // プレイヤーが除外されたエフェクト以外のエフェクトを持っているかどうかを確認
+  return effects.some((effect: Effect) => !excludedEffects.includes(effect.typeId));
+}
+
 //Freeze
 function executeFreeze(player: Player) {
   const data = playerData[player.id];
@@ -182,13 +191,55 @@ function detectClickTP(player: Player): { cheatType: string } | null {
     return null;
   }
 
-  // 落下中かどうかを判定
-  const isFalling = player.getVelocity().y < 0 && !player.isOnGround;
+   // 落下中かどうかを判定
+   const isFalling = player.getVelocity().y < 0 && !player.isOnGround;
 
-  // 落下中は検知しない
-  if (isFalling) {
+   // 奈落への落下かどうかを判定
+   if (player.location.y <= -64) {
     return null;
   }
+ 
+   // 通常の落下中は検知しない
+   if (isFalling) {
+     return null;
+   }
+
+   const excludedEffects = [
+    'minecraft:absorption',
+    'minecraft:bad_omen',
+    'minecraft:blindness',
+    'minecraft:conduit_power',
+    'minecraft:darkness',
+    'minecraft:fatal_poison',
+    'minecraft:fire_resistance',
+    'minecraft:glowing',
+    'minecraft:haste',
+    'minecraft:health_boost',
+    'minecraft:hunger',
+    'minecraft:instant_damage',
+    'minecraft:instant_health',
+    'minecraft:invisibility',
+    'minecraft:mining_fatigue',
+    'minecraft:nausea',
+    'minecraft:night_vision',
+    'minecraft:poison',
+    'minecraft:regeneration',
+    'minecraft:resistance',
+    'minecraft:saturation',
+    'minecraft:slow_falling',
+    'minecraft:slowness',
+    'minecraft:strength',
+    'minecraft:water_breathing',
+    'minecraft:weakness',
+    'minecraft:wither',
+  ];
+
+  if (hasAnyEffectExcept(player, excludedEffects)) {
+    return null;
+  } else {
+  }
+
+  
 
   const clickTpDistance = Math.sqrt(
     Math.pow(player.location.x - data.positionHistory[0].x, 2) +
@@ -200,6 +251,7 @@ function detectClickTP(player: Player): { cheatType: string } | null {
   if (currentTick - data.lastTeleportTime <= config.antiCheat.allowedTeleportTicks) {
     return null;
   }
+  
 
   // ClickTP 検出除外範囲内かどうかを確認
   if (clickTpDistance >= config.antiCheat.clickTpExclusionThreshold) {
@@ -258,7 +310,7 @@ function handleCheatDetection(player: Player, detection: { cheatType: string }) 
       world.sendMessage(logMessage);
 
       // ペナルティ処理とロールバック実行
-      if (data.violationCount >= config.antiCheat.detectionThreshold * 2) {
+      if (data.violationCount >= config.antiCheat.detectionThreshold * 3) {
         executeFreeze(player);
       } else {
         executeRollback(player);
