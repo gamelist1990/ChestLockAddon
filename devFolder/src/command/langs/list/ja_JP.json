@@ -1,75 +1,135 @@
 {
+  "loreDoce": {
+    "msgid": "Change the name/lore of the item.",
+    "msgstr": "§2アイテムの名前/説明を変更します。(ホットバーの一番左に変えたいアイテムを置いてください)"
+  },
+  "changeLore": {
+    "msgid": "Item Change Lore",
+    "msgstr": "§0アイテムの説明変更"
+  },
+  "ChangeName": {
+    "msgid": "Item Change Name",
+    "msgstr": "§0アイテム名変更"
+  },
+  "ClearLore": {
+    "msgid": "Item Clear Lore",
+    "msgstr": "§0アイテムの説明をクリア"
+  },
+  "Newlore": {
+    "msgid": "Enter new lore:",
+    "msgstr": "新しい説明を入力してください:"
+  },
+  "Newname": {
+    "msgid": "Enter new name:",
+    "msgstr": "新しい名前を入力してください:"
+  },
+  "Usagelore": {
+    "msgid": "Usage: {prefix}lore -set <lore content> or {prefix}lore -remove <lore content> or {prefix}lore -rename <new name> or {prefix}lore -clearlore",
+    "msgstr": "§3使用方法: {prefix}lore -set <説明の内容> または {prefix}lore -remove <説明の内容> または {prefix}lore -rename <新しい名前> または {prefix}lore -clearlore"
+  },
+  "ADDLore": {
+    "msgid": "Added lore, please check",
+    "msgstr": "§a説明を追加しました。確認してください。"
+  },
+  "TakeItem": {
+    "msgid": "Please take the item.",
+    "msgstr": "§cアイテムを手に持ってください。"
+  },
+  "LoreNotFound": {
+    "msgid": "Lore not found",
+    "msgstr": "§c説明が見つかりません"
+  },
+  "RemoveLore": {
+    "msgid": "Lore has been deleted. Please check.",
+    "msgstr": "§a説明を削除しました。確認してください。"
+  },
+  "ChangeNames": {
+    "msgid": "Renamed the item",
+    "msgstr": "§aアイテムの名前を変更しました"
+  },
+  "uilore": {
+    "msgid": "Custom Item Name/Lore",
+    "msgstr": "§0カスタムアイテム名/説明"
+  },
   "FirstPointSet": {
     "msgid": ">> First point set.",
-    "msgstr": ">> 最初の地点を設定しました。"
+    "msgstr": "§7>>§a 最初の地点を設定しました。"
+  },
+  "editCom": {
+    "msgid": "WorldEdit Command",
+    "msgstr": "ワールドエディットコマンド"
+  },
+  "loreCom": {
+    "msgid": "Change Item Lore",
+    "msgstr": "アイテムの説明を変更"
   },
   "SecondPointSet": {
     "msgid": ">> Second point set.",
-    "msgstr": ">> 2つ目の地点を設定しました。"
+    "msgstr": "§7>>§6 2つ目の地点を設定しました。"
   },
   "SelectionCompleted": {
     "msgid": ">> Selection completed.",
-    "msgstr": ">> 範囲選択が完了しました。"
+    "msgstr": "§7>>§a 範囲選択が完了しました。"
   },
   "PointSet": {
     "msgid": ">> Point set.",
-    "msgstr": ">> 地点を設定しました。"
+    "msgstr": "§7>>§a 地点を設定しました。"
   },
   "WallsCreated": {
     "msgid": ">> Walls created.",
-    "msgstr": ">> 壁を作成しました。"
+    "msgstr": "§7>>§a 壁を作成しました。"
   },
   "InvalidBlockId": {
     "msgid": ">> Invalid block ID.",
-    "msgstr": ">> 無効なブロックIDです。"
+    "msgstr": "§7>>§c 無効なブロックIDです。"
   },
   "OutlineCreated": {
     "msgid": ">> Outline created.",
-    "msgstr": ">> アウトラインを作成しました。"
+    "msgstr": "§7>>§a アウトラインを作成しました。"
   },
   "FilledCircleCreated": {
     "msgid": ">> Filled circle created.",
-    "msgstr": ">> 中を埋めた円を作成しました。"
+    "msgstr": "§7>>§a 中を埋めた円を作成しました。"
   },
   "RangeSet": {
     "msgid": ">> Range set with the specified block ({blockId}).",
-    "msgstr": ">> 指定したブロック({blockId})で範囲内が設定されました。"
+    "msgstr": "§7>>§a 指定したブロック({blockId})で範囲内が設定されました。"
   },
   "RangeCleared": {
     "msgid": ">> Range cleared.",
-    "msgstr": ">> 範囲内がクリアされました。"
+    "msgstr": "§7>>§a 範囲内がクリアされました。"
   },
   "WallsToolSelected": {
     "msgid": ">> Walls tool selected. (Block ID: {blockId})",
-    "msgstr": ">> walls ツールを選択しました。 (ブロックID: {blockId})"
+    "msgstr": "§7>>§a walls ツールを選択しました。 (ブロックID: {blockId})"
   },
   "OutlineToolSelected": {
     "msgid": ">> Outline tool selected. (Radius: {radius}, Block ID: {blockId})",
-    "msgstr": ">> outline ツールを選択しました。 (半径: {radius}, ブロックID: {blockId})"
+    "msgstr": "§7>>§a outline ツールを選択しました。 (半径: {radius}, ブロックID: {blockId})"
   },
   "FilledCircleToolSelected": {
     "msgid": ">> Filled circle tool selected. (Radius: {radius}, Block ID: {blockId})",
-    "msgstr": ">> filledCircle ツールを選択しました。 (半径: {radius}, ブロックID: {blockId})"
+    "msgstr": "§f>>§a filledCircle ツールを選択しました。 (半径: {radius}, ブロックID: {blockId})"
   },
   "ToolExited": {
     "msgid": ">> Tool exited.",
-    "msgstr": ">> ツールを終了しました。"
+    "msgstr": "§f>>§a ツールを終了しました。"
   },
   "ToolOptions": {
     "msgid": ">> Tool options: -wall <blockID>, -outline <radius> <blockID>, -filledCircle <radius> <blockID>, -exit",
-    "msgstr": ">> ツールオプション: -wall <ブロックID>, -outline <半径> <ブロックID>, -filledCircle <半径> <ブロックID>, -exit"
+    "msgstr": "§f>>§3 ツールオプション: -wall <ブロックID>, -outline <半径> <ブロックID>, -filledCircle <半径> <ブロックID>, -exit"
   },
   "StartRangeSelection2": {
     "msgid": ">> Range selection started. Please break two blocks.",
-    "msgstr": ">> 範囲選択を開始しました。ブロックを2つ破壊してください。"
+    "msgstr": "§f>>§a 範囲選択を開始しました。ブロックを2つ破壊してください。"
   },
   "StartRangeSelection": {
     "msgid": ">> Range selection started. Hold a wooden hoe and break a block.",
-    "msgstr": ">> 範囲選択を開始しました。木のクワを持ちブロックを破壊してください"
+    "msgstr": "§f>>§a 範囲選択を開始しました。木のクワを持ちブロックを破壊してください"
   },
   "InvalidCommandUsage": {
     "msgid": ">> Invalid command usage: /{prefix}edit -set <blockID> | /{prefix}edit -clear | /{prefix}edit tool <options> | /{prefix}edit start",
-    "msgstr": ">> コマンドの使用方法: {prefix}edit -set <ブロックID> | {prefix}edit -clear | {prefix}edit tool <オプション> | {prefix}edit start"
+    "msgstr": "§f>>§3 コマンドの使用方法: {prefix}edit -set <ブロックID> | {prefix}edit -clear | {prefix}edit tool <オプション> | {prefix}edit start"
   },
   "PlayerNotFound": {
     "msgid": "§cPlayerNotFound!! Make sure you're really there",

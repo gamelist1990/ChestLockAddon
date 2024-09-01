@@ -1,6 +1,66 @@
 {
+  "loreDoce": {
+    "msgid": "Change the name/lore of the item.",
+    "msgstr": ""
+  },
+  "changeLore": {
+    "msgid": "Item Change Lore",
+    "msgstr": ""
+  },
+  "ChangeName": {
+    "msgid": "Item Change Name",
+    "msgstr": ""
+  },
+  "ClearLore": {
+    "msgid": "Item Clear Lore",
+    "msgstr": ""
+  },
+  "Newlore": {
+    "msgid": "Enter new lore:",
+    "msgstr": ""
+  },
+  "Newname": {
+    "msgid": "Enter new name:",
+    "msgstr": ""
+  },
+  "Usagelore": {
+    "msgid": "Usage: {prefix}lore -set <lore content> or {prefix}lore -remove <lore content> or {prefix}lore -rename <new name> or {prefix}lore -clearlore",
+    "msgstr": ""
+  },
+  "ADDLore": {
+    "msgid": "Added lore, please check",
+    "msgstr": ""
+  },
+  "TakeItem": {
+    "msgid": "Please take the item.",
+    "msgstr": ""
+  },
+  "LoreNotFound": {
+    "msgid": "Lore not found",
+    "msgstr": ""
+  },
+  "RemoveLore": {
+    "msgid": "Lore has been deleted. Please check.",
+    "msgstr": ""
+  },
+  "ChangeNames": {
+    "msgid": "Renamed the item",
+    "msgstr": ""
+  },
+  "uilore": {
+    "msgid": "Custom Item Name/Lore",
+    "msgstr": ""
+  },
   "FirstPointSet": {
     "msgid": ">> First point set.",
+    "msgstr": ""
+  },
+  "editCom": {
+    "msgid": "WorldEdit Command",
+    "msgstr": ""
+  },
+  "loreCom": {
+    "msgid": "Change Item Lore",
     "msgstr": ""
   },
   "SecondPointSet": {

@@ -90,13 +90,13 @@ export function translate(
     if (params) {
       for (const paramKey in params) {
         const paramValue = params[paramKey];
-        translatedText = translatedText.replace(`{${paramKey}}`, paramValue);
+        translatedText = translatedText.replace(new RegExp(`{${paramKey}}`, 'g'), paramValue);
       }
     }
   }
 
   if (player) {
-    translatedText = translatedText.replace('{playerName}', player.name);
+    translatedText = translatedText.replace(new RegExp('{playerName}', 'g'), player.name);
   }
 
   if (targetPlayer) {
@@ -105,6 +105,7 @@ export function translate(
 
   return translatedText;
 }
+
 
 export function rawTranslate(
   player: Player | null,

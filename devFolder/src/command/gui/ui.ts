@@ -1,4 +1,4 @@
-import { ActionFormData } from '@minecraft/server-ui';
+import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { Player } from '@minecraft/server';
 import { runCommand } from '../../Modules/Handler';
 import { getTpaRequests } from '../utility/tpa';
@@ -15,6 +15,7 @@ export function showBasicUI(player: Player): Promise<void> {
     .button(translate(player, 'uilang'), 'textures/ui/language_glyph_color')
     .button(translate(player, 'uijpch'), 'textures/ui/chat_send')
     .button(translate(player, 'uitpa'), 'textures/items/ender_pearl')
+    .button(translate(player, 'uilore'), 'textures/items/name_tag')
     .button('Exit');
 
   return form
@@ -38,6 +39,9 @@ export function showBasicUI(player: Player): Promise<void> {
             break;
           case 4:
             showTpaMenu(player);
+            break;
+          case 5:
+            showloreMenu(player);
             break;
         }
       }
@@ -466,4 +470,71 @@ function showSendTpaMenu(player: Player): Promise<void> {
         player.sendMessage(translate(player, 'FromError') + error.message);
       })
   );
+}
+
+
+
+function showloreMenu(player: Player): Promise<void> {
+  player.playSound('mob.chicken.plop');
+
+
+  const form = new ActionFormData()
+    .title('Lore Menu')
+    .body(translate(player, 'loreDoce'))
+    .button(translate(player, 'changeLore'))
+    .button(translate(player, 'ChangeName'))
+    .button(translate(player, 'ClearLore'))
+    .button(translate(player, 'back'));
+
+  return (
+    form
+      //@ts-ignore
+      .show(player)
+      .then((response) => {
+        if (response.canceled) {
+        } else {
+          if (response.selection === 0) {
+            showChangelore(player);
+          } else if (response.selection === 1) {
+            showChangeName(player);
+          } else if (response.selection === 2) {
+            Clearlore(player);
+          }
+        }
+      })
+      .catch((error: Error) => {
+        console.error(translate(player, 'FromError'), error);
+        player.sendMessage(translate(player, 'FromError') + error.message);
+      })
+  );
+}
+
+function showChangelore(player: Player): void {
+  const form = new ModalFormData()
+    .title('Change Lore')
+    .textField(translate(player,"Newlore"), 'New lore');
+  //@ts-ignore
+  form.show(player).then((response) => {
+    if (!response.canceled && response.formValues) {
+      const newLore = response.formValues[0] as string;
+      runCommand(player.name, 'lore', ['-slot','0','-set', newLore]);
+    }
+  });
+}
+
+function showChangeName(player: Player): void {
+  const form = new ModalFormData()
+    .title('Change Name')
+    .textField(translate(player,"Newname"),'New name');
+   //@ts-ignore
+  form.show(player).then((response) => {
+    if (!response.canceled && response.formValues) {
+      const newName = response.formValues[0] as string;
+      runCommand(player.name, 'lore', ['-slot', '0', '-rename', newName]);
+    }
+  });
+}
+
+function Clearlore(player: Player): void {
+  runCommand(player.name, 'lore', ['-slot', '0', '-clearlore']);
 }
