@@ -7,7 +7,7 @@ import { translate } from '../langs/list/LanguageManager'; // 翻訳機能を追
 const playerData: { [playerName: string]: { pos1: any, pos2: any, selecting: boolean, commandArgs: string[] } } = {};
 
 // プレイヤーごとのツール設定を格納する変数
-const playerDataTool: { [playerName: string]: { tool: string, blockId: string, outlineRadius?: number, filledCircleRadius?: number } } = {};
+const playerDataTool: { [playerName: string]: { tool: string, blockId: string, outlineRadius?: number,smoothRadius?:number, filledCircleRadius?: number } } = {};
 
 // ブロック破壊イベントリスナー
 world.beforeEvents.playerBreakBlock.subscribe(event => {
@@ -23,7 +23,7 @@ world.beforeEvents.playerBreakBlock.subscribe(event => {
     if (playerDataTool[player.name]) {
       // ツールを使用中の場合: 木のクワを持っているか確認
       if (heldItem && heldItem.typeId === 'minecraft:wooden_hoe') {
-        if (playerDataTool[player.name].tool === 'outline' || playerDataTool[player.name].tool === 'filledCircle') {
+        if (playerDataTool[player.name].tool === 'outline' || playerDataTool[player.name].tool === 'filledCircle' || playerDataTool[player.name].tool === 'smooth') {
           handleBlockBreakForSingleSelection(player, event.block.location);
         } else {
           handleBlockBreakForSelection(player, event.block.location);
@@ -85,13 +85,12 @@ function fillBlocks(pos1: any, pos2: any, blockId: string) {
     return; // pos1 または pos2 が null の場合は処理を中断
   }
 
-  // 世界の境界内に制限
-  const minX = Math.min(pos1.x, pos2.x);
-  const maxX = Math.max(pos1.x, pos2.x);
-  const minY = Math.min(pos1.y, pos2.y);
-  const maxY = Math.max(pos1.y, pos2.y);
-  const minZ = Math.min(pos1.z, pos2.z);
-  const maxZ = Math.max(pos1.z, pos2.z);
+  const minX = Math.max(Math.min(pos1.x, pos2.x));
+  const maxX = Math.min(Math.max(pos1.x, pos2.x));
+  const minY = Math.max(Math.min(pos1.y, pos2.y)); 
+  const maxY = Math.min(Math.max(pos1.y, pos2.y));
+  const minZ = Math.max(Math.min(pos1.z, pos2.z));
+  const maxZ = Math.min(Math.max(pos1.z, pos2.z));
 
   const chunkSize = 30;
   let commands: string[] = []; // 実行するコマンドを格納する配列
@@ -117,12 +116,14 @@ function fillBlocks(pos1: any, pos2: any, blockId: string) {
     if (currentCommandIndex < commands.length) {
       const command = commands[currentCommandIndex];
       world.getDimension('overworld').runCommand(command);
-      console.log(`Executed command: ${command}`);
+      console.warn(`Executed command: ${command}`);
       currentCommandIndex++;
-    } else {
     }
   }, 1); // 1tick ごとに実行
 }
+
+
+
 
 function createWalls(pos1: any, pos2: any, blockId: string) {
   const minX = Math.min(pos1.x, pos2.x);
@@ -195,18 +196,42 @@ function createFilledCircle(center: any, radius: number, blockId: string) {
   }
 }
 
+function smoothArea(center: any, radius: number, blockId: string): void {
+  const minX = Math.floor(center.x - radius);
+  const maxX = Math.floor(center.x + radius);
+  const minZ = Math.floor(center.z - radius);
+  const maxZ = Math.floor(center.z + radius);
+  const y = Math.floor(center.y);
+
+  for (let x = minX; x <= maxX; x++) {
+    for (let z = minZ; z <= maxZ; z++) {
+      // 指定の高さまでブロックで埋める
+      for (let currentY = y - radius; currentY <= y; currentY++) {
+        fillBlocks({ x, y: currentY, z }, { x, y: currentY, z }, blockId);
+      }
+      // 上面を空気ブロックにする
+      for (let currentY = y + 1; currentY <= y + radius; currentY++) {
+        fillBlocks({ x, y: currentY, z }, { x, y: currentY, z }, 'minecraft:air');
+      }
+    }
+  }
+}
+
+
+
+
+
+
 // 範囲選択完了後に実行するコマンドを処理
 function executeCommandAfterSelection(player: Player) {
   const data = playerData[player.name];
   if (!data || !data.pos1) {
-    // pos1 が設定されていない場合は処理を中断
     return;
   }
 
   const args = data.commandArgs; // コマンド実行時に保存しておいた引数
   const toolData = playerDataTool[player.name]; // ツールデータ
 
-  // 20tick（1秒）待機してからコマンドを実行 (必要に応じて調整)
   system.runTimeout(() => {
     if (toolData) {
       // ツール使用時の処理
@@ -241,6 +266,17 @@ function executeCommandAfterSelection(player: Player) {
           createFilledCircle(data.pos1, radius, blockId);
           player.sendMessage(translate(player, "FilledCircleCreated")); // 翻訳キーを使用
           runCommand(player.name,'edit',['-start']);
+        } else {
+          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
+        }
+      } else if (tool === 'smooth') {
+        if (isValidBlockId(blockId)) {
+          const radius = toolData.smoothRadius || 5;
+          smoothArea(data.pos1, radius, blockId);
+          player.sendMessage(translate(player, "smoothCreate")); // 翻訳キーを使用
+          system.runTimeout(() => {
+            runCommand(player.name, 'edit', ['-start']);
+          }, 20);
         } else {
           player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
         }
@@ -322,6 +358,16 @@ registerCommand({
         if (isValidBlockId(blockId)) {
           playerDataTool[player.name] = { tool: 'filledCircle', blockId, filledCircleRadius: radius }; // playerDataTool に半径を保存
           player.sendMessage(translate(player, "FilledCircleToolSelected", { radius: `${radius}`, blockId: `${blockId}` })); // 翻訳キーを使用、データを渡す
+        } else {
+          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
+        }
+      } else if (args[1] === '-smooth' && args.length === 4 && !isNaN(parseInt(args[2]))) {
+        // outline ツールで半径とブロックIDを指定
+        const radius = parseInt(args[2]);
+        const blockId = args[3];
+        if (isValidBlockId(blockId)) {
+          playerDataTool[player.name] = { tool: 'smooth', blockId, smoothRadius: radius }; // playerDataTool に半径を保存
+          player.sendMessage(translate(player, "OutlineToolSelected", { radius: `${radius}`, blockId: `${blockId}` })); // 翻訳キーを使用、データを渡す
         } else {
           player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
         }

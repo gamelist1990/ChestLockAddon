@@ -28,13 +28,13 @@ let currentTick = 0;
 // --- プレイヤーデータ構造 ---
 // ----------------------------------
 interface PlayerData {
-  positionHistory: Vector3[]; // 位置履歴
-  lastTime: number; // 最後に位置を記録した時間
-  violationCount: number; // 違反回数
-  isTeleporting: boolean; // テレポートフラグを追加
-  lastTeleportTime: number; // 最後にテレポートした時間
-  isFrozen: boolean; // freezeフラグ
-  freezeStartTime: number; // freeze開始時間
+  positionHistory: Vector3[]; 
+  lastTime: number; 
+  violationCount: number; 
+  isTeleporting: boolean; 
+  lastTeleportTime: number; 
+  isFrozen: boolean; 
+  freezeStartTime: number;
   isJumping:boolean;
 }
 
@@ -77,13 +77,12 @@ function addPositionHistory(player: Player) {
   const data = playerData[player.id];
   if (!data) return;
 
-  // エリトラを使用中の場合、位置履歴をクリアし、クールタイムを設定
   if (player.isGliding) {
-    data.isTeleporting = true; // クールタイム中はテレポート扱いにする
+    data.isTeleporting = true; 
     // クールタイム終了後にテレポートフラグをリセット
     system.runTimeout(() => {
       data.isTeleporting = false;
-    }, 3 * 20); // 3秒後にリセット (20ティック = 1秒)
+    }, 3 * 20); 
   } else {
     data.positionHistory.push(player.location);
   }
@@ -95,7 +94,6 @@ function addPositionHistory(player: Player) {
     );
   }
 
-  // 一定時間以上前の履歴は削除
   const historyLimit = config.antiCheat.rollbackTicks + 1;
   if (data.positionHistory.length > historyLimit) {
     data.positionHistory.shift();
@@ -106,11 +104,10 @@ export function handleTeleportCommand(player: Player) {
   const data = playerData[player.id];
   if (data) {
     data.isTeleporting = true;
-    data.lastTeleportTime = currentTick; // テレポート時間を記録
-    // 一定時間後にテレポートフラグをリセット
+    data.lastTeleportTime = currentTick;
     system.runTimeout(() => {
       data.isTeleporting = false;
-    }, 2 * 20); // 1秒後にリセット (20ティック)
+    }, 2 * 20); 
   }
 }
 
@@ -125,8 +122,8 @@ function executeRollback(player: Player) {
     player.teleport(rollbackPosition, { dimension: player.dimension });
     console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をロールバックしました`);
   }
-
-  // positionHistory, lastTime, lastTeleportTime をリセット
+　
+  //ResetData
   data.positionHistory = [player.location];
   data.lastTime = Date.now();
   data.lastTeleportTime = 0;
@@ -134,10 +131,8 @@ function executeRollback(player: Player) {
 
 
 function hasAnyEffectExcept(player: Player, excludedEffects: string[]): boolean {
-  // プレイヤーのエフェクトを取得
   const effects: Effect[] = player.getEffects();
 
-  // プレイヤーが除外されたエフェクト以外のエフェクトを持っているかどうかを確認
   return effects.some((effect: Effect) => !excludedEffects.includes(effect.typeId));
 }
 
@@ -164,14 +159,13 @@ function executeFreeze(player: Player) {
     data.isFrozen = false;
     console.warn(`プレイヤー ${player.name} (ID: ${player.id}) のfreezeを解除しました`);
 
-    // positionHistory, lastTime, lastTeleportTime をリセット
     data.positionHistory = [player.location];
     data.lastTime = Date.now();
     data.lastTeleportTime = 0;
   }, config.antiCheat.freezeDuration);
 }
 
-// ClickTP検出 (正当なテレポートを考慮)
+// ClickTP検出
 function detectClickTP(player: Player): { cheatType: string } | null {
   const data = playerData[player.id];
   if (!data || data.isTeleporting) return null;
@@ -196,31 +190,20 @@ function detectClickTP(player: Player): { cheatType: string } | null {
     return false;
   });
 
-  // エリトラを使用中、または近くにボートがある場合は検知しない
+
   if (player.isGliding || isNearBoat) {
     return null;
   }
-
-   // 落下中かどうかを判定
-
-   //誤検知少ない版
-   // const positionHistory = data.positionHistory;
-   // const recentPosition = positionHistory[positionHistory.length - 1];
-   //const previousPosition = positionHistory[positionHistory.length - 2];
-   //const yVelocity = recentPosition.y - previousPosition.y;
-   //const isFalling = yVelocity < -0.5 && !player.isOnGround;
-   //保留
+  //現状のコードで誤検知が少ないので保留のコードは削除
 
    const isFalling = player.getVelocity().y < -0.5 && !player.isOnGround;
    const isSprintingInAir = player.isSprinting && !player.isOnGround;
 
 
-   // 奈落への落下かどうかを判定
    if (player.location.y <= -64) {
     return null;
   }
  
-   // 通常の落下中は検知しない
    if (isFalling || isSprintingInAir) {
     return null;
   }
@@ -269,9 +252,8 @@ function detectClickTP(player: Player): { cheatType: string } | null {
   );
   
 
-  // ClickTP 検出除外範囲内かどうかを確認
   if (clickTpDistance >= config.antiCheat.clickTpExclusionThreshold) {
-    return null; // 検出除外範囲内なので ClickTP とはみなさない
+    return null; 
   }
 
   if (clickTpDistance > config.antiCheat.clickTpThreshold) {
@@ -292,36 +274,30 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     return null;
   }
 
-  // プレイヤーがジャンプしたかどうかを記録
   const isJumping = player.isJumping;
   const isOnGround = player.isOnGround;
 
-  // ログを追加して状態を確認
   //console.warn(`[DEBUG] Player: ${player.name}, isJumping: ${isJumping}, isOnGround: ${isOnGround}, isJumpingFlag: ${data.isJumping}`);
 
-  // プレイヤーの位置履歴を取得
   const positionHistory = data.positionHistory;
   const recentPosition = positionHistory[positionHistory.length - 1];
   const previousPosition = positionHistory[positionHistory.length - 2];
 
-  // プレイヤーがジャンプした場合、ジャンプフラグを立てる
+  // プレイヤーがジャンプした場合、ジャンプフラグを立てる(たまにバグる)
   if (isJumping && recentPosition && previousPosition && recentPosition.y > previousPosition.y) {
     data.isJumping = true;
     //console.warn(`[DEBUG] Player: ${player.name} has started jumping.`);
   }
 
-  // プレイヤーが地面に着地した場合、ジャンプフラグをリセット
   if (isOnGround && data.isJumping) {
     data.isJumping = false;
-   // console.log(`[DEBUG] Player: ${player.name} has landed.`);
     return null;
   }
 
-  // プレイヤーがジャンプフラグを立てたまま地面に着地せずに再度ジャンプした場合、AirJumpとみなす
   if (!isOnGround && data.isJumping && isJumping) {
     if (recentPosition && previousPosition) {
       const jumpHeight = recentPosition.y - previousPosition.y;
-      if (jumpHeight > 1.25) { // 通常のジャンプの高さを超える場合
+      if (jumpHeight > 1.25) { //大体1.25
        //console.warn(`[DEBUG] Player: ${player.name} is detected for AirJump.`);
         return { cheatType: 'AirJump' };
       }
@@ -331,66 +307,55 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   return null;
 }
 
+
+
 function detectESP(player: Player): { cheatType: string } | null {
   const viewDirection = player.getViewDirection();
   const playerDimension = player.dimension;
 
-  // 他のプレイヤーを取得
-  const otherPlayers = playerDimension.getPlayers().filter(p => p !== player); // 自分自身を除外
+  const otherPlayers = playerDimension.getPlayers().filter(p => p !== player); 
 
   for (const otherPlayer of otherPlayers) {
-    // 距離を手動で計算
     const distance = Math.sqrt(
       Math.pow(otherPlayer.location.x - player.location.x, 2) +
         Math.pow(otherPlayer.location.y - player.location.y, 2) +
         Math.pow(otherPlayer.location.z - player.location.z, 2),
     );
 
-    // directionToOtherPlayerを手動で計算
     const directionToOtherPlayer = {
       x: (otherPlayer.location.x - player.location.x) / distance,
       y: (otherPlayer.location.y - player.location.y) / distance,
       z: (otherPlayer.location.z - player.location.z) / distance,
     };
 
-    // 2つのベクトルの内積を計算
     const dotProduct =
       viewDirection.x * directionToOtherPlayer.x +
       viewDirection.y * directionToOtherPlayer.y +
       viewDirection.z * directionToOtherPlayer.z;
 
-    // 内積から角度を計算 (ラジアン)
     const angle = Math.acos(dotProduct);
 
-    // 視点方向の変化量を計算
     const viewDirectionChange = Math.abs(angle - previousAngle);
 
-    // プレイヤーと他のプレイヤーの間に指定されたブロックがあるか判定
     const targetBlockIds = ['minecraft:stone', 'minecraft:grass', 'minecraft:dirt'];
     const isPlayerBehindTargetBlocks = isPlayerBehindSpecificBlocks(player, otherPlayer, targetBlockIds);
 
-    // 視点方向の変化量が閾値を超えた場合
     if (viewDirectionChange > 0.06) {
-      // 初回検知時
       if (!espSuspiciousTime[player.id]) {
         espSuspiciousTime[player.id] = Date.now();
-        continue; // 監視を開始
+        continue;
       } else {
-        // 0.5秒以内に再度視点方向の変化量が閾値を超えた場合
         if (Date.now() - espSuspiciousTime[player.id] <= 750) {
-          // 角度が一定値以下、かつ間に指定されたブロックがある場合、ESPと判定
           if (angle < 0.4 && isPlayerBehindTargetBlocks) {
-            delete espSuspiciousTime[player.id]; // 監視時間をリセット
-            return { cheatType: 'ESP (BETA SYSTEM) 【誤検知の可能性もあります】' }; // ESPとして検知
+            delete espSuspiciousTime[player.id]; 
+            return { cheatType: 'ESP (BETA SYSTEM) ' }; // ESP
           }
         } else {
-          // 0.5秒以上経過している場合は、監視をリセット
           delete espSuspiciousTime[player.id];
         }
       }
     }
 
-    // 角度を保存
     previousAngle = angle;
   }
 
@@ -400,23 +365,21 @@ function detectESP(player: Player): { cheatType: string } | null {
 let previousAngle = 0; // 1つ前のプレイヤーに対する角度を保存するための変数
 const espSuspiciousTime: { [playerId: string]: number } = {}; // プレイヤーごとのESP検知時間
 
-// 指定されたブロックのいずれかの背後にプレイヤーがいるか判定する関数
 function isPlayerBehindSpecificBlocks(player: Player, otherPlayer: Entity, targetBlockIds: string[]): boolean {
   const dimension = world.getDimension('overworld');
-  const step = 0.25; // ブロック判定の刻み幅
-  const worldHeight = 256; // ワールドの高さ
-  const maxAngle = 2; // プレイヤーの視線方向からの最大角度 (度)
+  const step = 0.25; 
+  const worldHeight = 256; 
+  const maxAngle = 2; 
 
   const playerLocation = player.location;
   const otherPlayerLocation = otherPlayer.location;
+  
 
-  // プレイヤーの目線の高さ1ブロック分を加算
+  //これは無くてもいい
   playerLocation.y += 1;
 
-  // プレイヤーの視線方向ベクトル
   const viewDirection = player.getViewDirection();
 
-  // プレイヤーから他のプレイヤーへのベクトル
   const directionToOtherPlayer = {
     x: otherPlayerLocation.x - playerLocation.x,
     y: otherPlayerLocation.y - playerLocation.y,
@@ -455,19 +418,18 @@ function isPlayerBehindSpecificBlocks(player: Player, otherPlayer: Entity, targe
 
     const block = dimension.getBlock(blockLocation);
 
-    // ブロックが存在し、指定されたブロックのいずれかである場合、true を返す
+     
     if (block && targetBlockIds.includes(block.type.id)) {
       return true;
     }
   }
 
-  return false; // 指定されたブロックのいずれもなければ false
+  return false; 
 }
 
 
 
 
-// 毎ティック実行される処理
 function runTick() {
   currentTick++;
   if (!monitoring) return;
@@ -475,7 +437,6 @@ function runTick() {
   for (const playerId in playerData) {
     const player = world.getPlayers().find((p) => p.id === playerId);
     if (player) {
-      // freeze中の場合は座標を固定
       if (playerData[playerId].isFrozen) {
         const freezeLocation = {
           x: player.location.x,
@@ -510,7 +471,6 @@ function runTick() {
 
       }
 
-      // プレイヤーデータ更新
       playerData[playerId].lastTime = Date.now();
     }
   }
@@ -528,7 +488,6 @@ function handleCheatDetection(player: Player, detection: { cheatType: string }) 
       console.warn(logMessage);
       world.sendMessage(logMessage);
 
-      // ペナルティ処理とロールバック実行
       if (data.violationCount >= config.antiCheat.detectionThreshold * 5) {
         executeFreeze(player);
       } else {
@@ -538,7 +497,6 @@ function handleCheatDetection(player: Player, detection: { cheatType: string }) 
   }
 }
 
-// 簡潔なプレイヤーデータのログ出力
 //@ts-ignore
 function logPlayerData() {
   const simplifiedData = Object.fromEntries(
@@ -560,11 +518,9 @@ export function RunAntiCheat() {
   world.getPlayers().forEach((p) => initializePlayerData(p));
   system.run(runTick);
   AddNewPlayers();
-  // 全プレイヤーにメッセージを送信
   console.warn('チート対策を有効にしました');
 }
 
-// 定期的に全プレイヤーを追加する関数
 function AddNewPlayers() {
   if (monitoring) {
     world.getPlayers().forEach((p) => {
@@ -573,7 +529,7 @@ function AddNewPlayers() {
       }
     });
   }
-  system.runTimeout(AddNewPlayers, 20 * 60); // 5秒ごとに実行 (20ティック = 1秒)
+  system.runTimeout(AddNewPlayers, 20 * 60);
 }
 
 function unfreezePlayer(player: Player) {
@@ -582,7 +538,6 @@ function unfreezePlayer(player: Player) {
     data.isFrozen = false;
     console.warn(`プレイヤー ${player.name} (ID: ${player.id}) のfreezeを解除しました`);
 
-    // positionHistory, lastTime, lastTeleportTime をリセット
     data.positionHistory = [player.location];
     data.lastTime = Date.now();
     data.lastTeleportTime = 0;
@@ -597,9 +552,9 @@ registerCommand({
   name: 'anticheat',
   description: 'チート対策を有効/無効にします',
   parent: false,
-  maxArgs: 2, // サブコマンド用に maxArgs を増やす
+  maxArgs: 2, 
   minArgs: 1,
-  require: (player: Player) => verifier(player, c().commands['anticheat']), // 権限確認
+  require: (player: Player) => verifier(player, c().commands['anticheat']),
   executor: (player: Player, args: string[]) => {
     if (args[0] === 'on') {
       RunAntiCheat();
