@@ -1,1 +1,1 @@
-export const ver = '0.9';
+export const ver = '1.0';
