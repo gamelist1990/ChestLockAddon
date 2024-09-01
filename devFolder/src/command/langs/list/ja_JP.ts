@@ -1,7 +1,7 @@
 export const translations = {
   "loreDoce": {
     msgid: "Change the name/lore of the item.",
-    msgstr: "§2アイテムの名前/説明を変更します。"
+    msgstr: "§2アイテムの名前/説明を変更します。(ホットバーの一番左に変えたいアイテムを置いてください)"
   },
   "changeLore": {
     msgid: "Item Change Lore",

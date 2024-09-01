@@ -1,6 +1,6 @@
 import { c, getGamemode } from '../Modules/Util';
 import { registerCommand, verifier } from '../Modules/Handler';
-import { Player, world, system, Vector3, Entity,Effect } from '@minecraft/server';
+import { Player, world, system, Vector3, Entity, Effect } from '@minecraft/server';
 
 // ----------------------------------
 // --- 設定 ---
@@ -11,9 +11,9 @@ const config = {
     detectionThreshold: 1, // ペナルティまでの検知回数
     rollbackTicks: 20 * 2, // ロールバックするティック数
     clickTpThreshold: 25, // ClickTP 判定距離 (ブロック)
-    allowedTeleportTicks: 0, // テレポートとみなす最大ティック数
     clickTpExclusionThreshold: 50, // この距離以上は検出除外
     freezeDuration: 20 * 60 * 60, // freeze時間 (ティック): 約1時間
+    betasystem:false,
   },
 };
 
@@ -35,6 +35,7 @@ interface PlayerData {
   lastTeleportTime: number; // 最後にテレポートした時間
   isFrozen: boolean; // freezeフラグ
   freezeStartTime: number; // freeze開始時間
+  isJumping:boolean;
 }
 
 // ----------------------------------
@@ -67,16 +68,25 @@ function initializePlayerData(player: Player) {
     lastTeleportTime: 0,
     isFrozen: false,
     freezeStartTime: 0,
+    isJumping: false,
   };
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) を監視しています`);
 }
 
-// 位置履歴に追加
 function addPositionHistory(player: Player) {
   const data = playerData[player.id];
   if (!data) return;
 
-  data.positionHistory.push(player.location);
+  // エリトラを使用中の場合、位置履歴をクリアし、クールタイムを設定
+  if (player.isGliding) {
+    data.isTeleporting = true; // クールタイム中はテレポート扱いにする
+    // クールタイム終了後にテレポートフラグをリセット
+    system.runTimeout(() => {
+      data.isTeleporting = false;
+    }, 3 * 20); // 3秒後にリセット (20ティック = 1秒)
+  } else {
+    data.positionHistory.push(player.location);
+  }
 
   // デバッグログ出力
   if (config.debugMode) {
@@ -192,7 +202,18 @@ function detectClickTP(player: Player): { cheatType: string } | null {
   }
 
    // 落下中かどうかを判定
-   const isFalling = player.getVelocity().y < 0 && !player.isOnGround;
+
+   //誤検知少ない版
+   // const positionHistory = data.positionHistory;
+   // const recentPosition = positionHistory[positionHistory.length - 1];
+   //const previousPosition = positionHistory[positionHistory.length - 2];
+   //const yVelocity = recentPosition.y - previousPosition.y;
+   //const isFalling = yVelocity < -0.5 && !player.isOnGround;
+   //保留
+
+   const isFalling = player.getVelocity().y < -0.5 && !player.isOnGround;
+   const isSprintingInAir = player.isSprinting && !player.isOnGround;
+
 
    // 奈落への落下かどうかを判定
    if (player.location.y <= -64) {
@@ -200,9 +221,9 @@ function detectClickTP(player: Player): { cheatType: string } | null {
   }
  
    // 通常の落下中は検知しない
-   if (isFalling) {
-     return null;
-   }
+   if (isFalling || isSprintingInAir) {
+    return null;
+  }
 
    const excludedEffects = [
     'minecraft:absorption',
@@ -246,11 +267,6 @@ function detectClickTP(player: Player): { cheatType: string } | null {
     Math.pow(player.location.y - data.positionHistory[0].y, 2) +
     Math.pow(player.location.z - data.positionHistory[0].z, 2),
   );
-
-  // 最近テレポートした場合、正当なテレポートとみなす
-  if (currentTick - data.lastTeleportTime <= config.antiCheat.allowedTeleportTicks) {
-    return null;
-  }
   
 
   // ClickTP 検出除外範囲内かどうかを確認
@@ -264,6 +280,192 @@ function detectClickTP(player: Player): { cheatType: string } | null {
 
   return null;
 }
+
+function detectAirJump(player: Player): { cheatType: string } | null {
+  const data = playerData[player.id];
+  if (!data || data.isTeleporting) return null;
+
+  if (player.isGliding) {
+    return null;
+  }
+  if (getGamemode(player.name) === 1) {
+    return null;
+  }
+
+  // プレイヤーがジャンプしたかどうかを記録
+  const isJumping = player.isJumping;
+  const isOnGround = player.isOnGround;
+
+  // ログを追加して状態を確認
+  //console.warn(`[DEBUG] Player: ${player.name}, isJumping: ${isJumping}, isOnGround: ${isOnGround}, isJumpingFlag: ${data.isJumping}`);
+
+  // プレイヤーの位置履歴を取得
+  const positionHistory = data.positionHistory;
+  const recentPosition = positionHistory[positionHistory.length - 1];
+  const previousPosition = positionHistory[positionHistory.length - 2];
+
+  // プレイヤーがジャンプした場合、ジャンプフラグを立てる
+  if (isJumping && recentPosition && previousPosition && recentPosition.y > previousPosition.y) {
+    data.isJumping = true;
+    //console.warn(`[DEBUG] Player: ${player.name} has started jumping.`);
+  }
+
+  // プレイヤーが地面に着地した場合、ジャンプフラグをリセット
+  if (isOnGround && data.isJumping) {
+    data.isJumping = false;
+   // console.log(`[DEBUG] Player: ${player.name} has landed.`);
+    return null;
+  }
+
+  // プレイヤーがジャンプフラグを立てたまま地面に着地せずに再度ジャンプした場合、AirJumpとみなす
+  if (!isOnGround && data.isJumping && isJumping) {
+    if (recentPosition && previousPosition) {
+      const jumpHeight = recentPosition.y - previousPosition.y;
+      if (jumpHeight > 1.25) { // 通常のジャンプの高さを超える場合
+       //console.warn(`[DEBUG] Player: ${player.name} is detected for AirJump.`);
+        return { cheatType: 'AirJump' };
+      }
+    }
+  }
+
+  return null;
+}
+
+function detectESP(player: Player): { cheatType: string } | null {
+  const viewDirection = player.getViewDirection();
+  const playerDimension = player.dimension;
+
+  // 他のプレイヤーを取得
+  const otherPlayers = playerDimension.getPlayers().filter(p => p !== player); // 自分自身を除外
+
+  for (const otherPlayer of otherPlayers) {
+    // 距離を手動で計算
+    const distance = Math.sqrt(
+      Math.pow(otherPlayer.location.x - player.location.x, 2) +
+        Math.pow(otherPlayer.location.y - player.location.y, 2) +
+        Math.pow(otherPlayer.location.z - player.location.z, 2),
+    );
+
+    // directionToOtherPlayerを手動で計算
+    const directionToOtherPlayer = {
+      x: (otherPlayer.location.x - player.location.x) / distance,
+      y: (otherPlayer.location.y - player.location.y) / distance,
+      z: (otherPlayer.location.z - player.location.z) / distance,
+    };
+
+    // 2つのベクトルの内積を計算
+    const dotProduct =
+      viewDirection.x * directionToOtherPlayer.x +
+      viewDirection.y * directionToOtherPlayer.y +
+      viewDirection.z * directionToOtherPlayer.z;
+
+    // 内積から角度を計算 (ラジアン)
+    const angle = Math.acos(dotProduct);
+
+    // 視点方向の変化量を計算
+    const viewDirectionChange = Math.abs(angle - previousAngle);
+
+    // プレイヤーと他のプレイヤーの間に指定されたブロックがあるか判定
+    const targetBlockIds = ['minecraft:stone', 'minecraft:grass', 'minecraft:dirt'];
+    const isPlayerBehindTargetBlocks = isPlayerBehindSpecificBlocks(player, otherPlayer, targetBlockIds);
+
+    // 視点方向の変化量が閾値を超えた場合
+    if (viewDirectionChange > 0.06) {
+      // 初回検知時
+      if (!espSuspiciousTime[player.id]) {
+        espSuspiciousTime[player.id] = Date.now();
+        continue; // 監視を開始
+      } else {
+        // 0.5秒以内に再度視点方向の変化量が閾値を超えた場合
+        if (Date.now() - espSuspiciousTime[player.id] <= 750) {
+          // 角度が一定値以下、かつ間に指定されたブロックがある場合、ESPと判定
+          if (angle < 0.4 && isPlayerBehindTargetBlocks) {
+            delete espSuspiciousTime[player.id]; // 監視時間をリセット
+            return { cheatType: 'ESP (BETA SYSTEM) 【誤検知の可能性もあります】' }; // ESPとして検知
+          }
+        } else {
+          // 0.5秒以上経過している場合は、監視をリセット
+          delete espSuspiciousTime[player.id];
+        }
+      }
+    }
+
+    // 角度を保存
+    previousAngle = angle;
+  }
+
+  return null;
+}
+
+let previousAngle = 0; // 1つ前のプレイヤーに対する角度を保存するための変数
+const espSuspiciousTime: { [playerId: string]: number } = {}; // プレイヤーごとのESP検知時間
+
+// 指定されたブロックのいずれかの背後にプレイヤーがいるか判定する関数
+function isPlayerBehindSpecificBlocks(player: Player, otherPlayer: Entity, targetBlockIds: string[]): boolean {
+  const dimension = world.getDimension('overworld');
+  const step = 0.25; // ブロック判定の刻み幅
+  const worldHeight = 256; // ワールドの高さ
+  const maxAngle = 2; // プレイヤーの視線方向からの最大角度 (度)
+
+  const playerLocation = player.location;
+  const otherPlayerLocation = otherPlayer.location;
+
+  // プレイヤーの目線の高さ1ブロック分を加算
+  playerLocation.y += 1;
+
+  // プレイヤーの視線方向ベクトル
+  const viewDirection = player.getViewDirection();
+
+  // プレイヤーから他のプレイヤーへのベクトル
+  const directionToOtherPlayer = {
+    x: otherPlayerLocation.x - playerLocation.x,
+    y: otherPlayerLocation.y - playerLocation.y,
+    z: otherPlayerLocation.z - playerLocation.z,
+  };
+
+  // 2つのベクトルの内積を計算
+  const dotProduct = viewDirection.x * directionToOtherPlayer.x + viewDirection.y * directionToOtherPlayer.y + viewDirection.z * directionToOtherPlayer.z;
+
+  // 内積から角度を計算 (ラジアン)
+  const angle = Math.acos(dotProduct / (Math.sqrt(viewDirection.x ** 2 + viewDirection.y ** 2 + viewDirection.z ** 2) * Math.sqrt(directionToOtherPlayer.x ** 2 + directionToOtherPlayer.y ** 2 + directionToOtherPlayer.z ** 2)));
+
+  // 角度を度に変換
+  const angleInDegrees = angle * 180 / Math.PI;
+
+  // 角度が最大角度を超えている場合は、ブロック判定を行わない
+  if (angleInDegrees > maxAngle) {
+    return false;
+  }
+
+  // start から end まで step 刻みでブロックの中央をチェック
+  for (let i = 0; i <= 1; i += step) {
+    const x = playerLocation.x + directionToOtherPlayer.x * i;
+    const y = playerLocation.y + directionToOtherPlayer.y * i;
+    const z = playerLocation.z + directionToOtherPlayer.z * i;
+
+    // Y座標がワールドの高さを超える場合は、ワールドの高さに制限
+    const clampedY = Math.min(y, worldHeight - 1);
+
+    // ブロックの中央座標を計算
+    const blockLocation = {
+      x: Math.floor(x) + 0.5,
+      y: Math.floor(clampedY) + 0.5,
+      z: Math.floor(z) + 0.5,
+    };
+
+    const block = dimension.getBlock(blockLocation);
+
+    // ブロックが存在し、指定されたブロックのいずれかである場合、true を返す
+    if (block && targetBlockIds.includes(block.type.id)) {
+      return true;
+    }
+  }
+
+  return false; // 指定されたブロックのいずれもなければ false
+}
+
+
+
 
 // 毎ティック実行される処理
 function runTick() {
@@ -289,6 +491,23 @@ function runTick() {
         if (clickTpDetection) {
           handleCheatDetection(player, clickTpDetection);
         }
+
+        // AirJump検出
+        const airJumpDetection = detectAirJump(player);
+        if (airJumpDetection) {
+          handleCheatDetection(player, airJumpDetection);
+        }
+
+
+        //ESP検出システム
+        if (config.antiCheat.betasystem == true) {
+          const espDetection = detectESP(player);
+        if (espDetection) {
+          handleCheatDetection(player, espDetection);
+        }
+        }
+        
+
       }
 
       // プレイヤーデータ更新
@@ -310,7 +529,7 @@ function handleCheatDetection(player: Player, detection: { cheatType: string }) 
       world.sendMessage(logMessage);
 
       // ペナルティ処理とロールバック実行
-      if (data.violationCount >= config.antiCheat.detectionThreshold * 3) {
+      if (data.violationCount >= config.antiCheat.detectionThreshold * 5) {
         executeFreeze(player);
       } else {
         executeRollback(player);
