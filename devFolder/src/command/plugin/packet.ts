@@ -573,6 +573,20 @@ function unfreezePlayer(player: Player) {
   }
 }
 
+
+function freezePlayer(player: Player) {
+  const data = playerData[player.id];
+  if (data && data.isFrozen) {
+    data.isFrozen = true;
+    console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をfreezeさせました`);
+
+    data.positionHistory = [player.location];
+    data.lastTime = Date.now();
+    data.lastTeleportTime = 0;
+  }
+}
+
+
 // ----------------------------------
 // --- コマンド登録 ---
 // ----------------------------------
@@ -599,8 +613,16 @@ registerCommand({
       } else {
         player.sendMessage(`プレイヤー ${args[1]} が見つかりません`);
       }
+    } else if (args[0] === 'freeze' && args.length === 2) {
+      const targetPlayer = world.getPlayers().find((p) => p.name === args[1]);
+      if (targetPlayer) {
+        freezePlayer(targetPlayer);
+        player.sendMessage(`プレイヤー ${targetPlayer.name} をフリーズさせました`);
+      } else {
+        player.sendMessage(`プレイヤー ${args[1]} が見つかりません`);
+      }
     } else {
-      player.sendMessage('無効な引数です。on, off, または unfreeze Playername を指定してください');
+      player.sendMessage('無効な引数です。on, off, または unfreeze Playername,freeze Playernameを指定してください');
     }
   },
 });

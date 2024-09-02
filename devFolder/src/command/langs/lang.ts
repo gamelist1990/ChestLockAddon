@@ -21,8 +21,7 @@ registerCommand({
     } else if (args[0] === 'change' && args[1]) {
       const success = changeLanguage(player, args[1]);
       if (success) {
-        player.sendMessage(translate(player, 'lang_change'));
-        player.sendMessage(`§a${args[1]}`);
+        player.sendMessage(translate(player, 'lang_change', { language:`${args[1]}`}));
       } else {
         player.sendMessage(translate(player, 'lang_failed'));
         player.sendMessage(`§c${args[1]}`);

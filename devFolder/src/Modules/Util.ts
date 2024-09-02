@@ -41,7 +41,7 @@ export const c = (): { commands: { [key: string]: CommandConfig }; admin: string
     },
     list: {
       enabled: true,
-      adminOnly: false,
+      adminOnly: true,
       requireTag: [],
     },
     item: {
@@ -75,6 +75,11 @@ export const c = (): { commands: { [key: string]: CommandConfig }; admin: string
       requireTag: [],
     },
     lore: {
+      enabled: true,
+      adminOnly: false,
+      requireTag: [],
+    },
+    about: {
       enabled: true,
       adminOnly: false,
       requireTag: [],

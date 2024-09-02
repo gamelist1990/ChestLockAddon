@@ -6,14 +6,14 @@ import { translate } from '../langs/list/LanguageManager';
 /**
  * アイテムの名前を変更する関数
  * @param item アイテム
- * @param newName 新しい名前
+ * @param command.NewName 新しい名前
  * @param player プレイヤー
  * @param targetSlot クローン先のスロット
  */
-function renameItem(item: any, newName: string, player: Player, targetSlot: number) {
+function renameItem(item: any, NewName: string, player: Player, targetSlot: number) {
     system.runTimeout(() => {
         if (item) {
-            item.nameTag = newName;
+            item.nameTag = NewName;
             const inventoryComponent = player.getComponent('minecraft:inventory') as EntityInventoryComponent;
             if (inventoryComponent && inventoryComponent.container) {
                 const container = inventoryComponent.container;
@@ -29,7 +29,7 @@ function renameItem(item: any, newName: string, player: Player, targetSlot: numb
  * @param player プレイヤー
  * @param targetSlot クローン先のスロット
  */
-function removeLore(item: any, player: Player, targetSlot: number) {
+function RemoveLore(item: any, player: Player, targetSlot: number) {
     system.runTimeout(() => {
         if (item) {
             item.setLore([]);
@@ -49,7 +49,7 @@ function removeLore(item: any, player: Player, targetSlot: number) {
  * @param player プレイヤー
  * @param targetSlot クローン先のスロット
  */
-function addLore(item: any, loreText: string, player: Player, targetSlot: number) {
+function AddLore(item: any, loreText: string, player: Player, targetSlot: number) {
     system.runTimeout(() => {
         if (item) {
             const currentLore = item.getLore() || [];
@@ -75,8 +75,8 @@ function removeSpecificLore(item: any, loreText: string, player: Player, targetS
     system.runTimeout(() => {
         if (item) {
             const currentLore = item.getLore() || [];
-            const newLore = currentLore.filter((line: string) => line !== loreText);
-            item.setLore(newLore);
+            const NewLore = currentLore.filter((line: string) => line !== loreText);
+            item.setLore(NewLore);
             const inventoryComponent = player.getComponent('minecraft:inventory') as EntityInventoryComponent;
             if (inventoryComponent && inventoryComponent.container) {
                 const container = inventoryComponent.container;
@@ -96,7 +96,7 @@ registerCommand({
     executor: (player: Player, args: string[]) => {
         // 引数が提供されていない場合のチェックを追加
         if (!args || args.length < 2) {
-            player.sendMessage(translate(player, "Usagelore", { prefix: `${prefix}` }));
+            player.sendMessage(translate(player, "command.UsageLore", { prefix: `${prefix}` }));
             return;
         }
 
@@ -116,7 +116,7 @@ registerCommand({
         }
 
         if (!heldItem) {
-            player.sendMessage(translate(player, "TakeItem"));
+            player.sendMessage(translate(player, "command.takeItem"));
             return;
         }
 
@@ -124,26 +124,26 @@ registerCommand({
 
         if (subCommand === '-set') {
             const loreText = args.slice(1).join(' ');
-            addLore(heldItem, loreText, player, targetSlot);
-            player.sendMessage(translate(player, "ADDLore"));
+            AddLore(heldItem, loreText, player, targetSlot);
+            player.sendMessage(translate(player, "command.AddLore"));
         } else if (subCommand === '-remove') {
             const loreText = args.slice(1).join(' ');
             removeSpecificLore(heldItem, loreText, player, targetSlot);
             const currentLore = heldItem.getLore() || [];
             if (currentLore.length === heldItem.getLore()?.length) {
-                player.sendMessage(translate(player, "NotFoundLore"));
+                player.sendMessage(translate(player, "command.NotFoundLore"));
             } else {
-                player.sendMessage(translate(player, "RemoveLore"));
+                player.sendMessage(translate(player, "command.RemoveLore"));
             }
         } else if (subCommand === '-rename') {
-            const newName = args.slice(1).join(' ');
-            renameItem(heldItem, newName, player, targetSlot);
-            player.sendMessage(translate(player, "ChangeNames"));
-        } else if (subCommand === '-clearlore') {
-            removeLore(heldItem, player, targetSlot);
-            player.sendMessage(translate(player, "RemoveLore"));
+            const NewName = args.slice(1).join(' ');
+            renameItem(heldItem, NewName, player, targetSlot);
+            player.sendMessage(translate(player, "command.ChangeNames"));
+        } else if (subCommand === '-command.ClearLore') {
+            RemoveLore(heldItem, player, targetSlot);
+            player.sendMessage(translate(player, "command.RemoveLore"));
         } else {
-            player.sendMessage(translate(player, "Usagelore", { prefix: `${prefix}` }));
+            player.sendMessage(translate(player, "command.UsageLore", { prefix: `${prefix}` }));
         }
     },
 });

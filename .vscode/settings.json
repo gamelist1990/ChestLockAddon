@@ -4,6 +4,6 @@
     "typescript.updateImportsOnFileMove.enabled": "always",
     "typescript.tsserver.log": "verbose",
     "typescript.suggest.paths": false,
-    "dotnet.automaticallyUpdateGeneratedSolution": false,
-    "files.autoSave": "onFocusChange"
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000
 }

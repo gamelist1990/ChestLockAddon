@@ -1,72 +1,81 @@
 ## Japanese Readme
 
-[日本語の方はこちらをクリック👈](README.md)
+[Click here for Japanese 👈](README.md)
 
 ## Download⬇️
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/gamelist1990/ChestLockAddon/total?style=flat-square&logo=https%3A%2F%2Fgithub.com%2Fgamelist1990%2FChestLockAddon%2Fblob%2Fmain%2FAllAddon%2Fpack_icon.png%3Fraw%3Dtrue)
 
 [Download here👈](https://github.com/gamelist1990/ChestLockAddon/releases)
 
-## Update.
+## Update
 
-**Version 0.9** This version adds new TPA commands and opens the UI with ItemUI.
+**Version 1.0** Many behind-the-scenes updates have been made. Please refer to the changelog below for details.
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/0.9...1.0)
 
-**Updates**.
-Added Database.ts to allow chest and Lang data to be completed in the database system.
-Added Database.ts to allow chest and Lang data to be completed in the database system
-Also, improved UI and reorganized other files
+**Changes**
+Detailed changes can be found in the ChangeLog above.
 
+Here's a brief summary of the changes:
 
-This GUI can be used with `!item` Or `!ui`. It just uses the `runCommand` function defined in [Handler.ts](devFolder/src/Modules/Handler.ts) (TP requests and language settings are now handled specifically I'm adding them)
-![alt text](image/image.png)
+- Bug fixes and feature additions. Specifically:
+- Added anti-cheat to packet.ts (custom anti-cheat)
+- Organized files
+- Players without appropriate permissions will no longer see `Dev`/`list`/`join`/`warpgate`/`edit`/`anticheat` when using the help command
+- Several new commands have been added, check the command list below for details.
 
+![alt text](image/EN,image.png)
 
 ## Overview
 
-This code is an addon that allows you to run commands such as `!help`. Commands such as `!chest`, `!dev`, `!lang`, and `!ui` are also added, prefixed `! ` can be changed in `handler.ts`. Multilingual support is also available.
+This code is an addon that is used by executing commands like `!help`. It supports UI elements; use `!item` or `!ui` to access them. The prefix `!` can be changed in `handler.ts`. The addon also supports multiple languages.
 
-## Commands.
+If you encounter any bugs or issues, please feel free to report them on Discord or by creating an issue.
 
+## Commands
+
+* All commands for owners require the (OP) tag, so use `/tag @s add op`.
 * **`!help`**: help command - displays a list of available commands.
-* **`!chest`**: chest command - opens the chest command.
-* **`!lang`**: Lang command - change language settings.
-* **`!dev`**: developer only command - requires tag OP.
-* **`!ui`**: ui command for ps4/5
-* **`!jpch`**: need tag beta also experimental for LunaChat general version
-**`!item`**: you can get an item to open the UI
-**`!tpa`**: you can send TP requests
-**`!list`**: display player information
+* **`!chest`**: chest command - opens the chest command menu.
+* **`!lang`**: Language command - changes the language setting.
+* **`!dev`**: Developer command - (op)
+* **`!ui`**: Added a UI command for PS4/5 users.
+* **`!jpch`**: A feature that replicates LunaChat (experimental).
+* **`!item`**:  Obtain an item that opens the UI.
+* **`!tpa`**:  Send a teleport request.
+* **`!list`**: Display player information (op).
+* **`!anticheat`**:  Usage: on|off|freeze Player |unfreeze Player (op).
+* **`!lore`**:  lore -set apple sets the description of the item you are holding. lore -rename test can also rename the item.
+* **`!join`**:  This command uses the subcommand -settings to write rules. Use (-true/-false) to toggle display (op).
+* **`!warpgate`**: This command creates warp gates. Usage: `!warpgate -create gate name TP destination coordinates`. To delete: `!warpgate -delete gate name`. To display the list: `-list`.
+* **`!about`**:  Displays an overview of this addon.
 
+* More commands will be added in the future.
 
+## Changing the Prefix
 
-* Other commands will be added in the future.
+The command prefix can be changed in `handler.ts`.
 
-## Change prefix
+## Multilingual Support
 
-You can change the prefix of commands in `handler.ts`.
+This addon supports multiple languages. Currently supported languages are:
 
-## Multilingual support
+* **`ja_JP`**: Japanese (fully supported)
+* **`en_US`**: English (fully supported)
+* **`zh_CN`**: Chinese (Simplified) (partially supported)
+* **`ru_RU`**: Russian (partially supported)
+* **`ko_KR`**: Korean (partially supported)
+* **`fi_FI`**: Finnish (partially supported)
 
-This add-on supports multiple languages. Currently, the following languages are supported.
+Use the **`!lang` command** to change the language.
 
-* **`ja_JP`**: Japanese
-** **en_US`**: English
-* **`zh_CN`**: Chinese (Simplified)
-* **`ru_RU`**: Russian
-* **`ko_KR`**: Korean
-**`fi_FI`**: Finnish
+## How to Use
 
-**`!lang` command** can be used to change the language.
+1. Download the addon from the releases page.
+2. Enable the `-beta` experimental feature in Minecraft.
+3. Join the world and use `!help` to view the list of commands.
+4. If you are the world administrator, it is recommended to add the op tag.
 
-## How to use
+## Others
 
-Download the add-on from the release. 2.
-Enable the `-beta` experimental feature in Minecraft. 3.
-Join a world and use `!help` to see the list of commands.
-
-## Misc.
-
-The language folder is in src/command/langs/list
-(define your translation key in json!)
-
-Translated with DeepL.com (free version)
+The language folders are located in src/command/langs/list.
+(Define the translation keys in the JSON files).

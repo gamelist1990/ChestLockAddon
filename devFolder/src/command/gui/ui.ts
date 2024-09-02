@@ -15,11 +15,11 @@ export function showBasicUI(player: Player): Promise<void> {
     .button(translate(player, 'uilang'), 'textures/ui/language_glyph_color')
     .button(translate(player, 'uijpch'), 'textures/ui/chat_send')
     .button(translate(player, 'uitpa'), 'textures/items/ender_pearl')
-    .button(translate(player, 'uilore'), 'textures/items/name_tag')
+    .button(translate(player, 'ui.MainLoreButton'), 'textures/items/name_tag')
     .button('Exit');
 
   return form
-  //@ts-ignore
+    //@ts-ignore
     .show(player)
     .then((response) => {
       if (response.canceled) {
@@ -63,7 +63,7 @@ function showChestMenu(player: Player): Promise<void> {
     .button(translate(player, 'back'));
 
   return form
-  //@ts-ignore
+    //@ts-ignore
     .show(player)
     .then((response) => {
       if (response.canceled) {
@@ -101,7 +101,7 @@ function showLockMenu(player: Player): Promise<void> {
     .button(translate(player, 'back'));
 
   return form
-  //@ts-ignore
+    //@ts-ignore
     .show(player)
     .then((response) => {
       if (response.canceled) {
@@ -140,7 +140,7 @@ function showMemberMenu(player: Player): Promise<void> {
 
   //@ts-ignore
   return form
-  //@ts-ignore
+    //@ts-ignore
     .show(player)
     .then((response) => {
       if (response.canceled) {
@@ -179,7 +179,7 @@ function showAddMemberMenu(player: Player): Promise<void> {
   form.button(translate(player, 'back'));
 
   return form
-  //@ts-ignore
+    //@ts-ignore
     .show(player)
     .then((response) => {
       if (response.canceled) {
@@ -218,7 +218,7 @@ function showRemoveMemberMenu(player: Player): Promise<void> {
   form.button(translate(player, 'back'));
 
   return form
-  //@ts-ignore
+    //@ts-ignore
     .show(player)
     .then((response) => {
       if (response.canceled) {
@@ -254,7 +254,7 @@ function showLangMenu(player: Player): Promise<void> {
 
   //@ts-ignore
   return form
-  //@ts-ignore
+    //@ts-ignore
     .show(player)
     .then((response) => {
       if (response.canceled) {
@@ -291,7 +291,7 @@ function showChangeLangMenu(player: Player): Promise<void> {
 
   //@ts-ignore
   return form
-  //@ts-ignore
+    //@ts-ignore
     .show(player)
     .then((response) => {
       if (response.canceled) {
@@ -325,7 +325,7 @@ function showjpchMenu(player: Player): Promise<void> {
     .button(translate(player, 'back'));
 
   return form
-  //@ts-ignore
+    //@ts-ignore
     .show(player)
     .then((response) => {
       if (response.canceled) {
@@ -401,7 +401,7 @@ function showTpaRequestsMenu(player: Player, requests: string[]): Promise<void> 
 
   form.button(translate(player, 'back')); // TPAメニューに戻るボタン
 
-  
+
   return (
     form
       //@ts-ignore
@@ -480,10 +480,10 @@ function showloreMenu(player: Player): Promise<void> {
 
   const form = new ActionFormData()
     .title('Lore Menu')
-    .body(translate(player, 'loreDoce'))
-    .button(translate(player, 'changeLore'))
-    .button(translate(player, 'ChangeName'))
-    .button(translate(player, 'ClearLore'))
+    .body(translate(player, 'command.loreDocs'))
+    .button(translate(player, 'command.Changelore'))
+    .button(translate(player, 'command.ChangeName'))
+    .button(translate(player, 'command.ClearLore'))
     .button(translate(player, 'back'));
 
   return (
@@ -498,7 +498,7 @@ function showloreMenu(player: Player): Promise<void> {
           } else if (response.selection === 1) {
             showChangeName(player);
           } else if (response.selection === 2) {
-            Clearlore(player);
+            ClearLore(player);
           }
         }
       })
@@ -512,12 +512,12 @@ function showloreMenu(player: Player): Promise<void> {
 function showChangelore(player: Player): void {
   const form = new ModalFormData()
     .title('Change Lore')
-    .textField(translate(player,"Newlore"), 'New lore');
+    .textField(translate(player, "command.NewLore"), 'New lore');
   //@ts-ignore
   form.show(player).then((response) => {
     if (!response.canceled && response.formValues) {
-      const newLore = response.formValues[0] as string;
-      runCommand(player.name, 'lore', ['-slot','0','-set', newLore]);
+      const NewLore = response.formValues[0] as string;
+      runCommand(player.name, 'lore', ['-slot', '0', '-set', NewLore]);
     }
   });
 }
@@ -525,16 +525,16 @@ function showChangelore(player: Player): void {
 function showChangeName(player: Player): void {
   const form = new ModalFormData()
     .title('Change Name')
-    .textField(translate(player,"Newname"),'New name');
-   //@ts-ignore
+    .textField(translate(player, "command.NewName"), 'New name');
+  //@ts-ignore
   form.show(player).then((response) => {
     if (!response.canceled && response.formValues) {
-      const newName = response.formValues[0] as string;
-      runCommand(player.name, 'lore', ['-slot', '0', '-rename', newName]);
+      const NewName = response.formValues[0] as string;
+      runCommand(player.name, 'lore', ['-slot', '0', '-rename', NewName]);
     }
   });
 }
 
-function Clearlore(player: Player): void {
-  runCommand(player.name, 'lore', ['-slot', '0', '-clearlore']);
+function ClearLore(player: Player): void {
+  runCommand(player.name, 'lore', ['-slot', '0', '-command.ClearLore']);
 }

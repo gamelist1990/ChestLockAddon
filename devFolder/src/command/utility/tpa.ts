@@ -1,5 +1,5 @@
 import { c } from '../../Modules/Util';
-import { registerCommand, verifier } from '../../Modules/Handler';
+import { prefix, registerCommand, verifier } from '../../Modules/Handler';
 import { Player, world, system } from '@minecraft/server';
 import { translate } from '../langs/list/LanguageManager';
 
@@ -126,7 +126,7 @@ registerCommand({
     } else if (args[0] === '-a' && args.length === 2) {
       acceptTpaRequest(player, args[1]);
     } else {
-      player.sendMessage(translate(player, 'invalidTpaCommandUsage'));
+      player.sendMessage(translate(player, 'invalidTpaCommandUsage', { prefix: `${prefix}` }));
     }
   },
 });

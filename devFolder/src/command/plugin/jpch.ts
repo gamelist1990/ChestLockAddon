@@ -305,6 +305,7 @@ const dictionaryData: DictionaryEntry[] = [
   { kanji: '囲む', hiragana: 'かこむ' },
   { kanji: '囲ん', hiragana: 'かこん' },
   { kanji: '囲んで', hiragana: 'かこんで' },
+  { kanji: '化け物', hiragana: 'ばけもの' },
 ];
 
 const dictionary: { [key: string]: string[] } = {};

@@ -1,6 +1,6 @@
 import { world, Player, EntityHealthComponent } from '@minecraft/server';
 import { c } from '../../Modules/Util';
-import { registerCommand, isPlayer, verifier } from '../../Modules/Handler';
+import { registerCommand, isPlayer, verifier, prefix } from '../../Modules/Handler';
 import { getGamemode, getPing } from '../../Modules/Util';
 import { translate } from '../langs/list/LanguageManager';
 
@@ -30,10 +30,10 @@ registerCommand({
       } else if (args[0] === 'all') {
         sendAllPlayersInfoToChat(player);
       } else {
-        player.sendMessage(translate(player, 'commands.list.usage'));
+        player.sendMessage(translate(player, 'commands.list.usage', { prefix: `${prefix}` }));
       }
     } else {
-      player.sendMessage(translate(player, 'commands.list.usage'));
+      player.sendMessage(translate(player, 'commands.list.usage', { prefix: `${prefix}` }));
     }
   },
 });

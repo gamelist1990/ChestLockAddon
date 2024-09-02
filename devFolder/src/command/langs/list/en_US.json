@@ -1,170 +1,213 @@
 {
-  "loreDoce": {
-    "msgid": "Change the name/lore of the item.",
+  "command.about": {
+    "msgid": [
+      "§a== About ChestLockAddon ==",
+      "",
+      "ChestLockAddon is a useful utility addon for Minecraft version 1.21.22 that provides chest protection and more.",
+      "",
+      "§b== Main Features ==",
+      "• Chest Protection: Protect your chests from other players.",
+      "• Multilingual Support: Change the language setting with the lang command.",
+      "• Teleport Request: Send a teleport request to another player with the tpa command.",
+      "• And more: More useful commands will be added in the future.",
+      "",
+      "§b== Links ==",
+      "• GitHub: https://github.com/gamelist1990/ChestLockAddon",
+      "• YouTube: https://www.youtube.com/@PEXkoukunn",
+      "• Discord: https://discord.gg/GJyqBm7Pyd",
+      "",
+      "§c== Notes ==",
+      "This addon is under development and may contain unexpected bugs. If you find any bugs, please report them on GitHub or Discord.",
+      "",
+      "§a== Message from the Developer ==",
+      "We welcome your feedback to make ChestLockAddon a better addon."
+    ],
     "msgstr": ""
   },
-  "changeLore": {
-    "msgid": "Item Change Lore",
+  "command.Undone":{
+    "msgid":"§f>>§aReverted to one previous change",
+    "msgstr":""
+  },
+  "aboutCom": {
+    "msgid": "View an overview of this add-on",
     "msgstr": ""
   },
-  "ChangeName": {
-    "msgid": "Item Change Name",
+  "command.NothingToUndo": {
+    "msgid": "§f>>§cThere were no changes that could be reverted.",
     "msgstr": ""
   },
-  "ClearLore": {
-    "msgid": "Item Clear Lore",
+  "ServerVersion": {
+    "msgid": [
+      "§bThis ChestLockAddon is running version {version}"
+    ],
     "msgstr": ""
   },
-  "Newlore": {
+  "command.loreDocs": {
+    "msgid": "§2Change the item's name/lore (Place the item in the first slot of your hotbar)",
+    "msgstr": ""
+  },
+  "command.Changelore": {
+    "msgid": "§0Change Item Lore",
+    "msgstr": ""
+  },
+  "command.ChangeName": {
+    "msgid": "§0Change Item Name",
+    "msgstr": ""
+  },
+  "command.ClearLore": {
+    "msgid": "§0Clear Item Lore",
+    "msgstr": ""
+  },
+  "command.NewLore": {
     "msgid": "Enter new lore:",
     "msgstr": ""
   },
-  "Newname": {
+  "command.NewName": {
     "msgid": "Enter new name:",
     "msgstr": ""
   },
-  "Usagelore": {
-    "msgid": "Usage: {prefix}lore -set <lore content> or {prefix}lore -remove <lore content> or {prefix}lore -rename <new name> or {prefix}lore -clearlore",
+  "command.UsageLore": {
+    "msgid": "§3Usage: {prefix}lore -set \"<lore content>\" or {prefix}lore -remove \"<lore content>\" or {prefix}lore -rename \"<new name>\" or {prefix}lore -command.ClearLore",
     "msgstr": ""
   },
-  "ADDLore": {
-    "msgid": "Added lore, please check",
+  "command.AddLore": {
+    "msgid": "§aLore added, please check.",
     "msgstr": ""
   },
-  "TakeItem": {
-    "msgid": "Please take the item.",
+  "command.takeItem": {
+    "msgid": "§cPlease hold the item.",
     "msgstr": ""
   },
-  "LoreNotFound": {
-    "msgid": "Lore not found",
+  "command.NotFoundLore": {
+    "msgid": "§cLore not found.",
     "msgstr": ""
   },
-  "RemoveLore": {
-    "msgid": "Lore has been deleted. Please check.",
+  "command.RemoveLore": {
+    "msgid": "§aLore deleted. Please check.",
     "msgstr": ""
   },
-  "ChangeNames": {
-    "msgid": "Renamed the item",
+  "command.ChangeNames": {
+    "msgid": "§aItem renamed.",
     "msgstr": ""
   },
-  "uilore": {
-    "msgid": "Custom Item Name/Lore",
+  "ui.MainLoreButton": {
+    "msgid": "§0Custom Item Name/Lore",
     "msgstr": ""
   },
-  "FirstPointSet": {
-    "msgid": ">> First point set.",
+  "command.FirstPointSet": {
+    "msgid": "§f>>§a First point set.",
     "msgstr": ""
   },
   "editCom": {
-    "msgid": "WorldEdit Command",
+    "msgid": "WorldEdit Commands",
     "msgstr": ""
   },
   "loreCom": {
     "msgid": "Change Item Lore",
     "msgstr": ""
   },
-  "SecondPointSet": {
-    "msgid": ">> Second point set.",
+  "command.SecondPointSet": {
+    "msgid": "§f>>§6 Second point set.",
     "msgstr": ""
   },
-  "SelectionCompleted": {
-    "msgid": ">> Selection completed.",
+  "command.SelectionCompleted": {
+    "msgid": "§f>>§a Selection completed.",
     "msgstr": ""
   },
-  "PointSet": {
-    "msgid": ">> Point set.",
+  "command.PointSet": {
+    "msgid": "§f>> §aPoint set.",
     "msgstr": ""
   },
-  "WallsCreated": {
-    "msgid": ">> Walls created.",
+  "command.WallsCreated": {
+    "msgid": "§f>>§a Walls created.",
     "msgstr": ""
   },
-  "InvalidBlockId": {
-    "msgid": ">> Invalid block ID.",
+  "command.InvalidBlockId": {
+    "msgid": "§f>>§c Invalid block ID.",
     "msgstr": ""
   },
-  "OutlineCreated": {
-    "msgid": ">> Outline created.",
+  "command.OutlineCreated": {
+    "msgid": "§f>>§a Outline created.",
     "msgstr": ""
   },
   "FilledCircleCreated": {
-    "msgid": ">> Filled circle created.",
+    "msgid": "§f>>§a Filled circle created.",
     "msgstr": ""
   },
   "RangeSet": {
-    "msgid": ">> Range set with the specified block ({blockId}).",
+    "msgid": "§f>>§a Range set with the specified block ({blockId}).",
     "msgstr": ""
   },
   "RangeCleared": {
-    "msgid": ">> Range cleared.",
+    "msgid": "§f>>§a Range cleared.",
     "msgstr": ""
   },
   "WallsToolSelected": {
-    "msgid": ">> Walls tool selected. (Block ID: {blockId})",
+    "msgid": "§f>>§a Walls tool selected. (Block ID: {blockId})",
     "msgstr": ""
   },
   "OutlineToolSelected": {
-    "msgid": ">> Outline tool selected. (Radius: {radius}, Block ID: {blockId})",
+    "msgid": "§f>>§a Outline tool selected. (Radius: {radius}, Block ID: {blockId})",
     "msgstr": ""
   },
   "FilledCircleToolSelected": {
-    "msgid": ">> Filled circle tool selected. (Radius: {radius}, Block ID: {blockId})",
+    "msgid": "§f>>§a Filled circle tool selected. (Radius: {radius}, Block ID: {blockId})",
     "msgstr": ""
   },
   "ToolExited": {
-    "msgid": ">> Tool exited.",
+    "msgid": "§f>>§a Tool exited.",
     "msgstr": ""
   },
   "ToolOptions": {
-    "msgid": ">> Tool options: -wall <blockID>, -outline <radius> <blockID>, -filledCircle <radius> <blockID>, -exit",
+    "msgid": "§f>> §3Tool options: -wall <blockID>, -outline <radius> <blockID>, -filledCircle <radius> <blockID>, -exit",
     "msgstr": ""
   },
   "StartRangeSelection2": {
-    "msgid": ">> Range selection started. Please break two blocks.",
+    "msgid": "§f>>§a Range selection started. Please break two blocks.",
     "msgstr": ""
   },
   "StartRangeSelection": {
-    "msgid": ">> Range selection started. Hold a wooden hoe and break a block.",
+    "msgid": "§f>>§a Range selection started. Hold a wooden hoe and break a block.",
     "msgstr": ""
   },
   "InvalidCommandUsage": {
-    "msgid": ">> Invalid command usage: /{prefix}edit -set <blockID> | /{prefix}edit -clear | /{prefix}edit tool <options> | /{prefix}edit start",
+    "msgid": "§f>>§3 Invalid command usage: /{prefix}edit -set <blockID> | /{prefix}edit -clear | /{prefix}edit tool <options> | /{prefix}edit start",
     "msgstr": ""
   },
   "PlayerNotFound": {
-    "msgid": "§cPlayerNotFound!! Make sure you're really there",
+    "msgid": "§cPlayer not found! Make sure you're in a valid location.",
     "msgstr": ""
   },
   "TheFirestBlock": {
-    "msgid": "§a1 The first block has been recorded. Destroy the block again.",
+    "msgid": "§a1. First block recorded. Destroy the block again.",
     "msgstr": ""
   },
   "TheSecond": {
-    "msgid": "§a2 second block has been recorded. Warp gate has been set.",
+    "msgid": "§a2. Second block recorded. Warp gate has been set.",
     "msgstr": ""
   },
   "WarpUsage": {
-    "msgid": "§c usage: warpgate -create <gate name> <x> <y> <z",
+    "msgid": "§c Usage: warpgate -create <gate name> <x> <y> <z>",
     "msgstr": ""
   },
   "AlreadyWarp": {
-    "msgid": "§cA warp gate of that name already exists.",
+    "msgid": "§c A warp gate with that name already exists.",
     "msgstr": ""
   },
   "CreateGate": {
-    "msgid": "§aCreate a warp gate {gatename} \n §aNext, destroy the two blocks to specify the extent of the gate.",
+    "msgid": "§a Creating warp gate: {gatename} \n §a Next, destroy two blocks to define the gate's boundaries.",
     "msgstr": ""
   },
   "NotWarp": {
-    "msgid": "§cThe gate with the specified name does not exist",
+    "msgid": "§c The specified warp gate does not exist.",
     "msgstr": ""
   },
   "deleteWarp": {
-    "msgid": "§a gate removed: {gatename}",
+    "msgid": "§a Gate removed: {gatename}",
     "msgstr": ""
   },
   "NotWarpSetting": {
-    "msgid": "§cNo warp gate is set.",
+    "msgid": "§c No warp gate is set.",
     "msgstr": ""
   },
   "listGate": {
@@ -172,39 +215,39 @@
     "msgstr": ""
   },
   "warpgateCom": {
-    "msgid": "Warp gate can be set",
+    "msgid": "Set Warp Gate",
     "msgstr": ""
   },
   "UsageGate": {
-    "msgid": "§c invalid subcommand usage {prefix}warpgate <-create/delete/list> [name] |\n§c create command Only -create [name] [x,y,z]",
+    "msgid": "§c Invalid subcommand usage: {prefix}warpgate <-create/delete/list> [name] |\n§c Create command only: -create [name] [x,y,z]",
     "msgstr": ""
   },
   "TPGATE": {
-    "msgid": "§a Teleported to warp gate {gate}.",
+    "msgid": "§a Teleported to warp gate: {gate}.",
     "msgstr": ""
   },
   "Joincommand": {
-    "msgid": "Displays a message when joining a world",
+    "msgid": "Displays a message when joining a world.",
     "msgstr": ""
   },
   "Joinenabled": {
-    "msgid": "§aEnabled messages when joining worlds",
+    "msgid": "§a Enabled join messages.",
     "msgstr": ""
   },
   "Joindisabled": {
-    "msgid": "§cDisabled messages when joining worlds.",
+    "msgid": "§c Disabled join messages.",
     "msgstr": ""
   },
   "Invalid": {
-    "msgid": "§cInvalid argument.",
+    "msgid": "§c Invalid argument.",
     "msgstr": ""
   },
   "UsageJoin": {
-    "msgid": "§cUsage is join <-ture/-false/-settings>",
+    "msgid": "§c Usage: join <-true/-false/-settings>",
     "msgstr": ""
   },
   "welcome": {
-    "msgid": "§7 Welcome! My Server",
+    "msgid": "§7 Welcome to My Server!",
     "msgstr": ""
   },
   "Rulejoin": {
@@ -212,319 +255,319 @@
     "msgstr": ""
   },
   "RulesNumber": {
-    "msgid": "§bNumber of Rules",
+    "msgid": "§b Number of Rules:",
     "msgstr": ""
   },
   "RulesEnter": {
-    "msgid": "§0Enter the number of rules",
+    "msgid": "§0 Enter the number of rules:",
     "msgstr": ""
   },
   "RuleSettings": {
-    "msgid": "§6Rule Settings",
+    "msgid": "§6 Rule Settings",
     "msgstr": ""
   },
   "Rules": {
-    "msgid": "§bRule {i}",
+    "msgid": "§b Rule {i}:",
     "msgstr": ""
   },
   "RuleEnter2": {
-    "msgid": "§0Enter rule {i}",
+    "msgid": "§0 Enter rule {i}:",
     "msgstr": ""
   },
   "RuleUpdate": {
-    "msgid": "§aRules updated!",
+    "msgid": "§a Rules updated!",
     "msgstr": ""
   },
   "joinSettings": {
-    "msgid": "§6Join Log Settings",
+    "msgid": "§6 Join Log Settings",
     "msgstr": ""
   },
   "TpaRequesMenu": {
-    "msgid": "§2Welcome to tpa MenuCurrent requests:{requestList} people",
+    "msgid": "§2 Welcome to the TPA Menu! Current requests: {requestList} people",
     "msgstr": ""
   },
   "SendTpa": {
-    "msgid": "§0Send a TPARequest",
+    "msgid": "§0 Send a TPA Request",
     "msgstr": ""
   },
   "ShowTpaRequests": {
-    "msgid": "§0Confirm TP request addressed to me",
+    "msgid": "§0 Confirm TP requests addressed to me",
     "msgstr": ""
   },
   "NoTpaRequests": {
-    "msgid": "§cNo TP request has been sent to you",
+    "msgid": "§c You have no TP requests.",
     "msgstr": ""
   },
   "SelectTpaRequest": {
-    "msgid": "§2TPRequest has arrived, please select the player you accept",
+    "msgid": "§2 You have received a TPA request. Please select the player you want to accept.",
     "msgstr": ""
   },
   "SendTpaSelect": {
-    "msgid": "§2Select the player to whom you would like to send a request",
+    "msgid": "§2 Select the player you want to send a request to:",
     "msgstr": ""
   },
   "uihelp": {
-    "msgid": "§0HelpMenu",
+    "msgid": "§0 Help Menu",
     "msgstr": ""
   },
   "uichest": {
-    "msgid": "§0ChestMenu(BETA)",
+    "msgid": "§0 Chest Menu (BETA)",
     "msgstr": ""
   },
   "uilang": {
-    "msgid": "§0LangMenu",
+    "msgid": "§0 Language Menu",
     "msgstr": ""
   },
   "uijpch": {
-    "msgid": "§0jpchMenu(BETA)",
+    "msgid": "§0 JPCH Menu (BETA)",
     "msgstr": ""
   },
   "uitpa": {
-    "msgid": "§0Tpa Menu(BETA)",
+    "msgid": "§0 TPA Menu (BETA)",
     "msgstr": ""
   },
   "closeChat": {
-    "msgid": "§a==Close The Chat Panel==",
+    "msgid": "§a == Close The Chat Panel ==",
     "msgstr": ""
   },
   "Tpcommand": {
-    "msgid": "You can send a request and TP it",
+    "msgid": "Send a request and teleport.",
     "msgstr": ""
   },
   "tpaRequestSent": {
-    "msgid": "§aTPA request sent to {playerName}",
+    "msgid": "§a TPA request sent to§b {playerName}.",
     "msgstr": ""
   },
   "tpaRequestAlreadySent": {
-    "msgid": "§cThe cTPA request has already been sent to {playerName}!",
+    "msgid": "§c You have already sent a TPA request to§6 {playerName}!",
     "msgstr": ""
   },
   "tpaRequestReceived": {
-    "msgid": "§2Received a TPA request from {playerName}.",
+    "msgid": "§2 Received a TPA request from §b{playerName}.",
     "msgstr": ""
   },
   "noPendingTpaRequests": {
-    "msgid": "§3You have no pending TPA requests.",
+    "msgid": "§3 You have no pending TPA requests.",
     "msgstr": ""
   },
   "invalidTpaRequest": {
-    "msgid": "§cInvalid TPA request",
+    "msgid": "§c Invalid TPA request.",
     "msgstr": ""
   },
   "requesterNotFound": {
-    "msgid": "§cRequester not found",
+    "msgid": "§c Requester not found.",
     "msgstr": ""
   },
   "teleportedToPlayer": {
-    "msgid": "§aTeleported to {playerName}",
+    "msgid": "§a Teleported to §b{playerName}.",
     "msgstr": ""
   },
   "tpaRequestAccepted": {
-    "msgid": "§a{playerName} has accepted your TPA request",
+    "msgid": "§a §b{playerName} §ahas accepted your TPA request.",
     "msgstr": ""
   },
   "tpaRequestAcceptes": {
-    "msgid": "§aTPA request from {playerName} accepted!",
+    "msgid": "§a TPA request from §b{playerName}§a accepted!",
     "msgstr": ""
   },
   "cannotTpaToSelf": {
-    "msgid": "§cYou cannot send a TPA request to yourself",
+    "msgid": "§c You cannot send a TPA request to yourself.",
     "msgstr": ""
   },
   "invalidTpaCommandUsage": {
-    "msgid": "§3Invalid usage. Use tpa -r <player> to send a request, or tpa -a <player> to accept",
+    "msgid": "§3 Invalid usage. Use {prefix}tpa -r <player> to send a request, or {prefix}tpa -a <player> to accept.",
     "msgstr": ""
   },
   "tpaRequestTimedOut": {
-    "msgid": "§3TPA request from {playerName} has timed out",
+    "msgid": "§3 TPA request from §6{playerName}§3 has timed out.",
     "msgstr": ""
   },
   "jpchCom": {
-    "msgid": "§2Functions like LunaChat",
+    "msgid": "§2 Functions like LunaChat.",
     "msgstr": ""
   },
   "jpenable": {
-    "msgid": "§aEnable Function",
+    "msgid": "§a Function enabled.",
     "msgstr": ""
   },
   "jpdisable": {
-    "msgid": "§cDisable function",
+    "msgid": "§c Function disabled.",
     "msgstr": ""
   },
   "AccesItemUI": {
-    "msgid": "itemUI command (accesses Chest Lock UI)",
+    "msgid": "Item UI Command (Accesses Chest Lock UI)",
     "msgstr": ""
   },
   "FullInv": {
-    "msgid": "§cYour inventory is full and items cannot be granted",
+    "msgid": "§c Your inventory is full. Items cannot be granted.",
     "msgstr": ""
   },
   "AlreadyInv": {
-    "msgid": "§cUIitem already exists in your inventory",
+    "msgid": "§c That UI item already exists in your inventory.",
     "msgstr": ""
   },
   "AddInv": {
-    "msgid": "§aYou have added an item to your inventory! (please check)",
+    "msgid": "§a Item added to your inventory! (Please check)",
     "msgstr": ""
   },
   "Displayplayerinformation": {
-    "msgid": "List command (displays player information)",
+    "msgid": "List command (Displays player information)",
     "msgstr": ""
   },
   "commands.list.usage": {
-    "msgid": "§aUsage: list show <playerName> Or list all",
+    "msgid": "§a Usage: {prefix}list show <playerName> or {prefix}list all",
     "msgstr": ""
   },
   "commands.list.playerInfo": {
-    "msgid": "§6==== Player Info =====\n §2Name: §f{TragetName},\n §2ID: §f{TargetID},\n §2Location: §f({TargetX}, {TargetY}, {TargetZ}),\n §2Health: §f{health},\n §2Game Mode:§f {GameMode},\n §2Ping: {ping}\n §6===========",
+    "msgid": "§6 ==== Player Info =====\n §2Name: §f{TragetName},\n §2ID: §f{TargetID},\n §2Location: §f({TargetX}, {TargetY}, {TargetZ}),\n §2Health: §f{health},\n §2Game Mode:§f {GameMode},\n §2Ping: {ping}\n §6 ===========",
     "msgstr": ""
   },
   "commands.list.playerNotFound": {
-    "msgid": "§cPlayer not found: {tragetplayer}",
+    "msgid": "§c Player not found: §6{tragetplayer}",
     "msgstr": ""
   },
   "jpch_command_description": {
-    "msgid": "jpch command (experimental feature)",
+    "msgid": "JPCH command (Experimental feature)",
     "msgstr": ""
   },
   "ui_command_description": {
-    "msgid": "ui command (this command displays a GUI with ActionForm)",
+    "msgid": "UI command (This command displays a GUI with ActionForm)",
     "msgstr": ""
   },
   "ChooseCom": {
-    "msgid": "§2Select the command:",
+    "msgid": "§2 Select a command:",
     "msgstr": ""
   },
   "ChestCom": {
-    "msgid": "§2Select the chest:",
+    "msgid": "§2 Select a chest:",
     "msgstr": ""
   },
   "Chestinfo": {
-    "msgid": "§0See nearby chests",
+    "msgid": "§0 See nearby chests",
     "msgstr": ""
   },
   "Chestlock": {
-    "msgid": "§0lock system",
+    "msgid": "§0 Lock System",
     "msgstr": ""
   },
   "ChestMember": {
-    "msgid": "§0Member system",
+    "msgid": "§0 Member System",
     "msgstr": ""
   },
   "back": {
-    "msgid": "§2back",
+    "msgid": "§2 Back",
     "msgstr": ""
   },
   "lockinfo": {
-    "msgid": "§2Select the type of lock:",
+    "msgid": "§2 Select the lock type:",
     "msgstr": ""
   },
   "locking": {
-    "msgid": "§alocking!",
+    "msgid": "§a Locking!",
     "msgstr": ""
   },
   "unlocking": {
-    "msgid": "§cunlocking!",
+    "msgid": "§c Unlocking!",
     "msgstr": ""
   },
   "ProtectChest": {
-    "msgid": "§0Protection Chest Status",
+    "msgid": "§0 Chest Protection Status",
     "msgstr": ""
   },
   "MemberChoose": {
-    "msgid": "§2Choose your member's:",
+    "msgid": "§2 Choose your members:",
     "msgstr": ""
   },
   "MemberAdd": {
-    "msgid": "§0Member Add",
+    "msgid": "§0 Add Member",
     "msgstr": ""
   },
   "MemberRemove": {
-    "msgid": "§0Member Remove",
+    "msgid": "§0 Remove Member",
     "msgstr": ""
   },
   "Memberall": {
-    "msgid": "§0Member list",
+    "msgid": "§0 Member List",
     "msgstr": ""
   },
   "AddMemberSelect": {
-    "msgid": "§2Select the member you wish to add:",
+    "msgid": "§2 Select the member you want to add:",
     "msgstr": ""
   },
   "RemoveMemberSelect": {
-    "msgid": "§2Select the member you wish to Remove:",
+    "msgid": "§2 Select the member you want to remove:",
     "msgstr": ""
   },
   "SelectLang": {
-    "msgid": "§2Select an operation from the language menu:",
+    "msgid": "§2 Select an operation from the language menu:",
     "msgstr": ""
   },
   "langList": {
-    "msgid": "§0lang List",
+    "msgid": "§0 Language List",
     "msgstr": ""
   },
   "langChange": {
-    "msgid": "§0lang Change",
+    "msgid": "§0 Change Language",
     "msgstr": ""
   },
   "langChange1": {
-    "msgid": "§2Please select the language you wish to change:",
+    "msgid": "§2 Please select the language you want to change to:",
     "msgstr": ""
   },
   "FromError": {
-    "msgid": "§cAn error occurred while displaying the form:",
+    "msgid": "§c An error occurred while displaying the form:",
     "msgstr": ""
   },
   "desabledCom": {
-    "msgid": "§cUnregistered or disabled command",
+    "msgid": "§c Unregistered or disabled command.",
     "msgstr": ""
   },
   "desableComSuggest": {
-    "msgid": "§6Invalid command. Is it possibly the {possibleCommands} command? If so, answer {prefix}yes",
+    "msgid": "§6 Invalid command. Did you mean: {possibleCommands}? If so, answer {prefix}yes",
     "msgstr": ""
   },
   "AllowTagCom": {
-    "msgid": "§cOnly players with an authorized tag can use it",
+    "msgid": "§c Only players with an authorized tag can use this command.",
     "msgstr": ""
   },
   "invalidCom": {
-    "msgid": "§6invalid command. Please make sure it is correct Commands used:{commandName}",
+    "msgid": "§6 Invalid command. Please make sure it is correct. Commands used: {commandName}",
     "msgstr": ""
   },
   "Developer commands": {
-    "msgid": "dev command (this command provides developers and administrators with the ability to reset and verify dynamic properties)",
+    "msgid": "Dev command (This command allows developers and administrators to reset and verify dynamic properties)",
     "msgstr": ""
   },
   "available_commands": {
-    "msgid": "§6Current available commands",
+    "msgid": "§6 Currently available commands:",
     "msgstr": ""
   },
   "help_command_description": {
-    "msgid": "help command (this command displays help as you can see)",
+    "msgid": "Help command (This command displays help information)",
     "msgstr": ""
   },
   "lang_removeData": {
-    "msgid": "Language data deletion complete",
+    "msgid": "Language data deletion complete.",
     "msgstr": ""
   },
   "lang_docs": {
-    "msgid": "lang command (this command switches the language)",
+    "msgid": "Lang command (This command switches the language)",
     "msgstr": ""
   },
   "lang_list": {
-    "msgid": "§aAvailable Languages:\n",
+    "msgid": "§a Available Languages:\n",
     "msgstr": ""
   },
   "lang_change": {
-    "msgid": "§aLanguage changed to",
+    "msgid": "§a Language changed to: {language}",
     "msgstr": ""
   },
   "lang_failed": {
-    "msgid": "§cFailed to change language to",
+    "msgid": "§c Failed to change language to: {language}",
     "msgstr": ""
   },
   "lang_invalid": {
-    "msgid": "§cInvalid command usage. Use lang list or lang change <language_code>",
+    "msgid": "§c Invalid command usage. Use /lang list or /lang change <language_code>",
     "msgstr": ""
   },
   "chest_command": {
@@ -532,21 +575,21 @@
     "msgstr": ""
   },
   "unavailable": {
-    "msgid": "§cLack of authority",
+    "msgid": "§c You do not have permission to do that.",
     "msgstr": ""
   },
   "chest_help": {
     "msgid": [
-      "§cInvalid command.",
-      "§aChest protection command usage:.",
-      "  §bchest lock        - locks the chest",
-      "  §bchest info       - displays information about the nearest chest",
-      "  §bchest unlock      - unlocks the chest",
-      "  §bchest protect <lock/unlock> - toggles chest protection",
-      "  §bchest add <playername>   - add a member to the chest",
-      "  §bchest remove <playername>  - remove a member of a chest",
-      "  §bchest all        - displays a list of chest members",
-      "  §bchest list        -displays a list of chest",
+      "§c Invalid command.",
+      "§a Chest protection command usage:",
+      "  §bchest lock        - Locks the chest",
+      "  §bchest info       - Displays information about the nearest chest",
+      "  §bchest unlock      - Unlocks the chest",
+      "  §bchest protect <lock/unlock> - Toggles chest protection",
+      "  §bchest add <playername>   - Adds a member to the chest",
+      "  §bchest remove <playername>  - Removes a member from the chest",
+      "  §bchest all        - Displays a list of chest members",
+      "  §bchest list        - Displays a list of chests",
       "  §b_______________________________________",
       "  §bAuthor: Koukun        - License AGPL-3.0",
       "  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
@@ -554,51 +597,51 @@
     "msgstr": ""
   },
   "MaxChestLimitReached": {
-    "msgid": "§cThe installation limit of {protectChest} has already been reached",
+    "msgid": "§c The installation limit of {protectChest} has been reached.",
     "msgstr": ""
   },
   "chestLocksCount": {
-    "msgid": "§aYou are currently protecting {protectChest} chests",
+    "msgid": "§a You are currently protecting {protectChest} chests.",
     "msgstr": ""
   },
   "ChestlistCom": {
-    "msgid": "§aYou have protected {playerChests} chests:",
+    "msgid": "§a You have protected {playerChests} chests:",
     "msgstr": ""
   },
   "chestlocation": {
-    "msgid": "§e- Location: {key}",
+    "msgid": "§e - Location: {key}",
     "msgstr": ""
   },
   "nearby_chest_info": {
-    "msgid": "§a---- Nearby Chest Info ----",
+    "msgid": "§a ---- Nearby Chest Info ----",
     "msgstr": ""
   },
   "coordinate_x": {
-    "msgid": "§bX: §e",
+    "msgid": "§b X: §e",
     "msgstr": ""
   },
   "coordinate_y": {
-    "msgid": "§bY: §e",
+    "msgid": "§b Y: §e",
     "msgstr": ""
   },
   "coordinate_z": {
-    "msgid": "§bZ: §e",
+    "msgid": "§b Z: §e",
     "msgstr": ""
   },
   "protected": {
-    "msgid": "§aProtected",
+    "msgid": "§a Protected",
     "msgstr": ""
   },
   "owner": {
-    "msgid": "§bOwner: §e",
+    "msgid": "§b Owner: §e",
     "msgstr": ""
   },
   "members": {
-    "msgid": "§bMembers: §e",
+    "msgid": "§b Members: §e",
     "msgstr": ""
   },
   "large_chest": {
-    "msgid": "§bLarge Chest: §e",
+    "msgid": "§b Large Chest: §e",
     "msgstr": ""
   },
   "yes": {
@@ -610,31 +653,31 @@
     "msgstr": ""
   },
   "not_protected": {
-    "msgid": "§cNot Protected",
+    "msgid": "§c Not Protected",
     "msgstr": ""
   },
   "notFound_chest": {
-    "msgid": "§cCan't find chest",
+    "msgid": "§c Cannot find chest.",
     "msgstr": ""
   },
   "chestProtectRemove": {
-    "msgid": "§a Chest protection removed",
+    "msgid": "§a Chest protection removed.",
     "msgstr": ""
   },
   "AlreadyProChest": {
-    "msgid": "§a This chest is already protected",
+    "msgid": "§a This chest is already protected.",
     "msgstr": ""
   },
   "chest_lookstate": {
-    "msgid": "§a chest protected {lcokstate}",
+    "msgid": "§a Chest protection: {lcokstate}",
     "msgstr": ""
   },
   "chest_removeData": {
-    "msgid": "§aAll chest protection data has been reset.",
+    "msgid": "§a All chest protection data has been reset.",
     "msgstr": ""
   },
   "isLookChest": {
-    "msgid": "§cThis chest is locked",
+    "msgid": "§c This chest is locked.",
     "msgstr": ""
   },
   "isProChest": {
@@ -642,55 +685,55 @@
     "msgstr": ""
   },
   "ProChestBreak": {
-    "msgid": "§a Protected chest has been destroyed. Protected data also deleted.",
+    "msgid": "§a Protected chest destroyed. Protection data also deleted.",
     "msgstr": ""
   },
   "lockChange": {
-    "msgid": "§a Protection state of chest is changed to {lock}",
+    "msgid": "§a Chest protection state changed to: {lock}",
     "msgstr": ""
   },
   "NotChest": {
-    "msgid": "§cYou are not authorized to operate this chest.",
+    "msgid": "§c You are not authorized to access this chest.",
     "msgstr": ""
   },
   "AddM": {
-    "msgid": "§a{member} Added  as a member location:{chestLocation}",
+    "msgid": "§a {member} added as a member at location: {chestLocation}",
     "msgstr": ""
   },
   "addYouM": {
-    "msgid": "§aThis{playerName}has added you to the following chests{chestLocation}",
+    "msgid": "§a {playerName} has added you to the following chests: {chestLocation}",
     "msgstr": ""
   },
   "RemoveYouM": {
-    "msgid": "§aThis{playerName}has removed you from members in the following chests{chestLocation}",
+    "msgid": "§a {playerName} has removed you from the following chests: {chestLocation}",
     "msgstr": ""
   },
   "MAlreday": {
-    "msgid": "§c{member} is already a member. ",
+    "msgid": "§c {member} is already a member.",
     "msgstr": ""
   },
   "RemoveM": {
-    "msgid": "§a{member} has Removed from members",
+    "msgid": "§a {member} has been removed from members.",
     "msgstr": ""
   },
   "NotM": {
-    "msgid": "§cis not a member",
+    "msgid": "§c Not a member.",
     "msgstr": ""
   },
   "allM": {
-    "msgid": "§a member: ",
+    "msgid": "§a Members: ",
     "msgstr": ""
   },
   "NotFoundM": {
-    "msgid": "§c No members",
+    "msgid": "§c No members.",
     "msgstr": ""
   },
   "ExplosionWarning": {
-    "msgid": "§c Can you please not blow that up?",
+    "msgid": "§c Please do not explode that.",
     "msgstr": ""
   },
   "cannotPlaceItem": {
-    "msgid": "§c It is forbidden to place pistons in this area",
+    "msgid": "§c You are not allowed to place pistons in this area.",
     "msgstr": ""
   }
 }

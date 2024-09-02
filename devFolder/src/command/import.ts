@@ -7,5 +7,5 @@ import './utility/import';
 //plugin
 import './plugin/import';
 //OtherCommand
-import './plugin/packet';
 import './itemUI';
+import './about';

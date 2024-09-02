@@ -7,12 +7,12 @@ import { translate } from '../langs/list/LanguageManager'; // 翻訳機能を追
 const playerData: { [playerName: string]: { pos1: any, pos2: any, selecting: boolean, commandArgs: string[] } } = {};
 
 // プレイヤーごとのツール設定を格納する変数
-const playerDataTool: { [playerName: string]: { tool: string, blockId: string, outlineRadius?: number,smoothRadius?:number, filledCircleRadius?: number } } = {};
+const playerDataTool: { [playerName: string]: { tool: string, blockId: string, outlineRadius?: number, smoothRadius?: number, filledCircleRadius?: number } } = {};
 
 // ブロック破壊イベントリスナー
 world.beforeEvents.playerBreakBlock.subscribe(event => {
   const player = event.player;
-  
+
   // プレイヤーが範囲選択中かどうかを確認
   if (playerData[player.name]?.selecting) {
     // プレイヤーが持っているアイテム
@@ -45,11 +45,11 @@ function handleBlockBreakForSelection(player: Player, blockLocation: any): void 
   // 1点目と2点目を設定
   if (!selection.pos1) {
     selection.pos1 = blockLocation;
-    player.sendMessage(translate(player, "FirstPointSet")); // 翻訳キーを使用
+    player.sendMessage(translate(player, "command.FirstPointSet")); // 翻訳キーを使用
   } else if (!selection.pos2) {
     selection.pos2 = blockLocation;
-    player.sendMessage(translate(player, "SecondPointSet")); // 翻訳キーを使用
-    player.sendMessage(translate(player, "SelectionCompleted")); // 翻訳キーを使用
+    player.sendMessage(translate(player, "command.SecondPointSet")); // 翻訳キーを使用
+    player.sendMessage(translate(player, "command.SelectionCompleted")); // 翻訳キーを使用
     selection.selecting = false; // 範囲選択終了
 
     // 範囲選択完了後に、コマンドで指定された処理を実行
@@ -63,7 +63,7 @@ function handleBlockBreakForSingleSelection(player: Player, blockLocation: any):
 
   // 点を設定
   selection.pos1 = blockLocation;
-  player.sendMessage(translate(player, "PointSet")); // 翻訳キーを使用
+  player.sendMessage(translate(player, "command.PointSet")); // 翻訳キーを使用
   selection.selecting = false; // 範囲選択終了
 
   // 範囲選択完了後に、コマンドで指定された処理を実行
@@ -87,7 +87,7 @@ function fillBlocks(pos1: any, pos2: any, blockId: string) {
 
   const minX = Math.max(Math.min(pos1.x, pos2.x));
   const maxX = Math.min(Math.max(pos1.x, pos2.x));
-  const minY = Math.max(Math.min(pos1.y, pos2.y)); 
+  const minY = Math.max(Math.min(pos1.y, pos2.y));
   const maxY = Math.min(Math.max(pos1.y, pos2.y));
   const minZ = Math.max(Math.min(pos1.z, pos2.z));
   const maxZ = Math.min(Math.max(pos1.z, pos2.z));
@@ -116,16 +116,114 @@ function fillBlocks(pos1: any, pos2: any, blockId: string) {
     if (currentCommandIndex < commands.length) {
       const command = commands[currentCommandIndex];
       world.getDimension('overworld').runCommand(command);
-     // console.warn(`Executed command: ${command}`);
+      // console.warn(`Executed command: ${command}`);
       currentCommandIndex++;
     }
   }, 1); // 1tick ごとに実行
 }
 
+// Undo 機能に必要なデータ構造
+interface EditAction {
+  type: 'fill' | 'clear' | 'walls' | 'outline' | 'filledCircle' | 'smooth';
+  pos1: any;
+  pos2: any;
+  blockId?: string; // fill, walls, outline, filledCircle, smooth に必要
+  radius?: number; // outline, filledCircle, smooth に必要
+  originalBlocks: BlockData[]; // 変更前のブロックデータを保存
+}
 
+interface BlockData {
+  x: number;
+  y: number;
+  z: number;
+  blockId: string;
+}
 
+const undoStack: { [playerName: string]: EditAction[] } = {}; // プレイヤーごとの undo スタック
 
-function createWalls(pos1: any, pos2: any, blockId: string) {
+// ブロックの情報を取得する関数
+function getBlockData(location: any): BlockData {
+  const block = world.getDimension('overworld').getBlock(location);
+  // block が undefined の場合の処理を追加
+  if (!block) {
+    throw new Error("Block not found at location: " + JSON.stringify(location));
+  }
+  return {
+    x: location.x,
+    y: location.y,
+    z: location.z,
+    blockId: block.typeId,
+  };
+}
+
+// ブロックの情報を設定する関数
+function setBlockData(blockData: BlockData): void {
+  fillBlocks({ x: blockData.x, y: blockData.y, z: blockData.z }, { x: blockData.x, y: blockData.y, z: blockData.z }, blockData.blockId);
+}
+
+// fillBlocks, createWalls, createOutline, createFilledCircle, smoothArea を修正して undo データを保存
+function fillBlocksWithUndo(pos1: any, pos2: any, blockId: string, player: Player) {
+  const originalBlocks: BlockData[] = [];
+
+  const minX = Math.max(Math.min(pos1.x, pos2.x));
+  const maxX = Math.min(Math.max(pos1.x, pos2.x));
+  const minY = Math.max(Math.min(pos1.y, pos2.y));
+  const maxY = Math.min(Math.max(pos1.y, pos2.y));
+  const minZ = Math.max(Math.min(pos1.z, pos2.z));
+  const maxZ = Math.min(Math.max(pos1.z, pos2.z));
+
+  // fillBlocks のループ処理の前に originalBlocks に変更前のブロックデータを保存
+  for (let x = minX; x <= maxX; x++) {
+    for (let y = minY; y <= maxY; y++) {
+      for (let z = minZ; z <= maxZ; z++) {
+        originalBlocks.push(getBlockData({ x, y, z }));
+      }
+    }
+  }
+
+  // fillBlocks の元のループ処理
+  const chunkSize = 30;
+  let commands: string[] = []; // 実行するコマンドを格納する配列
+
+  for (let x = minX; x <= maxX; x += chunkSize) {
+    for (let y = minY; y <= maxY; y += chunkSize) {
+      for (let z = minZ; z <= maxZ; z += chunkSize) {
+        const endX = calculateEndCoordinate(x, maxX, chunkSize);
+        const endY = calculateEndCoordinate(y, maxY, chunkSize);
+        const endZ = calculateEndCoordinate(z, maxZ, chunkSize);
+
+        const command = `/fill ${Math.floor(x)} ${Math.floor(y)} ${Math.floor(z)} ${Math.floor(endX)} ${Math.floor(endY)} ${Math.floor(endZ)} ${blockId} replace`;
+        commands.push(command);
+      }
+    }
+  }
+
+  let currentCommandIndex = 0; // 現在実行するコマンドのインデックス
+
+  system.runInterval(() => {
+    if (currentCommandIndex < commands.length) {
+      const command = commands[currentCommandIndex];
+      world.getDimension('overworld').runCommand(command);
+      currentCommandIndex++;
+    }
+  }, 1); // 1tick ごとに実行
+
+  // undoStack にアクションを追加
+  if (!undoStack[player.name]) {
+    undoStack[player.name] = [];
+  }
+  undoStack[player.name].push({
+    type: 'fill',
+    pos1,
+    pos2,
+    blockId,
+    originalBlocks,
+  });
+}
+
+function createWallsWithUndo(pos1: any, pos2: any, blockId: string, player: Player) {
+  const originalBlocks: BlockData[] = [];
+
   const minX = Math.min(pos1.x, pos2.x);
   const maxX = Math.max(pos1.x, pos2.x);
   const minY = Math.min(pos1.y, pos2.y);
@@ -133,9 +231,22 @@ function createWalls(pos1: any, pos2: any, blockId: string) {
   const minZ = Math.min(pos1.z, pos2.z);
   const maxZ = Math.max(pos1.z, pos2.z);
 
-  // 指定された2点の間にベルリンの壁を作成 (上面と底面を除く)
+  // createWalls のループ処理の前に originalBlocks に変更前のブロックデータを保存
   for (let x = minX; x <= maxX; x++) {
-    for (let y = minY + 1; y <= maxY; y++) { // 底面を除外するために minY + 1 から開始
+    for (let y = minY + 1; y <= maxY; y++) {
+      originalBlocks.push(getBlockData({ x, y, z: minZ }));
+      originalBlocks.push(getBlockData({ x, y, z: maxZ }));
+      if (x === minX || x === maxX) {
+        for (let z = minZ + 1; z <= maxZ - 1; z++) {
+          originalBlocks.push(getBlockData({ x, y, z }));
+        }
+      }
+    }
+  }
+
+  // createWalls の元のループ処理
+  for (let x = minX; x <= maxX; x++) {
+    for (let y = minY + 1; y <= maxY; y++) {
       fillBlocks({ x, y, z: minZ }, { x, y, z: minZ }, blockId); // 前面
       fillBlocks({ x, y, z: maxZ }, { x, y, z: maxZ }, blockId); // 後面
       if (x === minX || x === maxX) {
@@ -143,10 +254,24 @@ function createWalls(pos1: any, pos2: any, blockId: string) {
       }
     }
   }
+
+  // undoStack にアクションを追加
+  if (!undoStack[player.name]) {
+    undoStack[player.name] = [];
+  }
+  undoStack[player.name].push({
+    type: 'walls',
+    pos1,
+    pos2,
+    blockId,
+    originalBlocks,
+  });
 }
 
-// outline ツールの実装 (fillBlocks を使用)
-function createOutline(center: any, radius: number, blockId: string) {
+
+function createOutlineWithUndo(center: any, radius: number, blockId: string, player: Player) {
+  const originalBlocks: BlockData[] = [];
+
   const minX = center.x - radius;
   const maxX = center.x + radius;
   const minY = center.y - radius;
@@ -154,6 +279,24 @@ function createOutline(center: any, radius: number, blockId: string) {
   const minZ = center.z - radius;
   const maxZ = center.z + radius;
 
+
+  for (let x = minX; x <= maxX; x++) {
+    for (let y = minY; y <= maxY; y++) {
+      for (let z = minZ; z <= maxZ; z++) {
+        const distance = Math.sqrt(
+          Math.pow(x - center.x, 2) +
+          Math.pow(y - center.y, 2) +
+          Math.pow(z - center.z, 2)
+        );
+
+        if (distance >= radius - 0.5 && distance <= radius + 0.5) {
+          originalBlocks.push(getBlockData({ x, y, z }));
+        }
+      }
+    }
+  }
+
+  // createOutline の元のループ処理
   for (let x = minX; x <= maxX; x++) {
     for (let y = minY; y <= maxY; y++) {
       for (let z = minZ; z <= maxZ; z++) {
@@ -168,10 +311,25 @@ function createOutline(center: any, radius: number, blockId: string) {
       }
     }
   }
+
+
+  if (!undoStack[player.name]) {
+    undoStack[player.name] = [];
+  }
+  undoStack[player.name].push({
+    type: 'outline',
+    pos1: center, // pos1 を center に設定
+    pos2: null, // pos2 は使用しないので null に設定
+    blockId,
+    radius,
+    originalBlocks,
+  });
 }
 
-// filledCircle ツールの実装 (fillBlocks を使用)
-function createFilledCircle(center: any, radius: number, blockId: string) {
+
+function createFilledCircleWithUndo(center: any, radius: number, blockId: string, player: Player) {
+  const originalBlocks: BlockData[] = [];
+
   const minX = center.x - radius;
   const maxX = center.x + radius;
   const minY = center.y - radius;
@@ -179,6 +337,24 @@ function createFilledCircle(center: any, radius: number, blockId: string) {
   const minZ = center.z - radius;
   const maxZ = center.z + radius;
 
+  // createFilledCircle のループ処理の前に originalBlocks に変更前のブロックデータを保存
+  for (let x = minX; x <= maxX; x++) {
+    for (let z = minZ; z <= maxZ; z++) {
+      for (let y = minY; y <= maxY; y++) {
+        const distance = Math.sqrt(
+          Math.pow(x - center.x, 2) +
+          Math.pow(y - center.y, 2) +
+          Math.pow(z - center.z, 2)
+        );
+
+        if (distance <= radius) {
+          originalBlocks.push(getBlockData({ x, y, z }));
+        }
+      }
+    }
+  }
+
+  // createFilledCircle の元のループ処理
   for (let x = minX; x <= maxX; x++) {
     for (let z = minZ; z <= maxZ; z++) {
       for (let y = minY; y <= maxY; y++) {
@@ -194,15 +370,41 @@ function createFilledCircle(center: any, radius: number, blockId: string) {
       }
     }
   }
+
+  // undoStack にアクションを追加
+  if (!undoStack[player.name]) {
+    undoStack[player.name] = [];
+  }
+  undoStack[player.name].push({
+    type: 'filledCircle',
+    pos1: center, // pos1 を center に設定
+    pos2: null, // pos2 は使用しないので null に設定
+    blockId,
+    radius,
+    originalBlocks,
+  });
 }
 
-function smoothArea(center: any, radius: number, blockId: string): void {
+
+function smoothAreaWithUndo(center: any, radius: number, blockId: string, player: Player): void {
+  const originalBlocks: BlockData[] = [];
+
   const minX = Math.floor(center.x - radius);
   const maxX = Math.floor(center.x + radius);
   const minZ = Math.floor(center.z - radius);
   const maxZ = Math.floor(center.z + radius);
   const y = Math.floor(center.y);
 
+  // smoothArea のループ処理の前に originalBlocks に変更前のブロックデータを保存
+  for (let x = minX; x <= maxX; x++) {
+    for (let z = minZ; z <= maxZ; z++) {
+      for (let currentY = y - radius; currentY <= y + radius; currentY++) {
+        originalBlocks.push(getBlockData({ x, y: currentY, z }));
+      }
+    }
+  }
+
+  // smoothArea の元のループ処理
   for (let x = minX; x <= maxX; x++) {
     for (let z = minZ; z <= maxZ; z++) {
       // 指定の高さまでブロックで埋める
@@ -215,12 +417,20 @@ function smoothArea(center: any, radius: number, blockId: string): void {
       }
     }
   }
+
+  // undoStack にアクションを追加
+  if (!undoStack[player.name]) {
+    undoStack[player.name] = [];
+  }
+  undoStack[player.name].push({
+    type: 'smooth',
+    pos1: center, // pos1 を center に設定
+    pos2: null, // pos2 は使用しないので null に設定
+    blockId,
+    radius,
+    originalBlocks,
+  });
 }
-
-
-
-
-
 
 // 範囲選択完了後に実行するコマンドを処理
 function executeCommandAfterSelection(player: Player) {
@@ -240,45 +450,45 @@ function executeCommandAfterSelection(player: Player) {
 
       if (tool === 'walls') {
         if (isValidBlockId(blockId)) {
-          createWalls(data.pos1, data.pos2, blockId);
-          player.sendMessage(translate(player, "WallsCreated")); // 翻訳キーを使用
-          system.runTimeout(() => { 
-            runCommand(player.name,'edit',['-start']);
-          },20);
+          createWallsWithUndo(data.pos1, data.pos2, blockId, player);
+          player.sendMessage(translate(player, "command.WallsCreated")); // 翻訳キーを使用
+          system.runTimeout(() => {
+            runCommand(player.name, 'edit', ['-start']);
+          }, 20);
         } else {
-          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
+          player.sendMessage(translate(player, "command.InvalidBlockId")); // 翻訳キーを使用
         }
       } else if (tool === 'outline') {
         if (isValidBlockId(blockId)) {
-          const radius = toolData.outlineRadius || 5; 
-          createOutline(data.pos1, radius, blockId);
-          player.sendMessage(translate(player, "OutlineCreated")); // 翻訳キーを使用
-          system.runTimeout(() => { 
-            runCommand(player.name,'edit',['-start']);
-          },20);
+          const radius = toolData.outlineRadius || 5;
+          createOutlineWithUndo(data.pos1, radius, blockId, player);
+          player.sendMessage(translate(player, "command.OutlineCreated")); // 翻訳キーを使用
+          system.runTimeout(() => {
+            runCommand(player.name, 'edit', ['-start']);
+          }, 20);
         } else {
-          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
+          player.sendMessage(translate(player, "command.InvalidBlockId")); // 翻訳キーを使用
         }
       } else if (tool === 'filledCircle') {
         if (isValidBlockId(blockId)) {
           // filledCircleRadius が設定されている場合はそれを使用、そうでなければデフォルト値 5 を使用
           const radius = toolData.filledCircleRadius || 5; // playerDataTool から半径を取得
-          createFilledCircle(data.pos1, radius, blockId);
+          createFilledCircleWithUndo(data.pos1, radius, blockId, player);
           player.sendMessage(translate(player, "FilledCircleCreated")); // 翻訳キーを使用
-          runCommand(player.name,'edit',['-start']);
+          runCommand(player.name, 'edit', ['-start']);
         } else {
-          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
+          player.sendMessage(translate(player, "command.InvalidBlockId")); // 翻訳キーを使用
         }
       } else if (tool === 'smooth') {
         if (isValidBlockId(blockId)) {
           const radius = toolData.smoothRadius || 5;
-          smoothArea(data.pos1, radius, blockId);
+          smoothAreaWithUndo(data.pos1, radius, blockId, player);
           player.sendMessage(translate(player, "smoothCreate")); // 翻訳キーを使用
           system.runTimeout(() => {
             runCommand(player.name, 'edit', ['-start']);
           }, 20);
         } else {
-          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
+          player.sendMessage(translate(player, "command.InvalidBlockId")); // 翻訳キーを使用
         }
       }
 
@@ -290,10 +500,10 @@ function executeCommandAfterSelection(player: Player) {
       const blockId = args[1];
 
       if (isValidBlockId(blockId)) {
-        fillBlocks(data.pos1, data.pos2, blockId);
+        fillBlocksWithUndo(data.pos1, data.pos2, blockId, player);
         player.sendMessage(translate(player, "RangeSet", { blockId: blockId })); // 翻訳キーを使用、データを渡す
       } else {
-        player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
+        player.sendMessage(translate(player, "command.InvalidBlockId")); // 翻訳キーを使用
       }
 
       // -set を使用した場合はプレイヤーデータを削除
@@ -301,11 +511,82 @@ function executeCommandAfterSelection(player: Player) {
 
     } else if (args[0] === '-clear') {
       // -clear の処理
+      const originalBlocks: BlockData[] = [];
+      const minX = Math.min(data.pos1.x, data.pos2.x);
+      const maxX = Math.max(data.pos1.x, data.pos2.x);
+      const minY = Math.min(data.pos1.y, data.pos2.y);
+      const maxY = Math.max(data.pos1.y, data.pos2.y);
+      const minZ = Math.min(data.pos1.z, data.pos2.z);
+      const maxZ = Math.max(data.pos1.z, data.pos2.z);
+
+      for (let x = minX; x <= maxX; x++) {
+        for (let y = minY; y <= maxY; y++) {
+          for (let z = minZ; z <= maxZ; z++) {
+            originalBlocks.push(getBlockData({ x, y, z }));
+          }
+        }
+      }
+
       fillBlocks(data.pos1, data.pos2, "minecraft:air");
+
+      // undoStack にアクションを追加
+      if (!undoStack[player.name]) {
+        undoStack[player.name] = [];
+      }
+      undoStack[player.name].push({
+        type: 'clear',
+        pos1: data.pos1,
+        pos2: data.pos2,
+        originalBlocks,
+      });
+
       player.sendMessage(translate(player, "RangeCleared")); // 翻訳キーを使用
 
       // -clear を使用した場合はプレイヤーデータを削除
       delete playerData[player.name];
+
+    }  else if (args[0] === '-walls' && args.length === 2) { // walls コマンドを追加
+      const blockId = args[1];
+      if (isValidBlockId(blockId)) {
+        data.commandArgs = args;
+        data.selecting = true;
+        player.sendMessage(translate(player, "StartRangeSelection2"));
+      } else {
+        player.sendMessage(translate(player, "command.InvalidBlockId"));
+      }
+    } else if (args[0] === '-outline' && args.length === 3 && !isNaN(parseInt(args[1]))) { // outline コマンドを追加
+      const radius = parseInt(args[1]);
+      const blockId = args[2];
+      if (isValidBlockId(blockId)) {
+        playerDataTool[player.name] = { tool: 'outline', blockId, outlineRadius: radius };
+        data.commandArgs = args;
+        data.selecting = true;
+        player.sendMessage(translate(player, "StartRangeSelection"));
+      } else {
+        player.sendMessage(translate(player, "command.InvalidBlockId"));
+      }
+    } else if (args[0] === '-filledCircle' && args.length === 3 && !isNaN(parseInt(args[1]))) { // filledCircle コマンドを追加
+      const radius = parseInt(args[1]);
+      const blockId = args[2];
+      if (isValidBlockId(blockId)) {
+        playerDataTool[player.name] = { tool: 'filledCircle', blockId, filledCircleRadius: radius };
+        data.commandArgs = args;
+        data.selecting = true;
+        player.sendMessage(translate(player, "StartRangeSelection"));
+      } else {
+        player.sendMessage(translate(player, "command.InvalidBlockId"));
+      }
+    } else if (args[0] === '-smooth' && args.length === 3 && !isNaN(parseInt(args[1]))) { // smooth コマンドを追加
+      const radius = parseInt(args[1]);
+      const blockId = args[2];
+      if (isValidBlockId(blockId)) {
+        playerDataTool[player.name] = { tool: 'smooth', blockId, smoothRadius: radius };
+        data.commandArgs = args;
+        data.selecting = true;
+        player.sendMessage(translate(player, "StartRangeSelection"));
+      } else {
+        player.sendMessage(translate(player, "command.InvalidBlockId"));
+      }
 
     } else {
       // 不正な引数の場合はエラーメッセージを表示
@@ -315,6 +596,7 @@ function executeCommandAfterSelection(player: Player) {
     // プレイヤーデータ自体は削除しない (ツール使用時のみ削除)
   }, 20);
 }
+
 
 // コマンド登録
 registerCommand({
@@ -337,9 +619,9 @@ registerCommand({
         const blockId = args[2];
         if (isValidBlockId(blockId)) {
           playerDataTool[player.name] = { tool: 'walls', blockId };
-          player.sendMessage(translate(player, "WallsToolSelected", {blockId: `${blockId}` })); // 翻訳キーを使用、データを渡す
+          player.sendMessage(translate(player, "WallsToolSelected", { blockId: `${blockId}` })); // 翻訳キーを使用、データを渡す
         } else {
-          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
+          player.sendMessage(translate(player, "command.InvalidBlockId")); // 翻訳キーを使用
         }
       } else if (args[1] === '-outline' && args.length === 4 && !isNaN(parseInt(args[2]))) {
         // outline ツールで半径とブロックIDを指定
@@ -349,7 +631,7 @@ registerCommand({
           playerDataTool[player.name] = { tool: 'outline', blockId, outlineRadius: radius }; // playerDataTool に半径を保存
           player.sendMessage(translate(player, "OutlineToolSelected", { radius: `${radius}`, blockId: `${blockId}` })); // 翻訳キーを使用、データを渡す
         } else {
-          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
+          player.sendMessage(translate(player, "command.InvalidBlockId")); // 翻訳キーを使用
         }
       } else if (args[1] === '-filledCircle' && args.length === 4 && !isNaN(parseInt(args[2]))) {
         // filledCircle ツールで半径とブロックIDを指定
@@ -359,7 +641,7 @@ registerCommand({
           playerDataTool[player.name] = { tool: 'filledCircle', blockId, filledCircleRadius: radius }; // playerDataTool に半径を保存
           player.sendMessage(translate(player, "FilledCircleToolSelected", { radius: `${radius}`, blockId: `${blockId}` })); // 翻訳キーを使用、データを渡す
         } else {
-          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
+          player.sendMessage(translate(player, "command.InvalidBlockId")); // 翻訳キーを使用
         }
       } else if (args[1] === '-smooth' && args.length === 4 && !isNaN(parseInt(args[2]))) {
         // outline ツールで半径とブロックIDを指定
@@ -369,7 +651,7 @@ registerCommand({
           playerDataTool[player.name] = { tool: 'smooth', blockId, smoothRadius: radius }; // playerDataTool に半径を保存
           player.sendMessage(translate(player, "OutlineToolSelected", { radius: `${radius}`, blockId: `${blockId}` })); // 翻訳キーを使用、データを渡す
         } else {
-          player.sendMessage(translate(player, "InvalidBlockId")); // 翻訳キーを使用
+          player.sendMessage(translate(player, "command.InvalidBlockId")); // 翻訳キーを使用
         }
       } else if (args[1] === '-exit') {
         // ツールを終了
@@ -379,7 +661,7 @@ registerCommand({
         player.sendMessage(translate(player, "ToolOptions")); // 翻訳キーを使用
       }
 
-    } else if (args[0] === '-set' && args.length === 2) { 
+    } else if (args[0] === '-set' && args.length === 2) {
       // -set コマンド
       // 範囲選択を開始
       data.commandArgs = args; // コマンド引数を保存
@@ -397,9 +679,24 @@ registerCommand({
       data.selecting = true;
       player.sendMessage(translate(player, "StartRangeSelection")); // 翻訳キーを使用
 
+    } else if (args[0] === '-undo') {
+      // -undo コマンドの処理
+      if (undoStack[player.name] && undoStack[player.name].length > 0) {
+        const lastAction = undoStack[player.name].pop()!;
+
+        if (lastAction.type === 'fill' || lastAction.type === 'clear' || lastAction.type === 'walls' || lastAction.type === 'outline' || lastAction.type === 'filledCircle' || lastAction.type === 'smooth') {
+          lastAction.originalBlocks.forEach(blockData => {
+            setBlockData(blockData);
+          });
+          player.sendMessage(translate(player, "command.Undone")); // 翻訳キーを使用
+        }
+      } else {
+        player.sendMessage(translate(player, "command.NothingToUndo")); // 翻訳キーを使用
+      }
+
     } else {
       // 不正な引数の場合はエラーメッセージを表示
       player.sendMessage(translate(player, "InvalidCommandUsage", { prefix: `${prefix}` })); // 翻訳キーを使用、データを渡す
     }
   },
-}); 
+});
