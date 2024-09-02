@@ -6,7 +6,7 @@ import { loadjoinModules } from './command/utility/join';
 import { showBasicUI } from './command/gui/ui';
 import { customCommandsConfig } from './command/itemUI';
 import { c } from './Modules/Util';
-import { RunAntiCheat } from './command/packet';
+import { RunAntiCheat } from './command/plugin/packet';
 
 const startTime = Date.now();
 

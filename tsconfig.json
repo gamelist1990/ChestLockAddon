@@ -1,23 +1,34 @@
 {
-    "include": ["devFolder/src/**/*.ts", "gobal.d.ts"],
-    "exclude": ["node_modules"],
+    "include": [
+        "devFolder/src/**/*.ts",
+        "gobal.d.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ],
     "watchOptions": {
-        "excludeDirectories": ["node_modules"]
+        "excludeDirectories": [
+            "node_modules"
+        ]
     },
     "libChecking": true,
     "compilerOptions": {
         "target": "ESNext",
         "module": "ESNext",
         "moduleResolution": "node",
-        "lib": ["ESNext"],
+        "lib": [
+            "ESNext"
+        ],
         "noEmit": false,
         "emitDecoratorMetadata": true,
-        "experimentalDecorators":true,
+        "experimentalDecorators": true,
         "strict": true,
         "allowJs": true,
         "checkJs": false,
         "outDir": "./devFolder/scripts",
-        "typeRoots": ["./node_modules/@minecraft"],
+        "typeRoots": [
+            "./node_modules/@minecraft"
+        ],
         "strictNullChecks": true,
         "strictFunctionTypes": true,
         "strictPropertyInitialization": true,

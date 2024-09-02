@@ -1,3 +1,9 @@
 {
-    "commentTranslate.hover.enabled": false
+    "markdown.updateLinksOnFileMove.enabled": "prompt",
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "typescript.tsserver.log": "verbose",
+    "typescript.suggest.paths": false,
+    "dotnet.automaticallyUpdateGeneratedSolution": false,
+    "files.autoSave": "onFocusChange"
 }
