@@ -10,6 +10,8 @@ import { RunAntiCheat } from './command/plugin/packet';
 
 const startTime = Date.now();
 
+
+
 async function loadAllImports() {
   try {
     await import('./command/import');

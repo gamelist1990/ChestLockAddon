@@ -13,7 +13,7 @@ const config = {
     clickTpThreshold: 25, // ClickTP 判定距離 (ブロック)
     clickTpExclusionThreshold: 50, // この距離以上は検出除外
     freezeDuration: 20 * 60 * 60, // freeze時間 (ティック): 約1時間
-    betasystem: true,
+    betasystem: false,
   },
 };
 
@@ -36,6 +36,9 @@ interface PlayerData {
   isFrozen: boolean;
   freezeStartTime: number;
   isJumping: boolean;
+  jumpCounter: number;
+  recentlyUsedEnderPearl: boolean;
+  enderPearlTimeout: any;
 }
 
 // ----------------------------------
@@ -69,6 +72,9 @@ function initializePlayerData(player: Player) {
     isFrozen: false,
     freezeStartTime: 0,
     isJumping: false,
+    jumpCounter: 0,
+    enderPearlTimeout: null,
+    recentlyUsedEnderPearl: false,
   };
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) を監視しています`);
 }
@@ -208,6 +214,8 @@ function detectClickTP(player: Player): { cheatType: string } | null {
     return null;
   }
 
+
+
   const excludedEffects = [
     'minecraft:absorption',
     'minecraft:bad_omen',
@@ -263,6 +271,30 @@ function detectClickTP(player: Player): { cheatType: string } | null {
   return null;
 }
 
+world.afterEvents.itemUse.subscribe((event) => {
+  const player = event.source;
+  const item = event.itemStack;
+
+  if (item && item.typeId === 'minecraft:ender_pearl') {
+    const data = playerData[player.id] || {};
+    playerData[player.id] = data;
+
+    if (data.enderPearlTimeout) {
+      // 既存のタイムアウトをキャンセル
+      system.clearRun(data.enderPearlTimeout);
+    }
+
+    data.recentlyUsedEnderPearl = true;
+
+    // 新しいタイムアウトを設定
+    data.enderPearlTimeout = system.runTimeout(() => {
+      data.recentlyUsedEnderPearl = false;
+      data.enderPearlTimeout = null;
+    }, 9000); // 9秒後にリセット
+  }
+});
+
+
 function detectAirJump(player: Player): { cheatType: string } | null {
   const data = playerData[player.id];
   if (!data || data.isTeleporting || player.isGliding || getGamemode(player.name) === 1) {
@@ -275,14 +307,20 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   const recentPosition = positionHistory[positionHistory.length - 1];
   const previousPosition = positionHistory[positionHistory.length - 2];
 
+  // Initialize jump counter if not present
+  if (data.jumpCounter === undefined) {
+    data.jumpCounter = 0;
+  }
+
   // プレイヤーがジャンプした場合、ジャンプフラグを立てる
   if (isJumping && recentPosition && previousPosition && recentPosition.y > previousPosition.y) {
     data.isJumping = true;
   }
 
-  // プレイヤーが地面に着地した場合、ジャンプフラグをリセット
+  // プレイヤーが地面に着地した場合、ジャンプフラグとカウンターをリセット
   if (isOnGround && data.isJumping) {
     data.isJumping = false;
+    data.jumpCounter = 0;
     return null;
   }
 
@@ -290,12 +328,16 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   if (!isOnGround && data.isJumping && isJumping && recentPosition && previousPosition) {
     const jumpHeight = recentPosition.y - previousPosition.y;
     if (jumpHeight > 1.25) { // 大体1.25
-      return { cheatType: '(AirJump|Fly)' };
+      data.jumpCounter++;
+      if (data.jumpCounter >= 2) {
+        return { cheatType: '(AirJump|Fly)' };
+      }
     }
   }
 
   return null;
 }
+
 
 
 
