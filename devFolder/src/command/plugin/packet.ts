@@ -9,10 +9,11 @@ const config = {
   debugMode: false,
   antiCheat: {
     detectionThreshold: 1, // ペナルティまでの検知回数
-    rollbackTicks: 20 * 2, // ロールバックするティック数
-    clickTpThreshold: 25, // ClickTP 判定距離 (ブロック)
-    clickTpExclusionThreshold: 50, // この距離以上は検出除外
-    freezeDuration: 20 * 60 * 60, // freeze時間 (ティック): 約1時間
+    rollbackTicks: 3 * 20, // ロールバック
+    clickTpThreshold: 20, // ClickTP 判定距離
+    clickTpExclusionThreshold: 25, 
+    freezeDuration: 20 * 60 * 60, // freeze時間
+    maxSpeedThreshold: 2, // 最大速度
     betasystem: false,
   },
 };
@@ -38,7 +39,8 @@ interface PlayerData {
   isJumping: boolean;
   jumpCounter: number;
   recentlyUsedEnderPearl: boolean;
-  enderPearlTimeout: any;
+  enderPearlInterval: any;
+  lastPosition: Vector3 | null; // 1ティック前の位置を保存
 }
 
 // ----------------------------------
@@ -73,8 +75,9 @@ function initializePlayerData(player: Player) {
     freezeStartTime: 0,
     isJumping: false,
     jumpCounter: 0,
-    enderPearlTimeout: null,
+    enderPearlInterval: null,
     recentlyUsedEnderPearl: false,
+    lastPosition: null,
   };
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) を監視しています`);
 }
@@ -113,7 +116,7 @@ export function handleTeleportCommand(player: Player) {
     data.lastTeleportTime = currentTick;
     system.runTimeout(() => {
       data.isTeleporting = false;
-    }, 2 * 20);
+    }, 1 * 20);
   }
 }
 
@@ -193,14 +196,17 @@ function detectClickTP(player: Player): { cheatType: string } | null {
       );
       return distance <= 5; // Check if within 5 blocks
     }
+    
     return false;
+    
   });
 
 
   if (player.isGliding || isNearBoat) {
+    data.positionHistory = [player.location];
+    data.lastTime = Date.now();
     return null;
   }
-  //現状のコードで誤検知が少ないので保留のコードは削除
 
   const isFalling = player.getVelocity().y < -0.5 && !player.isOnGround;
   const isSprintingInAir = player.isSprinting && !player.isOnGround;
@@ -211,6 +217,8 @@ function detectClickTP(player: Player): { cheatType: string } | null {
   }
 
   if (isFalling || isSprintingInAir) {
+    data.positionHistory = [player.location];
+    data.lastTime = Date.now();
     return null;
   }
 
@@ -253,19 +261,22 @@ function detectClickTP(player: Player): { cheatType: string } | null {
 
 
 
+  // ClickTPの距離検出
   const clickTpDistance = Math.sqrt(
     Math.pow(player.location.x - data.positionHistory[0].x, 2) +
     Math.pow(player.location.y - data.positionHistory[0].y, 2) +
     Math.pow(player.location.z - data.positionHistory[0].z, 2),
   );
 
-
-  if (clickTpDistance >= config.antiCheat.clickTpExclusionThreshold) {
-    return null;
+  if (clickTpDistance > config.antiCheat.clickTpThreshold) {
+    return { cheatType: '移動系のチート(距離)' };
   }
 
-  if (clickTpDistance > config.antiCheat.clickTpThreshold) {
-    return { cheatType: '移動系のチート' };
+  const velocity = player.getVelocity();
+  const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+
+  if (speed > config.antiCheat.maxSpeedThreshold) {
+    return { cheatType: '移動系のチート(スピード)' };
   }
 
   return null;
@@ -275,29 +286,29 @@ world.afterEvents.itemUse.subscribe((event) => {
   const player = event.source;
   const item = event.itemStack;
 
-  if (item && item.typeId === 'minecraft:ender_pearl') {
+  if (item && (item.typeId === 'minecraft:ender_pearl' || item.typeId === 'minecraft:wind_charge')) {
     const data = playerData[player.id] || {};
     playerData[player.id] = data;
 
-    if (data.enderPearlTimeout) {
-      // 既存のタイムアウトをキャンセル
-      system.clearRun(data.enderPearlTimeout);
+    if (data.enderPearlInterval) {
+      // 既存のタイムアウトをクリア
+      data.enderPearlInterval = null;
     }
 
     data.recentlyUsedEnderPearl = true;
-
-    // 新しいタイムアウトを設定
-    data.enderPearlTimeout = system.runTimeout(() => {
-      data.recentlyUsedEnderPearl = false;
-      data.enderPearlTimeout = null;
-    }, 9000); // 9秒後にリセット
+    data.enderPearlInterval = 9; // 9秒カウントダウン
   }
 });
 
 
+
+
+
+
+
 function detectAirJump(player: Player): { cheatType: string } | null {
   const data = playerData[player.id];
-  if (!data || data.isTeleporting || player.isGliding || getGamemode(player.name) === 1) {
+  if (!data || data.isTeleporting || player.isGliding || data.recentlyUsedEnderPearl || getGamemode(player.name) === 1) {
     return null;
   }
 
@@ -327,9 +338,9 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   // 空中ジャンプの検出
   if (!isOnGround && data.isJumping && isJumping && recentPosition && previousPosition) {
     const jumpHeight = recentPosition.y - previousPosition.y;
-    if (jumpHeight > 1.25) { // 大体1.25
+    if (jumpHeight > 0.75) { // 大体1.25
       data.jumpCounter++;
-      if (data.jumpCounter >= 2) {
+      if (data.jumpCounter >= 1) {
         return { cheatType: '(AirJump|Fly)' };
       }
     }
@@ -462,6 +473,7 @@ function isPlayerBehindSpecificBlocks(player: Player, otherPlayer: Entity, targe
 function runTick() {
   currentTick++;
   if (!monitoring) return;
+  //logPlayerData('-4294967295');
 
   for (const playerId in playerData) {
     const player = world.getPlayers().find((p) => p.id === playerId);
@@ -474,6 +486,9 @@ function runTick() {
         };
         player.teleport(freezeLocation, { dimension: player.dimension });
       } else {
+        // 1ティック前の位置を保存
+        playerData[playerId].lastPosition = player.location;
+
         addPositionHistory(player);
 
         // ClickTP検出
@@ -496,7 +511,13 @@ function runTick() {
             handleCheatDetection(player, espDetection);
           }
         }
-
+        if (playerData[playerId].enderPearlInterval !== null) {
+          playerData[playerId].enderPearlInterval--;
+          if (playerData[playerId].enderPearlInterval <= 0) {
+            playerData[playerId].recentlyUsedEnderPearl = false;
+            playerData[playerId].enderPearlInterval = null;
+          }
+        }
 
       }
 
@@ -527,19 +548,24 @@ function handleCheatDetection(player: Player, detection: { cheatType: string }) 
 }
 
 //@ts-ignore
-function logPlayerData() {
+function logPlayerData(playerIdToDisplay) {
   const simplifiedData = Object.fromEntries(
-    Object.entries(playerData).map(([playerId, data]) => [
-      playerId,
-      {
-        latestPosition: data.positionHistory[data.positionHistory.length - 1],
-        lastTime: data.lastTime,
-        violationCount: data.violationCount,
-      },
-    ]),
+    Object.entries(playerData)
+      .filter(([playerId]) => playerId === playerIdToDisplay)
+      .map(([playerId, data]) => [
+        playerId,
+        {
+          latestPosition: data.positionHistory[data.positionHistory.length - 1],
+          lastTime: data.lastTime,
+          violationCount: data.violationCount,
+          enderDev: data.enderPearlInterval,
+          timeOutEnder: data.recentlyUsedEnderPearl,
+        },
+      ])
   );
   console.warn(`[DEBUG] playerData: ${JSON.stringify(simplifiedData, null, 2)}`);
 }
+
 
 
 export function RunAntiCheat() {
@@ -576,14 +602,12 @@ function unfreezePlayer(player: Player) {
 
 function freezePlayer(player: Player) {
   const data = playerData[player.id];
-  if (data && data.isFrozen) {
-    data.isFrozen = true;
-    console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をfreezeさせました`);
+  data.isFrozen = true;
+  console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をfreezeさせました`);
 
-    data.positionHistory = [player.location];
-    data.lastTime = Date.now();
-    data.lastTeleportTime = 0;
-  }
+  data.positionHistory = [player.location];
+  data.lastTime = Date.now();
+  data.lastTeleportTime = 0;
 }
 
 

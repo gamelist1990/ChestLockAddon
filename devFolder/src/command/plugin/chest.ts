@@ -457,6 +457,7 @@ function parseChestKey(chestKey: string): any {
 }
 
 // チェストへのアクセスを処理する関数
+//
 function handleChestInteraction(event: any) {
   const chestKey = getChestKey(event.block.location);
   const chestData = protectedChests[chestKey];
@@ -515,9 +516,13 @@ function handleExplosion(eventData: any) {
 
 // チェストかどうかを判定する関数
 function isChest(block: any): boolean {
-  return (
-    block && (block.typeId === 'minecraft:chest' || block.typeId === 'minecraft:trapped_chest')
-  );
+  try {
+    return (
+      block && (block.typeId === 'minecraft:chest' || block.typeId === 'minecraft:trapped_chest')
+    );
+  } catch (error) {
+    return false;
+  }
 }
 
 // チェストのキーを取得する関数

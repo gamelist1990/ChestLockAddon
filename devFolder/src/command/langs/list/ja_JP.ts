@@ -396,8 +396,8 @@ export const translations = {
     msgstr: "§a使用法: list show <playerName> または list all"
   },
   "commands.list.playerInfo": {
-    msgid: "§6 ==== Player Info =====\n §2Name: §f{TragetName},\n §2ID: §f{TargetID},\n §2Location: §f({TargetX}, {TargetY}, {TargetZ}),\n §2Health: §f{health},\n §2Game Mode:§f {GameMode},\n §2Ping: {ping}\n §6 ===========",
-    msgstr: "§6==== プレイヤー情報 =====\n §2名前: §f{TargetName},\n §2ID: §f{TargetID},\n §2場所: §f({TargetX}, {TargetY} 、{TargetZ})、\n §2ヘルス: §f{health}、\n §2ゲームモード:§f {GameMode}、\n §2Ping:§f {ping}\n §6==========="
+    msgid: "§6 ==== Player Info =====\n §2Name: §f{name},\n §2ID: §f{TargetID},\n §2Location: §f({TargetX}, {TargetY}, {TargetZ}),\n §2Health: §f{health},\n §2Game Mode:§f {GameMode},\n §2Ping: {ping}\n §6 ===========",
+    msgstr: "§6==== プレイヤー情報 =====\n §2名前: §f{name},\n §2ID: §f{TargetID},\n §2場所: §f({TargetX}, {TargetY} 、{TargetZ})、\n §2ヘルス: §f{health}、\n §2ゲームモード:§f {GameMode}、\n §2Ping:§f {ping}\n §6==========="
   },
   "commands.list.playerNotFound": {
     msgid: "§c Player not found: §6{tragetplayer}",

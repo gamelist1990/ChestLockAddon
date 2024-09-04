@@ -144,7 +144,6 @@ const undoStack: { [playerName: string]: EditAction[] } = {}; // プレイヤー
 // ブロックの情報を取得する関数
 function getBlockData(location: any): BlockData {
   const block = world.getDimension('overworld').getBlock(location);
-  // block が undefined の場合の処理を追加
   if (!block) {
     throw new Error("Block not found at location: " + JSON.stringify(location));
   }
@@ -156,12 +155,12 @@ function getBlockData(location: any): BlockData {
   };
 }
 
+
 // ブロックの情報を設定する関数
 function setBlockData(blockData: BlockData): void {
   fillBlocks({ x: blockData.x, y: blockData.y, z: blockData.z }, { x: blockData.x, y: blockData.y, z: blockData.z }, blockData.blockId);
 }
 
-// fillBlocks, createWalls, createOutline, createFilledCircle, smoothArea を修正して undo データを保存
 function fillBlocksWithUndo(pos1: any, pos2: any, blockId: string, player: Player) {
   const originalBlocks: BlockData[] = [];
 
@@ -172,18 +171,36 @@ function fillBlocksWithUndo(pos1: any, pos2: any, blockId: string, player: Playe
   const minZ = Math.max(Math.min(pos1.z, pos2.z));
   const maxZ = Math.min(Math.max(pos1.z, pos2.z));
 
-  // fillBlocks のループ処理の前に originalBlocks に変更前のブロックデータを保存
-  for (let x = minX; x <= maxX; x++) {
-    for (let y = minY; y <= maxY; y++) {
-      for (let z = minZ; z <= maxZ; z++) {
-        originalBlocks.push(getBlockData({ x, y, z }));
+  const overworld = world.getDimension('overworld');
+  const heightRange = overworld.heightRange;
+
+  const worldBounds = {
+    minX: -30000000,
+    minY: heightRange.min,
+    minZ: -30000000,
+    maxX: 30000000,
+    maxY: heightRange.max,
+    maxZ: 30000000,
+  };
+
+  for (let x = Math.max(minX, worldBounds.minX); x <= Math.min(maxX, worldBounds.maxX); x++) {
+    for (let y = Math.max(minY, worldBounds.minY); y <= Math.min(maxY, worldBounds.maxY); y++) {
+      for (let z = Math.max(minZ, worldBounds.minZ); z <= Math.min(maxZ, worldBounds.maxZ); z++) {
+        try {
+          originalBlocks.push(getBlockData({ x, y, z }));
+        } catch (error:any) {
+          if (error.message.includes("Block not found")) {
+            console.log("指定された座標にブロックが見つかりませんでした。スクリプトを続行します。");
+          } else {
+            throw error;
+          }
+        }
       }
     }
   }
 
-  // fillBlocks の元のループ処理
   const chunkSize = 30;
-  let commands: string[] = []; // 実行するコマンドを格納する配列
+  let commands: string[] = [];
 
   for (let x = minX; x <= maxX; x += chunkSize) {
     for (let y = minY; y <= maxY; y += chunkSize) {
@@ -198,7 +215,7 @@ function fillBlocksWithUndo(pos1: any, pos2: any, blockId: string, player: Playe
     }
   }
 
-  let currentCommandIndex = 0; // 現在実行するコマンドのインデックス
+  let currentCommandIndex = 0;
 
   system.runInterval(() => {
     if (currentCommandIndex < commands.length) {
@@ -206,9 +223,8 @@ function fillBlocksWithUndo(pos1: any, pos2: any, blockId: string, player: Playe
       world.getDimension('overworld').runCommand(command);
       currentCommandIndex++;
     }
-  }, 1); // 1tick ごとに実行
+  }, 1);
 
-  // undoStack にアクションを追加
   if (!undoStack[player.name]) {
     undoStack[player.name] = [];
   }
@@ -220,6 +236,7 @@ function fillBlocksWithUndo(pos1: any, pos2: any, blockId: string, player: Playe
     originalBlocks,
   });
 }
+
 
 function createWallsWithUndo(pos1: any, pos2: any, blockId: string, player: Player) {
   const originalBlocks: BlockData[] = [];

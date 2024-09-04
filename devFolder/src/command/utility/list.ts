@@ -27,7 +27,7 @@ registerCommand({
 
       if (args[0] === 'show') {
         sendPlayerInfoToChat(player, targetPlayer);
-      } else if (args[0] === 'all') {
+      } else if (args[0] === '-all') {
         sendAllPlayersInfoToChat(player);
       } else {
         player.sendMessage(translate(player, 'commands.list.usage', { prefix: `${prefix}` }));
@@ -63,7 +63,7 @@ function sendPlayerInfoToChat(player: Player, targetPlayer: Player): void {
 
   player.sendMessage(
     translate(player, 'commands.list.playerInfo', {
-      TragetName: `${targetPlayerData.name}`,
+      name: `${targetPlayerData.name}`,
       TargetID: `${targetPlayerData.id.toString()}`,
       TargetX: `${targetPlayerData.location.x.toFixed(2)}`,
       TargetY: `${targetPlayerData.location.y.toFixed(2)}`,
