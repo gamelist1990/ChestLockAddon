@@ -12,6 +12,11 @@ registerCommand({
   minArgs: 0,
   require: (player: Player) => verifier(player, c().commands['list']),
   executor: async (player, args) => {
+    if (args.length === 1 && args[0] === 'all') {
+      sendAllPlayersInfoToChat(player);
+      return;
+    }
+
     if (args.length === 2) {
       const targetPlayerName = args[1];
       const targetPlayer = isPlayer(targetPlayerName);
@@ -27,15 +32,13 @@ registerCommand({
 
       if (args[0] === 'show') {
         sendPlayerInfoToChat(player, targetPlayer);
-      } else if (args[0] === '-all') {
-        sendAllPlayersInfoToChat(player);
       } else {
         player.sendMessage(translate(player, 'commands.list.usage', { prefix: `${prefix}` }));
       }
     } else {
       player.sendMessage(translate(player, 'commands.list.usage', { prefix: `${prefix}` }));
     }
-  },
+  }
 });
 
 function sendPlayerInfoToChat(player: Player, targetPlayer: Player): void {
@@ -91,7 +94,7 @@ function sendAllPlayersInfoToChat(player: Player): void {
 
     player.sendMessage(
       translate(player, 'commands.list.playerInfo', {
-        TragetName: `${targetPlayerData.name}`,
+        name: `${targetPlayerData.name}`,
         TargetID: `${targetPlayerData.id.toString()}`,
         TargetX: `${targetPlayerData.location.x.toFixed(2)}`,
         TargetY: `${targetPlayerData.location.y.toFixed(2)}`,

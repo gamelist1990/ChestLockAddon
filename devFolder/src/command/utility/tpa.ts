@@ -82,7 +82,7 @@ function acceptTpaRequest(player: Player, requesterName: string) {
     player.sendMessage(translate(player, 'tpaRequestAcceptes', { playerName: requester.name }));
     translate(player, 'tpaRequestAccepted', { playerName: player.name }, requester);
     translate(player, 'teleportedToPlayer', { playerName: player.name }, requester);
-  }, 1); // 20 ticks = 1 second
+  }, 1);
 }
 
 // 指定されたプレイヤーへのTPAリクエスト一覧を取得

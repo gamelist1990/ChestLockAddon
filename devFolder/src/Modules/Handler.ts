@@ -182,7 +182,7 @@ world.beforeEvents.chatSend.subscribe((event: any) => {
  */
 export function runCommand(playerName: string, commandName: string, args: string[] = []) {
   const player = isPlayer(playerName);
-  if (!player) return; // プレイヤーが見つからない場合は何もしない
+  if (!player) return;
 
   const commandOptions = commands[commandName];
 

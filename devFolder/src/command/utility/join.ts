@@ -78,7 +78,6 @@ world.afterEvents.playerSpawn.subscribe((event: any) => {
   if (!playersShownMessage[playerName]) {
     system.runTimeout(() => {
       showJoinMessage(player);
-      // メッセージを表示したことを記録
       playersShownMessage[playerName] = true;
     }, 120); 
   }
