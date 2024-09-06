@@ -1,6 +1,6 @@
 import { c, getGamemode } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
-import { Player, world, system, Vector3, Entity, Effect, BlockRaycastOptions, Block, Dimension } from '@minecraft/server';
+import { Player, world, system, Vector3, Block, Dimension } from '@minecraft/server';
 
 // ----------------------------------
 // --- 設定 ---
@@ -8,14 +8,12 @@ import { Player, world, system, Vector3, Entity, Effect, BlockRaycastOptions, Bl
 const config = {
   debugMode: false,
   antiCheat: {
-    detectionThreshold: 1, // ペナルティまでの検知回数
-    rollbackTicks: 3 * 20, // ロールバック
-    clickTpThreshold: 20, // ClickTP 判定距離
-    clickTpExclusionThreshold: 30,
-    freezeDuration: 20 * 10, // freeze時間
-    maxSpeedThreshold: 6, // 最大速度
+    detectionThreshold: 2,
+    rollbackTicks: 3 * 20,
+    freezeDuration: 20 * 10,
+    maxSpeedThreshold: 0.25,
     betasystem: true,
-    xrayDetectionDistance: 5, // Xray検知距離 (5ブロック以上)
+    xrayDetectionDistance: 5,
   },
 };
 
@@ -30,7 +28,7 @@ let currentTick = 0;
 // --- プレイヤーデータ構造 ---
 // ----------------------------------
 interface XrayData {
-  suspiciousBlocks: { [blockLocation: string]: { timestamp: number; count: number; } }; // タイムスタンプとカウントを含むオブジェクトを格納
+  suspiciousBlocks: { [blockLocation: string]: { timestamp: number; count: number } };
 }
 
 interface PlayerData {
@@ -45,32 +43,19 @@ interface PlayerData {
   jumpCounter: number;
   recentlyUsedEnderPearl: boolean;
   enderPearlInterval: any;
-  lastPosition: Vector3 | null; // 1ティック前の位置を保存
-  xrayData: XrayData; // Xray検知用データ
+  lastPosition: Vector3 | null;
+  xrayData: XrayData;
+  lastRotationY: number;
+  boundaryCenter: Vector3; // 枠の中心座標
+  boundaryRadius: number;
 }
 
 // ----------------------------------
 // --- 関数 ---
 // ----------------------------------
 
-//死亡イベント
-world.afterEvents.entityDie.subscribe((event) => {
-  const player = event.deadEntity as Player;
-  if (player && player.id) {
-    delete playerData[player.id];
-    system.runTimeout(() => {
-      world.getPlayers().forEach((p) => {
-        if (!playerData[p.id]) {
-          initializePlayerData(p);
-        }
-      });
-    }, 20 * 3);
-  }
-
-});
-
 // プレイヤーデータの初期化
-function initializePlayerData(player: Player) {
+function initializePlayerData(player: Player): void {
   playerData[player.id] = {
     positionHistory: [player.location],
     lastTime: Date.now(),
@@ -84,6 +69,9 @@ function initializePlayerData(player: Player) {
     enderPearlInterval: null,
     recentlyUsedEnderPearl: false,
     lastPosition: null,
+    lastRotationY: 0,
+    boundaryCenter: player.location, // 初期位置を枠の中心に設定
+    boundaryRadius: 10,
     xrayData: {
       suspiciousBlocks: {},
     },
@@ -91,7 +79,20 @@ function initializePlayerData(player: Player) {
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) を監視しています`);
 }
 
-function addPositionHistory(player: Player) {
+// プレイヤー死亡時のデータ削除
+world.afterEvents.entityDie.subscribe((event) => {
+  const player = event.deadEntity as Player;
+  if (player && player.id) {
+    delete playerData[player.id];
+    // 3秒後に全プレイヤーのデータをチェックし、初期化されていない場合は初期化する
+    system.runTimeout(() => {
+      world.getPlayers().forEach(initializePlayerData);
+    }, 20 * 3);
+  }
+});
+
+// 位置履歴の追加
+function addPositionHistory(player: Player): void {
   const data = playerData[player.id];
   if (!data) return;
 
@@ -107,18 +108,17 @@ function addPositionHistory(player: Player) {
 
   // デバッグログ出力
   if (config.debugMode) {
-    console.log(
-      `[DEBUG] ${player.name} new position: ${player.location.x}, ${player.location.y}, ${player.location.z}`,
-    );
+    console.log(`[DEBUG] ${player.name} new position: ${player.location.x}, ${player.location.y}, ${player.location.z}`);
   }
 
-  const historyLimit = config.antiCheat.rollbackTicks + 1;
-  if (data.positionHistory.length > historyLimit) {
+  // 位置履歴の制限
+  if (data.positionHistory.length > config.antiCheat.rollbackTicks + 1) {
     data.positionHistory.shift();
   }
 }
 
-export function handleTeleportCommand(player: Player) {
+// テレポートコマンド使用時の処理
+export function handleTeleportCommand(player: Player): void {
   const data = playerData[player.id];
   if (data) {
     data.isTeleporting = true;
@@ -130,175 +130,121 @@ export function handleTeleportCommand(player: Player) {
 }
 
 // ロールバック実行
-function executeRollback(player: Player) {
+function executeRollback(player: Player): void {
   const data = playerData[player.id];
   if (!data) return;
 
   const rollbackIndex = data.positionHistory.length - config.antiCheat.rollbackTicks - 1;
   if (rollbackIndex >= 0) {
     const rollbackPosition = data.positionHistory[rollbackIndex];
-    system.run(() => { // 1 tick 遅延させる
+    // 1 tick 遅延させてロールバック
+    system.run(() => {
       player.teleport(rollbackPosition, { dimension: player.dimension });
       console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をロールバックしました`);
     });
   }
 
-  //ResetData
+  // データのリセット
+  resetPlayerData(data, player);
+}
+
+// プレイヤーデータのリセット
+function resetPlayerData(data: PlayerData, player: Player): void {
   data.positionHistory = [player.location];
   data.lastTime = Date.now();
   data.lastTeleportTime = 0;
 }
 
-
 function hasAnyEffectExcept(player: Player, excludedEffects: string[]): boolean {
-  const effects: Effect[] = player.getEffects();
-
-  return effects.some((effect: Effect) => !excludedEffects.includes(effect.typeId));
+  return player.getEffects().some((effect) => !excludedEffects.includes(effect.typeId));
 }
 
-//Freeze
-function executeFreeze(player: Player) {
+// Freeze実行
+function executeFreeze(player: Player): void {
   const data = playerData[player.id];
   if (!data) return;
 
   data.isFrozen = true;
   data.freezeStartTime = currentTick;
 
-  // プレイヤーの現在の位置を取得して、y座標を1000に変更
-  const freezeLocation = {
-    x: player.location.x,
-    y: player.location.y,
-    z: player.location.z,
-  };
-
-  player.teleport(freezeLocation, { dimension: player.dimension });
+  // プレイヤーをy座標500にテレポート
+  player.teleport({ x: player.location.x, y: 500, z: player.location.z }, { dimension: player.dimension });
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をfreezeしました`);
 
   // 一定時間後にfreeze解除
   system.runTimeout(() => {
     data.isFrozen = false;
     console.warn(`プレイヤー ${player.name} (ID: ${player.id}) のfreezeを解除しました`);
-
-    data.positionHistory = [player.location];
-    data.lastTime = Date.now();
-    data.lastTeleportTime = 0;
+    // データのリセット
+    resetPlayerData(data, player);
     data.violationCount = 0;
   }, config.antiCheat.freezeDuration);
 }
 
-
-// 2点間の距離を計算する関数
+// 2点間の距離を計算
 function calculateDistance(pos1: Vector3, pos2: Vector3): number {
-  return Math.sqrt(
-    Math.pow(pos2.x - pos1.x, 2) +
-    Math.pow(pos2.y - pos1.y, 2) +
-    Math.pow(pos2.z - pos1.z, 2)
-  );
+  return Math.sqrt((pos2.x - pos1.x) ** 2 + (pos2.y - pos1.y) ** 2 + (pos2.z - pos1.z) ** 2);
 }
 
-// ClickTP検出
-function detectClickTP(player: Player): { cheatType: string } | null {
+function calculatePlayerSpeed(player: Player): number {
   const data = playerData[player.id];
-  if (!data || data.isTeleporting) return null;
+  if (!data) return 0;
+
+  // 過去2ティック間の位置履歴を取得
+  const currentPosition = player.location;
+  const previousPosition = data.positionHistory.length >= 2 ? data.positionHistory[data.positionHistory.length - 2] : currentPosition;
+
+  // 水平方向の移動距離を計算
+  const horizontalDistance = Math.sqrt((currentPosition.x - previousPosition.x) ** 2 + (currentPosition.z - previousPosition.z) ** 2);
+
+  // 速度を計算 (blocks/tick)
+  const speed = horizontalDistance / (50 / 20); // 50ms = 1 tick
+
+  return speed;
+}
+
+function detectSpeed(player: Player): { cheatType: string } | null {
+  const data = playerData[player.id];
+  if (!data || data.isTeleporting || player.isGliding || data.recentlyUsedEnderPearl || getGamemode(player.name) === 1) {
+    return null;
+  }
+
+  // 特定の効果を除く効果を持っているかチェック
+  if (hasAnyEffectExcept(player, getExcludedEffects())) {
+    return null;
+  }
 
   if (getGamemode(player.name) === 1) {
     return null;
   }
 
-  // Get all entities in the overworld
-  const entities = world.getDimension('overworld').getEntities();
+  // calculatePlayerSpeed を使用して速度を取得
+  const speed = calculatePlayerSpeed(player);
 
-  // Check for nearby boats
-  const isNearBoat = entities.some((entity: Entity) => {
-    if (entity.typeId === 'minecraft:boat') {
-      const distance = calculateDistance(player.location, entity.location);
-      return distance <= 5; // Check if within 5 blocks
+  // 速度が閾値を超えているかチェック
+  if (speed > config.antiCheat.maxSpeedThreshold) {
+    // プレイヤーがボートに乗っている場合はチートと判定しない
+    if (isNearBoat(player)) {
+      return null;
     }
 
-    return false;
-
-  });
-
-
-  if (player.isGliding || isNearBoat) {
-    data.positionHistory = [player.location];
-    data.lastTime = Date.now();
-    return null;
-  }
-
-  const isFalling = player.getVelocity().y < -0.5 && !player.isOnGround;
-  const isSprintingInAir = player.isSprinting && !player.isOnGround;
-
-
-  if (player.location.y <= -64) {
-    return null;
-  }
-
-  if (isFalling || isSprintingInAir) {
-    data.positionHistory = [player.location];
-    data.lastTime = Date.now();
-    return null;
-  }
-
-
-
-  const excludedEffects = [
-    'minecraft:absorption',
-    'minecraft:bad_omen',
-    'minecraft:blindness',
-    'minecraft:conduit_power',
-    'minecraft:darkness',
-    'minecraft:fatal_poison',
-    'minecraft:fire_resistance',
-    'minecraft:glowing',
-    'minecraft:haste',
-    'minecraft:health_boost',
-    'minecraft:hunger',
-    'minecraft:instant_damage',
-    'minecraft:instant_health',
-    'minecraft:invisibility',
-    'minecraft:mining_fatigue',
-    'minecraft:nausea',
-    'minecraft:night_vision',
-    'minecraft:poison',
-    'minecraft:regeneration',
-    'minecraft:resistance',
-    'minecraft:saturation',
-    'minecraft:slow_falling',
-    'minecraft:slowness',
-    'minecraft:strength',
-    'minecraft:water_breathing',
-    'minecraft:weakness',
-    'minecraft:wither',
-  ];
-
-  if (hasAnyEffectExcept(player, excludedEffects)) {
-    return null;
-  }
-
-
-
-  // ClickTPの距離検出
-  const clickTpDistance = calculateDistance(player.location, data.positionHistory[0]);
-
-  if (clickTpDistance > config.antiCheat.clickTpExclusionThreshold) {
-    return null;
-  }
-
-  if (clickTpDistance > config.antiCheat.clickTpThreshold) {
-    return { cheatType: '移動系のチート(距離)' };
-  }
-
-  const velocity = player.getVelocity();
-  const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
-
-  if (speed > config.antiCheat.maxSpeedThreshold) {
-    return { cheatType: '移動系のチート(スピード)' };
+    // 速度が閾値を超えている場合は Speed と判定
+    return { cheatType: 'SpeedHack' };
   }
 
   return null;
 }
 
+// プレイヤーとボートの距離をチェックする関数
+//@ts-ignore
+function isNearBoat(player: Player): boolean {
+  return world
+    .getDimension('overworld')
+    .getEntities()
+    .some((entity) => entity.typeId === 'minecraft:boat' && calculateDistance(player.location, entity.location) <= 5);
+}
+
+// エンダーパールとウィンドチャージの使用を記録
 world.afterEvents.itemUse.subscribe((event) => {
   const player = event.source;
   const item = event.itemStack;
@@ -307,8 +253,8 @@ world.afterEvents.itemUse.subscribe((event) => {
     const data = playerData[player.id] || {};
     playerData[player.id] = data;
 
+    // 既存のタイムアウトをクリア
     if (data.enderPearlInterval) {
-      // 既存のタイムアウトをクリア
       data.enderPearlInterval = null;
     }
 
@@ -317,44 +263,19 @@ world.afterEvents.itemUse.subscribe((event) => {
   }
 });
 
-
+// AirJump検出
 function detectAirJump(player: Player): { cheatType: string } | null {
   const data = playerData[player.id];
   if (!data || data.isTeleporting || player.isGliding || data.recentlyUsedEnderPearl || getGamemode(player.name) === 1) {
     return null;
   }
 
-  const excludedEffects = [
-    'minecraft:absorption',
-    'minecraft:bad_omen',
-    'minecraft:blindness',
-    'minecraft:conduit_power',
-    'minecraft:darkness',
-    'minecraft:fatal_poison',
-    'minecraft:fire_resistance',
-    'minecraft:glowing',
-    'minecraft:haste',
-    'minecraft:health_boost',
-    'minecraft:hunger',
-    'minecraft:instant_damage',
-    'minecraft:instant_health',
-    'minecraft:invisibility',
-    'minecraft:mining_fatigue',
-    'minecraft:nausea',
-    'minecraft:night_vision',
-    'minecraft:poison',
-    'minecraft:regeneration',
-    'minecraft:resistance',
-    'minecraft:saturation',
-    'minecraft:slow_falling',
-    'minecraft:slowness',
-    'minecraft:strength',
-    'minecraft:water_breathing',
-    'minecraft:weakness',
-    'minecraft:wither',
-  ];
+  // 特定の効果を除く効果を持っているかチェック
+  if (hasAnyEffectExcept(player, getExcludedEffects())) {
+    return null;
+  }
 
-  if (hasAnyEffectExcept(player, excludedEffects)) {
+  if (getGamemode(player.name) === 1) {
     return null;
   }
 
@@ -365,23 +286,16 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   // 過去3ティック分の座標を取得
   const currentPosition = player.location;
   const previousPosition = positionHistory.length >= 2 ? positionHistory[positionHistory.length - 2] : currentPosition;
-  const twoTicksAgoPosition = positionHistory.length >= 3 ? positionHistory[positionHistory.length - 3] : previousPosition; // 修正: previousPositionを使う
+  const twoTicksAgoPosition = positionHistory.length >= 3 ? positionHistory[positionHistory.length - 3] : previousPosition;
 
-  // XZ平面での移動速度を計算
-  const horizontalSpeed = Math.sqrt(
-    Math.pow(currentPosition.x - previousPosition.x, 2) + Math.pow(currentPosition.z - previousPosition.z, 2)
-  );
-
-  // 過去2ティック間の水平方向の速度の変化量を計算
-  const horizontalAcceleration = horizontalSpeed -
-    Math.sqrt(
-      Math.pow(previousPosition.x - twoTicksAgoPosition.x, 2) + Math.pow(previousPosition.z - twoTicksAgoPosition.z, 2)
-    );
+  // 水平方向の速度と加速度を計算
+  const horizontalSpeed = Math.sqrt((currentPosition.x - previousPosition.x) ** 2 + (currentPosition.z - previousPosition.z) ** 2);
+  const horizontalAcceleration = horizontalSpeed - Math.sqrt((previousPosition.x - twoTicksAgoPosition.x) ** 2 + (previousPosition.z - twoTicksAgoPosition.z) ** 2);
 
   // 過去3ティック分のY軸方向の速度を計算
   const currentVelocityY = player.getVelocity().y;
-  const previousVelocityY = positionHistory.length >= 3 ? (positionHistory[positionHistory.length - 2].y - positionHistory[positionHistory.length - 3].y) / 50 : 0; // 要素数が3以上であることを確認
-  const twoTicksAgoVelocityY = positionHistory.length >= 4 ? (positionHistory[positionHistory.length - 3].y - positionHistory[positionHistory.length - 4].y) / 50 : 0; // 要素数が4以上であることを確認
+  const previousVelocityY = positionHistory.length >= 3 ? (positionHistory[positionHistory.length - 2].y - positionHistory[positionHistory.length - 3].y) / 50 : 0;
+  const twoTicksAgoVelocityY = positionHistory.length >= 4 ? (positionHistory[positionHistory.length - 3].y - positionHistory[positionHistory.length - 4].y) / 50 : 0;
 
   // Y軸方向の加速度を計算
   const verticalAcceleration = currentVelocityY - previousVelocityY;
@@ -400,8 +314,8 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     // 過去3ティック間のY座標の変化量からジャンプの高さを計算
     const jumpHeight = currentPosition.y - Math.min(previousPosition.y, twoTicksAgoPosition.y);
 
-    // ジャンプ高さ、水平方向の加速度、またはY軸方向の加速度が閾値を超えたらAirJumpの可能性あり
-    if (jumpHeight > 1.52 || horizontalAcceleration > 0.8 || (verticalAcceleration > 0.4 && previousVerticalAcceleration > 0.1)) {
+    // AirJump判定
+    if (jumpHeight > 1.52 || horizontalAcceleration > 2.0 || (verticalAcceleration > 0.8 && previousVerticalAcceleration > 0.4)) {
       data.jumpCounter++;
       if (data.jumpCounter >= 1) {
         return { cheatType: '(AirJump|Fly)' };
@@ -412,116 +326,25 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   return null;
 }
 
+function detectClickTpOutOfBoundary(player: Player): { cheatType: string } | null {
+  const data = playerData[player.id];
+  if (!data) return null;
+  if (getGamemode(player.name) === 1) {
+    return null;
+  }
 
-let previousAngle = 0; // 1つ前のプレイヤーに対する角度を保存するための変数
-const espSuspiciousTime: { [playerId: string]: number } = {}; // プレイヤーごとのESP検知時間
+  const distanceToCenter = calculateDistance(player.location, data.boundaryCenter);
 
-//@ts-ignore
-function detectESP(player: Player): { cheatType: string } | null {
-  const viewDirection = player.getViewDirection();
-  const playerDimension = player.dimension;
+  // プレイヤーが落下中かどうかを判定するフラグを追加
+  const isFalling = player.isFalling; // isFalling() はプレイヤーが落下中かどうかを返す関数と仮定
 
-  const otherPlayers = playerDimension.getPlayers().filter(p => p !== player && !p.hasTag("staff"));
-
-  for (const otherPlayer of otherPlayers) {
-    const distance = calculateDistance(player.location, otherPlayer.location);
-
-    if (distance) {
-      const directionToOtherPlayer = {
-        x: (otherPlayer.location.x - player.location.x) / distance,
-        y: (otherPlayer.location.y - player.location.y) / distance,
-        z: (otherPlayer.location.z - player.location.z) / distance,
-      };
-
-      const dotProduct =
-        viewDirection.x * directionToOtherPlayer.x +
-        viewDirection.y * directionToOtherPlayer.y +
-        viewDirection.z * directionToOtherPlayer.z;
-
-      const angle = Math.acos(dotProduct);
-
-      const viewDirectionChange = Math.abs(angle - previousAngle);
-
-      const targetBlockIds = ['minecraft:stone', 'minecraft:grass', 'minecraft:dirt', 'minecraft:deepslate', 'minecraft:cobblestone'];
-      const isPlayerBehindTargetBlocks = isPlayerBehindSpecificBlocks(player, otherPlayer, targetBlockIds, distance);
-
-      if (viewDirectionChange > 0.05 && isPlayerBehindTargetBlocks) {
-        if (!espSuspiciousTime[player.id]) {
-          espSuspiciousTime[player.id] = Date.now();
-          continue;
-        } else {
-          if (Date.now() - espSuspiciousTime[player.id] <= 750) {
-            if (angle < 0.4) {
-              delete espSuspiciousTime[player.id];
-              return { cheatType: 'ESP' }; // ESP
-            }
-          } else {
-            delete espSuspiciousTime[player.id];
-          }
-        }
-      }
-
-      previousAngle = angle;
-    }
+  // 境界の外に出た場合、かつ落下中でない場合、かつ15ブロック以内
+  if (distanceToCenter > data.boundaryRadius && distanceToCenter <= data.boundaryRadius + 5 && !isFalling) {
+    return { cheatType: 'ClickTP (枠外移動)' };
   }
 
   return null;
 }
-
-
-function isPlayerBehindSpecificBlocks(player: Player, otherPlayer: Entity, targetBlockIds: string[], distance: number): boolean {
-  if (distance <= 20) {
-    return false;
-  }
-
-  const dimension = world.getDimension('overworld');
-  const step = 0.25;
-  const worldHeight = 256;
-  const maxAngle = 2;
-
-  const playerLocation = player.location;
-  const otherPlayerLocation = otherPlayer.location;
-
-  playerLocation.y += 1;
-
-  const viewDirection = player.getViewDirection();
-
-  const directionToOtherPlayer = {
-    x: otherPlayerLocation.x - playerLocation.x,
-    y: otherPlayerLocation.y - playerLocation.y,
-    z: otherPlayerLocation.z - playerLocation.z,
-  };
-
-  const dotProduct = viewDirection.x * directionToOtherPlayer.x + viewDirection.y * directionToOtherPlayer.y + viewDirection.z * directionToOtherPlayer.z;
-
-  const angle = Math.acos(dotProduct / (Math.sqrt(viewDirection.x ** 2 + viewDirection.y ** 2 + viewDirection.z ** 2) * Math.sqrt(directionToOtherPlayer.x ** 2 + directionToOtherPlayer.y ** 2 + directionToOtherPlayer.z ** 2)));
-
-  const angleInDegrees = angle * 180 / Math.PI;
-
-  if (angleInDegrees > maxAngle) {
-    return false;
-  }
-
-  for (let i = 0; i <= 1; i += step) {
-    const x = playerLocation.x + directionToOtherPlayer.x * i;
-    const y = playerLocation.y + directionToOtherPlayer.y * i;
-    const z = playerLocation.z + directionToOtherPlayer.z * i;
-
-    const clampedY = Math.min(y, worldHeight - 1);
-
-    const blockLocation = { x: Math.floor(x) + 0.5, y: Math.floor(clampedY) + 0.5, z: Math.floor(z) + 0.5 };
-
-    const block = dimension.getBlock(blockLocation);
-
-    if (block && targetBlockIds.includes(block.type.id)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-
 
 // ブロックXray検知 (視認時)
 function detectXrayOnSight(player: Player): void {
@@ -530,11 +353,7 @@ function detectXrayOnSight(player: Player): void {
 
   const viewDirection = player.getViewDirection();
   const playerDimension = player.dimension;
-
-  const blockRayCastOptions: BlockRaycastOptions = {
-    maxDistance: 20 // Xray検知距離を設定
-  };
-  const blockRaycastHit = player.getBlockFromViewDirection(blockRayCastOptions);
+  const blockRaycastHit = player.getBlockFromViewDirection({ maxDistance: 20 });
 
   if (blockRaycastHit && blockRaycastHit.block) {
     const frontBlockLocation = blockRaycastHit.block.location;
@@ -542,17 +361,15 @@ function detectXrayOnSight(player: Player): void {
 
     // 前方のブロックが不透明で、かつプレイヤーから5ブロック以上離れている場合のみチェック
     if (!isBlockVisible(player, frontBlockLocation) && distanceToBlock > 5) {
-      // プレイヤーの目の位置を取得
-      const playerHeadLocation = player.getHeadLocation(); // 頭の位置を取得
       const playerEyeLocation = {
-        x: playerHeadLocation.x,
-        y: playerHeadLocation.y + 1.62,  // 頭の位置に身長1.62ブロックを加算
-        z: playerHeadLocation.z
+        x: player.getHeadLocation().x,
+        y: player.getHeadLocation().y + 1.62,
+        z: player.getHeadLocation().z,
       };
       const targetLocation = {
         x: Math.floor(frontBlockLocation.x + viewDirection.x * distanceToBlock),
         y: Math.floor(frontBlockLocation.y + viewDirection.y * distanceToBlock),
-        z: Math.floor(frontBlockLocation.z + viewDirection.z * distanceToBlock)
+        z: Math.floor(frontBlockLocation.z + viewDirection.z * distanceToBlock),
       };
       const blocksOnLine = bresenham3D(
         Math.floor(playerEyeLocation.x),
@@ -568,14 +385,11 @@ function detectXrayOnSight(player: Player): void {
         const checkBlock = playerDimension.getBlock(blockLocation);
         // チェックしたブロックがXray検知対象で、かつ空気に触れていない場合
         if (checkBlock && isTargetXrayBlock(checkBlock) && !isBlockExposedToAir(playerDimension, blockLocation)) {
-          const blockLocationString = blockLocation.x + ',' + blockLocation.y + ',' + blockLocation.z;
+          const blockLocationString = `${blockLocation.x},${blockLocation.y},${blockLocation.z}`;
 
           // 疑わしいブロックとして記録
           if (!data.xrayData.suspiciousBlocks[blockLocationString]) {
-            data.xrayData.suspiciousBlocks[blockLocationString] = {
-              timestamp: Date.now(),
-              count: 1
-            };
+            data.xrayData.suspiciousBlocks[blockLocationString] = { timestamp: Date.now(), count: 1 };
           } else {
             data.xrayData.suspiciousBlocks[blockLocationString].count++;
           }
@@ -585,6 +399,7 @@ function detectXrayOnSight(player: Player): void {
   }
 }
 
+// ブロックが空気ブロックに面しているか判定
 function isBlockExposedToAir(dimension: Dimension, blockLocation: Vector3): boolean {
   const directions: Vector3[] = [
     { x: 1, y: 0, z: 0 },
@@ -602,48 +417,43 @@ function isBlockExposedToAir(dimension: Dimension, blockLocation: Vector3): bool
       z: blockLocation.z + direction.z,
     };
     const neighborBlock = dimension.getBlock(neighborLocation);
-    // 周りのブロックが空気ブロックの場合
-    if (!neighborBlock || neighborBlock.type.id === "minecraft:air") {
+    if (!neighborBlock || neighborBlock.type.id === 'minecraft:air') {
       return true;
     }
   }
 
-  // すべての隣接ブロックが空気ブロックではない場合
   return false;
 }
 
+// Xray検知対象のブロックか判定
 function isTargetXrayBlock(block: Block): boolean {
-  const targetXrayBlockIds = [
-    'minecraft:diamond_ore',
-    'minecraft:ancient_debris',
-    'minecraft:emerald_ore',
-    'minecraft:iron_ore',
-  ];
+  const targetXrayBlockIds = ['minecraft:diamond_ore', 'minecraft:ancient_debris', 'minecraft:emerald_ore', 'minecraft:iron_ore'];
   return targetXrayBlockIds.includes(block.type.id);
 }
 
-
+// ブレゼンハムのアルゴリズム (3D)
 function bresenham3D(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): Vector3[] {
-  let points: Vector3[] = [];
+  const points: Vector3[] = [];
   let dx = Math.abs(x2 - x1);
   let dy = Math.abs(y2 - y1);
   let dz = Math.abs(z2 - z1);
-  let xs = x1 < x2 ? 1 : -1;
-  let ys = y1 < y2 ? 1 : -1;
-  let zs = z1 < z2 ? 1 : -1;
+  const xs = x1 < x2 ? 1 : -1;
+  const ys = y1 < y2 ? 1 : -1;
+  const zs = z1 < z2 ? 1 : -1;
   let p1, p2;
 
+  // ワールド境界内か判定
   const isWithinWorldBoundaries = (x: number, y: number, z: number): boolean => {
-    const worldMin = { x: -30000000, y: -64, z: -30000000 }; 
-    const worldMax = { x: 29999999, y: 256, z: 29999999 }; 
+    const worldMin = { x: -30000000, y: -64, z: -30000000 };
+    const worldMax = { x: 29999999, y: 256, z: 29999999 };
     return x >= worldMin.x && x <= worldMax.x && y >= worldMin.y && y <= worldMax.y && z >= worldMin.z && z <= worldMax.z;
   };
 
-  // x軸方向の変化量が最大の場合
   if (dx >= dy && dx >= dz) {
+    // x軸方向の変化量が最大の場合
     p1 = 2 * dy - dx;
     p2 = 2 * dz - dx;
-    while (x1 != x2) {
+    while (x1 !== x2) {
       x1 += xs;
       if (p1 >= 0) {
         y1 += ys;
@@ -660,11 +470,11 @@ function bresenham3D(x1: number, y1: number, z1: number, x2: number, y2: number,
         points.push({ x: x1, y: y1, z: z1 });
       }
     }
-    // y軸方向の変化量が最大の場合
   } else if (dy >= dx && dy >= dz) {
+    // y軸方向の変化量が最大の場合
     p1 = 2 * dx - dy;
     p2 = 2 * dz - dy;
-    while (y1 != y2) {
+    while (y1 !== y2) {
       y1 += ys;
       if (p1 >= 0) {
         x1 += xs;
@@ -681,11 +491,11 @@ function bresenham3D(x1: number, y1: number, z1: number, x2: number, y2: number,
         points.push({ x: x1, y: y1, z: z1 });
       }
     }
-    // z軸方向の変化量が最大の場合
   } else {
+    // z軸方向の変化量が最大の場合
     p1 = 2 * dx - dz;
     p2 = 2 * dy - dz;
-    while (z1 != z2) {
+    while (z1 !== z2) {
       z1 += zs;
       if (p1 >= 0) {
         x1 += xs;
@@ -696,7 +506,7 @@ function bresenham3D(x1: number, y1: number, z1: number, x2: number, y2: number,
         p2 -= 2 * dz;
       }
       p1 += 2 * dx;
-      p2 += 2 * dy;
+      p2 += 2 * dz;
 
       if (isWithinWorldBoundaries(x1, y1, z1)) {
         points.push({ x: x1, y: y1, z: z1 });
@@ -707,115 +517,190 @@ function bresenham3D(x1: number, y1: number, z1: number, x2: number, y2: number,
   return points;
 }
 
+// ブロックが視界に入っているか判定
 function isBlockVisible(player: Player, blockLocation: Vector3): boolean {
-  const blockRayCastOptions: BlockRaycastOptions = {
-    maxDistance: calculateDistance(player.location, blockLocation)
-  };
-  const blockRaycastHit = player.getBlockFromViewDirection(blockRayCastOptions);
-
+  const blockRaycastHit = player.getBlockFromViewDirection({ maxDistance: calculateDistance(player.location, blockLocation) });
   if (blockRaycastHit && blockRaycastHit.block) {
-    return blockRaycastHit.block.location.x === blockLocation.x &&
-      blockRaycastHit.block.location.y === blockLocation.y &&
-      blockRaycastHit.block.location.z === blockLocation.z;
-  } else {
-    return false;
+    return blockRaycastHit.block.location.x === blockLocation.x && blockRaycastHit.block.location.y === blockLocation.y && blockRaycastHit.block.location.z === blockLocation.z;
   }
+  return false;
 }
 
-world.beforeEvents.playerBreakBlock.subscribe((event: any) => {
+// ブロック破壊時のXrayチェック
+world.beforeEvents.playerBreakBlock.subscribe((event) => {
   const player = event.player;
   const blockLocation = event.block.location;
   const data = playerData[player.id];
 
   if (!data) return;
 
-
-  system.run(() => { // 1 tick 遅延させる
-    const blockLocationString = blockLocation.x + ',' + blockLocation.y + ',' + blockLocation.z;
-
+  // 1 tick 遅延させてチェック
+  system.run(() => {
+    const blockLocationString = `${blockLocation.x},${blockLocation.y},${blockLocation.z}`;
     // 破壊したブロックが疑わしいブロックとして記録されているかチェック
     if (data.xrayData.suspiciousBlocks[blockLocationString]) {
-      // Xrayと判定
-      //handleCheatDetection(player, { cheatType: 'Xray' });
-      world.sendMessage(`§l§a[自作§3AntiCheat]§fプレイヤー ${player.name} (ID: ${player.id}) が Xray を使用している可能性があります(バグの可能性もあり)`)
-
+      // Xray判定
+      world.sendMessage(`§l§a[自作§3AntiCheat]§fプレイヤー ${player.name} (ID: ${player.id}) が Xray を使用している可能性があります(バグの可能性もあり)`);
       // 疑わしいブロックの記録を削除
       delete data.xrayData.suspiciousBlocks[blockLocationString];
     }
   });
 });
 
+function getExcludedEffects(): string[] {
+  return [
+    'minecraft:absorption', 'minecraft:bad_omen', 'minecraft:blindness', 'minecraft:conduit_power', 'minecraft:darkness',
+    'minecraft:fatal_poison', 'minecraft:fire_resistance', 'minecraft:glowing', 'minecraft:haste', 'minecraft:health_boost',
+    'minecraft:hunger', 'minecraft:instant_damage', 'minecraft:instant_health', 'minecraft:invisibility', 'minecraft:mining_fatigue',
+    'minecraft:nausea', 'minecraft:night_vision', 'minecraft:poison', 'minecraft:regeneration', 'minecraft:resistance',
+    'minecraft:saturation', 'minecraft:slow_falling', 'minecraft:slowness', 'minecraft:strength', 'minecraft:water_breathing',
+    'minecraft:weakness', 'minecraft:wither',
+  ];
+}
+
+function detectNoFall(player: Player): { cheatType: string } | null {
+  const data = playerData[player.id];
+  if (!data) return null;
+
+
+  if (getGamemode(player.name) === 1) {
+    return null;
+  }
+
+
+  // プレイヤーが落下中かどうかをチェック
+  const isFalling = player.isFalling;
+  const isOnGround = player.isOnGround;
+  const velocityY = player.getVelocity().y;
+
+  // 過去の落下速度を計算
+  let previousFallingSpeed = 0;
+  if (data.positionHistory.length >= 2) {
+    previousFallingSpeed = (player.location.y - data.positionHistory[data.positionHistory.length - 2].y) / (50 / 20); // blocks/tick
+  }
+
+  // NoFallのチェック (落下中で、地面に着地していないのにY軸速度が正、または急激に速度が減少)
+  if (isFalling && !isOnGround && !data.isJumping && (velocityY >= 0 || velocityY - previousFallingSpeed > 0.5)) {
+    return { cheatType: 'NoFall' };
+  }
+
+  const spoofBlockIds = [
+    "minecraft:air",
+    "minecraft:water",
+    "minecraft:lava",
+    // その他のブロックIDを追加
+  ];
+
+  // プレイヤーが地面にいると偽装しているかどうかをチェック (落下中なのにisOnGroundがtrue、かつ水中にいない)
+  if (isOnGround && velocityY < -0.2 && !player.isInWater) {
+    // プレイヤーの足元のブロックを取得
+    const blockBelow = player.dimension.getBlock({ x: Math.floor(player.location.x), y: Math.floor(player.location.y - 1), z: Math.floor(player.location.z) });
+
+    // 足元のブロックが空気または液体の場合、OnGroundSpoofと判定
+    if (!blockBelow || spoofBlockIds.includes(blockBelow.type.id)) { 
+      // さらに、過去3ティック分のY座標の変化量をチェック
+      if (data.positionHistory.length >= 4) {
+        const yDiff1 = data.positionHistory[data.positionHistory.length - 2].y - data.positionHistory[data.positionHistory.length - 3].y;
+        const yDiff2 = data.positionHistory[data.positionHistory.length - 3].y - data.positionHistory[data.positionHistory.length - 4].y;
+
+        // 過去2ティック連続で落下している場合、OnGroundSpoofと判定
+        if (yDiff1 < 0 && yDiff2 < 0) {
+          return { cheatType: 'OnGroundSpoof' };
+        }
+      }
+    }
+  }
+
+  // プレイヤーの位置履歴をチェック (前ティックより落下しているのにisOnGroundがtrue)
+  if (data.positionHistory.length > 1) {
+    const previousPosition = data.positionHistory[data.positionHistory.length - 2];
+    if (previousPosition.y > player.location.y + 0.1 && isOnGround && Math.abs(velocityY) < 0.1) {
+      return { cheatType: 'AuthGroundPos' };
+    }
+  }
+
+  return null;
+}
 
 
 
-function runTick() {
+
+
+
+
+
+
+
+
+
+// ティックごとの処理
+function runTick(): void {
   currentTick++;
   if (!monitoring) return;
-  //logPlayerData('-4294967295');
+
+  const currentTime = Date.now();
 
   for (const playerId in playerData) {
     const player = world.getPlayers().find((p) => p.id === playerId);
-    if (player) {
-      if (playerData[playerId].isFrozen) {
-        const freezeLocation = {
-          x: player.location.x,
-          y: 1000,
-          z: player.location.z,
-        };
-        player.teleport(freezeLocation, { dimension: player.dimension });
-      } else {
-        // 1ティック前の位置を保存
-        playerData[playerId].lastPosition = player.location;
+    if (!player) continue;
 
-        addPositionHistory(player);
+    if (playerData[playerId].isFrozen) {
+      // Freeze中のプレイヤーはy座標500に固定
+      player.teleport({ x: player.location.x, y: 500, z: player.location.z }, { dimension: player.dimension });
+    } else {
+      // 1ティック前の位置を保存
+      playerData[playerId].lastPosition = player.location;
+      // 位置履歴を追加
+      addPositionHistory(player);
 
-        // ClickTP検出
-        const clickTpDetection = detectClickTP(player);
-        if (clickTpDetection) {
-          handleCheatDetection(player, clickTpDetection);
+      // Speedhack
+      const SpeedHacks = detectSpeed(player);
+      if (SpeedHacks) {
+        handleCheatDetection(player, SpeedHacks);
+      }
+
+      if (currentTick % 5 === 0) {
+        playerData[playerId].boundaryCenter = player.location;
+      }
+      //const speed = calculatePlayerSpeed(player);
+      //player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a速度: ${speed.toFixed(2)} blocks/tick"}]}`);
+
+      const clickTpOutOfBoundaryDetection = detectClickTpOutOfBoundary(player);
+      if (clickTpOutOfBoundaryDetection) {
+        handleCheatDetection(player, clickTpOutOfBoundaryDetection);
+      }
+
+      const Nofall = detectNoFall(player);
+      if (Nofall) {
+        handleCheatDetection(player, Nofall);
+      }
+
+      // AirJump検出
+      const airJumpDetection = detectAirJump(player);
+      if (airJumpDetection) {
+        handleCheatDetection(player, airJumpDetection);
+      }
+
+      // Xray検知 (視認時、ベータシステムが有効な場合のみ)
+      if (config.antiCheat.betasystem) {
+        detectXrayOnSight(player);
+      }
+
+      // 疑わしいブロックの記録を10秒ごとに削除
+      for (const blockLocationString in playerData[playerId].xrayData.suspiciousBlocks) {
+        const suspiciousBlock = playerData[playerId].xrayData.suspiciousBlocks[blockLocationString];
+        if (currentTime - suspiciousBlock.timestamp >= 10000) {
+          delete playerData[playerId].xrayData.suspiciousBlocks[blockLocationString];
         }
+      }
 
-        // AirJump検出
-        const airJumpDetection = detectAirJump(player);
-        if (airJumpDetection) {
-          handleCheatDetection(player, airJumpDetection);
+      // エンダーパールとウィンドチャージのクールダウン処理
+      if (playerData[playerId].enderPearlInterval !== null) {
+        playerData[playerId].enderPearlInterval--;
+        if (playerData[playerId].enderPearlInterval <= 0) {
+          playerData[playerId].recentlyUsedEnderPearl = false;
+          playerData[playerId].enderPearlInterval = null;
         }
-
-
-        //ESP検出システム
-        if (config.antiCheat.betasystem == true) {
-          //const espDetection = detectESP(player);
-          //if (espDetection) {
-          //  handleCheatDetection(player, espDetection);
-          //}
-        if (config.antiCheat.betasystem == true ) {
-          // Xray検知 (視認時)
-          detectXrayOnSight(player);
-        }
-
-        
-
-
-
-
-        const currentTime = Date.now();
-        for (const blockLocationString in playerData[playerId].xrayData.suspiciousBlocks) {
-          const suspiciousBlock = playerData[playerId].xrayData.suspiciousBlocks[blockLocationString];
-          if (currentTime - suspiciousBlock.timestamp >= 12000) { // 10秒経過
-            delete playerData[playerId].xrayData.suspiciousBlocks[blockLocationString];
-          }
-        }
-        }
-        if (playerData[playerId].enderPearlInterval !== null) {
-          playerData[playerId].enderPearlInterval--;
-          if (playerData[playerId].enderPearlInterval <= 0) {
-            playerData[playerId].recentlyUsedEnderPearl = false;
-            playerData[playerId].enderPearlInterval = null;
-          }
-        }
-
-        
-
       }
 
       playerData[playerId].lastTime = Date.now();
@@ -826,55 +711,46 @@ function runTick() {
 }
 
 // チート検出時の処理
-function handleCheatDetection(player: Player, detection: { cheatType: string }) {
+function handleCheatDetection(player: Player, detection: { cheatType: string }): void {
   const data = playerData[player.id];
-  if (data) {
-    data.violationCount++;
-    if (data.violationCount >= config.antiCheat.detectionThreshold) {
-      let logMessage = `§l§a[自作§3AntiCheat]§fプレイヤー ${player.name} (ID: ${player.id}) が ${detection.cheatType} を使用している可能性があります`;
-      console.warn(logMessage);
-      world.sendMessage(logMessage);
+  if (!data) return;
 
-      if (data.violationCount >= config.antiCheat.detectionThreshold * 5) {
-        executeFreeze(player);
-      } else {
-        executeRollback(player);
-      }
+  data.violationCount++;
+  if (data.violationCount >= config.antiCheat.detectionThreshold) {
+    const logMessage = `§l§a[自作§3AntiCheat]§fプレイヤー ${player.name} (ID: ${player.id}) が ${detection.cheatType} を使用している可能性があります`;
+    console.warn(logMessage);
+    world.sendMessage(logMessage);
+
+    if (data.violationCount >= config.antiCheat.detectionThreshold * 5) {
+      executeFreeze(player);
+    } else {
+      executeRollback(player);
     }
   }
 }
 
+// プレイヤーデータのログ出力 (デバッグ用)
 //@ts-ignore
-function logPlayerData(playerIdToDisplay) {
+function logPlayerData(playerIdToDisplay: string): void {
   const simplifiedData = Object.fromEntries(
     Object.entries(playerData)
       .filter(([playerId]) => playerId === playerIdToDisplay)
-      .map(([playerId, data]) => [
-        playerId,
-        {
-         //  latestPosition: data.positionHistory[data.positionHistory.length - 1],
-          //lastTime: data.lastTime,
-          // violationCount: data.violationCount,
-          // enderDev: data.enderPearlInterval,
-          // timeOutEnder: data.recentlyUsedEnderPearl,
-          xrayData: data.xrayData,
-        },
-      ])
+      .map(([playerId, data]) => [playerId, { xrayData: data.xrayData }])
   );
   console.warn(`[DEBUG] playerData: ${JSON.stringify(simplifiedData, null, 2)}`);
 }
 
-
-
-export function RunAntiCheat() {
+// アンチチートの開始
+export function RunAntiCheat(): void {
   monitoring = true;
-  world.getPlayers().forEach((p) => initializePlayerData(p));
+  world.getPlayers().forEach(initializePlayerData);
   system.run(runTick);
   AddNewPlayers();
   console.warn('チート対策を有効にしました');
 }
 
-function AddNewPlayers() {
+// 新規プレイヤーの追加
+function AddNewPlayers(): void {
   if (monitoring) {
     world.getPlayers().forEach((p) => {
       if (!playerData[p.id]) {
@@ -885,35 +761,31 @@ function AddNewPlayers() {
   system.runTimeout(AddNewPlayers, 20 * 60);
 }
 
-function unfreezePlayer(player: Player) {
+// プレイヤーのFreeze解除
+function unfreezePlayer(player: Player): void {
   const data = playerData[player.id];
   if (data && data.isFrozen) {
     data.isFrozen = false;
     console.warn(`プレイヤー ${player.name} (ID: ${player.id}) のfreezeを解除しました`);
-
-    data.positionHistory = [player.location];
-    data.lastTime = Date.now();
+    // データのリセット
+    resetPlayerData(data, player);
     data.violationCount = 0;
-    data.lastTeleportTime = 0;
   }
 }
 
-
-function freezePlayer(player: Player) {
+// プレイヤーのFreeze
+function freezePlayer(player: Player): void {
   const data = playerData[player.id];
+  if (!data) return;
   data.isFrozen = true;
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をfreezeさせました`);
-
-  data.positionHistory = [player.location];
-  data.lastTime = Date.now();
-  data.lastTeleportTime = 0;
+  // データのリセット
+  resetPlayerData(data, player);
 }
-
 
 // ----------------------------------
 // --- コマンド登録 ---
 // ----------------------------------
-
 registerCommand({
   name: 'anticheat',
   description: 'チート対策を有効/無効にします',
@@ -922,30 +794,44 @@ registerCommand({
   minArgs: 1,
   require: (player: Player) => verifier(player, c().commands['anticheat']),
   executor: (player: Player, args: string[]) => {
-    if (args[0] === 'on') {
-      RunAntiCheat();
-      AddNewPlayers();
-    } else if (args[0] === 'off') {
-      monitoring = false;
-      player.sendMessage('チート対策を無効にしました');
-    } else if (args[0] === 'unfreeze' && args.length === 2) { // unfreeze サブコマンド
-      const targetPlayer = world.getPlayers().find((p) => p.name === args[1]);
-      if (targetPlayer) {
-        unfreezePlayer(targetPlayer);
-        player.sendMessage(`プレイヤー ${targetPlayer.name} のfreezeを解除しました`);
-      } else {
-        player.sendMessage(`プレイヤー ${args[1]} が見つかりません`);
-      }
-    } else if (args[0] === 'freeze' && args.length === 2) {
-      const targetPlayer = world.getPlayers().find((p) => p.name === args[1]);
-      if (targetPlayer) {
-        freezePlayer(targetPlayer);
-        player.sendMessage(`プレイヤー ${targetPlayer.name} をフリーズさせました`);
-      } else {
-        player.sendMessage(`プレイヤー ${args[1]} が見つかりません`);
-      }
-    } else {
-      player.sendMessage('無効な引数です。on, off, または unfreeze Playername,freeze Playernameを指定してください');
+    switch (args[0]) {
+      case 'on':
+        RunAntiCheat();
+        AddNewPlayers();
+        break;
+      case 'off':
+        monitoring = false;
+        player.sendMessage('チート対策を無効にしました');
+        break;
+      case 'unfreeze':
+        if (args.length === 2) {
+          const targetPlayer = world.getPlayers().find((p) => p.name === args[1]);
+          if (targetPlayer) {
+            unfreezePlayer(targetPlayer);
+            player.sendMessage(`プレイヤー ${targetPlayer.name} のfreezeを解除しました`);
+          } else {
+            player.sendMessage(`プレイヤー ${args[1]} が見つかりません`);
+          }
+        } else {
+          player.sendMessage('無効な引数です。unfreeze Playername を指定してください');
+        }
+        break;
+      case 'freeze':
+        if (args.length === 2) {
+          const targetPlayer = world.getPlayers().find((p) => p.name === args[1]);
+          if (targetPlayer) {
+            freezePlayer(targetPlayer);
+            player.sendMessage(`プレイヤー ${targetPlayer.name} をフリーズさせました`);
+          } else {
+            player.sendMessage(`プレイヤー ${args[1]} が見つかりません`);
+          }
+        } else {
+          player.sendMessage('無効な引数です。freeze Playername を指定してください');
+        }
+        break;
+      default:
+        player.sendMessage('無効な引数です。on, off, unfreeze Playername, freeze Playername を指定してください');
+        break;
     }
   },
 });
