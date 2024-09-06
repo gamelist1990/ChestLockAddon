@@ -1,6 +1,6 @@
 import { c, getGamemode } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
-import { Player, world, system, Vector3, Entity, Effect } from '@minecraft/server';
+import { Player, world, system, Vector3, Entity, Effect, BlockRaycastOptions, Block, Dimension } from '@minecraft/server';
 
 // ----------------------------------
 // --- 設定 ---
@@ -11,10 +11,11 @@ const config = {
     detectionThreshold: 1, // ペナルティまでの検知回数
     rollbackTicks: 3 * 20, // ロールバック
     clickTpThreshold: 20, // ClickTP 判定距離
-    clickTpExclusionThreshold: 25, 
-    freezeDuration: 20 * 60 * 60, // freeze時間
-    maxSpeedThreshold: 2, // 最大速度
-    betasystem: false,
+    clickTpExclusionThreshold: 30,
+    freezeDuration: 20 * 10, // freeze時間
+    maxSpeedThreshold: 6, // 最大速度
+    betasystem: true,
+    xrayDetectionDistance: 5, // Xray検知距離 (5ブロック以上)
   },
 };
 
@@ -28,6 +29,10 @@ let currentTick = 0;
 // ----------------------------------
 // --- プレイヤーデータ構造 ---
 // ----------------------------------
+interface XrayData {
+  suspiciousBlocks: { [blockLocation: string]: { timestamp: number; count: number; } }; // タイムスタンプとカウントを含むオブジェクトを格納
+}
+
 interface PlayerData {
   positionHistory: Vector3[];
   lastTime: number;
@@ -41,6 +46,7 @@ interface PlayerData {
   recentlyUsedEnderPearl: boolean;
   enderPearlInterval: any;
   lastPosition: Vector3 | null; // 1ティック前の位置を保存
+  xrayData: XrayData; // Xray検知用データ
 }
 
 // ----------------------------------
@@ -78,6 +84,9 @@ function initializePlayerData(player: Player) {
     enderPearlInterval: null,
     recentlyUsedEnderPearl: false,
     lastPosition: null,
+    xrayData: {
+      suspiciousBlocks: {},
+    },
   };
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) を監視しています`);
 }
@@ -128,8 +137,10 @@ function executeRollback(player: Player) {
   const rollbackIndex = data.positionHistory.length - config.antiCheat.rollbackTicks - 1;
   if (rollbackIndex >= 0) {
     const rollbackPosition = data.positionHistory[rollbackIndex];
-    player.teleport(rollbackPosition, { dimension: player.dimension });
-    console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をロールバックしました`);
+    system.run(() => { // 1 tick 遅延させる
+      player.teleport(rollbackPosition, { dimension: player.dimension });
+      console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をロールバックしました`);
+    });
   }
 
   //ResetData
@@ -156,7 +167,7 @@ function executeFreeze(player: Player) {
   // プレイヤーの現在の位置を取得して、y座標を1000に変更
   const freezeLocation = {
     x: player.location.x,
-    y: 1000,
+    y: player.location.y,
     z: player.location.z,
   };
 
@@ -171,7 +182,18 @@ function executeFreeze(player: Player) {
     data.positionHistory = [player.location];
     data.lastTime = Date.now();
     data.lastTeleportTime = 0;
+    data.violationCount = 0;
   }, config.antiCheat.freezeDuration);
+}
+
+
+// 2点間の距離を計算する関数
+function calculateDistance(pos1: Vector3, pos2: Vector3): number {
+  return Math.sqrt(
+    Math.pow(pos2.x - pos1.x, 2) +
+    Math.pow(pos2.y - pos1.y, 2) +
+    Math.pow(pos2.z - pos1.z, 2)
+  );
 }
 
 // ClickTP検出
@@ -189,16 +211,12 @@ function detectClickTP(player: Player): { cheatType: string } | null {
   // Check for nearby boats
   const isNearBoat = entities.some((entity: Entity) => {
     if (entity.typeId === 'minecraft:boat') {
-      const distance = Math.sqrt(
-        Math.pow(entity.location.x - player.location.x, 2) +
-        Math.pow(entity.location.y - player.location.y, 2) +
-        Math.pow(entity.location.z - player.location.z, 2),
-      );
+      const distance = calculateDistance(player.location, entity.location);
       return distance <= 5; // Check if within 5 blocks
     }
-    
+
     return false;
-    
+
   });
 
 
@@ -256,17 +274,16 @@ function detectClickTP(player: Player): { cheatType: string } | null {
 
   if (hasAnyEffectExcept(player, excludedEffects)) {
     return null;
-  } else {
   }
 
 
 
   // ClickTPの距離検出
-  const clickTpDistance = Math.sqrt(
-    Math.pow(player.location.x - data.positionHistory[0].x, 2) +
-    Math.pow(player.location.y - data.positionHistory[0].y, 2) +
-    Math.pow(player.location.z - data.positionHistory[0].z, 2),
-  );
+  const clickTpDistance = calculateDistance(player.location, data.positionHistory[0]);
+
+  if (clickTpDistance > config.antiCheat.clickTpExclusionThreshold) {
+    return null;
+  }
 
   if (clickTpDistance > config.antiCheat.clickTpThreshold) {
     return { cheatType: '移動系のチート(距離)' };
@@ -301,44 +318,90 @@ world.afterEvents.itemUse.subscribe((event) => {
 });
 
 
-
-
-
-
-
 function detectAirJump(player: Player): { cheatType: string } | null {
   const data = playerData[player.id];
   if (!data || data.isTeleporting || player.isGliding || data.recentlyUsedEnderPearl || getGamemode(player.name) === 1) {
     return null;
   }
 
-  const isJumping = player.isJumping;
-  const isOnGround = player.isOnGround;
-  const positionHistory = data.positionHistory;
-  const recentPosition = positionHistory[positionHistory.length - 1];
-  const previousPosition = positionHistory[positionHistory.length - 2];
+  const excludedEffects = [
+    'minecraft:absorption',
+    'minecraft:bad_omen',
+    'minecraft:blindness',
+    'minecraft:conduit_power',
+    'minecraft:darkness',
+    'minecraft:fatal_poison',
+    'minecraft:fire_resistance',
+    'minecraft:glowing',
+    'minecraft:haste',
+    'minecraft:health_boost',
+    'minecraft:hunger',
+    'minecraft:instant_damage',
+    'minecraft:instant_health',
+    'minecraft:invisibility',
+    'minecraft:mining_fatigue',
+    'minecraft:nausea',
+    'minecraft:night_vision',
+    'minecraft:poison',
+    'minecraft:regeneration',
+    'minecraft:resistance',
+    'minecraft:saturation',
+    'minecraft:slow_falling',
+    'minecraft:slowness',
+    'minecraft:strength',
+    'minecraft:water_breathing',
+    'minecraft:weakness',
+    'minecraft:wither',
+  ];
 
-  // Initialize jump counter if not present
-  if (data.jumpCounter === undefined) {
-    data.jumpCounter = 0;
-  }
-
-  // プレイヤーがジャンプした場合、ジャンプフラグを立てる
-  if (isJumping && recentPosition && previousPosition && recentPosition.y > previousPosition.y) {
-    data.isJumping = true;
-  }
-
-  // プレイヤーが地面に着地した場合、ジャンプフラグとカウンターをリセット
-  if (isOnGround && data.isJumping) {
-    data.isJumping = false;
-    data.jumpCounter = 0;
+  if (hasAnyEffectExcept(player, excludedEffects)) {
     return null;
   }
 
-  // 空中ジャンプの検出
-  if (!isOnGround && data.isJumping && isJumping && recentPosition && previousPosition) {
-    const jumpHeight = recentPosition.y - previousPosition.y;
-    if (jumpHeight > 0.75) { // 大体1.25
+  const isJumping = player.isJumping;
+  const isOnGround = player.isOnGround;
+  const positionHistory = data.positionHistory;
+
+  // 過去3ティック分の座標を取得
+  const currentPosition = player.location;
+  const previousPosition = positionHistory.length >= 2 ? positionHistory[positionHistory.length - 2] : currentPosition;
+  const twoTicksAgoPosition = positionHistory.length >= 3 ? positionHistory[positionHistory.length - 3] : previousPosition; // 修正: previousPositionを使う
+
+  // XZ平面での移動速度を計算
+  const horizontalSpeed = Math.sqrt(
+    Math.pow(currentPosition.x - previousPosition.x, 2) + Math.pow(currentPosition.z - previousPosition.z, 2)
+  );
+
+  // 過去2ティック間の水平方向の速度の変化量を計算
+  const horizontalAcceleration = horizontalSpeed -
+    Math.sqrt(
+      Math.pow(previousPosition.x - twoTicksAgoPosition.x, 2) + Math.pow(previousPosition.z - twoTicksAgoPosition.z, 2)
+    );
+
+  // 過去3ティック分のY軸方向の速度を計算
+  const currentVelocityY = player.getVelocity().y;
+  const previousVelocityY = positionHistory.length >= 3 ? (positionHistory[positionHistory.length - 2].y - positionHistory[positionHistory.length - 3].y) / 50 : 0; // 要素数が3以上であることを確認
+  const twoTicksAgoVelocityY = positionHistory.length >= 4 ? (positionHistory[positionHistory.length - 3].y - positionHistory[positionHistory.length - 4].y) / 50 : 0; // 要素数が4以上であることを確認
+
+  // Y軸方向の加速度を計算
+  const verticalAcceleration = currentVelocityY - previousVelocityY;
+  const previousVerticalAcceleration = previousVelocityY - twoTicksAgoVelocityY;
+
+  // ジャンプ判定
+  if (isOnGround) {
+    // 地面に着地したらジャンプフラグをリセット
+    data.isJumping = false;
+    data.jumpCounter = 0;
+  } else if (isJumping && !data.isJumping) {
+    // ジャンプ開始
+    data.isJumping = true;
+  } else if (data.isJumping && !isOnGround) {
+    // 空中にいる間
+    // 過去3ティック間のY座標の変化量からジャンプの高さを計算
+    const jumpHeight = currentPosition.y - Math.min(previousPosition.y, twoTicksAgoPosition.y);
+
+    // ジャンプ高さ、水平方向の加速度、またはY軸方向の加速度が閾値を超えたらAirJumpの可能性あり
+    if (jumpHeight > 1.52 || horizontalAcceleration > 0.8 || (verticalAcceleration > 0.4 && previousVerticalAcceleration > 0.1)) {
       data.jumpCounter++;
       if (data.jumpCounter >= 1) {
         return { cheatType: '(AirJump|Fly)' };
@@ -350,20 +413,18 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 }
 
 
+let previousAngle = 0; // 1つ前のプレイヤーに対する角度を保存するための変数
+const espSuspiciousTime: { [playerId: string]: number } = {}; // プレイヤーごとのESP検知時間
 
-
+//@ts-ignore
 function detectESP(player: Player): { cheatType: string } | null {
   const viewDirection = player.getViewDirection();
   const playerDimension = player.dimension;
 
-  const otherPlayers = playerDimension.getPlayers().filter(p => p !== player);
+  const otherPlayers = playerDimension.getPlayers().filter(p => p !== player && !p.hasTag("staff"));
 
   for (const otherPlayer of otherPlayers) {
-    const distance = Math.sqrt(
-      Math.pow(otherPlayer.location.x - player.location.x, 2) +
-      Math.pow(otherPlayer.location.y - player.location.y, 2) +
-      Math.pow(otherPlayer.location.z - player.location.z, 2),
-    );
+    const distance = calculateDistance(player.location, otherPlayer.location);
 
     if (distance) {
       const directionToOtherPlayer = {
@@ -381,18 +442,18 @@ function detectESP(player: Player): { cheatType: string } | null {
 
       const viewDirectionChange = Math.abs(angle - previousAngle);
 
-      const targetBlockIds = ['minecraft:stone', 'minecraft:grass', 'minecraft:dirt'];
+      const targetBlockIds = ['minecraft:stone', 'minecraft:grass', 'minecraft:dirt', 'minecraft:deepslate', 'minecraft:cobblestone'];
       const isPlayerBehindTargetBlocks = isPlayerBehindSpecificBlocks(player, otherPlayer, targetBlockIds, distance);
 
-      if (viewDirectionChange > 0.06) {
+      if (viewDirectionChange > 0.05 && isPlayerBehindTargetBlocks) {
         if (!espSuspiciousTime[player.id]) {
           espSuspiciousTime[player.id] = Date.now();
           continue;
         } else {
           if (Date.now() - espSuspiciousTime[player.id] <= 750) {
-            if (angle < 0.4 && isPlayerBehindTargetBlocks) {
+            if (angle < 0.4) {
               delete espSuspiciousTime[player.id];
-              return { cheatType: 'ESP (BETA SYSTEM)' }; // ESP
+              return { cheatType: 'ESP' }; // ESP
             }
           } else {
             delete espSuspiciousTime[player.id];
@@ -407,9 +468,6 @@ function detectESP(player: Player): { cheatType: string } | null {
   return null;
 }
 
-
-let previousAngle = 0; // 1つ前のプレイヤーに対する角度を保存するための変数
-const espSuspiciousTime: { [playerId: string]: number } = {}; // プレイヤーごとのESP検知時間
 
 function isPlayerBehindSpecificBlocks(player: Player, otherPlayer: Entity, targetBlockIds: string[], distance: number): boolean {
   if (distance <= 20) {
@@ -451,11 +509,7 @@ function isPlayerBehindSpecificBlocks(player: Player, otherPlayer: Entity, targe
 
     const clampedY = Math.min(y, worldHeight - 1);
 
-    const blockLocation = {
-      x: Math.floor(x) + 0.5,
-      y: Math.floor(clampedY) + 0.5,
-      z: Math.floor(z) + 0.5,
-    };
+    const blockLocation = { x: Math.floor(x) + 0.5, y: Math.floor(clampedY) + 0.5, z: Math.floor(z) + 0.5 };
 
     const block = dimension.getBlock(blockLocation);
 
@@ -466,6 +520,230 @@ function isPlayerBehindSpecificBlocks(player: Player, otherPlayer: Entity, targe
 
   return false;
 }
+
+
+
+// ブロックXray検知 (視認時)
+function detectXrayOnSight(player: Player): void {
+  const data = playerData[player.id];
+  if (!data) return;
+
+  const viewDirection = player.getViewDirection();
+  const playerDimension = player.dimension;
+
+  const blockRayCastOptions: BlockRaycastOptions = {
+    maxDistance: 20 // Xray検知距離を設定
+  };
+  const blockRaycastHit = player.getBlockFromViewDirection(blockRayCastOptions);
+
+  if (blockRaycastHit && blockRaycastHit.block) {
+    const frontBlockLocation = blockRaycastHit.block.location;
+    const distanceToBlock = calculateDistance(player.location, frontBlockLocation);
+
+    // 前方のブロックが不透明で、かつプレイヤーから5ブロック以上離れている場合のみチェック
+    if (!isBlockVisible(player, frontBlockLocation) && distanceToBlock > 5) {
+      // プレイヤーの目の位置を取得
+      const playerHeadLocation = player.getHeadLocation(); // 頭の位置を取得
+      const playerEyeLocation = {
+        x: playerHeadLocation.x,
+        y: playerHeadLocation.y + 1.62,  // 頭の位置に身長1.62ブロックを加算
+        z: playerHeadLocation.z
+      };
+      const targetLocation = {
+        x: Math.floor(frontBlockLocation.x + viewDirection.x * distanceToBlock),
+        y: Math.floor(frontBlockLocation.y + viewDirection.y * distanceToBlock),
+        z: Math.floor(frontBlockLocation.z + viewDirection.z * distanceToBlock)
+      };
+      const blocksOnLine = bresenham3D(
+        Math.floor(playerEyeLocation.x),
+        Math.floor(playerEyeLocation.y),
+        Math.floor(playerEyeLocation.z),
+        targetLocation.x,
+        targetLocation.y,
+        targetLocation.z,
+      );
+
+      // 交差するブロックをチェック
+      for (const blockLocation of blocksOnLine) {
+        const checkBlock = playerDimension.getBlock(blockLocation);
+        // チェックしたブロックがXray検知対象で、かつ空気に触れていない場合
+        if (checkBlock && isTargetXrayBlock(checkBlock) && !isBlockExposedToAir(playerDimension, blockLocation)) {
+          const blockLocationString = blockLocation.x + ',' + blockLocation.y + ',' + blockLocation.z;
+
+          // 疑わしいブロックとして記録
+          if (!data.xrayData.suspiciousBlocks[blockLocationString]) {
+            data.xrayData.suspiciousBlocks[blockLocationString] = {
+              timestamp: Date.now(),
+              count: 1
+            };
+          } else {
+            data.xrayData.suspiciousBlocks[blockLocationString].count++;
+          }
+        }
+      }
+    }
+  }
+}
+
+function isBlockExposedToAir(dimension: Dimension, blockLocation: Vector3): boolean {
+  const directions: Vector3[] = [
+    { x: 1, y: 0, z: 0 },
+    { x: -1, y: 0, z: 0 },
+    { x: 0, y: 1, z: 0 },
+    { x: 0, y: -1, z: 0 },
+    { x: 0, y: 0, z: 1 },
+    { x: 0, y: 0, z: -1 },
+  ];
+
+  for (const direction of directions) {
+    const neighborLocation = {
+      x: blockLocation.x + direction.x,
+      y: blockLocation.y + direction.y,
+      z: blockLocation.z + direction.z,
+    };
+    const neighborBlock = dimension.getBlock(neighborLocation);
+    // 周りのブロックが空気ブロックの場合
+    if (!neighborBlock || neighborBlock.type.id === "minecraft:air") {
+      return true;
+    }
+  }
+
+  // すべての隣接ブロックが空気ブロックではない場合
+  return false;
+}
+
+function isTargetXrayBlock(block: Block): boolean {
+  const targetXrayBlockIds = [
+    'minecraft:diamond_ore',
+    'minecraft:ancient_debris',
+    'minecraft:emerald_ore',
+    'minecraft:iron_ore',
+  ];
+  return targetXrayBlockIds.includes(block.type.id);
+}
+
+
+function bresenham3D(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): Vector3[] {
+  let points: Vector3[] = [];
+  let dx = Math.abs(x2 - x1);
+  let dy = Math.abs(y2 - y1);
+  let dz = Math.abs(z2 - z1);
+  let xs = x1 < x2 ? 1 : -1;
+  let ys = y1 < y2 ? 1 : -1;
+  let zs = z1 < z2 ? 1 : -1;
+  let p1, p2;
+
+  const isWithinWorldBoundaries = (x: number, y: number, z: number): boolean => {
+    const worldMin = { x: -30000000, y: -64, z: -30000000 }; 
+    const worldMax = { x: 29999999, y: 256, z: 29999999 }; 
+    return x >= worldMin.x && x <= worldMax.x && y >= worldMin.y && y <= worldMax.y && z >= worldMin.z && z <= worldMax.z;
+  };
+
+  // x軸方向の変化量が最大の場合
+  if (dx >= dy && dx >= dz) {
+    p1 = 2 * dy - dx;
+    p2 = 2 * dz - dx;
+    while (x1 != x2) {
+      x1 += xs;
+      if (p1 >= 0) {
+        y1 += ys;
+        p1 -= 2 * dx;
+      }
+      if (p2 >= 0) {
+        z1 += zs;
+        p2 -= 2 * dx;
+      }
+      p1 += 2 * dy;
+      p2 += 2 * dz;
+
+      if (isWithinWorldBoundaries(x1, y1, z1)) {
+        points.push({ x: x1, y: y1, z: z1 });
+      }
+    }
+    // y軸方向の変化量が最大の場合
+  } else if (dy >= dx && dy >= dz) {
+    p1 = 2 * dx - dy;
+    p2 = 2 * dz - dy;
+    while (y1 != y2) {
+      y1 += ys;
+      if (p1 >= 0) {
+        x1 += xs;
+        p1 -= 2 * dy;
+      }
+      if (p2 >= 0) {
+        z1 += zs;
+        p2 -= 2 * dy;
+      }
+      p1 += 2 * dx;
+      p2 += 2 * dz;
+
+      if (isWithinWorldBoundaries(x1, y1, z1)) {
+        points.push({ x: x1, y: y1, z: z1 });
+      }
+    }
+    // z軸方向の変化量が最大の場合
+  } else {
+    p1 = 2 * dx - dz;
+    p2 = 2 * dy - dz;
+    while (z1 != z2) {
+      z1 += zs;
+      if (p1 >= 0) {
+        x1 += xs;
+        p1 -= 2 * dz;
+      }
+      if (p2 >= 0) {
+        y1 += ys;
+        p2 -= 2 * dz;
+      }
+      p1 += 2 * dx;
+      p2 += 2 * dy;
+
+      if (isWithinWorldBoundaries(x1, y1, z1)) {
+        points.push({ x: x1, y: y1, z: z1 });
+      }
+    }
+  }
+
+  return points;
+}
+
+function isBlockVisible(player: Player, blockLocation: Vector3): boolean {
+  const blockRayCastOptions: BlockRaycastOptions = {
+    maxDistance: calculateDistance(player.location, blockLocation)
+  };
+  const blockRaycastHit = player.getBlockFromViewDirection(blockRayCastOptions);
+
+  if (blockRaycastHit && blockRaycastHit.block) {
+    return blockRaycastHit.block.location.x === blockLocation.x &&
+      blockRaycastHit.block.location.y === blockLocation.y &&
+      blockRaycastHit.block.location.z === blockLocation.z;
+  } else {
+    return false;
+  }
+}
+
+world.beforeEvents.playerBreakBlock.subscribe((event: any) => {
+  const player = event.player;
+  const blockLocation = event.block.location;
+  const data = playerData[player.id];
+
+  if (!data) return;
+
+
+  system.run(() => { // 1 tick 遅延させる
+    const blockLocationString = blockLocation.x + ',' + blockLocation.y + ',' + blockLocation.z;
+
+    // 破壊したブロックが疑わしいブロックとして記録されているかチェック
+    if (data.xrayData.suspiciousBlocks[blockLocationString]) {
+      // Xrayと判定
+      //handleCheatDetection(player, { cheatType: 'Xray' });
+      world.sendMessage(`§l§a[自作§3AntiCheat]§fプレイヤー ${player.name} (ID: ${player.id}) が Xray を使用している可能性があります(バグの可能性もあり)`)
+
+      // 疑わしいブロックの記録を削除
+      delete data.xrayData.suspiciousBlocks[blockLocationString];
+    }
+  });
+});
 
 
 
@@ -506,10 +784,27 @@ function runTick() {
 
         //ESP検出システム
         if (config.antiCheat.betasystem == true) {
-          const espDetection = detectESP(player);
-          if (espDetection) {
-            handleCheatDetection(player, espDetection);
+          //const espDetection = detectESP(player);
+          //if (espDetection) {
+          //  handleCheatDetection(player, espDetection);
+          //}
+        if (config.antiCheat.betasystem == true ) {
+          // Xray検知 (視認時)
+          detectXrayOnSight(player);
+        }
+
+        
+
+
+
+
+        const currentTime = Date.now();
+        for (const blockLocationString in playerData[playerId].xrayData.suspiciousBlocks) {
+          const suspiciousBlock = playerData[playerId].xrayData.suspiciousBlocks[blockLocationString];
+          if (currentTime - suspiciousBlock.timestamp >= 12000) { // 10秒経過
+            delete playerData[playerId].xrayData.suspiciousBlocks[blockLocationString];
           }
+        }
         }
         if (playerData[playerId].enderPearlInterval !== null) {
           playerData[playerId].enderPearlInterval--;
@@ -518,6 +813,8 @@ function runTick() {
             playerData[playerId].enderPearlInterval = null;
           }
         }
+
+        
 
       }
 
@@ -555,11 +852,12 @@ function logPlayerData(playerIdToDisplay) {
       .map(([playerId, data]) => [
         playerId,
         {
-          latestPosition: data.positionHistory[data.positionHistory.length - 1],
-          lastTime: data.lastTime,
-          violationCount: data.violationCount,
-          enderDev: data.enderPearlInterval,
-          timeOutEnder: data.recentlyUsedEnderPearl,
+         //  latestPosition: data.positionHistory[data.positionHistory.length - 1],
+          //lastTime: data.lastTime,
+          // violationCount: data.violationCount,
+          // enderDev: data.enderPearlInterval,
+          // timeOutEnder: data.recentlyUsedEnderPearl,
+          xrayData: data.xrayData,
         },
       ])
   );
@@ -595,6 +893,7 @@ function unfreezePlayer(player: Player) {
 
     data.positionHistory = [player.location];
     data.lastTime = Date.now();
+    data.violationCount = 0;
     data.lastTeleportTime = 0;
   }
 }
