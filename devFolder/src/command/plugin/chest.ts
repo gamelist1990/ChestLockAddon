@@ -521,7 +521,7 @@ function isChest(block: any): boolean {
       block && (block.typeId === 'minecraft:chest' || block.typeId === 'minecraft:trapped_chest')
     );
   } catch (error) {
-    return false;
+    return true;
   }
 }
 

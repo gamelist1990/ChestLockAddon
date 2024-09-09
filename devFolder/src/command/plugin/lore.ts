@@ -139,7 +139,7 @@ registerCommand({
             const NewName = args.slice(1).join(' ');
             renameItem(heldItem, NewName, player, targetSlot);
             player.sendMessage(translate(player, "command.ChangeNames"));
-        } else if (subCommand === '-command.ClearLore') {
+        } else if (subCommand === '-clear') {
             RemoveLore(heldItem, player, targetSlot);
             player.sendMessage(translate(player, "command.RemoveLore"));
         } else {

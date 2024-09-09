@@ -18,6 +18,6 @@ registerCommand({
     }, 0);
     system.runTimeout(() => {
       showBasicUI(player);
-    }, 60); // 60 ticks = 3 seconds
+    }, 60);
   },
 });

@@ -11,7 +11,6 @@ const config = {
     detectionThreshold: 2,
     rollbackTicks: 3 * 20,
     freezeDuration: 20 * 10,
-    maxSpeedThreshold: 0.25,
     betasystem: true,
     xrayDetectionDistance: 5,
   },
@@ -24,12 +23,24 @@ let monitoring = false;
 const playerData: { [playerId: string]: PlayerData } = {};
 let currentTick = 0;
 
+const spikeLaggingData = new Map<string, {
+  lastLocation: Vector3;
+  isSpikeLagging: boolean;
+  ping: number;
+}>();
+
 // ----------------------------------
 // --- プレイヤーデータ構造 ---
 // ----------------------------------
 interface XrayData {
   suspiciousBlocks: { [blockLocation: string]: { timestamp: number; count: number } };
 }
+
+interface SpikeLaggingData {
+  isSpikeLagging: boolean;
+  ping: number;
+}
+
 
 interface PlayerData {
   positionHistory: Vector3[];
@@ -45,8 +56,9 @@ interface PlayerData {
   enderPearlInterval: any;
   lastPosition: Vector3 | null;
   xrayData: XrayData;
+  spikeLaggingData: SpikeLaggingData; 
   lastRotationY: number;
-  boundaryCenter: Vector3; // 枠の中心座標
+  boundaryCenter: Vector3;
   boundaryRadius: number;
 }
 
@@ -70,10 +82,14 @@ function initializePlayerData(player: Player): void {
     recentlyUsedEnderPearl: false,
     lastPosition: null,
     lastRotationY: 0,
-    boundaryCenter: player.location, // 初期位置を枠の中心に設定
+    boundaryCenter: player.location,
     boundaryRadius: 10,
     xrayData: {
       suspiciousBlocks: {},
+    },
+    spikeLaggingData: {
+      isSpikeLagging: false,
+      ping: 0,
     },
   };
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) を監視しています`);
@@ -84,10 +100,7 @@ world.afterEvents.entityDie.subscribe((event) => {
   const player = event.deadEntity as Player;
   if (player && player.id) {
     delete playerData[player.id];
-    // 3秒後に全プレイヤーのデータをチェックし、初期化されていない場合は初期化する
-    system.runTimeout(() => {
-      world.getPlayers().forEach(initializePlayerData);
-    }, 20 * 3);
+    console.warn(`プレイヤー ${player.name} (ID: ${player.id}) の監視を停止しました`); // 監視停止メッセージを追加
   }
 });
 
@@ -186,6 +199,7 @@ function calculateDistance(pos1: Vector3, pos2: Vector3): number {
   return Math.sqrt((pos2.x - pos1.x) ** 2 + (pos2.y - pos1.y) ** 2 + (pos2.z - pos1.z) ** 2);
 }
 
+//@ts-ignore
 function calculatePlayerSpeed(player: Player): number {
   const data = playerData[player.id];
   if (!data) return 0;
@@ -201,38 +215,6 @@ function calculatePlayerSpeed(player: Player): number {
   const speed = horizontalDistance / (50 / 20); // 50ms = 1 tick
 
   return speed;
-}
-
-function detectSpeed(player: Player): { cheatType: string } | null {
-  const data = playerData[player.id];
-  if (!data || data.isTeleporting || player.isGliding || data.recentlyUsedEnderPearl || getGamemode(player.name) === 1) {
-    return null;
-  }
-
-  // 特定の効果を除く効果を持っているかチェック
-  if (hasAnyEffectExcept(player, getExcludedEffects())) {
-    return null;
-  }
-
-  if (getGamemode(player.name) === 1) {
-    return null;
-  }
-
-  // calculatePlayerSpeed を使用して速度を取得
-  const speed = calculatePlayerSpeed(player);
-
-  // 速度が閾値を超えているかチェック
-  if (speed > config.antiCheat.maxSpeedThreshold) {
-    // プレイヤーがボートに乗っている場合はチートと判定しない
-    if (isNearBoat(player)) {
-      return null;
-    }
-
-    // 速度が閾値を超えている場合は Speed と判定
-    return { cheatType: 'SpeedHack' };
-  }
-
-  return null;
 }
 
 // プレイヤーとボートの距離をチェックする関数
@@ -311,13 +293,12 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     data.isJumping = true;
   } else if (data.isJumping && !isOnGround) {
     // 空中にいる間
-    // 過去3ティック間のY座標の変化量からジャンプの高さを計算
     const jumpHeight = currentPosition.y - Math.min(previousPosition.y, twoTicksAgoPosition.y);
 
     // AirJump判定
-    if (jumpHeight > 1.52 || horizontalAcceleration > 2.0 || (verticalAcceleration > 0.8 && previousVerticalAcceleration > 0.4)) {
+    if (jumpHeight > 1.52 || horizontalAcceleration > 2.1 || (verticalAcceleration > 0.9 && previousVerticalAcceleration > 0.6)) {
       data.jumpCounter++;
-      if (data.jumpCounter >= 1) {
+      if (data.jumpCounter >= 2) {
         return { cheatType: '(AirJump|Fly)' };
       }
     }
@@ -558,6 +539,11 @@ function getExcludedEffects(): string[] {
   ];
 }
 
+
+
+
+
+//@ts-ignore
 function detectNoFall(player: Player): { cheatType: string } | null {
   const data = playerData[player.id];
   if (!data) return null;
@@ -584,41 +570,6 @@ function detectNoFall(player: Player): { cheatType: string } | null {
     return { cheatType: 'NoFall' };
   }
 
-  const spoofBlockIds = [
-    "minecraft:air",
-    "minecraft:water",
-    "minecraft:lava",
-    // その他のブロックIDを追加
-  ];
-
-  // プレイヤーが地面にいると偽装しているかどうかをチェック (落下中なのにisOnGroundがtrue、かつ水中にいない)
-  if (isOnGround && velocityY < -0.2 && !player.isInWater) {
-    // プレイヤーの足元のブロックを取得
-    const blockBelow = player.dimension.getBlock({ x: Math.floor(player.location.x), y: Math.floor(player.location.y - 1), z: Math.floor(player.location.z) });
-
-    // 足元のブロックが空気または液体の場合、OnGroundSpoofと判定
-    if (!blockBelow || spoofBlockIds.includes(blockBelow.type.id)) { 
-      // さらに、過去3ティック分のY座標の変化量をチェック
-      if (data.positionHistory.length >= 4) {
-        const yDiff1 = data.positionHistory[data.positionHistory.length - 2].y - data.positionHistory[data.positionHistory.length - 3].y;
-        const yDiff2 = data.positionHistory[data.positionHistory.length - 3].y - data.positionHistory[data.positionHistory.length - 4].y;
-
-        // 過去2ティック連続で落下している場合、OnGroundSpoofと判定
-        if (yDiff1 < 0 && yDiff2 < 0) {
-          return { cheatType: 'OnGroundSpoof' };
-        }
-      }
-    }
-  }
-
-  // プレイヤーの位置履歴をチェック (前ティックより落下しているのにisOnGroundがtrue)
-  if (data.positionHistory.length > 1) {
-    const previousPosition = data.positionHistory[data.positionHistory.length - 2];
-    if (previousPosition.y > player.location.y + 0.1 && isOnGround && Math.abs(velocityY) < 0.1) {
-      return { cheatType: 'AuthGroundPos' };
-    }
-  }
-
   return null;
 }
 
@@ -640,9 +591,17 @@ function runTick(): void {
 
   const currentTime = Date.now();
 
+  //logPlayerData('-4294967295');
+
   for (const playerId in playerData) {
     const player = world.getPlayers().find((p) => p.id === playerId);
     if (!player) continue;
+    const data = playerData[player.id];
+    if (!data) continue;
+  
+
+
+    
 
     if (playerData[playerId].isFrozen) {
       // Freeze中のプレイヤーはy座標500に固定
@@ -653,17 +612,18 @@ function runTick(): void {
       // 位置履歴を追加
       addPositionHistory(player);
 
-      // Speedhack
-      const SpeedHacks = detectSpeed(player);
-      if (SpeedHacks) {
-        handleCheatDetection(player, SpeedHacks);
-      }
 
-      if (currentTick % 5 === 0) {
+      
+
+      //player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a現在実験中: ${playerData[playerId].spikeLaggingData.ping} tick/ping"}]}`);
+
+
+
+      if (currentTick % 3 === 0) {
         playerData[playerId].boundaryCenter = player.location;
       }
-      //const speed = calculatePlayerSpeed(player);
-      //player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a速度: ${speed.toFixed(2)} blocks/tick"}]}`);
+
+      
 
       const clickTpOutOfBoundaryDetection = detectClickTpOutOfBoundary(player);
       if (clickTpOutOfBoundaryDetection) {
@@ -715,13 +675,16 @@ function handleCheatDetection(player: Player, detection: { cheatType: string }):
   const data = playerData[player.id];
   if (!data) return;
 
+  const isLagging = false;
+  const detectionThreshold = isLagging ? config.antiCheat.detectionThreshold * 2 : config.antiCheat.detectionThreshold;
+
   data.violationCount++;
-  if (data.violationCount >= config.antiCheat.detectionThreshold) {
+  if (data.violationCount >= detectionThreshold) {
     const logMessage = `§l§a[自作§3AntiCheat]§fプレイヤー ${player.name} (ID: ${player.id}) が ${detection.cheatType} を使用している可能性があります`;
     console.warn(logMessage);
     world.sendMessage(logMessage);
 
-    if (data.violationCount >= config.antiCheat.detectionThreshold * 5) {
+    if (data.violationCount >= detectionThreshold * 5) {
       executeFreeze(player);
     } else {
       executeRollback(player);
@@ -729,22 +692,70 @@ function handleCheatDetection(player: Player, detection: { cheatType: string }):
   }
 }
 
+
 // プレイヤーデータのログ出力 (デバッグ用)
-//@ts-ignore
+//@ts-ignore //playerIdToDisplay: string
 function logPlayerData(playerIdToDisplay: string): void {
   const simplifiedData = Object.fromEntries(
-    Object.entries(playerData)
-      .filter(([playerId]) => playerId === playerIdToDisplay)
-      .map(([playerId, data]) => [playerId, { xrayData: data.xrayData }])
+    Object.entries(playerData || playerIdToDisplay)
+      .filter(([playerId]) => playerId)
+      .map(([playerId, data]) => [playerId, { ping: data.spikeLaggingData, last: data.lastPosition }])
   );
   console.warn(`[DEBUG] playerData: ${JSON.stringify(simplifiedData, null, 2)}`);
 }
+
+
+
+function updateSpikeLaggingData() {
+  const players = world.getAllPlayers();
+  for (const player of players) {
+    const sl = spikeLaggingData.get(player.id) ?? {
+      lastLocation: player.location,
+      ping: 0,
+      isSpikeLagging: false,
+    };
+
+    const velocity = Math.hypot(player.getVelocity().x, player.getVelocity().z);
+    const distance = Math.hypot(sl.lastLocation.x - player.location.x, sl.lastLocation.z - player.location.z);
+
+    if (velocity > 0) {
+      sl.ping = Math.floor(Math.abs(distance / velocity * 20));
+    }
+
+    sl.lastLocation = player.location;
+    spikeLaggingData.set(player.id, sl);
+
+    // プレイヤーデータの更新
+    if (playerData[player.id]) {
+      playerData[player.id].spikeLaggingData.ping = sl.ping;
+    }
+  }
+}
+
+function checkSpikeLagging() {
+  const players = world.getAllPlayers();
+  for (const player of players) {
+    const sl = spikeLaggingData.get(player.id);
+    if (!sl) return;
+    if (Math.trunc(sl.ping / 20) >= 850) sl.isSpikeLagging = true;
+    else sl.isSpikeLagging = false;
+    spikeLaggingData.set(player.id, sl);
+
+    // プレイヤーデータの更新
+    if (playerData[player.id]) {
+      playerData[player.id].spikeLaggingData.isSpikeLagging = sl.isSpikeLagging;
+    }
+  }
+}
+
 
 // アンチチートの開始
 export function RunAntiCheat(): void {
   monitoring = true;
   world.getPlayers().forEach(initializePlayerData);
   system.run(runTick);
+  system.runInterval(checkSpikeLagging);
+  system.runInterval(updateSpikeLaggingData);
   AddNewPlayers();
   console.warn('チート対策を有効にしました');
 }
@@ -778,10 +789,14 @@ function freezePlayer(player: Player): void {
   const data = playerData[player.id];
   if (!data) return;
   data.isFrozen = true;
+  player.teleport({ x: player.location.x, y: 60000, z: player.location.z }, { dimension: player.dimension });
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をfreezeさせました`);
   // データのリセット
   resetPlayerData(data, player);
 }
+
+
+
 
 // ----------------------------------
 // --- コマンド登録 ---

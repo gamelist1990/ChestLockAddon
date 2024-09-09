@@ -536,5 +536,5 @@ function showChangeName(player: Player): void {
 }
 
 function ClearLore(player: Player): void {
-  runCommand(player.name, 'lore', ['-slot', '0', '-command.ClearLore']);
+  runCommand(player.name, 'lore', ['-slot', '0', '-clear','a']);
 }

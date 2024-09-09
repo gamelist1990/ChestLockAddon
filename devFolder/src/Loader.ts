@@ -6,7 +6,7 @@ import { loadjoinModules } from './command/utility/join';
 import { showBasicUI } from './command/gui/ui';
 import { customCommandsConfig } from './command/itemUI';
 import { c } from './Modules/Util';
-import { RunAntiCheat } from './command/plugin/packet';
+//import { RunAntiCheat } from './command/plugin/packet';
 
 const startTime = Date.now();
 
@@ -23,7 +23,7 @@ async function loadAllImports() {
 
 world.afterEvents.worldInitialize.subscribe(async () => {
   try {
-    RunAntiCheat();
+    //RunAntiCheat();
     loadGate();
     loadjoinModules();
     loadPlayerLanguages();
@@ -36,6 +36,7 @@ world.afterEvents.worldInitialize.subscribe(async () => {
   const endTime = Date.now();
   const loadTime = endTime - startTime;
   console.warn(`Plugin has been loaded in ${loadTime} ms`);
+  world.sendMessage(`[Server]§l§apluginのデータの更新が ${loadTime} msで完了しました`)
 });
 
 //Custom Item
