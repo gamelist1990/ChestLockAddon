@@ -2,6 +2,8 @@ import { c, getGamemode } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
 import { Player, world, system, Vector3, Block, Dimension } from '@minecraft/server';
 
+//packet.tsの検出アルゴリズム自体を変更予定
+
 // ----------------------------------
 // --- 設定 ---
 // ----------------------------------
