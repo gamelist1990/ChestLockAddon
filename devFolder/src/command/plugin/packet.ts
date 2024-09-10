@@ -1,6 +1,6 @@
 import { c, getGamemode } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
-import { Player, world, system, Vector3, Block, Dimension } from '@minecraft/server';
+import { Player, world, system, Vector3, Block } from '@minecraft/server';
 
 //packet.tsの検出アルゴリズム自体を変更予定
 
@@ -35,7 +35,7 @@ const spikeLaggingData = new Map<string, {
 // --- プレイヤーデータ構造 ---
 // ----------------------------------
 interface XrayData {
-  suspiciousBlocks: { [blockLocation: string]: { timestamp: number; count: number, lookingTime:number } };
+  suspiciousBlocks: { [blockLocation: string]: { timestamp: number; count: number} };
 }
 
 interface SpikeLaggingData {
@@ -388,208 +388,85 @@ function detectClickTpOutOfBoundary(player: Player): { cheatType: string } | nul
   return null;
 }
 
+function getBlockFromReticle(player: Player, maxDistance: number): Block | null {
+  const playerDimension = player.dimension;
+  const playerLocation = player.getHeadLocation();
+  const viewDirection = player.getViewDirection();
+
+  // 光線上の各点を計算
+  for (let i = 0; i <= maxDistance; i++) {
+    const currentPosition = {
+      x: Math.floor(playerLocation.x + viewDirection.x * i), // 小数点以下を切り捨て
+      y: Math.floor(playerLocation.y + viewDirection.y * i),
+      z: Math.floor(playerLocation.z + viewDirection.z * i),
+    };
+
+    // ブロックを取得
+    const block = playerDimension.getBlock(currentPosition);
+
+    // ブロックが存在し、かつXray検知対象の場合
+    if (block && targetXrayBlockIds.includes(block.typeId)) {
+      return block; // 指定種類のブロックが見つかったら返す
+    }
+  }
+
+  // 指定距離以内に指定種類のブロックが見つからない場合は null を返す
+  return null;
+}
+
+const targetXrayBlockIds = ['minecraft:diamond_ore', 'minecraft:ancient_debris', 'minecraft:emerald_ore', 'minecraft:iron_ore'];
+
 // ブロックXray検知 (視認時)
 function detectXrayOnSight(player: Player): void {
   const data = playerData[player.id];
   if (!data) return;
+  const currentTime = Date.now();
 
-  const viewDirection = player.getViewDirection();
-  const playerDimension = player.dimension;
-  const blockRaycastHit = player.getBlockFromViewDirection({ maxDistance: 20 });
+  // プレイヤーのレティクルからブロックを取得 (最大距離: config.antiCheat.xrayDetectionDistance)
+  const targetBlock = getBlockFromReticle(player, config.antiCheat.xrayDetectionDistance);
 
-  if (blockRaycastHit && blockRaycastHit.block) {
-    const frontBlockLocation = blockRaycastHit.block.location;
-    const distanceToBlock = calculateDistance(player.location, frontBlockLocation);
+  // ブロックが存在し、かつXray検知対象の場合
+  if (targetBlock && targetXrayBlockIds.includes(targetBlock.typeId)) {
+    // プレイヤーとブロックの距離を計算
+    const distanceToBlock = calculateDistance(player.location, targetBlock.location);
 
+    // ブロックが3ブロック以上離れている場合のみ処理
+    if (distanceToBlock > 3) {
+      const blockLocationString = `${targetBlock.location.x},${targetBlock.location.y},${targetBlock.location.z}`;
 
-    // 前方のブロックが不透明で、かつプレイヤーから5ブロック以上離れている場合のみチェック
-    if (!isBlockVisible(player, frontBlockLocation) && distanceToBlock > 3) {
-      const playerEyeLocation = {
-        x: player.getHeadLocation().x,
-        y: player.getHeadLocation().y + 1.62,
-        z: player.getHeadLocation().z,
-      };
-      const targetLocation = {
-        x: Math.floor(frontBlockLocation.x + viewDirection.x * distanceToBlock),
-        y: Math.floor(frontBlockLocation.y + viewDirection.y * distanceToBlock),
-        z: Math.floor(frontBlockLocation.z + viewDirection.z * distanceToBlock),
-      };
-      const blocksOnLine = bresenham3D(
-        Math.floor(playerEyeLocation.x),
-        Math.floor(playerEyeLocation.y),
-        Math.floor(playerEyeLocation.z),
-        targetLocation.x,
-        targetLocation.y,
-        targetLocation.z,
-      );
-
-      // 交差するブロックをチェック
-      for (const blockLocation of blocksOnLine) {
-        const checkBlock = playerDimension.getBlock(blockLocation);
-        // チェックしたブロックがXray検知対象で、かつ空気に触れていない場合
-        if (checkBlock && isTargetXrayBlock(checkBlock) && !isBlockExposedToAir(playerDimension, blockLocation)) {
-          const blockLocationString = `${blockLocation.x},${blockLocation.y},${blockLocation.z}`;
-
-          // ブロックを見つめている時間を計測
-          if (!data.xrayData.suspiciousBlocks[blockLocationString]) {
-            data.xrayData.suspiciousBlocks[blockLocationString] = {
-              timestamp: Date.now(),
-              count: 0,
-              lookingTime: 0,
-            };
-          }
-
-          data.xrayData.suspiciousBlocks[blockLocationString].lookingTime += 50; // 50ms (1tick) 追加
-
-          // 3秒以上見つめていたらカウントアップ
-          if (data.xrayData.suspiciousBlocks[blockLocationString].lookingTime >= 3000) {
-            data.xrayData.suspiciousBlocks[blockLocationString].count++;
-            data.xrayData.suspiciousBlocks[blockLocationString].lookingTime = 0; // タイマーリセット
-
-            // 疑わしいブロックとして記録 (一定時間見つめていたら)
-            if (data.xrayData.suspiciousBlocks[blockLocationString].count >= 3) {
-              // ここに疑わしいブロックとして記録する処理を追加 (例: 別のリストに追加するなど)
-              console.warn(`プレイヤー ${player.name} がブロック ${blockLocationString} を長時間見つめています。`);
-            }
-          }
-        } else {
-          // 視線をそらしたらタイマーリセット
-          const blockLocationString = `${blockLocation.x},${blockLocation.y},${blockLocation.z}`;
-          if (data.xrayData.suspiciousBlocks[blockLocationString]) {
-            data.xrayData.suspiciousBlocks[blockLocationString].lookingTime = 0;
-          }
-        }
-      }
-    }
-  }
-}
-
-// ブロックが空気ブロックに面しているか判定
-function isBlockExposedToAir(dimension: Dimension, blockLocation: Vector3): boolean {
-  const directions: Vector3[] = [
-    { x: 1, y: 0, z: 0 },
-    { x: -1, y: 0, z: 0 },
-    { x: 0, y: 1, z: 0 },
-    { x: 0, y: -1, z: 0 },
-    { x: 0, y: 0, z: 1 },
-    { x: 0, y: 0, z: -1 },
-  ];
-
-  for (const direction of directions) {
-    const neighborLocation = {
-      x: blockLocation.x + direction.x,
-      y: blockLocation.y + direction.y,
-      z: blockLocation.z + direction.z,
-    };
-    const neighborBlock = dimension.getBlock(neighborLocation);
-    if (!neighborBlock || neighborBlock.type.id === 'minecraft:air') {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-// Xray検知対象のブロックか判定
-function isTargetXrayBlock(block: Block): boolean {
-  const targetXrayBlockIds = ['minecraft:diamond_ore', 'minecraft:ancient_debris', 'minecraft:emerald_ore', 'minecraft:iron_ore'];
-  return targetXrayBlockIds.includes(block.type.id);
-}
-
-// ブレゼンハムのアルゴリズム (3D)
-function bresenham3D(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number): Vector3[] {
-  const points: Vector3[] = [];
-  let dx = Math.abs(x2 - x1);
-  let dy = Math.abs(y2 - y1);
-  let dz = Math.abs(z2 - z1);
-  const xs = x1 < x2 ? 1 : -1;
-  const ys = y1 < y2 ? 1 : -1;
-  const zs = z1 < z2 ? 1 : -1;
-  let p1, p2;
-
-  // ワールド境界内か判定
-  const isWithinWorldBoundaries = (x: number, y: number, z: number): boolean => {
-    const worldMin = { x: -30000000, y: -64, z: -30000000 };
-    const worldMax = { x: 29999999, y: 256, z: 29999999 };
-    return x >= worldMin.x && x <= worldMax.x && y >= worldMin.y && y <= worldMax.y && z >= worldMin.z && z <= worldMax.z;
-  };
-
-  if (dx >= dy && dx >= dz) {
-    // x軸方向の変化量が最大の場合
-    p1 = 2 * dy - dx;
-    p2 = 2 * dz - dx;
-    while (x1 !== x2) {
-      x1 += xs;
-      if (p1 >= 0) {
-        y1 += ys;
-        p1 -= 2 * dx;
-      }
-      if (p2 >= 0) {
-        z1 += zs;
-        p2 -= 2 * dx;
-      }
-      p1 += 2 * dy;
-      p2 += 2 * dz;
-
-      if (isWithinWorldBoundaries(x1, y1, z1)) {
-        points.push({ x: x1, y: y1, z: z1 });
-      }
-    }
-  } else if (dy >= dx && dy >= dz) {
-    // y軸方向の変化量が最大の場合
-    p1 = 2 * dx - dy;
-    p2 = 2 * dz - dy;
-    while (y1 !== y2) {
-      y1 += ys;
-      if (p1 >= 0) {
-        x1 += xs;
-        p1 -= 2 * dy;
-      }
-      if (p2 >= 0) {
-        z1 += zs;
-        p2 -= 2 * dy;
-      }
-      p1 += 2 * dx;
-      p2 += 2 * dz;
-
-      if (isWithinWorldBoundaries(x1, y1, z1)) {
-        points.push({ x: x1, y: y1, z: z1 });
-      }
-    }
-  } else {
-    // z軸方向の変化量が最大の場合
-    p1 = 2 * dx - dz;
-    p2 = 2 * dy - dz;
-    while (z1 !== z2) {
-      z1 += zs;
-      if (p1 >= 0) {
-        x1 += xs;
-        p1 -= 2 * dz;
-      }
-      if (p2 >= 0) {
-        y1 += ys;
-        p2 -= 2 * dz;
-      }
-      p1 += 2 * dx;
-      p2 += 2 * dz;
-
-      if (isWithinWorldBoundaries(x1, y1, z1)) {
-        points.push({ x: x1, y: y1, z: z1 });
+      // 既に同じ座標のブロックが登録されているかチェック
+      if (data.xrayData.suspiciousBlocks[blockLocationString]) {
+        // 既存データの場合はcountを増やす
+        data.xrayData.suspiciousBlocks[blockLocationString].count++;
+      } else {
+        // 新規データの場合は追加
+        data.xrayData.suspiciousBlocks[blockLocationString] = {
+          timestamp: currentTime,
+          count: 1, // 初期カウントは1
+        };
       }
     }
   }
 
-  return points;
+  // Xray検知対象外のブロックを見ている場合は、suspiciousBlocks から削除
+  for (const blockLocationString in data.xrayData.suspiciousBlocks) {
+    const blockData = data.xrayData.suspiciousBlocks[blockLocationString];
+
+    // 3秒以上経過し、視界から外れている場合のみ削除
+    if (currentTime - blockData.timestamp > 5000 &&
+      !(
+        targetBlock &&
+        targetBlock.location.x === parseFloat(blockLocationString.split(',')[0]) &&
+        targetBlock.location.y === parseFloat(blockLocationString.split(',')[1]) &&
+        targetBlock.location.z === parseFloat(blockLocationString.split(',')[2])
+      )
+    ) {
+      delete data.xrayData.suspiciousBlocks[blockLocationString];
+    }
+  }
 }
 
-// ブロックが視界に入っているか判定
-function isBlockVisible(player: Player, blockLocation: Vector3): boolean {
-  const blockRaycastHit = player.getBlockFromViewDirection({ maxDistance: calculateDistance(player.location, blockLocation) });
-  if (blockRaycastHit && blockRaycastHit.block) {
-    return blockRaycastHit.block.location.x === blockLocation.x && blockRaycastHit.block.location.y === blockLocation.y && blockRaycastHit.block.location.z === blockLocation.z;
-  }
-  return false;
-}
+
 
 // ブロック破壊時のXrayチェック
 world.beforeEvents.playerBreakBlock.subscribe((event) => {
@@ -641,14 +518,27 @@ function detectNoFall(player: Player): { cheatType: string } | null {
   const isOnGround = player.isOnGround;
   const velocityY = player.getVelocity().y;
 
-  // 過去の落下速度を計算
-  let previousFallingSpeed = 0;
-  if (data.positionHistory.length >= 2) {
-    previousFallingSpeed = (player.location.y - data.positionHistory[data.positionHistory.length - 2].y) / (50 / 20); // blocks/tick
+  // ラグの影響を軽減するために、過去の3ティックの落下速度を平均
+  const fallingSpeedHistory = data.positionHistory.slice(-4).map((pos, i, arr) => {
+    if (i === 0) return 0;
+    return (arr[i - 1].y - pos.y) / (50 / 20); // blocks/tick
+  }).slice(1);
+  const averageFallingSpeed = fallingSpeedHistory.reduce((sum, speed) => sum + speed, 0) / fallingSpeedHistory.length;
+  const playerLocation = player.location;
+  const playerDimension = player.dimension; 
+  const block = playerDimension.getBlock({ 
+  x: Math.floor(playerLocation.x), 
+  y: Math.floor(playerLocation.y - 1), // プレイヤーの足元
+  z: Math.floor(playerLocation.z) 
+});
+  const isInWater = block ? block.typeId === 'minecraft:water' : false;  
+  // エリトラ使用時や水中は判定を行わない
+  if (player.isGliding || isInWater) {
+    return null;
   }
 
-  // NoFallのチェック (落下中で、地面に着地していないのにY軸速度が正、または急激に速度が減少)
-  if (isFalling && !isOnGround && !data.isJumping && (velocityY >= 0 || velocityY - previousFallingSpeed > 0.5)) {
+  // NoFallのチェック (速度が一定以上で、急激に速度が減少した場合)
+  if (isFalling && !isOnGround && !data.isJumping && averageFallingSpeed > 1 && velocityY - averageFallingSpeed > 0.8) {
     return { cheatType: 'NoFall' };
   }
 
@@ -706,7 +596,7 @@ function runTick(): void {
 
   const currentTime = Date.now();
 
-  //logPlayerData('-4294967295');
+  logPlayerData('-4294967295');
 
   for (const playerId in playerData) {
     const player = world.getPlayers().find((p) => p.id === playerId);
@@ -761,9 +651,11 @@ function runTick(): void {
         detectXrayOnSight(player);
       }
 
+      
+
       for (const blockLocationString in playerData[playerId].xrayData.suspiciousBlocks) {
         const suspiciousBlock = playerData[playerId].xrayData.suspiciousBlocks[blockLocationString];
-        if (currentTime - suspiciousBlock.timestamp >= 5000) {
+        if (currentTime - suspiciousBlock.timestamp >= 10000) {
           delete playerData[playerId].xrayData.suspiciousBlocks[blockLocationString];
         }
       }
@@ -813,7 +705,7 @@ function logPlayerData(playerIdToDisplay: string): void {
   const simplifiedData = Object.fromEntries(
     Object.entries(playerData || playerIdToDisplay)
       .filter(([playerId]) => playerId)
-      .map(([playerId, data]) => [playerId, { ping: data.spikeLaggingData, last: data.lastPosition }])
+      .map(([playerId, data]) => [playerId, { ping: data.spikeLaggingData, xray: data.xrayData}])
   );
   console.warn(`[DEBUG] playerData: ${JSON.stringify(simplifiedData, null, 2)}`);
 }
