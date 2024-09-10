@@ -14,7 +14,7 @@ const config = {
     rollbackTicks: 3 * 20,
     freezeDuration: 20 * 10,
     betasystem: true,
-    xrayDetectionDistance: 5,
+    xrayDetectionDistance: 10,
   },
 };
 
@@ -159,6 +159,7 @@ function executeRollback(player: Player): void {
     // 1 tick 遅延させてロールバック
     system.run(() => {
       player.teleport(rollbackPosition, { dimension: player.dimension });
+      player.sendMessage("異常な行動を検出した為フリーズしました(10秒程度で解除されます)")
       console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をロールバックしました`);
     });
   }
@@ -262,6 +263,10 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     return null;
   }
 
+  if (playerData[player.id].spikeLaggingData.ping > 100) {
+    return null;
+  }
+
   const isJumping = player.isJumping;
   const isOnGround = player.isOnGround;
   const positionHistory = data.positionHistory;
@@ -273,9 +278,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     positionHistory.shift();
   }
 
-  // 配列の要素数が不足している場合は処理をスキップし、警告を出力
   if (positionHistory.length < 3) {
-    console.warn(`プレイヤー ${player.name} の positionHistory 配列の要素数が不足しています。`);
     return null;
   }
 
@@ -382,7 +385,7 @@ function detectClickTpOutOfBoundary(player: Player): { cheatType: string } | nul
 
   // 境界の外に出た場合、かつ落下中でない場合、かつ15ブロック以内
   if (distanceToCenter > data.boundaryRadius && distanceToCenter <= data.boundaryRadius + 5 && !isFalling) {
-    return { cheatType: 'ClickTP (枠外移動)' };
+    return { cheatType: 'ClickTP (実験中)' };
   }
 
   return null;
@@ -431,7 +434,7 @@ function detectXrayOnSight(player: Player): void {
     const distanceToBlock = calculateDistance(player.location, targetBlock.location);
 
     // ブロックが3ブロック以上離れている場合のみ処理
-    if (distanceToBlock > 3) {
+    if (distanceToBlock > 6) {
       const blockLocationString = `${targetBlock.location.x},${targetBlock.location.y},${targetBlock.location.z}`;
 
       // 既に同じ座標のブロックが登録されているかチェック
@@ -510,6 +513,9 @@ function detectNoFall(player: Player): { cheatType: string } | null {
   if (!data) return null;
 
   if (getGamemode(player.name) === 1) {
+    return null;
+  }
+  if (playerData[player.id].spikeLaggingData.ping > 100) {
     return null;
   }
 
