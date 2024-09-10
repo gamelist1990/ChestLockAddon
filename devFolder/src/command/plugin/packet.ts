@@ -35,7 +35,7 @@ const spikeLaggingData = new Map<string, {
 // --- プレイヤーデータ構造 ---
 // ----------------------------------
 interface XrayData {
-  suspiciousBlocks: { [blockLocation: string]: { timestamp: number; count: number } };
+  suspiciousBlocks: { [blockLocation: string]: { timestamp: number; count: number, lookingTime:number } };
 }
 
 interface SpikeLaggingData {
@@ -45,6 +45,8 @@ interface SpikeLaggingData {
 
 
 interface PlayerData {
+  airJumpDetected: boolean;
+  jumpStartTime: number;
   positionHistory: Vector3[];
   lastTime: number;
   violationCount: number;
@@ -76,7 +78,9 @@ function initializePlayerData(player: Player): void {
     violationCount: 0,
     isTeleporting: false,
     lastTeleportTime: 0,
+    jumpStartTime:0,
     isFrozen: false,
+    airJumpDetected: false,
     freezeStartTime: 0,
     isJumping: false,
     jumpCounter: 0,
@@ -269,8 +273,14 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     positionHistory.shift();
   }
 
-  const previousPosition = positionHistory.length >= 2 ? positionHistory[positionHistory.length - 2] : currentPosition;
-  const twoTicksAgoPosition = positionHistory.length >= 3 ? positionHistory[positionHistory.length - 3] : previousPosition;
+  // 配列の要素数が不足している場合は処理をスキップし、警告を出力
+  if (positionHistory.length < 3) {
+    console.warn(`プレイヤー ${player.name} の positionHistory 配列の要素数が不足しています。`);
+    return null;
+  }
+
+  const previousPosition = positionHistory[positionHistory.length - 2];
+  const twoTicksAgoPosition = positionHistory[positionHistory.length - 3];
 
   // 水平方向の速度と加速度の計算
   const horizontalSpeed = calculateHorizontalSpeed(currentPosition, previousPosition);
@@ -298,32 +308,50 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   data.lastRotationY = angleDifference; // 今回の角度差を次回のために保存
 
   // 接地状態の変化回数の計算
-  const groundStateChangeCount = positionHistory.slice(-4).filter((pos, i, arr) =>
-    (i > 0 && arr[i - 1] && pos.y - arr[i - 1].y < -0.1) !== (i > 0 && arr[i - 1] && arr[i - 1].y - arr[i - 2].y < -0.1)
-  ).length;
+  let groundStateChangeCount = 0; // 条件分岐の外側で宣言
+
+  if (positionHistory.length >= 4) {
+    groundStateChangeCount = positionHistory.slice(-4).filter((pos, i, arr) => {
+      // undefined チェックを追加
+      if (!pos || !arr[i - 1]) return false;
+      return (i > 0 && pos.y - arr[i - 1].y < -0.1) !== (i > 0 && arr[i - 1].y - (arr[i - 2]?.y || 0) < -0.1);
+    }).length;
+  } 
 
   // ジャンプ判定
   if (isOnGround) {
     data.isJumping = false;
     data.jumpCounter = 0;
+    data.airJumpDetected = false; // 地面に接地したらリセット
   } else if (isJumping && !data.isJumping) {
+    // プレイヤーがジャンプを開始し、かつ前回のティックではジャンプ中でなかった場合
     data.isJumping = true;
+    data.jumpStartTime = currentTick; // ジャンプ開始時間を記録
   } else if (data.isJumping && !isOnGround) {
-    const jumpHeight = currentPosition.y - Math.min(previousPosition.y, twoTicksAgoPosition.y);
+    // プレイヤーがジャンプ中で、かつ地面に接地していない場合
+
+    // 空中でジャンプボタンが押されたかどうかを判定
+    if (isJumping && currentTick - data.jumpStartTime > 1) { // ジャンプ開始から1ティック以上経過している場合
+      data.airJumpDetected = true;
+    }
 
     // AirJump判定 (複合条件)
-    if (
-      jumpHeight > 2.0 ||
-      horizontalAcceleration > 1.5 ||
-      (verticalAcceleration > 0.9 && previousVerticalAcceleration > 0.6) ||
-      velocityChangeRate > 0.5 || // 速度変化率が大きい
-      angleDifferenceChangeRate > 0.1 || // 角度差の変化速度が大きい
-      groundStateChangeCount > 2 || // 接地状態の変化回数が多い
-      (player.isJumping && horizontalSpeed > 0.5) // ジャンプ中に水平方向の速度が大きい
-    ) {
-      data.jumpCounter++;
-      if (data.jumpCounter >= 1) {
-        return { cheatType: '(AirJump|Fly)' };
+    if (data.airJumpDetected) { // 空中でジャンプボタンが押された場合のみAirJump判定を行う
+      const jumpHeight = currentPosition.y - Math.min(previousPosition.y, twoTicksAgoPosition.y);
+
+      if (
+        jumpHeight > 3.0 ||
+        horizontalAcceleration > 1.5 ||
+        (verticalAcceleration > 1.2 && previousVerticalAcceleration > 0.8) ||
+        velocityChangeRate > 0.9 || // 速度変化率が大きい
+        angleDifferenceChangeRate > 0.1 || // 角度差の変化速度が大きい
+        groundStateChangeCount > 3 || // 接地状態の変化回数が多い
+        (player.isJumping && horizontalSpeed > 0.8) // ジャンプ中に水平方向の速度が大きい
+      ) {
+        data.jumpCounter++;
+        if (data.jumpCounter >= 1) {
+          return { cheatType: '(AirJump|Fly)' };
+        }
       }
     }
   }
@@ -376,8 +404,9 @@ function detectXrayOnSight(player: Player): void {
     const frontBlockLocation = blockRaycastHit.block.location;
     const distanceToBlock = calculateDistance(player.location, frontBlockLocation);
 
+
     // 前方のブロックが不透明で、かつプレイヤーから5ブロック以上離れている場合のみチェック
-    if (!isBlockVisible(player, frontBlockLocation) && distanceToBlock > 5) {
+    if (!isBlockVisible(player, frontBlockLocation) && distanceToBlock > 3) {
       const playerEyeLocation = {
         x: player.getHeadLocation().x,
         y: player.getHeadLocation().y + 1.62,
@@ -404,11 +433,33 @@ function detectXrayOnSight(player: Player): void {
         if (checkBlock && isTargetXrayBlock(checkBlock) && !isBlockExposedToAir(playerDimension, blockLocation)) {
           const blockLocationString = `${blockLocation.x},${blockLocation.y},${blockLocation.z}`;
 
-          // 疑わしいブロックとして記録
+          // ブロックを見つめている時間を計測
           if (!data.xrayData.suspiciousBlocks[blockLocationString]) {
-            data.xrayData.suspiciousBlocks[blockLocationString] = { timestamp: Date.now(), count: 1 };
-          } else {
+            data.xrayData.suspiciousBlocks[blockLocationString] = {
+              timestamp: Date.now(),
+              count: 0,
+              lookingTime: 0,
+            };
+          }
+
+          data.xrayData.suspiciousBlocks[blockLocationString].lookingTime += 50; // 50ms (1tick) 追加
+
+          // 3秒以上見つめていたらカウントアップ
+          if (data.xrayData.suspiciousBlocks[blockLocationString].lookingTime >= 3000) {
             data.xrayData.suspiciousBlocks[blockLocationString].count++;
+            data.xrayData.suspiciousBlocks[blockLocationString].lookingTime = 0; // タイマーリセット
+
+            // 疑わしいブロックとして記録 (一定時間見つめていたら)
+            if (data.xrayData.suspiciousBlocks[blockLocationString].count >= 3) {
+              // ここに疑わしいブロックとして記録する処理を追加 (例: 別のリストに追加するなど)
+              console.warn(`プレイヤー ${player.name} がブロック ${blockLocationString} を長時間見つめています。`);
+            }
+          }
+        } else {
+          // 視線をそらしたらタイマーリセット
+          const blockLocationString = `${blockLocation.x},${blockLocation.y},${blockLocation.z}`;
+          if (data.xrayData.suspiciousBlocks[blockLocationString]) {
+            data.xrayData.suspiciousBlocks[blockLocationString].lookingTime = 0;
           }
         }
       }
@@ -651,7 +702,7 @@ function runTick(): void {
 
       
 
-      //player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a現在実験中: ${playerData[playerId].spikeLaggingData.ping} tick/ping"}]}`);
+      player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a現在Packet.ts修正中: ${playerData[playerId].spikeLaggingData.ping} tick/ping"}]}`);
 
 
 
@@ -682,10 +733,9 @@ function runTick(): void {
         detectXrayOnSight(player);
       }
 
-      // 疑わしいブロックの記録を10秒ごとに削除
       for (const blockLocationString in playerData[playerId].xrayData.suspiciousBlocks) {
         const suspiciousBlock = playerData[playerId].xrayData.suspiciousBlocks[blockLocationString];
-        if (currentTime - suspiciousBlock.timestamp >= 10000) {
+        if (currentTime - suspiciousBlock.timestamp >= 5000) {
           delete playerData[playerId].xrayData.suspiciousBlocks[blockLocationString];
         }
       }
