@@ -254,12 +254,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     return null;
   }
 
-  // 特定の効果を除く効果を持っているかチェック
   if (hasAnyEffectExcept(player, getExcludedEffects())) {
-    return null;
-  }
-
-  if (getGamemode(player.name) === 1) {
     return null;
   }
 
@@ -267,40 +262,67 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   const isOnGround = player.isOnGround;
   const positionHistory = data.positionHistory;
 
-  // 過去3ティック分の座標を取得
+  // 位置履歴の管理
   const currentPosition = player.location;
+  positionHistory.push(currentPosition);
+  if (positionHistory.length > 4) {
+    positionHistory.shift();
+  }
+
   const previousPosition = positionHistory.length >= 2 ? positionHistory[positionHistory.length - 2] : currentPosition;
   const twoTicksAgoPosition = positionHistory.length >= 3 ? positionHistory[positionHistory.length - 3] : previousPosition;
 
-  // 水平方向の速度と加速度を計算
-  const horizontalSpeed = Math.sqrt((currentPosition.x - previousPosition.x) ** 2 + (currentPosition.z - previousPosition.z) ** 2);
-  const horizontalAcceleration = horizontalSpeed - Math.sqrt((previousPosition.x - twoTicksAgoPosition.x) ** 2 + (previousPosition.z - twoTicksAgoPosition.z) ** 2);
+  // 水平方向の速度と加速度の計算
+  const horizontalSpeed = calculateHorizontalSpeed(currentPosition, previousPosition);
+  const horizontalAcceleration = horizontalSpeed - calculateHorizontalSpeed(previousPosition, twoTicksAgoPosition);
 
-  // 過去3ティック分のY軸方向の速度を計算
+  // Y軸方向の速度と加速度の計算
   const currentVelocityY = player.getVelocity().y;
-  const previousVelocityY = positionHistory.length >= 3 ? (positionHistory[positionHistory.length - 2].y - positionHistory[positionHistory.length - 3].y) / 50 : 0;
-  const twoTicksAgoVelocityY = positionHistory.length >= 4 ? (positionHistory[positionHistory.length - 3].y - positionHistory[positionHistory.length - 4].y) / 50 : 0;
+  const previousVelocityY = calculateVerticalVelocity(positionHistory, 2);
+  const twoTicksAgoVelocityY = calculateVerticalVelocity(positionHistory, 3);
 
-  // Y軸方向の加速度を計算
   const verticalAcceleration = currentVelocityY - previousVelocityY;
   const previousVerticalAcceleration = previousVelocityY - twoTicksAgoVelocityY;
 
+  // 速度変化率の計算
+  const velocityChangeRate = (currentVelocityY - twoTicksAgoVelocityY) / (50 * 2);
+
+  // プレイヤーの向きと移動方向の角度差の計算
+  const movementAngle = Math.atan2(currentPosition.z - previousPosition.z, currentPosition.x - previousPosition.x);
+  const playerRotationAngle = player.getRotation().y;
+  const angleDifference = Math.abs(movementAngle - playerRotationAngle);
+
+  // 角度差の変化速度の計算 (前回との差分を計算するために変数を用意)
+  let previousAngleDifference = data.lastRotationY || 0;
+  const angleDifferenceChangeRate = (angleDifference - previousAngleDifference) / (50 * 2);
+  data.lastRotationY = angleDifference; // 今回の角度差を次回のために保存
+
+  // 接地状態の変化回数の計算
+  const groundStateChangeCount = positionHistory.slice(-4).filter((pos, i, arr) =>
+    (i > 0 && arr[i - 1] && pos.y - arr[i - 1].y < -0.1) !== (i > 0 && arr[i - 1] && arr[i - 1].y - arr[i - 2].y < -0.1)
+  ).length;
+
   // ジャンプ判定
   if (isOnGround) {
-    // 地面に着地したらジャンプフラグをリセット
     data.isJumping = false;
     data.jumpCounter = 0;
   } else if (isJumping && !data.isJumping) {
-    // ジャンプ開始
     data.isJumping = true;
   } else if (data.isJumping && !isOnGround) {
-    // 空中にいる間
     const jumpHeight = currentPosition.y - Math.min(previousPosition.y, twoTicksAgoPosition.y);
 
-    // AirJump判定
-    if (jumpHeight > 1.52 || horizontalAcceleration > 2.1 || (verticalAcceleration > 0.9 && previousVerticalAcceleration > 0.6)) {
+    // AirJump判定 (複合条件)
+    if (
+      jumpHeight > 2.0 ||
+      horizontalAcceleration > 1.5 ||
+      (verticalAcceleration > 0.9 && previousVerticalAcceleration > 0.6) ||
+      velocityChangeRate > 0.5 || // 速度変化率が大きい
+      angleDifferenceChangeRate > 0.1 || // 角度差の変化速度が大きい
+      groundStateChangeCount > 2 || // 接地状態の変化回数が多い
+      (player.isJumping && horizontalSpeed > 0.5) // ジャンプ中に水平方向の速度が大きい
+    ) {
       data.jumpCounter++;
-      if (data.jumpCounter >= 2) {
+      if (data.jumpCounter >= 1) {
         return { cheatType: '(AirJump|Fly)' };
       }
     }
@@ -308,6 +330,18 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 
   return null;
 }
+
+function calculateHorizontalSpeed(pos1: Vector3, pos2: Vector3) {
+  return Math.sqrt((pos1.x - pos2.x) ** 2 + (pos1.z - pos2.z) ** 2);
+}
+
+function calculateVerticalVelocity(positionHistory: string | any[], ticksAgo: number) {
+  if (positionHistory.length >= ticksAgo + 1) {
+    return (positionHistory[positionHistory.length - ticksAgo].y - positionHistory[positionHistory.length - ticksAgo - 1].y) / 50;
+  }
+  return 0;
+}
+
 
 function detectClickTpOutOfBoundary(player: Player): { cheatType: string } | null {
   const data = playerData[player.id];
