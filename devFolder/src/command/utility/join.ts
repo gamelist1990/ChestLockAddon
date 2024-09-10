@@ -79,9 +79,9 @@ world.afterEvents.playerSpawn.subscribe((event: any) => {
     system.runTimeout(() => {
       showJoinMessage(player);
       playersShownMessage[playerName] = true;
-    }, 120); 
+    }, 160); 
   }
-}); 
+});
 
 
 // 参加メッセージを表示する関数

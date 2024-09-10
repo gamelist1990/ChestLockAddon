@@ -102,11 +102,11 @@ function initializePlayerData(player: Player): void {
 }
 
 // プレイヤー死亡時のデータ削除
-world.afterEvents.entityDie.subscribe((event) => {
-  const player = event.deadEntity as Player;
+world.afterEvents.playerSpawn.subscribe((event) => {
+  const player = event.player as Player;
   if (player && player.id) {
     delete playerData[player.id];
-    console.warn(`プレイヤー ${player.name} (ID: ${player.id}) の監視を停止しました`); // 監視停止メッセージを追加
+    console.warn(`プレイヤー ${player.name} (ID: ${player.id}) の監視を停止しました`);
   }
 });
 
@@ -303,8 +303,6 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   const angleDifference = Math.abs(movementAngle - playerRotationAngle);
 
   // 角度差の変化速度の計算 (前回との差分を計算するために変数を用意)
-  let previousAngleDifference = data.lastRotationY || 0;
-  const angleDifferenceChangeRate = (angleDifference - previousAngleDifference) / (50 * 2);
   data.lastRotationY = angleDifference; // 今回の角度差を次回のために保存
 
   // 接地状態の変化回数の計算
@@ -341,10 +339,9 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 
       if (
         jumpHeight > 3.0 ||
-        horizontalAcceleration > 1.5 ||
+        horizontalAcceleration > 2.1 ||
         (verticalAcceleration > 1.2 && previousVerticalAcceleration > 0.8) ||
         velocityChangeRate > 0.9 || // 速度変化率が大きい
-        angleDifferenceChangeRate > 0.1 || // 角度差の変化速度が大きい
         groundStateChangeCount > 3 || // 接地状態の変化回数が多い
         (player.isJumping && horizontalSpeed > 0.8) // ジャンプ中に水平方向の速度が大きい
       ) {
@@ -635,11 +632,9 @@ function detectNoFall(player: Player): { cheatType: string } | null {
   const data = playerData[player.id];
   if (!data) return null;
 
-
   if (getGamemode(player.name) === 1) {
     return null;
   }
-
 
   // プレイヤーが落下中かどうかをチェック
   const isFalling = player.isFalling;
@@ -655,6 +650,39 @@ function detectNoFall(player: Player): { cheatType: string } | null {
   // NoFallのチェック (落下中で、地面に着地していないのにY軸速度が正、または急激に速度が減少)
   if (isFalling && !isOnGround && !data.isJumping && (velocityY >= 0 || velocityY - previousFallingSpeed > 0.5)) {
     return { cheatType: 'NoFall' };
+  }
+
+
+  // --- OnGroundSpoof対策 ---
+  if (isFalling && !isOnGround) {
+    const playerDimension = player.dimension;
+    const playerLocation = player.location;
+
+    // プレイヤーの周囲1ブロックの範囲を取得
+    const startBlock = { x: Math.floor(playerLocation.x - 1), y: Math.floor(playerLocation.y - 1), z: Math.floor(playerLocation.z - 1) };
+    const endBlock = { x: Math.floor(playerLocation.x + 1), y: Math.floor(playerLocation.y + 1), z: Math.floor(playerLocation.z + 1) };
+
+    const blocksBelow: Block[] = [];
+    for (let x = startBlock.x; x <= endBlock.x; x++) {
+      for (let y = startBlock.y; y <= endBlock.y; y++) {
+        for (let z = startBlock.z; z <= endBlock.z; z++) {
+          const block = playerDimension.getBlock({ x, y, z });
+          if (block && block.location.y < playerLocation.y) {
+            blocksBelow.push(block);
+          }
+        }
+      }
+    }
+
+    const entitiesBelow = playerDimension.getEntities({
+      location: playerLocation,
+      maxDistance: 1, // 半径1ブロック以内
+      type: 'minecraft:entity', 
+    }).filter(entity => entity.location.y < playerLocation.y);
+
+    if (blocksBelow.length === 0 && entitiesBelow.length === 0) {
+      return { cheatType: 'OnGroundSpoof (実験的)' };
+    }
   }
 
   return null;
@@ -840,8 +868,8 @@ export function RunAntiCheat(): void {
   monitoring = true;
   world.getPlayers().forEach(initializePlayerData);
   system.run(runTick);
-  system.runInterval(checkSpikeLagging);
-  system.runInterval(updateSpikeLaggingData);
+  system.runInterval(checkSpikeLagging,1);
+  system.runInterval(updateSpikeLaggingData,1);
   AddNewPlayers();
   console.warn('チート対策を有効にしました');
 }
