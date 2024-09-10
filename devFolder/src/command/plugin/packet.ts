@@ -159,7 +159,7 @@ function executeRollback(player: Player): void {
     // 1 tick 遅延させてロールバック
     system.run(() => {
       player.teleport(rollbackPosition, { dimension: player.dimension });
-      player.sendMessage("異常な行動を検出した為フリーズしました(10秒程度で解除されます)")
+      
       console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をロールバックしました`);
     });
   }
@@ -190,11 +190,13 @@ function executeFreeze(player: Player): void {
   // プレイヤーをy座標500にテレポート
   player.teleport({ x: player.location.x, y: 500, z: player.location.z }, { dimension: player.dimension });
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をfreezeしました`);
+  player.sendMessage("異常な行動を検出した為フリーズしました(10秒程度で解除されます)")
 
   // 一定時間後にfreeze解除
   system.runTimeout(() => {
     data.isFrozen = false;
     console.warn(`プレイヤー ${player.name} (ID: ${player.id}) のfreezeを解除しました`);
+    player.sendMessage("フリーズを解除しました")
     // データのリセット
     resetPlayerData(data, player);
     data.violationCount = 0;
@@ -396,26 +398,59 @@ function getBlockFromReticle(player: Player, maxDistance: number): Block | null 
   const playerLocation = player.getHeadLocation();
   const viewDirection = player.getViewDirection();
 
+  // 有効な座標範囲を定義
+  const minCoordinate = -30000000;
+  const maxCoordinate = 30000000;
+  const minYCoordinate = -64;
+  const maxYCoordinate = 255;
+
   // 光線上の各点を計算
   for (let i = 0; i <= maxDistance; i++) {
     const currentPosition = {
-      x: Math.floor(playerLocation.x + viewDirection.x * i), // 小数点以下を切り捨て
+      x: Math.floor(playerLocation.x + viewDirection.x * i),
       y: Math.floor(playerLocation.y + viewDirection.y * i),
       z: Math.floor(playerLocation.z + viewDirection.z * i),
     };
+
+    // 座標が有効な範囲内にあるかどうかをチェック
+    if (
+      currentPosition.x < minCoordinate || currentPosition.x > maxCoordinate ||
+      currentPosition.y < minYCoordinate || currentPosition.y > maxYCoordinate ||
+      currentPosition.z < minCoordinate || currentPosition.z > maxCoordinate
+    ) {
+      continue; // 無効な座標の場合は次のループへ
+    }
 
     // ブロックを取得
     const block = playerDimension.getBlock(currentPosition);
 
     // ブロックが存在し、かつXray検知対象の場合
     if (block && targetXrayBlockIds.includes(block.typeId)) {
-      return block; // 指定種類のブロックが見つかったら返す
+      // 周囲6方向のブロックを取得
+      const surroundingBlocks = [
+        playerDimension.getBlock({ x: currentPosition.x + 1, y: currentPosition.y, z: currentPosition.z }),
+        playerDimension.getBlock({ x: currentPosition.x - 1, y: currentPosition.y, z: currentPosition.z }),
+        playerDimension.getBlock({ x: currentPosition.x, y: currentPosition.y + 1, z: currentPosition.z }),
+        playerDimension.getBlock({ x: currentPosition.x, y: currentPosition.y - 1, z: currentPosition.z }),
+        playerDimension.getBlock({ x: currentPosition.x, y: currentPosition.y, z: currentPosition.z + 1 }),
+        playerDimension.getBlock({ x: currentPosition.x, y: currentPosition.y, z: currentPosition.z - 1 }),
+      ];
+
+      // 周囲にairブロックが存在するかチェック
+      const isTouchingAir = surroundingBlocks.some(surroundingBlock => surroundingBlock && surroundingBlock.typeId === 'minecraft:air');
+
+      // airブロックと触れていない場合のみブロックを返す
+      if (!isTouchingAir) {
+        return block;
+      }
     }
   }
 
   // 指定距離以内に指定種類のブロックが見つからない場合は null を返す
   return null;
 }
+
+
 
 const targetXrayBlockIds = ['minecraft:diamond_ore', 'minecraft:ancient_debris', 'minecraft:emerald_ore', 'minecraft:iron_ore'];
 
@@ -437,16 +472,28 @@ function detectXrayOnSight(player: Player): void {
     if (distanceToBlock > 6) {
       const blockLocationString = `${targetBlock.location.x},${targetBlock.location.y},${targetBlock.location.z}`;
 
-      // 既に同じ座標のブロックが登録されているかチェック
-      if (data.xrayData.suspiciousBlocks[blockLocationString]) {
-        // 既存データの場合はcountを増やす
-        data.xrayData.suspiciousBlocks[blockLocationString].count++;
-      } else {
-        // 新規データの場合は追加
-        data.xrayData.suspiciousBlocks[blockLocationString] = {
-          timestamp: currentTime,
-          count: 1, // 初期カウントは1
-        };
+      // 座標が有効な範囲内にあるかどうかをチェック
+      const minCoordinate = -30000000;
+      const maxCoordinate = 30000000;
+      const minYCoordinate = -64;
+      const maxYCoordinate = 255;
+
+      if (
+        targetBlock.location.x >= minCoordinate && targetBlock.location.x <= maxCoordinate &&
+        targetBlock.location.y >= minYCoordinate && targetBlock.location.y <= maxYCoordinate &&
+        targetBlock.location.z >= minCoordinate && targetBlock.location.z <= maxCoordinate
+      ) {
+        // 既に同じ座標のブロックが登録されているかチェック
+        if (data.xrayData.suspiciousBlocks[blockLocationString]) {
+          // 既存データの場合はcountを増やす
+          data.xrayData.suspiciousBlocks[blockLocationString].count++;
+        } else {
+          // 新規データの場合は追加
+          data.xrayData.suspiciousBlocks[blockLocationString] = {
+            timestamp: currentTime,
+            count: 1, // 初期カウントは1
+          };
+        }
       }
     }
   }
@@ -468,6 +515,7 @@ function detectXrayOnSight(player: Player): void {
     }
   }
 }
+
 
 
 
@@ -507,7 +555,6 @@ function getExcludedEffects(): string[] {
 
 
 
-//@ts-ignore
 function detectNoFall(player: Player): { cheatType: string } | null {
   const data = playerData[player.id];
   if (!data) return null;
@@ -515,74 +562,61 @@ function detectNoFall(player: Player): { cheatType: string } | null {
   if (getGamemode(player.name) === 1) {
     return null;
   }
-  if (playerData[player.id].spikeLaggingData.ping > 100) {
-    return null;
-  }
+  // Pingによる判定は、不安定な要素が多いため、ここでは一旦コメントアウトします。
+   if (playerData[player.id].spikeLaggingData.ping > 100) {
+     return null;
+   }
 
-  // プレイヤーが落下中かどうかをチェック
+
+
   const isFalling = player.isFalling;
   const isOnGround = player.isOnGround;
   const velocityY = player.getVelocity().y;
 
   // ラグの影響を軽減するために、過去の3ティックの落下速度を平均
-  const fallingSpeedHistory = data.positionHistory.slice(-4).map((pos, i, arr) => {
-    if (i === 0) return 0;
-    return (arr[i - 1].y - pos.y) / (50 / 20); // blocks/tick
-  }).slice(1);
-  const averageFallingSpeed = fallingSpeedHistory.reduce((sum, speed) => sum + speed, 0) / fallingSpeedHistory.length;
-  const playerLocation = player.location;
-  const playerDimension = player.dimension; 
-  const block = playerDimension.getBlock({ 
-  x: Math.floor(playerLocation.x), 
-  y: Math.floor(playerLocation.y - 1), // プレイヤーの足元
-  z: Math.floor(playerLocation.z) 
-});
-  const isInWater = block ? block.typeId === 'minecraft:water' : false;  
-  // エリトラ使用時や水中は判定を行わない
-  if (player.isGliding || isInWater) {
-    return null;
+  let previousFallingSpeed = 0;
+  if (data.positionHistory.length >= 2) {
+    previousFallingSpeed = (player.location.y - data.positionHistory[data.positionHistory.length - 2].y) / (50 / 20); // blocks/tick
+
+    // NoFallのチェック (速度が一定以上で、急激に速度が減少した場合)
+    // 急激な速度変化の閾値を調整
+    if (isFalling && !isOnGround && !data.isJumping && (velocityY >= 0 || velocityY - previousFallingSpeed > 0.5)) {
+      return { cheatType: 'NoFall' };
+    }
   }
 
-  // NoFallのチェック (速度が一定以上で、急激に速度が減少した場合)
-  if (isFalling && !isOnGround && !data.isJumping && averageFallingSpeed > 1 && velocityY - averageFallingSpeed > 0.8) {
-    return { cheatType: 'NoFall' };
-  }
+  const spoofBlockIds = [
+    "minecraft:air",
+    "minecraft:water",
+    "minecraft:lava",
+    // その他のブロックIDを追加 (例: 足場、ソウルサンドなど)
+  ];
 
+  // プレイヤーが地面にいると偽装しているかどうかをチェック (落下中なのにisOnGroundがtrue、かつ水中にいない)
+  if (isOnGround && velocityY < -0.1 && !player.isInWater) {
+    // プレイヤーの足元のブロックを取得
+    const blockBelow = player.dimension.getBlock({ x: Math.floor(player.location.x), y: Math.floor(player.location.y - 1), z: Math.floor(player.location.z) });
 
-  // --- OnGroundSpoof対策 ---
-  if (isFalling && !isOnGround) {
-    const playerDimension = player.dimension;
-    const playerLocation = player.location;
+    // 足元のブロックが空気または液体の場合、OnGroundSpoofと判定
+    if (!blockBelow || spoofBlockIds.includes(blockBelow.type.id)) {
+      // さらに、過去3ティック分のY座標の変化量をチェック
+      if (data.positionHistory.length >= 4) {
+        const yDiff1 = data.positionHistory[data.positionHistory.length - 2].y - data.positionHistory[data.positionHistory.length - 3].y;
+        const yDiff2 = data.positionHistory[data.positionHistory.length - 3].y - data.positionHistory[data.positionHistory.length - 4].y;
 
-    // プレイヤーの周囲1ブロックの範囲を取得
-    const startBlock = { x: Math.floor(playerLocation.x - 1), y: Math.floor(playerLocation.y - 1), z: Math.floor(playerLocation.z - 1) };
-    const endBlock = { x: Math.floor(playerLocation.x + 1), y: Math.floor(playerLocation.y + 1), z: Math.floor(playerLocation.z + 1) };
-
-    const blocksBelow: Block[] = [];
-    for (let x = startBlock.x; x <= endBlock.x; x++) {
-      for (let y = startBlock.y; y <= endBlock.y; y++) {
-        for (let z = startBlock.z; z <= endBlock.z; z++) {
-          const block = playerDimension.getBlock({ x, y, z });
-          if (block && block.location.y < playerLocation.y) {
-            blocksBelow.push(block);
-          }
+        // 過去2ティック連続で落下している場合、OnGroundSpoofと判定
+        // 落下判定の閾値を調整
+        if (yDiff1 < -0.05 && yDiff2 < -0.05) {
+          return { cheatType: 'OnGroundSpoof' };
         }
       }
-    }
-
-    const entitiesBelow = playerDimension.getEntities({
-      location: playerLocation,
-      maxDistance: 1, // 半径1ブロック以内
-      type: 'minecraft:entity', 
-    }).filter(entity => entity.location.y < playerLocation.y);
-
-    if (blocksBelow.length === 0 && entitiesBelow.length === 0) {
-      return { cheatType: 'OnGroundSpoof (実験的)' };
     }
   }
 
   return null;
 }
+
+
 
 
 
@@ -696,7 +730,7 @@ function handleCheatDetection(player: Player, detection: { cheatType: string }):
     console.warn(logMessage);
     world.sendMessage(logMessage);
 
-    if (data.violationCount >= detectionThreshold * 5) {
+    if (data.violationCount >= detectionThreshold * 4) {
       executeFreeze(player);
     } else {
       executeRollback(player);
