@@ -569,21 +569,21 @@ function detectNoFall(player: Player): { cheatType: string } | null {
 
 
 
-  const isFalling = player.isFalling;
+  //const isFalling = player.isFalling;
   const isOnGround = player.isOnGround;
   const velocityY = player.getVelocity().y;
 
-  // ラグの影響を軽減するために、過去の3ティックの落下速度を平均
-  let previousFallingSpeed = 0;
-  if (data.positionHistory.length >= 2) {
-    previousFallingSpeed = (player.location.y - data.positionHistory[data.positionHistory.length - 2].y) / (50 / 20); // blocks/tick
-
-    // NoFallのチェック (速度が一定以上で、急激に速度が減少した場合)
-    // 急激な速度変化の閾値を調整
-    if (isFalling && !isOnGround && !data.isJumping && (velocityY >= 0 || velocityY - previousFallingSpeed > 0.5)) {
-      return { cheatType: 'NoFall' };
-    }
-  }
+  //// ラグの影響を軽減するために、過去の3ティックの落下速度を平均
+  //let previousFallingSpeed = 0;
+  //if (data.positionHistory.length >= 2) {
+  //  previousFallingSpeed = (player.location.y - data.positionHistory[data.positionHistory.length - 2].y) / (50 / 20); // blocks/tick
+//
+  //  // NoFallのチェック (速度が一定以上で、急激に速度が減少した場合)
+  //  // 急激な速度変化の閾値を調整
+  //  if (isFalling && !isOnGround && !data.isJumping && (velocityY >= 0 || velocityY - previousFallingSpeed > 0.7)) {
+  //    return { cheatType: 'NoFall' };
+  //  }
+  //}
 
   const spoofBlockIds = [
     "minecraft:air",
@@ -636,7 +636,7 @@ function runTick(): void {
 
   const currentTime = Date.now();
 
-  logPlayerData('-4294967295');
+  //logPlayerData('-4294967295');
 
   for (const playerId in playerData) {
     const player = world.getPlayers().find((p) => p.id === playerId);
@@ -660,7 +660,7 @@ function runTick(): void {
 
       
 
-      player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a現在Packet.ts修正中: ${playerData[playerId].spikeLaggingData.ping} tick/ping"}]}`);
+      //player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a現在Packet.ts修正中: ${playerData[playerId].spikeLaggingData.ping} tick/ping"}]}`);
 
 
 
