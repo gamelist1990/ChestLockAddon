@@ -10,7 +10,7 @@ import { Player, world, system, Vector3, Block } from '@minecraft/server';
 const config = {
   debugMode: false,
   antiCheat: {
-    detectionThreshold: 2,
+    detectionThreshold: 3,
     rollbackTicks: 3 * 20,
     freezeDuration: 20 * 10,
     betasystem: true,
@@ -265,7 +265,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     return null;
   }
 
-  if (playerData[player.id].spikeLaggingData.ping > 100) {
+  if (playerData[player.id].spikeLaggingData.ping > 60) {
     return null;
   }
 
@@ -273,7 +273,6 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   const isOnGround = player.isOnGround;
   const positionHistory = data.positionHistory;
 
-  // 位置履歴の管理
   const currentPosition = player.location;
   positionHistory.push(currentPosition);
   if (positionHistory.length > 4) {
@@ -345,10 +344,10 @@ function detectAirJump(player: Player): { cheatType: string } | null {
       if (
         jumpHeight > 3.0 ||
         horizontalAcceleration > 2.1 ||
-        (verticalAcceleration > 1.2 && previousVerticalAcceleration > 0.8) ||
+        (verticalAcceleration > 1.3 && previousVerticalAcceleration > 0.8) ||
         velocityChangeRate > 0.9 || // 速度変化率が大きい
-        groundStateChangeCount > 3 || // 接地状態の変化回数が多い
-        (player.isJumping && horizontalSpeed > 0.8) // ジャンプ中に水平方向の速度が大きい
+        groundStateChangeCount > 2 || // 接地状態の変化回数が多い
+        (player.isJumping && horizontalSpeed > 0.9) // ジャンプ中に水平方向の速度が大きい
       ) {
         data.jumpCounter++;
         if (data.jumpCounter >= 1) {
@@ -555,66 +554,6 @@ function getExcludedEffects(): string[] {
 
 
 
-function detectNoFall(player: Player): { cheatType: string } | null {
-  const data = playerData[player.id];
-  if (!data) return null;
-
-  if (getGamemode(player.name) === 1) {
-    return null;
-  }
-  // Pingによる判定は、不安定な要素が多いため、ここでは一旦コメントアウトします。
-   if (playerData[player.id].spikeLaggingData.ping > 100) {
-     return null;
-   }
-
-
-
-  //const isFalling = player.isFalling;
-  const isOnGround = player.isOnGround;
-  const velocityY = player.getVelocity().y;
-
-  //// ラグの影響を軽減するために、過去の3ティックの落下速度を平均
-  //let previousFallingSpeed = 0;
-  //if (data.positionHistory.length >= 2) {
-  //  previousFallingSpeed = (player.location.y - data.positionHistory[data.positionHistory.length - 2].y) / (50 / 20); // blocks/tick
-//
-  //  // NoFallのチェック (速度が一定以上で、急激に速度が減少した場合)
-  //  // 急激な速度変化の閾値を調整
-  //  if (isFalling && !isOnGround && !data.isJumping && (velocityY >= 0 || velocityY - previousFallingSpeed > 0.7)) {
-  //    return { cheatType: 'NoFall' };
-  //  }
-  //}
-
-  const spoofBlockIds = [
-    "minecraft:air",
-    "minecraft:water",
-    "minecraft:lava",
-    // その他のブロックIDを追加 (例: 足場、ソウルサンドなど)
-  ];
-
-  // プレイヤーが地面にいると偽装しているかどうかをチェック (落下中なのにisOnGroundがtrue、かつ水中にいない)
-  if (isOnGround && velocityY < -0.1 && !player.isInWater) {
-    // プレイヤーの足元のブロックを取得
-    const blockBelow = player.dimension.getBlock({ x: Math.floor(player.location.x), y: Math.floor(player.location.y - 1), z: Math.floor(player.location.z) });
-
-    // 足元のブロックが空気または液体の場合、OnGroundSpoofと判定
-    if (!blockBelow || spoofBlockIds.includes(blockBelow.type.id)) {
-      // さらに、過去3ティック分のY座標の変化量をチェック
-      if (data.positionHistory.length >= 4) {
-        const yDiff1 = data.positionHistory[data.positionHistory.length - 2].y - data.positionHistory[data.positionHistory.length - 3].y;
-        const yDiff2 = data.positionHistory[data.positionHistory.length - 3].y - data.positionHistory[data.positionHistory.length - 4].y;
-
-        // 過去2ティック連続で落下している場合、OnGroundSpoofと判定
-        // 落下判定の閾値を調整
-        if (yDiff1 < -0.05 && yDiff2 < -0.05) {
-          return { cheatType: 'OnGroundSpoof' };
-        }
-      }
-    }
-  }
-
-  return null;
-}
 
 
 
@@ -675,11 +614,7 @@ function runTick(): void {
         handleCheatDetection(player, clickTpOutOfBoundaryDetection);
       }
 
-      const Nofall = detectNoFall(player);
-      if (Nofall) {
-        handleCheatDetection(player, Nofall);
-      }
-
+    
       // AirJump検出
       const airJumpDetection = detectAirJump(player);
       if (airJumpDetection) {
