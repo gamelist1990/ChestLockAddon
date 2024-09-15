@@ -342,7 +342,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
       const jumpHeight = currentPosition.y - Math.min(previousPosition.y, twoTicksAgoPosition.y);
 
       if (
-        jumpHeight > 3.0 ||
+        jumpHeight > 3.5 ||
         horizontalAcceleration > 2.1 ||
         (verticalAcceleration > 1.3 && previousVerticalAcceleration > 0.8) ||
         velocityChangeRate > 0.9 || // 速度変化率が大きい
