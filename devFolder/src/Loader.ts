@@ -6,6 +6,7 @@ import { loadjoinModules } from './command/utility/join';
 import { showBasicUI } from './command/gui/ui';
 import { customCommandsConfig } from './command/itemUI';
 import { c } from './Modules/Util';
+import { loadData } from './Modules/DataBase';
 //import { RunAntiCheat } from './command/plugin/packet';
 
 const startTime = Date.now();
@@ -23,6 +24,7 @@ async function loadAllImports() {
 
 world.afterEvents.worldInitialize.subscribe(async () => {
   try {
+    loadData();
     //RunAntiCheat();
     loadGate();
     loadjoinModules();

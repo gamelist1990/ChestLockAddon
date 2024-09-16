@@ -12,6 +12,7 @@ interface ChestProtectionData {
 }
 
 const CHECK_INTERVAL = 20 * 60; // 1分 (20ティック/秒 * 60秒)
+
 let protectedChests: Record<string, ChestProtectionData> = {};
 
 // コマンド登録

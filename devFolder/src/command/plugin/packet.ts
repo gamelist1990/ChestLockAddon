@@ -45,6 +45,8 @@ interface SpikeLaggingData {
 
 
 interface PlayerData {
+  lastGroundY: number;
+  lastFallDistance: number;
   airJumpDetected: boolean;
   jumpStartTime: number;
   positionHistory: Vector3[];
@@ -72,7 +74,9 @@ interface PlayerData {
 
 // プレイヤーデータの初期化
 function initializePlayerData(player: Player): void {
-  playerData[player.id] = {
+    playerData[player.id] = {
+    lastGroundY: 0,
+    lastFallDistance: 0,
     positionHistory: [player.location],
     lastTime: Date.now(),
     violationCount: 0,
@@ -254,31 +258,29 @@ world.afterEvents.itemUse.subscribe((event) => {
   }
 });
 
+
 function isPlayerActuallyOnGround(player: Player): boolean {
   const playerLocation = player.location;
-  const raycastDistance = 0.1; // プレイヤーの足元から少し下の位置まで
+  const playerDimension = player.dimension;
+  const blockRadiusToCheck = 1;
 
- 
-
-  // プレイヤーの足元から、少し下の位置まで、ブロック単位でループ処理
-  for (let i = 0; i <= raycastDistance; i += 0.1) {
-    const blockLocation = {
-      x: Math.floor(playerLocation.x),
-      y: Math.floor(playerLocation.y - i),
-      z: Math.floor(playerLocation.z),
-    };
-
-    const block = player.dimension.getBlock(blockLocation);
-
-    // ブロックが存在する場合、ヒットしたと判定
-    if (block) {
-      return true;
+  for (let x = Math.floor(playerLocation.x) - blockRadiusToCheck; x <= Math.floor(playerLocation.x) + blockRadiusToCheck; x++) {
+    for (let z = Math.floor(playerLocation.z) - blockRadiusToCheck; z <= Math.floor(playerLocation.z) + blockRadiusToCheck; z++) {
+      for (let y = Math.floor(playerLocation.y) - 1; y >= Math.floor(playerLocation.y) - blockRadiusToCheck; y--) {
+        // world グローバルオブジェクトを使ってブロックを取得
+        const block = playerDimension.getBlock({ x, y, z });
+        if (block) {
+          const blockPerm = block.permutation;
+          if (blockPerm.hasTag("collision")) {
+            return true;
+          }
+        }
+      }
     }
   }
-
-  // ループが終了してもブロックにヒットしない場合は、接地していないと判定
   return false;
 }
+
 
 // AirJump検出
 function detectAirJump(player: Player): { cheatType: string } | null {
@@ -295,6 +297,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     return null;
   }
 
+  const isActuallyOnGround = isPlayerActuallyOnGround(player);
   const isJumping = player.isJumping;
   const isOnGround = player.isOnGround;
   const positionHistory = data.positionHistory;
@@ -312,11 +315,9 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   const previousPosition = positionHistory[positionHistory.length - 2];
   const twoTicksAgoPosition = positionHistory[positionHistory.length - 3];
 
-  // 水平方向の速度と加速度の計算
   const horizontalSpeed = calculateHorizontalSpeed(currentPosition, previousPosition);
   const horizontalAcceleration = horizontalSpeed - calculateHorizontalSpeed(previousPosition, twoTicksAgoPosition);
 
-  // Y軸方向の速度と加速度の計算
   const currentVelocityY = player.getVelocity().y;
   const previousVelocityY = calculateVerticalVelocity(positionHistory, 2);
   const twoTicksAgoVelocityY = calculateVerticalVelocity(positionHistory, 3);
@@ -324,67 +325,56 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   const verticalAcceleration = currentVelocityY - previousVelocityY;
   const previousVerticalAcceleration = previousVelocityY - twoTicksAgoVelocityY;
 
-  // 速度変化率の計算
   const velocityChangeRate = (currentVelocityY - twoTicksAgoVelocityY) / (50 * 2);
 
-  // プレイヤーの向きと移動方向の角度差の計算
   const movementAngle = Math.atan2(currentPosition.z - previousPosition.z, currentPosition.x - previousPosition.x);
   const playerRotationAngle = player.getRotation().y;
   const angleDifference = Math.abs(movementAngle - playerRotationAngle);
+  
+  
 
-  // 角度差の変化速度の計算 (前回との差分を計算するために変数を用意)
-  data.lastRotationY = angleDifference; // 今回の角度差を次回のために保存
+  data.lastRotationY = angleDifference;
 
-  // 接地状態の変化回数の計算
-  let groundStateChangeCount = 0; // 条件分岐の外側で宣言
-
-  if (positionHistory.length >= 4) {
-    groundStateChangeCount = positionHistory.slice(-4).filter((pos, i, arr) => {
-      // undefined チェックを追加
-      if (!pos || !arr[i - 1]) return false;
-      return (i > 0 && pos.y - arr[i - 1].y < -0.1) !== (i > 0 && arr[i - 1].y - (arr[i - 2]?.y || 0) < -0.1);
-    }).length;
-  } 
-
-  // ジャンプ判定
-  if (isOnGround || isPlayerActuallyOnGround(player)) {
+  // ジャンプ状態の判定
+  if (isActuallyOnGround) {
     data.isJumping = false;
     data.jumpCounter = 0;
-    data.airJumpDetected = false; // 地面に接地したらリセット
+    data.airJumpDetected = false;
+    data.lastGroundY = currentPosition.y; // 接地時の高さを記録
   } else if (isJumping && !data.isJumping) {
-    // プレイヤーがジャンプを開始し、かつ前回のティックではジャンプ中でなかった場合
     data.isJumping = true;
-    data.jumpStartTime = currentTick; // ジャンプ開始時間を記録
+    data.jumpStartTime = currentTick;
   } else if (data.isJumping && !isOnGround) {
-    // プレイヤーがジャンプ中で、かつ地面に接地していない場合
-
-    // 空中でジャンプボタンが押されたかどうかを判定
-    if (isJumping && currentTick - data.jumpStartTime > 1) { // ジャンプ開始から1ティック以上経過している場合
+    if (isJumping && currentTick - data.jumpStartTime > 1) {
       data.airJumpDetected = true;
     }
 
-    // AirJump判定 (複合条件)
-    if (data.airJumpDetected) { // 空中でジャンプボタンが押された場合のみAirJump判定を行う
+    if (data.airJumpDetected) {
       const jumpHeight = currentPosition.y - Math.min(previousPosition.y, twoTicksAgoPosition.y);
 
       if (
-        jumpHeight > 4.0 ||
+        jumpHeight > 3.0 ||
         horizontalAcceleration > 2.1 ||
         (verticalAcceleration > 1.3 && previousVerticalAcceleration > 0.8) ||
-        velocityChangeRate > 0.9 || // 速度変化率が大きい
-        groundStateChangeCount > 2 || // 接地状態の変化回数が多い
-        (player.isJumping && horizontalSpeed > 0.9) // ジャンプ中に水平方向の速度が大きい
+        velocityChangeRate > 0.9 ||
+        (player.isJumping && horizontalSpeed > 0.9)
       ) {
         data.jumpCounter++;
-        if (data.jumpCounter >= 1) {
-          return { cheatType: '(AirJump|Fly)' };
+        if (data.jumpCounter >= 2) {
+          return { cheatType: '(AirJump|Fly)' }; // 通常のAirJumpとして検出
         }
       }
     }
   }
 
+  
+
   return null;
 }
+
+
+
+
 
 function calculateHorizontalSpeed(pos1: Vector3, pos2: Vector3) {
   return Math.sqrt((pos1.x - pos2.x) ** 2 + (pos1.z - pos2.z) ** 2);
@@ -640,6 +630,7 @@ function runTick(): void {
         handleCheatDetection(player, clickTpOutOfBoundaryDetection);
       }
 
+      
     
       // AirJump検出
       const airJumpDetection = detectAirJump(player);
