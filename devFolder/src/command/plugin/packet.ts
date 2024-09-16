@@ -254,6 +254,32 @@ world.afterEvents.itemUse.subscribe((event) => {
   }
 });
 
+function isPlayerActuallyOnGround(player: Player): boolean {
+  const playerLocation = player.location;
+  const raycastDistance = 0.1; // プレイヤーの足元から少し下の位置まで
+
+ 
+
+  // プレイヤーの足元から、少し下の位置まで、ブロック単位でループ処理
+  for (let i = 0; i <= raycastDistance; i += 0.1) {
+    const blockLocation = {
+      x: Math.floor(playerLocation.x),
+      y: Math.floor(playerLocation.y - i),
+      z: Math.floor(playerLocation.z),
+    };
+
+    const block = player.dimension.getBlock(blockLocation);
+
+    // ブロックが存在する場合、ヒットしたと判定
+    if (block) {
+      return true;
+    }
+  }
+
+  // ループが終了してもブロックにヒットしない場合は、接地していないと判定
+  return false;
+}
+
 // AirJump検出
 function detectAirJump(player: Player): { cheatType: string } | null {
   const data = playerData[player.id];
@@ -321,7 +347,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   } 
 
   // ジャンプ判定
-  if (isOnGround) {
+  if (isOnGround || isPlayerActuallyOnGround(player)) {
     data.isJumping = false;
     data.jumpCounter = 0;
     data.airJumpDetected = false; // 地面に接地したらリセット
@@ -342,7 +368,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
       const jumpHeight = currentPosition.y - Math.min(previousPosition.y, twoTicksAgoPosition.y);
 
       if (
-        jumpHeight > 3.5 ||
+        jumpHeight > 4.0 ||
         horizontalAcceleration > 2.1 ||
         (verticalAcceleration > 1.3 && previousVerticalAcceleration > 0.8) ||
         velocityChangeRate > 0.9 || // 速度変化率が大きい
