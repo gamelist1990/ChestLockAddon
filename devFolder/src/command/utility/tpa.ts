@@ -113,7 +113,7 @@ registerCommand({
       const targetPlayer = player.dimension.getPlayers().find((p) => p.name === args[1]);
 
       if (!targetPlayer) {
-        player.sendMessage(translate(player, 'playerNotFound', { playerName: args[1] }));
+        player.sendMessage(translate(player, 'PlayerNotFound', { playerName: args[1] }));
         return;
       }
 

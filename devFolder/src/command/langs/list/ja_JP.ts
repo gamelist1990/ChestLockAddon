@@ -357,7 +357,7 @@ export const translations = {
   },
   "tpaRequestTimedOut": {
     msgid: "§3 TPA request from §6{playerName}§3 has timed out.",
-    msgstr: "§b{playerName}§6に送ったTPAリクエストがタイムアウトしました！"
+    msgstr: "§b{playerName}§6宛てのTPAリクエストがタイムアウトしました！"
   },
   "jpchCom": {
     msgid: "§2 Functions like LunaChat.",

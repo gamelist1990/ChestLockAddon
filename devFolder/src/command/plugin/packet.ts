@@ -374,14 +374,14 @@ function detectAirJump(player: Player): { cheatType: string } | null {
       const jumpHeight = currentPosition.y - Math.min(previousPosition.y, twoTicksAgoPosition.y);
 
       if (
-        jumpHeight > 1.0 || 
+        jumpHeight > 1.5 || 
         horizontalAcceleration > 2.1 ||
         (verticalAcceleration > 1.3 && previousVerticalAcceleration > 0.8) ||
         velocityChangeRate > 0.9 ||
         (player.isJumping && horizontalSpeed > 0.9)
       ) {
         data.jumpCounter++;
-        if (data.jumpCounter >= 1) {
+        if (data.jumpCounter >= 2) {
           return { cheatType: '(AirJump|Fly)' }; // 通常のAirJumpとして検出
         }
       }
@@ -592,7 +592,7 @@ function getExcludedEffects(): string[] {
 function checkPlayerSpeed(player: Player): { cheatType: string } | null {
   const speed = calculatePlayerSpeed(player);
   const data = playerData[player.id];
-  const maxAllowedSpeed = 0.6; 
+  const maxAllowedSpeed = 0.7; 
   
   
 
@@ -782,7 +782,7 @@ function runTick(): void {
 
       
 
-      player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a現在Pingシステム実験中: ${playerData[playerId].spikeLaggingData.pingStatus} tick/ping"}]}`);
+      //player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a現在Pingシステム実験中: ${playerData[playerId].spikeLaggingData.pingStatus} tick/ping"}]}`);
 
 
 

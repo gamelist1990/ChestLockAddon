@@ -11,6 +11,8 @@ interface ChestProtectionData {
   members: string[];
 }
 
+const CHEST_CHECK_RADIUS = 64; 
+
 const CHECK_INTERVAL = 20 * 60; // 1分 (20ティック/秒 * 60秒)
 
 let protectedChests: Record<string, ChestProtectionData> = {};
@@ -435,18 +437,29 @@ async function revertChest(location: Vector3) {
 }
 
 function checkProtectedChests() {
+  const players = world.getPlayers(); // オンラインのプレイヤーを取得
+
   for (const chestKey in protectedChests) {
     const location = parseChestKey(chestKey);
     const dimension = world.getDimension('overworld');
 
-    try {
-      const block = dimension.getBlock(location);
-      if (!isChest(block)) {
-        delete protectedChests[chestKey];
-        console.warn(`Removed data for non-existent chest at ${chestKey}`);
+    // プレイヤーがチェストの近くにいたらチェックを行う
+    const isPlayerNearby = players.some(player =>
+      Math.abs(player.location.x - location.x) <= CHEST_CHECK_RADIUS &&
+      Math.abs(player.location.y - location.y) <= CHEST_CHECK_RADIUS &&
+      Math.abs(player.location.z - location.z) <= CHEST_CHECK_RADIUS
+    );
+
+    if (isPlayerNearby) {
+      try {
+        const block = dimension.getBlock(location);
+        if (!isChest(block)) {
+          delete protectedChests[chestKey];
+          console.warn(`Removed data for non-existent chest at ${chestKey}`);
+        }
+      } catch (error) {
+        console.warn(`Chunk at ${location} is not loaded.`);
       }
-    } catch (error) {
-      console.warn(`Chunk at ${location} is not loaded.`);
     }
   }
   saveProtectedChests();
