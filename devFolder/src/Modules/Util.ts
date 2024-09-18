@@ -6,8 +6,13 @@ interface CommandConfig {
   requireTag: string[];
 }
 
+interface moduleConfig   {
+  enabled:boolean;
+  
+}
+
 //コマンド登録 関数C
-export const c = (): { commands: { [key: string]: CommandConfig }; admin: string } => ({
+export const c = (): { commands: { [key: string]: CommandConfig }; admin: string, module: {[key: string]: moduleConfig}; } => ({
   commands: {
     chest: {
       enabled: true,
@@ -84,10 +89,27 @@ export const c = (): { commands: { [key: string]: CommandConfig }; admin: string
       adminOnly: false,
       requireTag: [],
     },
+    report: {
+      enabled: true,
+      adminOnly: false,
+      requireTag: [],
+    },
+    staff: {
+      enabled: true,
+      adminOnly: false,
+      requireTag: ["staff","op"],
+    },
     
   },
-
   admin: 'op',
+
+  module: {
+    debugMode: {
+      enabled:true,
+    }
+  },
+
+  
 });
 
 export function getGamemode(playerName: string) {

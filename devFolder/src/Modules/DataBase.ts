@@ -1,4 +1,5 @@
 import { world } from '@minecraft/server';
+import { c } from './Util';
 
 interface ChestLockAddonData {
   [key: string]: any;
@@ -6,7 +7,6 @@ interface ChestLockAddonData {
 
 export let chestLockAddonData: ChestLockAddonData = {};
 
-// データの保存・更新関数
 export function saveData(key: string, value: any): void {
   chestLockAddonData[key] = value;
   const data = JSON.stringify(chestLockAddonData);
@@ -29,5 +29,9 @@ export function logData(): void {
 // ResetData
 export function resetData(): void {
   chestLockAddonData = {};
-  console.warn('ChestLockAddon Data reset');
+  if (c().module.debugMode.enabled === true) {
+    console.warn('ChestLockAddon Data reset');
+  }
+  
+  world.sendMessage("§l§eWarn §aChestLockAddon DataBase is Reset");
 }

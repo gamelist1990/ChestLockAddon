@@ -132,7 +132,6 @@ function levenshteinDistance(a: string, b: string): number {
 }
 
 // チャットイベントリスナー
-//@ts-ignore
 world.beforeEvents.chatSend.subscribe((event: any) => {
   const { message, sender: player } = event;
 
@@ -146,6 +145,7 @@ world.beforeEvents.chatSend.subscribe((event: any) => {
   if (!args) return;
 
   const commandName = args.shift()?.toLowerCase().trim();
+  event.cancel = true;
 
   if (commandName === 'yes' && pendingCommand && pendingCommand.player === player) {
     const { command, args: pendingArgs } = pendingCommand;

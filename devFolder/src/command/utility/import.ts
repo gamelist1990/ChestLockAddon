@@ -3,3 +3,6 @@ import './help';
 import './list';
 import './tpa';
 import './join';
+import './report';
+import './staff';
+

@@ -1,4 +1,76 @@
 {
+  "command.reportNotPlayer": {
+    "msgid": "§f>>§4Reported player not found",
+    "msgstr": ""
+  },
+  "staff_command_description": {
+    "msgid": "Staff-only commands",
+    "msgstr": ""
+  },
+  "report_command_description": {
+    "msgid": "You can report players doing bad things.",
+    "msgstr": ""
+  },
+  "command.reportSubmit": {
+    "msgid": "§f>>§aReport submitted successfully",
+    "msgstr": ""
+  },
+  "ui.ReportButton": {
+    "msgid": "§0Report Menu",
+    "msgstr": ""
+  },
+  "ui.EnterReport": {
+    "msgid": "§bPlease enter the reason for the report",
+    "msgstr": ""
+  },
+  "command.newReport": {
+    "msgid": "§f>>§a§lNew report from {reporter} about {reportedPlayer}",
+    "msgstr": ""
+  },
+  "command.NotReport": {
+    "msgid": "§f>>§4No reports found",
+    "msgstr": ""
+  },
+  "command.ui.reportTitle": {
+    "msgid": "§l§0{selectedReporter}§e has Report",
+    "msgstr": ""
+  },
+  "command.ui.reportDetails": {
+    "msgid": "§l§0Report Details",
+    "msgstr": ""
+  },
+  "ui.reportPSelect": {
+    "msgid": "§l§3Select Report To Player",
+    "msgstr": ""
+  },
+  "ui.StaffMenu": {
+    "msgid": "§l§0Staff Menu",
+    "msgstr": ""
+  },
+  "ui.checkReports": {
+    "msgid": "§l§0Check Report",
+    "msgstr": ""
+  },
+  "commnad.staff.UsageCom": {
+    "msgid": "§l§bUsage§a Staff Command §f| world <-send> Message | report <-check>",
+    "msgstr": ""
+  },
+  "command.ui.reportBody": {
+    "msgid": [
+      "§a== Report Menu ==",
+      "",
+      "§l§bReporter§f:{reporter}",
+      "",
+      "§l§6Reported Player§f: {reportedPlayer}",
+      "",
+      "§l§2Reason§f: {reason}",
+      "",
+      "§l§gTimestamp§f: {timestamp}",
+      "",
+      "§a================"
+    ],
+    "msgstr": ""
+  },
   "command.about": {
     "msgid": [
       "§a== About ChestLockAddon ==",

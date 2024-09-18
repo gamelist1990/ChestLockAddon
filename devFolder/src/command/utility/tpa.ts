@@ -96,10 +96,7 @@ export function getTpaRequests(playerName: string): string[] {
   return requests;
 }
 
-export function getAllPlayerNames(currentPlayer: Player): string[] {
-  const players = world.getPlayers();
-  return players.filter((p) => p.name !== currentPlayer.name).map((p) => p.nameTag);
-}
+
 
 registerCommand({
   name: 'tpa',

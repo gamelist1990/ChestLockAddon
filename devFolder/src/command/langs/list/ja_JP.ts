@@ -1,7 +1,67 @@
 export const translations = {
+  "command.reportNotPlayer": {
+    msgid: "§f>>§4Reported player not found",
+    msgstr: "§f>>§4報告対象のプレイヤーが見つかりませんでした"
+  },
+  "staff_command_description": {
+    msgid: "Staff-only commands",
+    msgstr: "スタッフ専用のコマンド！"
+  },
+  "report_command_description": {
+    msgid: "You can report players doing bad things.",
+    msgstr: "悪い事をしたプレイヤーを報告できます"
+  },
+  "command.reportSubmit": {
+    msgid: "§f>>§aReport submitted successfully",
+    msgstr: "§f>>§aスタッフにレポートを報告しました"
+  },
+  "ui.ReportButton": {
+    msgid: "§0Report Menu",
+    msgstr: "§0報告メニュー"
+  },
+  "ui.EnterReport": {
+    msgid: "§bPlease enter the reason for the report",
+    msgstr: "§bスタッフに報告する内容を記入してね"
+  },
+  "command.newReport": {
+    msgid: "§f>>§a§lNew report from {reporter} about {reportedPlayer}",
+    msgstr: "§f>>§b§l[Server] §f: §a新しく§f {reporter} §aが§f {reportedPlayer} §aに対してレポートを提出しました"
+  },
+  "command.NotReport": {
+    msgid: "§f>>§4No reports found",
+    msgstr: "§f>>§4ユーザーからの報告がありません"
+  },
+  "command.ui.reportTitle": {
+    msgid: "§l§0{selectedReporter}§e has Report",
+    msgstr: "§l§0{selectedReporter}§eが提出したレポート"
+  },
+  "command.ui.reportDetails": {
+    msgid: "§l§0Report Details",
+    msgstr: "§l§0レポートの詳細"
+  },
+  "ui.reportPSelect": {
+    msgid: "§l§3Select Report To Player",
+    msgstr: "§l§3報告したいプレイヤーを選択してください"
+  },
+  "ui.StaffMenu": {
+    msgid: "§l§0Staff Menu",
+    msgstr: "§l§0スタッフメニュー"
+  },
+  "ui.checkReports": {
+    msgid: "§l§0Check Report",
+    msgstr: "§l§0レポートを確認"
+  },
+  "commnad.staff.UsageCom": {
+    msgid: "§l§bUsage§a Staff Command §f| world <-send> Message | report <-check>",
+    msgstr: "§l§b使い方§a スタッフコマンド §f| world <-send> Message | report <-check>"
+  },
+  "command.ui.reportBody": {
+    msgid: "§a== Report Menu ==\n\n§l§bReporter§f:{reporter}\n\n§l§6Reported Player§f: {reportedPlayer}\n\n§l§2Reason§f: {reason}\n\n§l§gTimestamp§f: {timestamp}\n\n§a================",
+    msgstr: "§a== レポート メニュー ==\n\n§l§b報告者§f:{reporter}\n\n§l§6報告されたプレイヤー§f: {reportedPlayer}\n\n§l§2理由§f: {reason}\n\n§l§g報告日時§f: {timestamp}\n\n§a==================="
+  },
   "command.about": {
     msgid: "§a== About ChestLockAddon ==\n\nChestLockAddon is a useful utility addon for Minecraft version 1.21.22 that provides chest protection and more.\n\n§b== Main Features ==\n• Chest Protection: Protect your chests from other players.\n• Multilingual Support: Change the language setting with the lang command.\n• Teleport Request: Send a teleport request to another player with the tpa command.\n• And more: More useful commands will be added in the future.\n\n§b== Links ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== Notes ==\nThis addon is under development and may contain unexpected bugs. If you find any bugs, please report them on GitHub or Discord.\n\n§a== Message from the Developer ==\nWe welcome your feedback to make ChestLockAddon a better addon.",
-    msgstr: "§a== ChestLockAddon について ==\n\nChestLockAddonは、Minecraftのバージョン1.21.22に対応した、チェスト保護機能などを提供する便利なユーティリティアドオンです。\n\n§b== 主な機能 ==\n• チェスト保護: あなたのチェストを他のプレイヤーから保護します。\n• 多言語対応: lang コマンドで言語設定を変更できます。\n• PS4/5向けUI: ui コマンドでPS4/5向けUIを開けます。\n• テレポートリクエスト: tpa コマンドで他のプレイヤーにテレポートリクエストを送れます。\n• その他: 今後も便利なコマンドが追加される予定です。\n\n§b== リンク ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== 注意点 ==\nアドオンは開発中のため、予期せぬバグが発生する可能性があります。バグを発見した場合は、GitHubやDiscordで報告してください。\n\n§a== 開発者からのメッセージ ==\nChestLockAddonをより良いアドオンにするために、皆様からのフィードバックをお待ちしております。"
+    msgstr: "§a== ChestLockAddon について ==\n\nChestLockAddonは、Minecraftのバージョン1.21.30に対応した、チェスト保護機能などを提供する便利なユーティリティアドオンです。\n\n§b== 主な機能 ==\n• チェスト保護: あなたのチェストを他のプレイヤーから保護します。\n• 多言語対応: lang コマンドで言語設定を変更できます。\n• PS4/5向けUI: ui コマンドでPS4/5向けUIを開けます。\n• テレポートリクエスト: tpa コマンドで他のプレイヤーにテレポートリクエストを送れます。\n• その他: 今後も便利なコマンドが追加される予定です。\n\n§b== リンク ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== 注意点 ==\nアドオンは開発中のため、予期せぬバグが発生する可能性があります。バグを発見した場合は、GitHubやDiscordで報告してください。\n\n§a== 開発者からのメッセージ ==\nChestLockAddonをより良いアドオンにするために、皆様からのフィードバックをお待ちしております。"
   },
   "command.Undone": {
     msgid: "§f>>§aReverted to one previous change",

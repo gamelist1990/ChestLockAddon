@@ -114,15 +114,21 @@ function initializePlayerData(player: Player): void {
         lastTick: 0,
       },
   };
-  console.warn(`プレイヤー ${player.name} (ID: ${player.id}) を監視しています`);
+  if (c().module.debugMode.enabled === true) {
+    console.warn(`プレイヤー ${player.name} (ID: ${player.id}) を監視しています`);
+
+  }
+  
 }
 
-// プレイヤー死亡時のデータ削除
 world.afterEvents.playerSpawn.subscribe((event) => {
   const player = event.player as Player;
   if (player && player.id) {
     delete playerData[player.id];
-    console.warn(`プレイヤー ${player.name} (ID: ${player.id}) の監視を停止しました`);
+    if (c().module.debugMode.enabled === true) {
+      console.warn(`プレイヤー ${player.name} (ID: ${player.id}) の監視を停止しました`);
+
+    }
   }
 });
 
@@ -592,7 +598,7 @@ function getExcludedEffects(): string[] {
 function checkPlayerSpeed(player: Player): { cheatType: string } | null {
   const speed = calculatePlayerSpeed(player);
   const data = playerData[player.id];
-  const maxAllowedSpeed = 0.7; 
+  const maxAllowedSpeed = 1.1; 
   
   
 
@@ -776,7 +782,6 @@ function runTick(): void {
       // 位置履歴を追加
       addPositionHistory(player);
 
-      //ping関連
       
 
 
@@ -957,6 +962,7 @@ registerCommand({
       case 'on':
         RunAntiCheat();
         AddNewPlayers();
+        player.sendMessage('チート対策を有効にしました');
         break;
       case 'off':
         monitoring = false;
