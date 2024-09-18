@@ -5,55 +5,56 @@
 ## Download⬇️
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/gamelist1990/ChestLockAddon/total?style=flat-square&logo=https%3A%2F%2Fgithub.com%2Fgamelist1990%2FChestLockAddon%2Fblob%2Fmain%2FAllAddon%2Fpack_icon.png%3Fraw%3Dtrue)
 
-[Download here👈](https://github.com/gamelist1990/ChestLockAddon/releases)
+[Download Here👈](https://github.com/gamelist1990/ChestLockAddon/releases)
 
 ## Update
 
-**Version 1.0** Many behind-the-scenes updates have been made. Please refer to the changelog below for details.
-[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/0.9...1.0)
+**Version 1.1** Updated to support Minecraft Version 1.21.30
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.0...1.1)
 
-**Changes**
-Detailed changes can be found in the ChangeLog above.
+**Changes:**
+For detailed changes, please refer to the ChangeLog above☝
 
-Here's a brief summary of the changes:
+Here is a brief summary of the changes:
 
-- Bug fixes and feature additions. Specifically:
-- Added anti-cheat to packet.ts (custom anti-cheat)
-- Organized files
-- Players without appropriate permissions will no longer see `Dev`/`list`/`join`/`warpgate`/`edit`/`anticheat` when using the help command
-- Several new commands have been added, check the command list below for details.
+- This update brings compatibility with Minecraft Version 1.21.30.
+- Includes various bug fixes.
+- Introduces a new feature: Staff command.
+- Added a report command.
 
 ![alt text](image/EN,image.png)
 
 ## Overview
 
-This code is an addon that is used by executing commands like `!help`. It supports UI elements; use `!item` or `!ui` to access them. The prefix `!` can be changed in `handler.ts`. The addon also supports multiple languages.
+This addon is operated by executing commands such as `!help`. It supports UI elements, use `!item` or `!ui` to access them. The prefix `!` can be changed in `handler.ts`. The addon is also multilingual. 
 
-If you encounter any bugs or issues, please feel free to report them on Discord or by creating an issue.
+If you encounter any bugs or issues, feel free to contact me on Discord or through Issues.
 
 ## Commands
 
-* All commands for owners require the (OP) tag, so use `/tag @s add op`.
-* **`!help`**: help command - displays a list of available commands.
-* **`!chest`**: chest command - opens the chest command menu.
-* **`!lang`**: Language command - changes the language setting.
-* **`!dev`**: Developer command - (op)
-* **`!ui`**: Added a UI command for PS4/5 users.
-* **`!jpch`**: A feature that replicates LunaChat (experimental).
-* **`!item`**:  Obtain an item that opens the UI.
-* **`!tpa`**:  Send a teleport request.
-* **`!list`**: Display player information (op).
-* **`!anticheat`**:  Usage: on|off|freeze Player |unfreeze Player (op).
-* **`!lore`**:  lore -set apple sets the description of the item you are holding. lore -rename test can also rename the item.
-* **`!join`**:  This command uses the subcommand -settings to write rules. Use (-true/-false) to toggle display (op).
-* **`!warpgate`**: This command creates warp gates. Usage: `!warpgate -create gate name TP destination coordinates`. To delete: `!warpgate -delete gate name`. To display the list: `-list`.
-* **`!about`**:  Displays an overview of this addon.
+* All owner commands require the (OP) tag, so please use `/tag @s add op`.
+* **`!help`**: Displays a list of available commands.
+* **`!chest`**: Opens the chest command menu.
+* **`!lang`**: Changes the language setting.
+* **`!dev`**: Developer command (op required).
+* **`!ui`**: Added a UI command for PS4/5.
+* **`!jpch`**: An experimental feature replicating LunaChat.
+* **`!item`**: Obtain an item that opens the UI.
+* **`!tpa`**: Send a teleport request.
+* **`!list`**: Displays player information (op required).
+* **`!antichat`**: Use with on|off|freeze Player |unfreeze Player (op required).
+* **`!lore`**:  `!lore -set apple` sets the description of the item in hand.  `!lore -rename test` renames the item in hand.
+* **`!join`**:  Use this command with subcommand -settings to set rules. Toggle display with (-true/-false) (op required).
+* **`!warpgate`**: This command allows you to create warp gates. Usage: `!warpgate -create gate_name destination_coordinates` / To delete: `!warpgate -delete gate_name` / To list gates: `-list`.
+* **`!about`**: Displays information about this addon.
+* **`!staff`**: This is a command specifically for staff (requires "staff" tag).
+* **`!report`**: Report players who are misbehaving.
 
 * More commands will be added in the future.
 
 ## Changing the Prefix
 
-The command prefix can be changed in `handler.ts`.
+You can change the command prefix in `handler.ts`.
 
 ## Multilingual Support
 
@@ -66,16 +67,16 @@ This addon supports multiple languages. Currently supported languages are:
 * **`ko_KR`**: Korean (partially supported)
 * **`fi_FI`**: Finnish (partially supported)
 
-Use the **`!lang` command** to change the language.
+You can change the language using the **`!lang` command**.
 
 ## How to Use
 
-1. Download the addon from the releases page.
-2. Enable the `-beta` experimental feature in Minecraft.
-3. Join the world and use `!help` to view the list of commands.
-4. If you are the world administrator, it is recommended to add the op tag.
+1. Download the addon from the releases.
+2. Enable the `-beta` experimental features in Minecraft.
+3. Join a world and use `!help` to see a list of commands.
+4. If you are a world administrator, it is recommended to add the "op" tag to yourself. 
 
 ## Others
 
-The language folders are located in src/command/langs/list.
-(Define the translation keys in the JSON files).
+Language folders are located at src/command/langs/list. 
+(Please define translation keys in the JSON files) 

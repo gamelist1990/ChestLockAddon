@@ -10,19 +10,18 @@
 
 ## Update
 
-**Version 1.0** 裏で色々とアップデートをしていましたが変更点は以下のログ見てね
-[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/0.9...1.0)
+**Version 1.1** MinecraftがVerison 1.21.30に更新したんで対応しました
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.0...1.1)
 
 **更新点**
 詳細な変更点は☝のChangeLogを見てね
 
 ここでは簡潔に変更点をまとめます
 
-・バグ修正と機能追加を行いました。具体的には
-・packet.tsのアンチチートの追加(自作アンチチート)
-・ファイル内の整理
-・helpコマンド使用時に適切な権限が無いプレイヤーは`Dev`/`list`/`join`/`warpgate`/`edit`/`anticheat`を表示しないようにしました
-・新コマンドは色々追加したので↓のコマンド一覧から確認してください
+・今回のアプデではMinecraft Version 1.21.30に対応しました
+・その他バグ修正
+・新機能Staffコマンド
+・reportコマンドも追加しました
 
 ![alt text](image/image.png)
 
@@ -49,6 +48,9 @@
 * **`!join`**: このコマンドはサブコマンドで-settingsを使用してルールを書けます(-true/-false)で表示の切り替え可能(op)
 * **`!warpgate`**:このコマンドはワープゲートを作成できます使用方法は`!warpgate -create ゲート名 TP先の座標` /削除する場合は `!warpgate -delete ゲート名` /リスト表示は`-list`で可能です
 * **`!about`**:このアドオンの概要を表示してくれます
+* **`!staff`**:こスタッフ専用のコマンドです(タグ:staff必要)
+* **`!report`**:悪い事をしているプレイヤーを報告できます
+
 
 
 * その他、コマンドは今後追加予定です。

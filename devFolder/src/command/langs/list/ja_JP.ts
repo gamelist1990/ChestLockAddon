@@ -57,7 +57,7 @@ export const translations = {
   },
   "command.ui.reportBody": {
     msgid: "§a== Report Menu ==\n\n§l§bReporter§f:{reporter}\n\n§l§6Reported Player§f: {reportedPlayer}\n\n§l§2Reason§f: {reason}\n\n§l§gTimestamp§f: {timestamp}\n\n§a================",
-    msgstr: "§a== レポート メニュー ==\n\n§l§b報告者§f:{reporter}\n\n§l§6報告されたプレイヤー§f: {reportedPlayer}\n\n§l§2理由§f: {reason}\n\n§l§g報告日時§f: {timestamp}\n\n§a==================="
+    msgstr: "§a== レポート メニュー ==\n\n§l§b報告者§f:{reporter}\n\n§l§6報告されたプレイヤー§f: {reportedPlayer}\n\n§l§2理由§f: {reason}\n\n§l§g報告日時§f: {timestamp}\n\n§a===================="
   },
   "command.about": {
     msgid: "§a== About ChestLockAddon ==\n\nChestLockAddon is a useful utility addon for Minecraft version 1.21.22 that provides chest protection and more.\n\n§b== Main Features ==\n• Chest Protection: Protect your chests from other players.\n• Multilingual Support: Change the language setting with the lang command.\n• Teleport Request: Send a teleport request to another player with the tpa command.\n• And more: More useful commands will be added in the future.\n\n§b== Links ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== Notes ==\nThis addon is under development and may contain unexpected bugs. If you find any bugs, please report them on GitHub or Discord.\n\n§a== Message from the Developer ==\nWe welcome your feedback to make ChestLockAddon a better addon.",
