@@ -15,7 +15,7 @@
  * ```json
  * {
  *   "module_name": "@minecraft/server",
- *   "version": "1.13.0"
+ *   "version": "1.14.0"
  * }
  * ```
  *
@@ -40,6 +40,12 @@ export enum BlockComponentTypes {
      *
      */
     Piston = 'minecraft:piston',
+    /**
+     * @remarks
+     * Represents a block that can play a record.
+     *
+     */
+    RecordPlayer = 'minecraft:record_player',
     /**
      * @remarks
      * Represents a block that can display text on it.
@@ -366,6 +372,7 @@ export enum EntityComponentTypes {
      *
      */
     Color2 = 'minecraft:color2',
+    CursorInventory = 'minecraft:cursor_inventory',
     /**
      * @remarks
      * Provides access to a mob's equipment slots. This component
@@ -704,6 +711,12 @@ export enum EntityComponentTypes {
     SkinId = 'minecraft:skin_id',
     /**
      * @remarks
+     * Defines the entity's strength to carry items.
+     *
+     */
+    Strength = 'minecraft:strength',
+    /**
+     * @remarks
      * Defines the rules for an entity to be tamed by the player.
      *
      */
@@ -856,6 +869,7 @@ export enum EntityDamageCause {
      *
      */
     lightning = 'lightning',
+    maceSmash = 'maceSmash',
     /**
      * @remarks
      * Damage caused by magical attacks. For example, Evoker Fang
@@ -2850,6 +2864,68 @@ export class BlockPistonComponent extends BlockComponent {
 }
 
 /**
+ * Represents a block that can play a record.
+ */
+// @ts-ignore Class inheritance allowed for native defined classes
+export class BlockRecordPlayerComponent extends BlockComponent {
+    private constructor();
+    static readonly componentId = 'minecraft:record_player';
+    /**
+     * @remarks
+     * Ejects the currently set record of this record-playing
+     * block.
+     *
+     * This function can't be called in read-only mode.
+     *
+     * @throws This function can throw errors.
+     */
+    ejectRecord(): void;
+    /**
+     * @remarks
+     * Gets the currently set record of this record-playing block.
+     *
+     * @throws This function can throw errors.
+     */
+    getRecord(): ItemStack | undefined;
+    /**
+     * @remarks
+     * Returns true if the record-playing block is currently
+     * playing a record.
+     *
+     * @throws This function can throw errors.
+     */
+    isPlaying(): boolean;
+    /**
+     * @remarks
+     * Pauses the currently playing record of this record-playing
+     * block.
+     *
+     * This function can't be called in read-only mode.
+     *
+     * @throws This function can throw errors.
+     */
+    pauseRecord(): void;
+    /**
+     * @remarks
+     * Plays the currently set record of this record-playing block.
+     *
+     * This function can't be called in read-only mode.
+     *
+     * @throws This function can throw errors.
+     */
+    playRecord(): void;
+    /**
+     * @remarks
+     * Sets and plays a record based on an item type.
+     *
+     * This function can't be called in read-only mode.
+     *
+     * @throws This function can throw errors.
+     */
+    setRecord(recordItemType?: ItemType | string, startPlaying?: boolean): void;
+}
+
+/**
  * Represents a block that can display text on it.
  * @example addTwoSidedSign.ts
  * ```typescript
@@ -4234,8 +4310,15 @@ export class Dimension {
     getPlayers(options?: EntityQueryOptions): Player[];
     /**
      * @remarks
+     * Returns the highest block at the given XZ location.
+     *
      * This function can't be called in read-only mode.
      *
+     * @param locationXZ
+     * Location to retrieve the topmost block for.
+     * @param minHeight
+     * The Y height to begin the search from. Defaults to the
+     * maximum dimension height.
      * @throws This function can throw errors.
      */
     getTopmostBlock(locationXZ: VectorXZ, minHeight?: number): Block | undefined;
@@ -4742,6 +4825,8 @@ export class EffectTypes {
      *
      * This function can't be called in read-only mode.
      *
+     * @param identifier
+     * The identifier for the effect.
      * @returns
      * Effect type for the given identifier or undefined if the
      * effect does not exist.
@@ -7820,6 +7905,33 @@ export class EntitySpawnAfterEventSignal {
 }
 
 /**
+ * Defines the entity's ability to carry items. An entity with
+ * a higher strength would have higher potential carry capacity
+ * and more item slots.
+ */
+// @ts-ignore Class inheritance allowed for native defined classes
+export class EntityStrengthComponent extends EntityComponent {
+    private constructor();
+    /**
+     * @remarks
+     * Maximum strength of this entity, as defined in the entity
+     * type definition.
+     *
+     * @throws This property can throw when used.
+     */
+    readonly max: number;
+    /**
+     * @remarks
+     * Current value of the strength component that has been set
+     * for entities.
+     *
+     * @throws This property can throw when used.
+     */
+    readonly value: number;
+    static readonly componentId = 'minecraft:strength';
+}
+
+/**
  * Defines the rules for an entity to be tamed by the player.
  */
 // @ts-ignore Class inheritance allowed for native defined classes
@@ -10885,6 +10997,33 @@ export class PlayerBreakBlockBeforeEventSignal {
 }
 
 /**
+ * Represents the players cursor inventory. Used when moving
+ * items between between containers in the inventory UI. Not
+ * used with touch controls.
+ */
+// @ts-ignore Class inheritance allowed for native defined classes
+export class PlayerCursorInventoryComponent extends EntityComponent {
+    private constructor();
+    /**
+     * @remarks
+     * The ItemStack currently in the players cursor inventory.
+     *
+     * @throws This property can throw when used.
+     */
+    readonly item?: ItemStack;
+    static readonly componentId = 'minecraft:cursor_inventory';
+    /**
+     * @remarks
+     * Clears the players cursor inventory.
+     *
+     * This function can't be called in read-only mode.
+     *
+     * @throws This function can throw errors.
+     */
+    clear(): void;
+}
+
+/**
  * Contains information related to changes to a player's
  * dimension having been changed.
  */
@@ -10947,6 +11086,28 @@ export class PlayerDimensionChangeAfterEventSignal {
      *
      */
     unsubscribe(callback: (arg: PlayerDimensionChangeAfterEvent) => void): void;
+}
+
+export class PlayerEmoteAfterEvent {
+    private constructor();
+    readonly personaPieceId: string;
+    readonly player: Player;
+}
+
+export class PlayerEmoteAfterEventSignal {
+    private constructor();
+    /**
+     * @remarks
+     * This function can't be called in read-only mode.
+     *
+     */
+    subscribe(callback: (arg: PlayerEmoteAfterEvent) => void): (arg: PlayerEmoteAfterEvent) => void;
+    /**
+     * @remarks
+     * This function can't be called in read-only mode.
+     *
+     */
+    unsubscribe(callback: (arg: PlayerEmoteAfterEvent) => void): void;
 }
 
 /**
@@ -11137,7 +11298,7 @@ export class PlayerInputPermissions {
 
 /**
  * Contains information regarding an event after a player
- * interacts with a block.
+ * successfully interacts with a block.
  */
 export class PlayerInteractWithBlockAfterEvent {
     private constructor();
@@ -11162,8 +11323,8 @@ export class PlayerInteractWithBlockAfterEvent {
     readonly faceLocation: Vector3;
     /**
      * @remarks
-     * The item stack that is being used in the interaction, or
-     * undefined if empty hand.
+     * The ItemStack after the interaction succeeded, or undefined
+     * if hand is empty.
      *
      */
     readonly itemStack?: ItemStack;
@@ -11279,14 +11440,14 @@ export class PlayerInteractWithBlockBeforeEventSignal {
 
 /**
  * Contains information regarding an event after a player
- * interacts with an entity.
+ * successfully interacts with an entity.
  */
 export class PlayerInteractWithEntityAfterEvent {
     private constructor();
     /**
      * @remarks
-     * The item stack that is being used in the interaction, or
-     * undefined if empty hand.
+     * The ItemStack after the interaction succeeded, or undefined
+     * if hand is empty.
      *
      */
     readonly itemStack?: ItemStack;
@@ -13791,6 +13952,7 @@ export class WorldAfterEvents {
      *
      */
     readonly playerDimensionChange: PlayerDimensionChangeAfterEventSignal;
+    readonly playerEmote: PlayerEmoteAfterEventSignal;
     readonly playerGameModeChange: PlayerGameModeChangeAfterEventSignal;
     /**
      * @remarks
@@ -14642,6 +14804,7 @@ export interface EntityFilter {
      *
      */
     name?: string;
+    propertyOptions?: EntityQueryPropertyOptions[];
     /**
      * @remarks
      * Gets/sets a collection of EntityQueryScoreOptions objects
@@ -14894,6 +15057,21 @@ export interface EntityQueryOptions extends EntityFilter {
     volume?: Vector3;
 }
 
+export interface EntityQueryPropertyOptions {
+    exclude?: boolean;
+    propertyId: string;
+    value?:
+        | boolean
+        | string
+        | EqualsComparison
+        | GreaterThanComparison
+        | GreaterThanOrEqualsComparison
+        | LessThanComparison
+        | LessThanOrEqualsComparison
+        | NotEqualsComparison
+        | RangeComparison;
+}
+
 /**
  * Contains additional options for filtering players based on
  * their score for an objective.
@@ -14981,6 +15159,18 @@ export interface EntityRaycastOptions extends EntityFilter {
 }
 
 /**
+ * Equal to operator.
+ */
+export interface EqualsComparison {
+    /**
+     * @remarks
+     * Threshold value compared against.
+     *
+     */
+    equals: boolean | number | string;
+}
+
+/**
  * Additional configuration options for the {@link
  * Dimension.createExplosion} method.
  * @example createExplosions.ts
@@ -15027,6 +15217,30 @@ export interface ExplosionOptions {
      *
      */
     source?: Entity;
+}
+
+/**
+ * Greater than operator.
+ */
+export interface GreaterThanComparison {
+    /**
+     * @remarks
+     * Threshold value compared against.
+     *
+     */
+    greaterThan: number;
+}
+
+/**
+ * Greater than or equal to operator.
+ */
+export interface GreaterThanOrEqualsComparison {
+    /**
+     * @remarks
+     * Threshold value compared against.
+     *
+     */
+    greaterThanOrEquals: number;
 }
 
 /**
@@ -15087,6 +15301,30 @@ export interface ItemCustomComponent {
 }
 
 /**
+ * Less than operator.
+ */
+export interface LessThanComparison {
+    /**
+     * @remarks
+     * Threshold value compared against.
+     *
+     */
+    lessThan: number;
+}
+
+/**
+ * Less than or equal to operator.
+ */
+export interface LessThanOrEqualsComparison {
+    /**
+     * @remarks
+     * Threshold value compared against.
+     *
+     */
+    lessThanOrEquals: number;
+}
+
+/**
  * Additional configuration options for {@link
  * World.playMusic}/{@link World.queueMusic} methods.
  */
@@ -15109,6 +15347,18 @@ export interface MusicOptions {
      *
      */
     volume?: number;
+}
+
+/**
+ * Not equal to operator.
+ */
+export interface NotEqualsComparison {
+    /**
+     * @remarks
+     * Threshold value compared against.
+     *
+     */
+    notEquals: boolean | number | string;
 }
 
 /**
@@ -15186,6 +15436,25 @@ export interface ProjectileShootOptions {
      *
      */
     uncertainty?: number;
+}
+
+/**
+ * Operator represents a lower/upper bound structure for
+ * expressing a potential range of numbers.
+ */
+export interface RangeComparison {
+    /**
+     * @remarks
+     * Lower bound within a range.
+     *
+     */
+    lowerBound: number;
+    /**
+     * @remarks
+     * Upper bound within a range.
+     *
+     */
+    upperBound: number;
 }
 
 /**

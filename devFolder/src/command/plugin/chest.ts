@@ -226,13 +226,13 @@ function findNearbyChest(player: Player): any | null {
 }
 
 export function showProtectedChestData(player: Player) {
-  const data = world.getDynamicProperty('protectedChests');
+  const data = chestLockAddonData.protectedChests;
   player.sendMessage('§a---- Protected Chests Data ----');
   player.sendMessage(JSON.stringify(protectedChests));
   player.sendMessage('\n');
-  player.sendMessage('§a---- Protected Chests Data By Dynamic ----');
-  player.sendMessage(JSON.stringify(data));
-  console.warn(JSON.stringify(protectedChests));
+  player.sendMessage('§a---- Protected Chests Data By DataBase ----');
+  player.sendMessage(JSON.stringify(data,null,2));
+  console.warn(JSON.stringify(data,null,2));
 }
 
 // protectedChests をリセットする関数

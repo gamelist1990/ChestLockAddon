@@ -37,8 +37,10 @@ world.afterEvents.worldInitialize.subscribe(async () => {
 
   const endTime = Date.now();
   const loadTime = endTime - startTime;
-  console.warn(`Plugin has been loaded in ${loadTime} ms`);
-  world.sendMessage(`[Server]§l§apluginのデータの更新が ${loadTime} msで完了しました`)
+  if (c().module.debugMode.enabled === true) {
+    console.warn(`Plugin has been loaded in ${loadTime} ms`);
+  }
+  world.sendMessage(`§f[§bServer§f]§l§aChestLockAddonのデータの更新が ${loadTime} msで完了しました`)
 });
 
 //Custom Item
@@ -51,8 +53,15 @@ world.afterEvents.itemUse.subscribe(({ itemStack: item, source: player }) => {
     item.nameTag === customCommandsConfig.ui.ui_item_name &&
     !c().commands.item.requireTag.some((tag) => !player.hasTag(tag))
   ) {
+    if (c().module.debugMode.enabled === true) {
+      console.warn(`${player.name} has Use ShowUI`);
+    }
     showBasicUI(player);
   }
 });
 
-console.warn('Full ChestLock Addon Data loaded!!');
+
+if (c().module.debugMode.enabled === true) {
+  console.warn('Full ChestLock Addon Data loaded!!');
+
+}

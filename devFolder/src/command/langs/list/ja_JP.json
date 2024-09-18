@@ -1,4 +1,88 @@
 {
+  "command.reportNotPlayer": {
+    "msgid": "§f>>§4Reported player not found",
+    "msgstr": "§f>>§4報告対象のプレイヤーが見つかりませんでした"
+  },
+  "staff_command_description": {
+    "msgid": "Staff-only commands",
+    "msgstr": "スタッフ専用のコマンド！"
+  },
+  "report_command_description": {
+    "msgid": "You can report players doing bad things.",
+    "msgstr": "悪い事をしたプレイヤーを報告できます"
+  },
+  "command.reportSubmit": {
+    "msgid": "§f>>§aReport submitted successfully",
+    "msgstr": "§f>>§aスタッフにレポートを報告しました"
+  },
+  "ui.ReportButton": {
+    "msgid": "§0Report Menu",
+    "msgstr": "§0報告メニュー"
+  },
+  "ui.EnterReport": {
+    "msgid": "§bPlease enter the reason for the report",
+    "msgstr": "§bスタッフに報告する内容を記入してね"
+  },
+  "command.newReport": {
+    "msgid": "§f>>§a§lNew report from {reporter} about {reportedPlayer}",
+    "msgstr": "§f>>§b§l[Server] §f: §a新しく§f {reporter} §aが§f {reportedPlayer} §aに対してレポートを提出しました"
+  },
+  "command.NotReport": {
+    "msgid": "§f>>§4No reports found",
+    "msgstr": "§f>>§4ユーザーからの報告がありません"
+  },
+  "command.ui.reportTitle": {
+    "msgid": "§l§0{selectedReporter}§e has Report",
+    "msgstr": "§l§0{selectedReporter}§eが提出したレポート"
+  },
+  "command.ui.reportDetails": {
+    "msgid": "§l§0Report Details",
+    "msgstr": "§l§0レポートの詳細"
+  },
+  "ui.reportPSelect": {
+    "msgid": "§l§3Select Report To Player",
+    "msgstr": "§l§3報告したいプレイヤーを選択してください"
+  },
+  "ui.StaffMenu": {
+    "msgid": "§l§0Staff Menu",
+    "msgstr": "§l§0スタッフメニュー"
+  },
+  "ui.checkReports": {
+    "msgid": "§l§0Check Report",
+    "msgstr": "§l§0レポートを確認"
+  },
+  "commnad.staff.UsageCom": {
+    "msgid": "§l§bUsage§a Staff Command §f| world <-send> Message | report <-check>",
+    "msgstr": "§l§b使い方§a スタッフコマンド §f| world <-send> Message | report <-check>"
+  },
+  "command.ui.reportBody": {
+    "msgid": [
+      "§a== Report Menu ==",
+      "",
+      "§l§bReporter§f:{reporter}",
+      "",
+      "§l§6Reported Player§f: {reportedPlayer}",
+      "",
+      "§l§2Reason§f: {reason}",
+      "",
+      "§l§gTimestamp§f: {timestamp}",
+      "",
+      "§a================"
+    ],
+    "msgstr": [
+      "§a== レポート メニュー ==",
+      "",
+      "§l§b報告者§f:{reporter}",
+      "",
+      "§l§6報告されたプレイヤー§f: {reportedPlayer}",
+      "",
+      "§l§2理由§f: {reason}",
+      "",
+      "§l§g報告日時§f: {timestamp}",
+      "",
+      "§a===================="
+    ]
+  },
   "command.about": {
     "msgid": [
       "§a== About ChestLockAddon ==",
@@ -25,7 +109,7 @@
     "msgstr": [
       "§a== ChestLockAddon について ==",
       "",
-      "ChestLockAddonは、Minecraftのバージョン1.21.22に対応した、チェスト保護機能などを提供する便利なユーティリティアドオンです。",
+      "ChestLockAddonは、Minecraftのバージョン1.21.30に対応した、チェスト保護機能などを提供する便利なユーティリティアドオンです。",
       "",
       "§b== 主な機能 ==",
       "• チェスト保護: あなたのチェストを他のプレイヤーから保護します。",

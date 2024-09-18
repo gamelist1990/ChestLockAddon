@@ -1,4 +1,64 @@
 export const translations = {
+  "command.reportNotPlayer": {
+    msgid: "§f>>§4Reported player not found",
+    msgstr: ""
+  },
+  "staff_command_description": {
+    msgid: "Staff-only commands",
+    msgstr: ""
+  },
+  "report_command_description": {
+    msgid: "You can report players doing bad things.",
+    msgstr: ""
+  },
+  "command.reportSubmit": {
+    msgid: "§f>>§aReport submitted successfully",
+    msgstr: ""
+  },
+  "ui.ReportButton": {
+    msgid: "§0Report Menu",
+    msgstr: ""
+  },
+  "ui.EnterReport": {
+    msgid: "§bPlease enter the reason for the report",
+    msgstr: ""
+  },
+  "command.newReport": {
+    msgid: "§f>>§a§lNew report from {reporter} about {reportedPlayer}",
+    msgstr: ""
+  },
+  "command.NotReport": {
+    msgid: "§f>>§4No reports found",
+    msgstr: ""
+  },
+  "command.ui.reportTitle": {
+    msgid: "§l§0{selectedReporter}§e has Report",
+    msgstr: ""
+  },
+  "command.ui.reportDetails": {
+    msgid: "§l§0Report Details",
+    msgstr: ""
+  },
+  "ui.reportPSelect": {
+    msgid: "§l§3Select Report To Player",
+    msgstr: ""
+  },
+  "ui.StaffMenu": {
+    msgid: "§l§0Staff Menu",
+    msgstr: ""
+  },
+  "ui.checkReports": {
+    msgid: "§l§0Check Report",
+    msgstr: ""
+  },
+  "commnad.staff.UsageCom": {
+    msgid: "§l§bUsage§a Staff Command §f| world <-send> Message | report <-check>",
+    msgstr: ""
+  },
+  "command.ui.reportBody": {
+    msgid: "§a== Report Menu ==\n\n§l§bReporter§f:{reporter}\n\n§l§6Reported Player§f: {reportedPlayer}\n\n§l§2Reason§f: {reason}\n\n§l§gTimestamp§f: {timestamp}\n\n§a================",
+    msgstr: ""
+  },
   "command.about": {
     msgid: "§a== About ChestLockAddon ==\n\nChestLockAddon is a useful utility addon for Minecraft version 1.21.22 that provides chest protection and more.\n\n§b== Main Features ==\n• Chest Protection: Protect your chests from other players.\n• Multilingual Support: Change the language setting with the lang command.\n• Teleport Request: Send a teleport request to another player with the tpa command.\n• And more: More useful commands will be added in the future.\n\n§b== Links ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== Notes ==\nThis addon is under development and may contain unexpected bugs. If you find any bugs, please report them on GitHub or Discord.\n\n§a== Message from the Developer ==\nWe welcome your feedback to make ChestLockAddon a better addon.",
     msgstr: ""
