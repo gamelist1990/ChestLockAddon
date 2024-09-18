@@ -18,10 +18,10 @@
 
 ここでは簡潔に変更点をまとめます
 
-・今回のアプデではMinecraft Version 1.21.30に対応しました
-・その他バグ修正
-・新機能Staffコマンド
-・reportコマンドも追加しました
+- 今回のアプデではMinecraft Version 1.21.30に対応しました
+- その他バグ修正
+- 新機能Staffコマンド
+- reportコマンドも追加しました
 
 ![alt text](image/image.png)
 
