@@ -2,7 +2,7 @@ import { registerCommand, verifier, isPlayer } from '../../Modules/Handler';
 import { c } from '../../Modules/Util';
 import { ver } from '../../Modules/version';
 import { saveData, loadData, chestLockAddonData } from '../../Modules/DataBase';
-import { world, Player, system, Vector3 } from '@minecraft/server';
+import { world, Player, system, Vector3, PlayerPlaceBlockBeforeEvent } from '@minecraft/server';
 import { translate } from '../langs/list/LanguageManager';
 
 interface ChestProtectionData {
@@ -263,7 +263,7 @@ system.run(() => {
     handleExplosion(eventData);
   });
 
-  world.beforeEvents.itemUseOn.subscribe((eventData: any) => {
+  world.beforeEvents.playerPlaceBlock.subscribe((eventData: any) => {
     handlePistonUse(eventData);
   });
 
@@ -288,33 +288,30 @@ const RADIUS1 = 14;
 const RADIUS2_IDS = ['minecraft:hopper', 'minecraft:hopper_minecart'];
 const RADIUS1_IDS = ['minecraft:piston', 'minecraft:sticky_piston'];
 
-function handlePistonUse(eventData: any) {
-  let playerActions: { [playerName: string]: Vector3[] } = {};
-
-  const player = eventData.source;
-  const itemStack = eventData.itemStack;
-  if (!player || !itemStack) return;
-
-  const itemId = itemStack.typeId;
+function handlePistonUse(eventData: PlayerPlaceBlockBeforeEvent) {
+  const player = eventData.player;
+  const permutation = eventData.permutationBeingPlaced;
+  const itemId = permutation.type.id;
   const blockLocation = eventData.block.location;
+  if (!player || !permutation) return;
 
   if (
     (RADIUS2_IDS.includes(itemId) && isWithinDetectionArea(blockLocation, RADIUS2)) ||
     (RADIUS1_IDS.includes(itemId) && isWithinDetectionArea(blockLocation, RADIUS1))
   ) {
-    // ピストン設置位置の周辺にある保護されたチェストを探索
+    // 設置位置の周辺にある保護されたチェストを探索し、オーナーかどうかを確認
     let isOwner = false;
-    for (let x = -1; x <= 1; x++) {
-      for (let y = -1; y <= 1; y++) {
-        for (let z = -1; z <= 1; z++) {
-          const nearbyLocation = {
+    for (let x = -RADIUS2; x <= RADIUS2; x++) {
+      for (let y = -RADIUS2; y <= RADIUS2; y++) {
+        for (let z = -RADIUS2; z <= RADIUS2; z++) {
+          const nearbyLocation: Vector3 = {
             x: blockLocation.x + x,
             y: blockLocation.y + y,
             z: blockLocation.z + z,
           };
           const chestKey = getChestKey(nearbyLocation);
           const chestData = protectedChests[chestKey];
-          if (chestData && chestData.owner === player.name) {
+          if (chestData && chestData.owner === player.nameTag) { // player.nameTag を使用
             isOwner = true;
             break;
           }
@@ -326,49 +323,31 @@ function handlePistonUse(eventData: any) {
 
     // オーナーではない場合のみキャンセル
     if (!isOwner) {
-      if (isMovingTowardsChest(playerActions[player.name])) {
-        eventData.cancel = true;
-        player.sendMessage(translate(player, 'cannotPlaceItem'));
-      }
+      eventData.cancel = true;
+      player.sendMessage(translate(player, 'cannotPlaceItem'));
     }
   }
-
-  if (!playerActions[player.name]) {
-    playerActions[player.name] = [];
-  }
-  if (isMovingTowardsChest(playerActions[player.name])) {
-    eventData.cancel = true;
-    player.sendMessage(translate(player, 'cannotPlaceItem'));
-  }
 }
-
 
 // 検知範囲内かどうか判定
 function isWithinDetectionArea(location: Vector3, radius: number): boolean {
-  for (let x = -radius; x <= radius; x++) {
-    for (let y = -radius; y <= radius; y++) {
-      for (let z = -radius; z <= radius; z++) {
-        const blockLocation: Vector3 = {
-          x: location.x + x,
-          y: location.y + y,
-          z: location.z + z,
-        };
-        if (isProtectedChest(blockLocation)) {
-          return true;
-        }
-      }
+  const chestLocations = Object.keys(protectedChests).map((key) => {
+    const [x, y, z] = key.split(',').map(Number);
+    return { x, y, z };
+  });
+
+  for (const chestLocation of chestLocations) {
+    const distance = Math.sqrt(
+      Math.pow(location.x - chestLocation.x, 2) +
+      Math.pow(location.y - chestLocation.y, 2) +
+      Math.pow(location.z - chestLocation.z, 2)
+    );
+
+    if (distance <= radius) {
+      return true;
     }
   }
-
   return false;
-}
-
-function isMovingTowardsChest(locations: Vector3[]): boolean {
-  if (locations.length === 0) {
-    return false;
-  }
-  const lastLocation = locations[locations.length - 1];
-  return isWithinDetectionArea(lastLocation, RADIUS1);
 }
 
 // 保護されたチェストかどうか判定
