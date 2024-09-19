@@ -80,6 +80,7 @@ function showStaffUI(player: Player): Promise<void> {
   const staffForm = new ActionFormData()
     .title('Staff Menu')
     .button(translate(player,"ui.checkReports"))
+    .button(translate(player, "ui.warnmenu"))
     .button('Main Menu');
 
   return staffForm
@@ -95,13 +96,146 @@ function showStaffUI(player: Player): Promise<void> {
           checkReports(player);
           break;
         case 1:
-          showBasicUI(player); 
+          showWarnMainMenu(player); 
+          break;
+        case 2:
+          showBasicUI(player);
           break;
       }
     });
 }
 
+
+function showWarnMainMenu(player: Player): Promise<void> {
+  player.playSound('mob.chicken.plop');
+
+
+  const form = new ActionFormData()
+    .title('Warn Main Menu')
+    .body(translate(player, 'command.warnMain'))
+    .button(translate(player, 'ui.showWarn'))
+    .button(translate(player, 'ui.tempkick'))
+    .button(translate(player, 'back'));
+
+  return (
+    form
+      //@ts-ignore
+      .show(player)
+      .then((response) => {
+        if (response.canceled) {
+        } else {
+          if (response.selection === 0) {
+            showWarnMenu(player);
+          } else if (response.selection === 1) {
+            showtempkick(player);
+          } else if (response.selection === 2) {
+            showBasicUI(player);
+          }
+        }
+      })
+      .catch((error: Error) => {
+        console.error(translate(player, 'FromError'), error);
+        player.sendMessage(translate(player, 'FromError') + error.message);
+      })
+  );
+}
+
+function showtempkick(player: Player): Promise<void> {
+  player.playSound('mob.chicken.plop');
+
+  const playerNames = getAllPlayerNames(player);
+
+  const form = new ActionFormData()
+    .title('TempKick Menu')
+    .body(translate(player, 'sendtempkickUser'));
+
+  playerNames.forEach((p) => {
+    form.button(p);
+  });
+
+  form.button(translate(player, 'back'));
+
+  return (
+    form
+      //@ts-ignore
+      .show(player)
+      .then((response) => {
+        if (response.canceled) {
+        } else {
+          if (
+            response.selection !== undefined &&
+            response.selection >= 0 &&
+            response.selection < playerNames.length
+          ) {
+            const targetPlayerName = playerNames[response.selection];
+            runCommand(player.name, 'staff', ['warn','-p',targetPlayerName,'-r','tempkick','-kick',]);
+          } else if (response.selection === playerNames.length) {
+            showWarnMainMenu(player);
+          } else {
+          }
+        }
+      })
+      .catch((error: Error) => {
+        console.error(translate(player, 'FromError'), error);
+        player.sendMessage(translate(player, 'FromError') + error.message);
+      })
+  );
+}
+
+function showWarnMenu(player: Player): Promise<void> {
+  player.playSound('mob.chicken.plop');
+
+  const playerNames = getAllPlayerNames(player);
+
+  const form = new ActionFormData()
+    .title('Warn Menu')
+    .body(translate(player, 'ui.reportPSelect'));
+
+  playerNames.forEach((p) => {
+    form.button(p);
+  });
+
+  form.button(translate(player, 'back'));
+
+  return (
+    form
+      //@ts-ignore
+      .show(player)
+      .then((response) => {
+        if (response.canceled) {
+        } else {
+          if (
+            response.selection !== undefined &&
+            response.selection >= 0 &&
+            response.selection < playerNames.length
+          ) {
+            const targetPlayerName = playerNames[response.selection];
+            const modal = new ModalFormData()
+              .title('Warn Reason')
+              .textField(translate(player, "ui.EnterReson"), '');
+
+            //@ts-ignore
+            modal.show(player).then((modalResponse) => {
+              if (modalResponse.canceled || modalResponse.formValues === undefined) return;
+
+              const reason = modalResponse.formValues[0] as string;
+              runCommand(player.name, 'staff', ['warn','-p',targetPlayerName, '-r', reason]);
+            });
+          } else if (response.selection === playerNames.length) {
+            showWarnMainMenu(player);
+          } else {
+          }
+        }
+      })
+      .catch((error: Error) => {
+        console.error(translate(player, 'FromError'), error);
+        player.sendMessage(translate(player, 'FromError') + error.message);
+      })
+  );
+}
+
 function showChestMenu(player: Player): Promise<void> {
+
   player.playSound('mob.chicken.plop');
   const form = new ActionFormData()
     .title('Chest Menu')
