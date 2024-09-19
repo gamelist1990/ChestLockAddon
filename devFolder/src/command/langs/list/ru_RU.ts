@@ -91,7 +91,7 @@ export const translations = {
     msgid: "§l§0Kick user",
     msgstr: ""
   },
-  "commnad.staff.UsageCom": {
+  "command.staff.UsageCom": {
     msgid: "§l§bUsage§a Staff Command §f| world <-send> Message | report <-check> | freecam -<p/s/v/exit> playerName only needs (p/v)",
     msgstr: ""
   },

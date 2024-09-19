@@ -1,4 +1,4 @@
-import { Player, GameMode, world } from '@minecraft/server';
+import { Player, GameMode, world, system } from '@minecraft/server';
 
 interface CommandConfig {
   enabled: boolean;
@@ -147,5 +147,7 @@ export function kick(player: Player, reason: string, by: string) {
 }
 
 export function tempkick(player: Player) {
-  player.triggerEvent('chestlock:tempkick')
+  system.runTimeout(()=>{
+    player.triggerEvent('chestlock:tempkick')
+  },1)
 }

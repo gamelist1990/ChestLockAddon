@@ -24,11 +24,11 @@ async function loadAllImports() {
 
 world.afterEvents.worldInitialize.subscribe(async () => {
   try {
+    loadPlayerLanguages();
     loadData();
     //RunAntiCheat();
     loadGate();
     loadjoinModules();
-    loadPlayerLanguages();
     loadProtectedChests();
     await loadAllImports();
   } catch (error) {

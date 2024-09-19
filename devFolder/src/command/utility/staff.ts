@@ -18,34 +18,68 @@ function savePlayerLocation(player: Player) {
     playerLocations.set(player.name, { location: player.location, dimension: player.dimension, gamemode: player.getGameMode() });
 }
 
-function teleportPlayerToLocation(player: Player, location: Vector3, dimension: Dimension) {
+function teleportPlayerToLocation(player: Player, location: Vector3, dimension: Dimension, callback?: () => void) {
     const options: TeleportOptions = { dimension: dimension };
-    player.teleport(location, options);
+    system.runTimeout(() => {
+        player.teleport(location, options);
+        if (callback) {
+            callback();
+        }
+    }, 1);
 }
 
 function setPlayerToSpectator(player: Player) {
-    player.setGameMode(GameMode.spectator);
+    system.runTimeout(()=>{
+        player.setGameMode(GameMode.spectator);
+    },1)
 }
 
 function restorePlayerLocation(player: Player) {
     const savedLocation = playerLocations.get(player.name);
     if (savedLocation) {
         const options: TeleportOptions = { dimension: savedLocation.dimension };
-        player.teleport(savedLocation.location, options);
-        player.setGameMode(savedLocation.gamemode);
+        system.runTimeout(()=>{
+            player.teleport(savedLocation.location, options);
+            player.setGameMode(savedLocation.gamemode);
+        },1)
     } else {
         player.sendMessage(translate(player, "Invalid"));
     }
 }
 
+const nightVisionEffectId = "night_vision"; //  Minecraft における暗視効果の ID
+const nightVisionEffectDuration = 10; //  事実上永久に
+
 function startTrackingPlayer(player: Player, targetPlayer: Player) {
     const intervalId = system.runInterval(() => {
         try {
-            const viewDirection: Vector3 = targetPlayer.getViewDirection();
-            const options: TeleportOptions = { dimension: targetPlayer.dimension };
-            player.teleport(targetPlayer.location, options);
-            const rotation: Vector2 = { x: viewDirection.x, y: viewDirection.y };
-            player.setRotation(rotation);
+            system.runTimeout(() => {
+                if (player.getGameMode() !== GameMode.spectator) {
+                    setPlayerToSpectator(player);
+                }
+
+                player.addEffect(nightVisionEffectId, nightVisionEffectDuration);
+
+                // ターゲットプレイヤーの回転情報を取得
+                const targetRotation = targetPlayer.getRotation();
+
+                // 視線方向ベクトルを取得
+                const viewVector = getDirectionVector(targetRotation.y, targetRotation.x);
+
+                const offsetDistance = 0.5; 
+                const targetLocationOffset = {
+                    x: targetPlayer.location.x + viewVector.x * offsetDistance,
+                    y: targetPlayer.location.y + viewVector.y * offsetDistance * 0.2, 
+                    z: targetPlayer.location.z + viewVector.z * offsetDistance,
+                };
+
+                player.teleport(targetLocationOffset, {
+                    dimension: targetPlayer.dimension,
+                    rotation: targetRotation,
+                });
+
+                player.setRotation(targetRotation);
+            }, 1);
         } catch (error) {
             player.sendMessage(`Error getting view direction: ${error}`);
         }
@@ -57,9 +91,21 @@ function startTrackingPlayer(player: Player, targetPlayer: Player) {
             stopTrackingPlayer(player);
             activeFreecamPlayers.delete(player.name);
         }
-    }, 1); // 1 tickごとに更新
+    }, 1);
 
     trackingIntervals.set(player.name, intervalId);
+}
+
+// 視線方向ベクトルを取得する関数
+function getDirectionVector(yaw: number, pitch: number): { x: number; y: number; z: number } {
+    const yawRad = (-yaw - 90) * (Math.PI / 180); // ラジアンに変換
+    const pitchRad = pitch * (Math.PI / 180); // ラジアンに変換
+
+    return {
+        x: Math.cos(pitchRad) * Math.cos(yawRad),
+        y: Math.sin(pitchRad),
+        z: -Math.cos(pitchRad) * Math.sin(yawRad),
+    };
 }
 
 function stopTrackingPlayer(player: Player) {
@@ -79,19 +125,19 @@ function warnPlayer(player: Player, targetPlayer: Player, reason: string, kickFl
     playerWarnings.set(targetPlayer.name, warnings);
 
     //targetPlayer.sendMessage(`You have been warned. Reason: ${reason}. Total warnings: ${warnings.count}`);
-    translate(player,"command.WarnTarget",{reason:`${reason}`,warnings:`${warnings.count}`,targetPlayer});
+    translate(player, "command.WarnTarget", { reason: `${reason}`, warnings: `${warnings.count}` }, targetPlayer);
     player.sendMessage(translate(player, "command.WarnPlayer", { target: `${targetPlayer.name}`, warnings: `${warnings.count}`, reason: `${reason}` }));
 
     if (kickFlag) {
         kick(targetPlayer, `§cYou have been kicked for receiving §e${warnings.count} warnings. Reasons: §b${warnings.reasons.join(', ')}
 `, player.name);
-        player.sendMessage(translate(player, "commnad.WarnKickMes", { target: `${targetPlayer.name}`, warnings: `${warnings.count}` }))
+        player.sendMessage(translate(player, "command.WarnKickMes", { target: `${targetPlayer.name}`, warnings: `${warnings.count}` }))
         playerWarnings.delete(targetPlayer.name);
     }
 
     if (warnings.count >= 3) {
         tempkick(targetPlayer);
-        player.sendMessage(translate(player, "commnad.WarnKickMes", { target: `${targetPlayer.name}`, warnings: `${warnings.count}` }))
+        player.sendMessage(translate(player, "command.WarnKickMes", { target: `${targetPlayer.name}`, warnings: `${warnings.count}` }))
         playerWarnings.delete(targetPlayer.name);
     }
 }
@@ -108,7 +154,7 @@ registerCommand({
         const option = args[1];
 
         if (subCommand === 'freecam' && activeFreecamPlayers.has(player.name) && option !== '-exit') {
-            player.sendMessage(translate(player, "commnad.NoFreecam"));
+            player.sendMessage(translate(player, "command.NoFreecam"));
             return;
         }
 
@@ -149,8 +195,13 @@ registerCommand({
                 const targetPlayer = isPlayer(targetName);
                 if (targetPlayer) {
                     savePlayerLocation(player); // 自分の位置を保存
-                    teleportPlayerToLocation(player, targetPlayer.location, targetPlayer.dimension); // 対象プレイヤーに移動
-                    startTrackingPlayer(player, targetPlayer); // 対象プレイヤーの視点を追従
+                    teleportPlayerToLocation(player, targetPlayer.location, targetPlayer.dimension, () => {
+                        const viewDirection: Vector3 = targetPlayer.getViewDirection();
+                        const rotation: Vector2 = { x: viewDirection.x, y: viewDirection.y };
+                        player.setRotation(rotation);
+                        
+                    });
+                    startTrackingPlayer(player, targetPlayer); 
                     activeFreecamPlayers.add(player.name);
                 } else {
                     player.sendMessage(translate(player, "commands.list.playerNotFound", { targetPlayer: `${targetName}` }));

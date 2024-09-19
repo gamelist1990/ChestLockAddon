@@ -89,11 +89,11 @@ export const translations = {
   },
   "ui.kick": {
     msgid: "§l§0Kick user",
-    msgstr: ""
+    msgstr: "§l§0ユーザーをキック"
   },
-  "commnad.staff.UsageCom": {
+  "command.staff.UsageCom": {
     msgid: "§l§bUsage§a Staff Command §f| world <-send> Message | report <-check> | freecam -<p/s/v/exit> playerName only needs (p/v)",
-    msgstr: "§l§aスタッフコマンドの §b 使い方 §f| world <-send> Message | report <-check> | freecam -<p/s/v/exit> playerNameは(p/v)のみ必要 "
+    msgstr: "§l§b使い方§a スタッフコマンド§f| world <-send> Message | report <-check> | freecam -<p/s/v/exit> playerNameはのみ (p/v)必須"
   },
   "command.ui.reportBody": {
     msgid: "§a== Report Menu ==\n\n§l§bReporter§f:{reporter}\n\n§l§6Reported Player§f: {reportedPlayer}\n\n§l§2Reason§f: {reason}\n\n§l§gTimestamp§f: {timestamp}\n\n§a================",
