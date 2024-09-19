@@ -81,7 +81,7 @@ function showStaffUI(player: Player): Promise<void> {
     .title('Staff Menu')
     .button(translate(player,"ui.checkReports"))
     .button(translate(player, "ui.warnmenu"))
-    .button('Main Menu');
+    .button(translate(player,"back"));
 
   return staffForm
     //@ts-ignore
@@ -114,7 +114,7 @@ function showWarnMainMenu(player: Player): Promise<void> {
     .title('Warn Main Menu')
     .body(translate(player, 'command.warnMain'))
     .button(translate(player, 'ui.showWarn'))
-    .button(translate(player, 'ui.tempkick'))
+    .button(translate(player, 'ui.kick'))
     .button(translate(player, 'back'));
 
   return (
@@ -127,7 +127,7 @@ function showWarnMainMenu(player: Player): Promise<void> {
           if (response.selection === 0) {
             showWarnMenu(player);
           } else if (response.selection === 1) {
-            showtempkick(player);
+            showkick(player);
           } else if (response.selection === 2) {
             showBasicUI(player);
           }
@@ -140,14 +140,14 @@ function showWarnMainMenu(player: Player): Promise<void> {
   );
 }
 
-function showtempkick(player: Player): Promise<void> {
+function showkick(player: Player): Promise<void> {
   player.playSound('mob.chicken.plop');
 
   const playerNames = getAllPlayerNames(player);
 
   const form = new ActionFormData()
     .title('TempKick Menu')
-    .body(translate(player, 'sendtempkickUser'));
+    .body(translate(player, 'ui.sendtempkickUser'));
 
   playerNames.forEach((p) => {
     form.button(p);
@@ -168,7 +168,17 @@ function showtempkick(player: Player): Promise<void> {
             response.selection < playerNames.length
           ) {
             const targetPlayerName = playerNames[response.selection];
-            runCommand(player.name, 'staff', ['warn','-p',targetPlayerName,'-r','tempkick','-kick',]);
+            const reasonForm = new ModalFormData()
+              .title('Enter Kick Reason')
+              .textField('Reason:', 'Enter the reason for the kick');
+
+            //@ts-ignore
+            reasonForm.show(player).then((reasonResponse) => {
+              if (!reasonResponse.canceled && reasonResponse.formValues) {
+                const reason = reasonResponse.formValues[0] as string;
+                runCommand(player.name, 'staff', ['warn', '-p', targetPlayerName, '-r', reason, '-kick']);
+              }
+            });
           } else if (response.selection === playerNames.length) {
             showWarnMainMenu(player);
           } else {
@@ -182,6 +192,7 @@ function showtempkick(player: Player): Promise<void> {
   );
 }
 
+
 function showWarnMenu(player: Player): Promise<void> {
   player.playSound('mob.chicken.plop');
 
@@ -189,7 +200,7 @@ function showWarnMenu(player: Player): Promise<void> {
 
   const form = new ActionFormData()
     .title('Warn Menu')
-    .body(translate(player, 'ui.reportPSelect'));
+    .body(translate(player, 'ui.warnPlayer'));
 
   playerNames.forEach((p) => {
     form.button(p);
@@ -212,7 +223,7 @@ function showWarnMenu(player: Player): Promise<void> {
             const targetPlayerName = playerNames[response.selection];
             const modal = new ModalFormData()
               .title('Warn Reason')
-              .textField(translate(player, "ui.EnterReson"), '');
+              .textField(translate(player, "ui.EnterReport"), '');
 
             //@ts-ignore
             modal.show(player).then((modalResponse) => {

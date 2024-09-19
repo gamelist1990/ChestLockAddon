@@ -52,7 +52,7 @@ function startTrackingPlayer(player: Player, targetPlayer: Player) {
 
         // 対象プレイヤーが存在しない場合の処理
         if (!targetPlayer || !targetPlayer.isValid()) {
-            player.sendMessage(translate(player, "The target player has disappeared."));
+            player.sendMessage(translate(player, "PlayerNotFound"));
             restorePlayerLocation(player);
             stopTrackingPlayer(player);
             activeFreecamPlayers.delete(player.name);
@@ -78,18 +78,20 @@ function warnPlayer(player: Player, targetPlayer: Player, reason: string, kickFl
     warnings.reasons.push(reason);
     playerWarnings.set(targetPlayer.name, warnings);
 
-    targetPlayer.sendMessage(`You have been warned. Reason: ${reason}. Total warnings: ${warnings.count}`);
-    player.sendMessage(`You have warned ${targetPlayer.name}. Reason: ${reason}. Total warnings: ${warnings.count}`);
+    //targetPlayer.sendMessage(`You have been warned. Reason: ${reason}. Total warnings: ${warnings.count}`);
+    translate(player,"command.WarnTarget",{reason:`${reason}`,warnings:`${warnings.count}`,targetPlayer});
+    player.sendMessage(translate(player, "command.WarnPlayer", { target: `${targetPlayer.name}`, warnings: `${warnings.count}`, reason: `${reason}` }));
 
     if (kickFlag) {
-        kick(targetPlayer, `You have been kicked for receiving ${warnings.count} warnings. Reasons: ${warnings.reasons.join(', ')}`, player.name);
-        player.sendMessage(`${targetPlayer.name} has been kicked for receiving ${warnings.count} warnings.`);
+        kick(targetPlayer, `§cYou have been kicked for receiving §e${warnings.count} warnings. Reasons: §b${warnings.reasons.join(', ')}
+`, player.name);
+        player.sendMessage(translate(player, "commnad.WarnKickMes", { target: `${targetPlayer.name}`, warnings: `${warnings.count}` }))
         playerWarnings.delete(targetPlayer.name);
     }
 
     if (warnings.count >= 3) {
         tempkick(targetPlayer);
-        player.sendMessage(`${targetPlayer.name} has been tempkick for receiving ${warnings.count} warnings.`);
+        player.sendMessage(translate(player, "commnad.WarnKickMes", { target: `${targetPlayer.name}`, warnings: `${warnings.count}` }))
         playerWarnings.delete(targetPlayer.name);
     }
 }
@@ -106,7 +108,7 @@ registerCommand({
         const option = args[1];
 
         if (subCommand === 'freecam' && activeFreecamPlayers.has(player.name) && option !== '-exit') {
-            player.sendMessage(translate(player, "You must use -exit before using another freecam option."));
+            player.sendMessage(translate(player, "commnad.NoFreecam"));
             return;
         }
 

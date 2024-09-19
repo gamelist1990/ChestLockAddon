@@ -3,6 +3,22 @@ export const translations = {
     msgid: "§f>>§4Reported player not found",
     msgstr: ""
   },
+  "command.WarnTarget": {
+    msgid: "§f>>§4You have been warned. §eReason§f: {reason}. §6Total warnings§f: {warnings} §bIf you are warned more than 3 times, you will be KICKED!",
+    msgstr: ""
+  },
+  "command.WarnPlayer": {
+    msgid: "§f>>§aYou have warned §b{target}. §eReason§f: {reason}. §6Total warnings§f: {warnings}",
+    msgstr: ""
+  },
+  "command.WarnKickMes": {
+    msgid: "§f>>§c{target} §ahas been kicked for receiving §e{warnings} warnings.",
+    msgstr: ""
+  },
+  "command.NoFreecam": {
+    msgid: "§f>>§cYou must use -exit before using another freecam option.",
+    msgstr: ""
+  },
   "staff_command_description": {
     msgid: "Staff-only commands",
     msgstr: ""
@@ -51,8 +67,32 @@ export const translations = {
     msgid: "§l§0Check Report",
     msgstr: ""
   },
+  "ui.warnmenu": {
+    msgid: "§l§0Warn Menu",
+    msgstr: ""
+  },
+  "command.warnMain": {
+    msgid: "§l§3Select to Action",
+    msgstr: ""
+  },
+  "ui.showWarn": {
+    msgid: "§l§0Show Warn",
+    msgstr: ""
+  },
+  "ui.sendtempkickUser": {
+    msgid: "§l§bSelect users to kick",
+    msgstr: ""
+  },
+  "ui.warnPlayer": {
+    msgid: "§l§3Select Warn To Player",
+    msgstr: ""
+  },
+  "ui.kick": {
+    msgid: "§l§0Kick user",
+    msgstr: ""
+  },
   "commnad.staff.UsageCom": {
-    msgid: "§l§bUsage§a Staff Command §f| world <-send> Message | report <-check>",
+    msgid: "§l§bUsage§a Staff Command §f| world <-send> Message | report <-check> | freecam -<p/s/v/exit> playerName only needs (p/v)",
     msgstr: ""
   },
   "command.ui.reportBody": {

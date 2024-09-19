@@ -3,6 +3,22 @@
     "msgid": "§f>>§4Reported player not found",
     "msgstr": "§f>>§4報告対象のプレイヤーが見つかりませんでした"
   },
+  "command.WarnTarget": {
+    "msgid": "§f>>§4You have been warned. §eReason§f: {reason}. §6Total warnings§f: {warnings} §bIf you are warned more than 3 times, you will be KICKED!",
+    "msgstr": "§f>>§4あなたはスタッフに警告されました §e理由§f: {reason}. §6警告件数§f: {warnings} |§b三回以上警告されるとKickされます"
+  },
+  "command.WarnPlayer": {
+    "msgid": "§f>>§aYou have warned §b{target}. §eReason§f: {reason}. §6Total warnings§f: {warnings}",
+    "msgstr": "§f>>§b{target}§aに対して警告を送りました. §e理由§f: {reason}. §6警告件数§f: {warnings}"
+  },
+  "command.WarnKickMes": {
+    "msgid": "§f>>§c{target} §ahas been kicked for receiving §e{warnings} warnings.",
+    "msgstr": "§f>>§c{target} §aに対して強制Kickを出しました §e{warnings} 警告件数."
+  },
+  "command.NoFreecam": {
+    "msgid": "§f>>§cYou must use -exit before using another freecam option.",
+    "msgstr": "§f>>§cこのオプションを使うには-exitでFreeCamを終了してから再度お試しください"
+  },
   "staff_command_description": {
     "msgid": "Staff-only commands",
     "msgstr": "スタッフ専用のコマンド！"
@@ -51,9 +67,33 @@
     "msgid": "§l§0Check Report",
     "msgstr": "§l§0レポートを確認"
   },
+  "ui.warnmenu": {
+    "msgid": "§l§0Warn Menu",
+    "msgstr": "§l§0警告メニュー"
+  },
+  "command.warnMain": {
+    "msgid": "§l§3Select to Action",
+    "msgstr": "§l§3Kickか通常のWarnか選んで下さい"
+  },
+  "ui.showWarn": {
+    "msgid": "§l§0Show Warn",
+    "msgstr": "§l§0警告メニューを開く"
+  },
+  "ui.sendtempkickUser": {
+    "msgid": "§l§bSelect users to kick",
+    "msgstr": "§l§bキックしたいユーザーを選択"
+  },
+  "ui.warnPlayer": {
+    "msgid": "§l§3Select Warn To Player",
+    "msgstr": "§l§3警告を送りたいプレイヤーを選択"
+  },
+  "ui.kick": {
+    "msgid": "§l§0Kick user",
+    "msgstr": ""
+  },
   "commnad.staff.UsageCom": {
-    "msgid": "§l§bUsage§a Staff Command §f| world <-send> Message | report <-check>",
-    "msgstr": "§l§b使い方§a スタッフコマンド §f| world <-send> Message | report <-check>"
+    "msgid": "§l§bUsage§a Staff Command §f| world <-send> Message | report <-check> | freecam -<p/s/v/exit> playerName only needs (p/v)",
+    "msgstr": "§l§aスタッフコマンドの §b 使い方 §f| world <-send> Message | report <-check> | freecam -<p/s/v/exit> playerNameは(p/v)のみ必要 "
   },
   "command.ui.reportBody": {
     "msgid": [
