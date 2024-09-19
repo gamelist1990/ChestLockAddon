@@ -139,3 +139,13 @@ export function getAllPlayerNames(currentPlayer: Player): string[] {
   const players = world.getPlayers();
   return players.filter((p) => p.name !== currentPlayer.name).map((p) => p.nameTag);
 }
+
+
+export function kick(player: Player, reason: string, by: string) {
+  const textReason = `§c§lYou have been kicked\n§r§7Reason: §c${reason ?? "--"}\n§7By: §c${by ?? "--"}`;
+  world.getDimension(player.dimension.id).runCommandAsync(`kick "${player.name}" ${textReason}`);
+}
+
+export function tempkick(player: Player) {
+  player.triggerEvent('chestlock:tempkick')
+}

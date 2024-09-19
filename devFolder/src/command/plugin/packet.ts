@@ -230,24 +230,6 @@ function calculateDistance(pos1: Vector3, pos2: Vector3): number {
   return Math.sqrt((pos2.x - pos1.x) ** 2 + (pos2.y - pos1.y) ** 2 + (pos2.z - pos1.z) ** 2);
 }
 
-//@ts-ignore
-function calculatePlayerSpeed(player: Player): number {
-  const data = playerData[player.id];
-  if (!data) return 0;
-
-  // 過去2ティック間の位置履歴を取得
-  const currentPosition = player.location;
-  const previousPosition = data.positionHistory.length >= 2 ? data.positionHistory[data.positionHistory.length - 2] : currentPosition;
-
-  // 水平方向の移動距離を計算
-  const horizontalDistance = Math.sqrt((currentPosition.x - previousPosition.x) ** 2 + (currentPosition.z - previousPosition.z) ** 2);
-
-  // 速度を計算 (blocks/tick)
-  const speed = horizontalDistance / (50 / 20); // 50ms = 1 tick
-
-  return speed;
-}
-
 // プレイヤーとボートの距離をチェックする関数
 //@ts-ignore
 function isNearBoat(player: Player): boolean {
@@ -596,12 +578,10 @@ function getExcludedEffects(): string[] {
 
 
 function checkPlayerSpeed(player: Player): { cheatType: string } | null {
-  const speed = calculatePlayerSpeed(player);
+  const velocity = player.getVelocity();
+  const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z); // Calculate the speed from velocity components
   const data = playerData[player.id];
-  const maxAllowedSpeed = 1.1; 
-  
-  
-
+  const maxAllowedSpeed = 14;
 
   if (!data || data.isTeleporting || player.isGliding || data.recentlyUsedEnderPearl || getGamemode(player.name) === 1) {
     return null;
@@ -612,12 +592,12 @@ function checkPlayerSpeed(player: Player): { cheatType: string } | null {
   }
 
   if (speed > maxAllowedSpeed) {
-    //return { cheatType: 'Speed' };
-    console.warn("Speed Check:"+player.name)
+    return { cheatType: 'Speed' }; // Return the cheat type if speed exceeds the maximum allowed speed
   }
 
-  return null; 
+  return null;
 }
+
 
 
 
