@@ -33,7 +33,7 @@ registerCommand({
 
         if (!enderChest) {
             player.sendMessage(
-                translate(player, 'commands.echestEmpty', {
+                translate(player, 'command.echestEmpty', {
                     tragetplayer: `${targetPlayerName}`,
                 }),
             );
@@ -41,7 +41,7 @@ registerCommand({
         }
 
         player.sendMessage(
-            translate(player, 'commands.echest', {
+            translate(player, 'command.echest', {
                 tragetplayer: `${targetPlayerName}`,
             }),
         );

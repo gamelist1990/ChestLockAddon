@@ -1,12 +1,13 @@
-import { world } from '@minecraft/server';
+import { system, world } from '@minecraft/server';
 import { loadPlayerLanguages } from './command/langs/list/LanguageManager';
 import { loadProtectedChests } from './command/plugin/chest';
 import { loadGate } from './command/plugin/warpgate';
 import { loadjoinModules } from './command/utility/join';
 import { showBasicUI } from './command/gui/ui';
 import { customCommandsConfig } from './command/itemUI';
-import { config } from './Modules/Util';
+import { config, tempkick } from './Modules/Util';
 import { loadData } from './Modules/DataBase';
+import { banPlayers } from './Modules/globalBan';
 //import { RunAntiCheat } from './command/plugin/packet';
 
 const startTime = Date.now();
@@ -60,6 +61,23 @@ world.afterEvents.itemUse.subscribe(({ itemStack: item, source: player }) => {
   }
 });
 
+
+world.afterEvents.playerSpawn.subscribe((event: any) => {
+  const { player } = event;
+
+  
+
+
+  system.runTimeout(() => {
+    if (player) {
+      const playerXuid = player.id; 
+      const isBanned = banPlayers.some((bannedPlayer) => bannedPlayer.id === playerXuid);
+      if (isBanned) {
+        tempkick(player);
+      }
+    }
+  }, 20);
+});
 
 if (config().module.debugMode.enabled === true) {
   console.warn('Full ChestLock Addon Data loaded!!');

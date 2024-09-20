@@ -102,7 +102,7 @@ function initializePlayerData(player: Player): void {
     boundaryCenter: player.location,
     boundaryRadius: 10,
     xrayData: {
-      suspiciousBlocks: {},
+      suspiciousBlocks: {}, 
     },
     pingData: {
       isLagg: false,
@@ -362,14 +362,14 @@ function detectAirJump(player: Player): { cheatType: string } | null {
       const jumpHeight = currentPosition.y - Math.min(previousPosition.y, twoTicksAgoPosition.y);
 
       if (
-        jumpHeight > 1.5 ||
+        jumpHeight > 2.0 ||
         horizontalAcceleration > 2.1 ||
         (verticalAcceleration > 1.3 && previousVerticalAcceleration > 0.8) ||
         velocityChangeRate > 0.9 ||
         (player.isJumping && horizontalSpeed > 0.9)
       ) {
         data.jumpCounter++;
-        if (data.jumpCounter >= 2) {
+        if (data.jumpCounter >= 1) {
           return { cheatType: '(AirJump|Fly)' }; // 通常のAirJumpとして検出
         }
       }

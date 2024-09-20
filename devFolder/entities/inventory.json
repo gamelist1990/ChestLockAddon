@@ -34,7 +34,7 @@
             },
             "minecraft:inventory": {
                 "container_type": "container",
-                "inventory_size": 54,
+                "inventory_size": 58,
                 "private": true,
                 "can_be_siphoned_from": false,
                 "restrict_to_owner": false
