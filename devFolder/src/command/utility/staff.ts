@@ -1,4 +1,4 @@
-import { c, kick, tempkick } from '../../Modules/Util';
+import { config,kick, tempkick } from '../../Modules/Util';
 import { isPlayer, registerCommand, verifier } from '../../Modules/Handler';
 import { GameMode, Player, system, world, Vector3, Dimension, TeleportOptions, Vector2 } from '@minecraft/server';
 import { checkReports } from './report';
@@ -29,19 +29,19 @@ function teleportPlayerToLocation(player: Player, location: Vector3, dimension: 
 }
 
 function setPlayerToSpectator(player: Player) {
-    system.runTimeout(()=>{
+    system.runTimeout(() => {
         player.setGameMode(GameMode.spectator);
-    },1)
+    }, 1)
 }
 
 function restorePlayerLocation(player: Player) {
     const savedLocation = playerLocations.get(player.name);
     if (savedLocation) {
         const options: TeleportOptions = { dimension: savedLocation.dimension };
-        system.runTimeout(()=>{
+        system.runTimeout(() => {
             player.teleport(savedLocation.location, options);
             player.setGameMode(savedLocation.gamemode);
-        },1)
+        }, 1)
     } else {
         player.sendMessage(translate(player, "Invalid"));
     }
@@ -66,10 +66,10 @@ function startTrackingPlayer(player: Player, targetPlayer: Player) {
                 // 視線方向ベクトルを取得
                 const viewVector = getDirectionVector(targetRotation.y, targetRotation.x);
 
-                const offsetDistance = 0.5; 
+                const offsetDistance = 0.5;
                 const targetLocationOffset = {
                     x: targetPlayer.location.x + viewVector.x * offsetDistance,
-                    y: targetPlayer.location.y + viewVector.y * offsetDistance * 0.2, 
+                    y: targetPlayer.location.y + viewVector.y * offsetDistance * 0.2,
                     z: targetPlayer.location.z + viewVector.z * offsetDistance,
                 };
 
@@ -148,7 +148,7 @@ registerCommand({
     parent: false,
     maxArgs: 100,
     minArgs: 1,
-    require: (player: Player) => verifier(player, c().commands['staff']),
+    require: (player: Player) => verifier(player, config().commands['staff']),
     executor: (player: Player, args: string[]) => {
         const subCommand = args[0];
         const option = args[1];
@@ -199,9 +199,9 @@ registerCommand({
                         const viewDirection: Vector3 = targetPlayer.getViewDirection();
                         const rotation: Vector2 = { x: viewDirection.x, y: viewDirection.y };
                         player.setRotation(rotation);
-                        
+
                     });
-                    startTrackingPlayer(player, targetPlayer); 
+                    startTrackingPlayer(player, targetPlayer);
                     activeFreecamPlayers.add(player.name);
                 } else {
                     player.sendMessage(translate(player, "commands.list.playerNotFound", { targetPlayer: `${targetName}` }));

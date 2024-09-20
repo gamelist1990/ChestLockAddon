@@ -1,6 +1,6 @@
 import { Player, world, system } from '@minecraft/server';
 import { registerCommand, verifier } from '../../Modules/Handler';
-import { c } from '../../Modules/Util';
+import { config } from '../../Modules/Util';
 import { showPlayerLanguage, resetPlayerLanguages } from '../langs/list/LanguageManager';
 import { showProtectedChestData, resetProtectedChests } from '../plugin/chest';
 import { resetData, logData, chestLockAddonData } from './../../Modules/DataBase';
@@ -11,7 +11,7 @@ registerCommand({
   parent: false,
   maxArgs: 2,
   minArgs: 1,
-  require: (player: Player) => verifier(player, c().commands['dev']),
+  require: (player: Player) => verifier(player, config().commands['dev']),
   executor: (player: Player, args: string[]) => {
     const subCommand = args[0];
     const option = args[1];
@@ -41,7 +41,7 @@ registerCommand({
       } else if (option === 'off') {
         test = false;
       }
-    }else {
+    } else {
       player.sendMessage('Unknown subcommand');
     }
   },
@@ -56,6 +56,6 @@ function runTick(): void {
     world.sendMessage(JSON.stringify(chestLockAddonData, null, 2))
 
   }
-  
+
   system.run(runTick);
 }

@@ -5,7 +5,7 @@ import { loadGate } from './command/plugin/warpgate';
 import { loadjoinModules } from './command/utility/join';
 import { showBasicUI } from './command/gui/ui';
 import { customCommandsConfig } from './command/itemUI';
-import { c } from './Modules/Util';
+import { config } from './Modules/Util';
 import { loadData } from './Modules/DataBase';
 //import { RunAntiCheat } from './command/plugin/packet';
 
@@ -37,7 +37,7 @@ world.afterEvents.worldInitialize.subscribe(async () => {
 
   const endTime = Date.now();
   const loadTime = endTime - startTime;
-  if (c().module.debugMode.enabled === true) {
+  if (config().module.debugMode.enabled === true) {
     console.warn(`Plugin has been loaded in ${loadTime} ms`);
   }
   world.sendMessage(`§f[§bServer§f]§l§aChestLockAddonのデータの更新が ${loadTime} msで完了しました`)
@@ -48,12 +48,12 @@ world.afterEvents.itemUse.subscribe(({ itemStack: item, source: player }) => {
   if (player.typeId !== 'minecraft:player') return;
 
   if (
-    c().commands.item.enabled &&
+    config().commands.item.enabled &&
     item.typeId === customCommandsConfig.ui.ui_item &&
     item.nameTag === customCommandsConfig.ui.ui_item_name &&
-    !c().commands.item.requireTag.some((tag) => !player.hasTag(tag))
+    !config().commands.item.requireTag.some((tag) => !player.hasTag(tag))
   ) {
-    if (c().module.debugMode.enabled === true) {
+    if (config().module.debugMode.enabled === true) {
       console.warn(`${player.name} has Use ShowUI`);
     }
     showBasicUI(player);
@@ -61,7 +61,7 @@ world.afterEvents.itemUse.subscribe(({ itemStack: item, source: player }) => {
 });
 
 
-if (c().module.debugMode.enabled === true) {
+if (config().module.debugMode.enabled === true) {
   console.warn('Full ChestLock Addon Data loaded!!');
 
 }

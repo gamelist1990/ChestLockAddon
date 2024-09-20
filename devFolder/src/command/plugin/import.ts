@@ -5,3 +5,4 @@ import './edit';
 import './lore';
 import './packet';
 import './invsee';
+import './echest';

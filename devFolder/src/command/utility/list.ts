@@ -1,7 +1,7 @@
 import { world, Player, EntityHealthComponent } from '@minecraft/server';
-import { c, getDimension } from '../../Modules/Util';
+import { config, getDimension } from '../../Modules/Util';
 import { registerCommand, isPlayer, verifier, prefix } from '../../Modules/Handler';
-import { getGamemode, getPing  } from '../../Modules/Util';
+import { getGamemode, getPing } from '../../Modules/Util';
 import { translate } from '../langs/list/LanguageManager';
 
 registerCommand({
@@ -10,7 +10,7 @@ registerCommand({
   parent: false,
   maxArgs: 2,
   minArgs: 0,
-  require: (player: Player) => verifier(player, c().commands['list']),
+  require: (player: Player) => verifier(player, config().commands['list']),
   executor: async (player, args) => {
     if (args.length === 1 && args[0] === 'all') {
       sendAllPlayersInfoToChat(player);
@@ -74,10 +74,10 @@ function sendPlayerInfoToChat(player: Player, targetPlayer: Player): void {
   const memoryTier = 0;
   const memoryTierName = memoryTier === 0 ? "Memory:Undetermined" :
     memoryTier === 1 ? "Memory:1.5GB" :
-    memoryTier === 2 ? "Memory:2GB" :
-    memoryTier === 3 ? "Memory:4GB" :
-    memoryTier === 4 ? "Memory:8GB" :
-    memoryTier === 5 ? "Memory:8GB or more" : "Memory:Unknown";
+      memoryTier === 2 ? "Memory:2GB" :
+        memoryTier === 3 ? "Memory:4GB" :
+          memoryTier === 4 ? "Memory:8GB" :
+            memoryTier === 5 ? "Memory:8GB or more" : "Memory:Unknown";
 
   player.sendMessage(
     translate(player, 'commands.list.playerInfo', {
@@ -116,10 +116,10 @@ function sendAllPlayersInfoToChat(player: Player): void {
     const memoryTier = 0;
     const memoryTierName = memoryTier === 0 ? "Memory:Undetermined" :
       memoryTier === 1 ? "Memory:1.5GB" :
-      memoryTier === 2 ? "Memory:2GB" :
-      memoryTier === 3 ? "Memory:4GB" :
-      memoryTier === 4 ? "Memory:8GB" :
-      memoryTier === 5 ? "Memory:8GB or more" : "Memory:Unknown";
+        memoryTier === 2 ? "Memory:2GB" :
+          memoryTier === 3 ? "Memory:4GB" :
+            memoryTier === 4 ? "Memory:8GB" :
+              memoryTier === 5 ? "Memory:8GB or more" : "Memory:Unknown";
 
     player.sendMessage(
       translate(player, 'commands.list.playerInfo', {

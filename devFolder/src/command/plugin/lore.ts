@@ -1,4 +1,4 @@
-import { c } from '../../Modules/Util';
+import { config } from '../../Modules/Util';
 import { registerCommand, verifier, prefix } from '../../Modules/Handler';
 import { Player, EntityInventoryComponent, system } from '@minecraft/server';
 import { translate } from '../langs/list/LanguageManager';
@@ -92,7 +92,7 @@ registerCommand({
     parent: false,
     maxArgs: -1,
     minArgs: 2,
-    require: (player: Player) => verifier(player, c().commands['lore']),
+    require: (player: Player) => verifier(player, config().commands['lore']),
     executor: (player: Player, args: string[]) => {
         // 引数が提供されていない場合のチェックを追加
         if (!args || args.length < 2) {

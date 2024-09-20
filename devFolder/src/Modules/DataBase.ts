@@ -1,5 +1,5 @@
 import { world } from '@minecraft/server';
-import { c } from './Util';
+import { config } from './Util';
 
 interface ChestLockAddonData {
   [key: string]: any;
@@ -29,9 +29,9 @@ export function logData(): void {
 // ResetData
 export function resetData(): void {
   chestLockAddonData = {};
-  if (c().module.debugMode.enabled === true) {
+  if (config().module.debugMode.enabled === true) {
     console.warn('ChestLockAddon Data reset');
   }
-  
+
   world.sendMessage("§l§eWarn §aChestLockAddon DataBase is Reset");
 }

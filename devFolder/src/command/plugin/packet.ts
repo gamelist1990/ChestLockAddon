@@ -1,4 +1,4 @@
-import { c, getGamemode } from '../../Modules/Util';
+import { config, getGamemode } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
 import { Player, world, system, Vector3, Block } from '@minecraft/server';
 
@@ -7,7 +7,7 @@ import { Player, world, system, Vector3, Block } from '@minecraft/server';
 // ----------------------------------
 // --- 設定 ---
 // ----------------------------------
-const config = {
+const configs = {
   debugMode: false,
   antiCheat: {
     detectionThreshold: 3,
@@ -30,14 +30,14 @@ const spikeLaggingData = new Map<string, {
   lastTick: number;
   isSpikeLagging: boolean;
   ping: number;
-  lastVelocity:Vector3;
+  lastVelocity: Vector3;
 }>();
 
 // ----------------------------------
 // --- プレイヤーデータ構造 ---
 // ----------------------------------
 interface XrayData {
-  suspiciousBlocks: { [blockLocation: string]: { timestamp: number; count: number} };
+  suspiciousBlocks: { [blockLocation: string]: { timestamp: number; count: number } };
 }
 
 interface SpikeLaggingData {
@@ -69,7 +69,7 @@ interface PlayerData {
   enderPearlInterval: any;
   lastPosition: Vector3 | null;
   xrayData: XrayData;
-  spikeLaggingData: SpikeLaggingData; 
+  spikeLaggingData: SpikeLaggingData;
   lastRotationY: number;
   boundaryCenter: Vector3;
   boundaryRadius: number;
@@ -81,7 +81,7 @@ interface PlayerData {
 
 // プレイヤーデータの初期化
 function initializePlayerData(player: Player): void {
-    playerData[player.id] = {
+  playerData[player.id] = {
     lastGroundY: 0,
     lastFallDistance: 0,
     positionHistory: [player.location],
@@ -89,7 +89,7 @@ function initializePlayerData(player: Player): void {
     violationCount: 0,
     isTeleporting: false,
     lastTeleportTime: 0,
-    jumpStartTime:0,
+    jumpStartTime: 0,
     isFrozen: false,
     airJumpDetected: false,
     freezeStartTime: 0,
@@ -104,28 +104,28 @@ function initializePlayerData(player: Player): void {
     xrayData: {
       suspiciousBlocks: {},
     },
-      spikeLaggingData: {
-        isSpikeLagging: false,
-        pingStatus:'',
-        ping: 0,
-        lastLocation: player.location,
-        lastVelocity: { x: 0, y: 0, z: 0 }, // 初期速度を0に設定
-        lastRotationY: player.getRotation().y, // 初期回転を現在の回転に設定
-        lastTick: 0,
-      },
+    spikeLaggingData: {
+      isSpikeLagging: false,
+      pingStatus: '',
+      ping: 0,
+      lastLocation: player.location,
+      lastVelocity: { x: 0, y: 0, z: 0 }, // 初期速度を0に設定
+      lastRotationY: player.getRotation().y, // 初期回転を現在の回転に設定
+      lastTick: 0,
+    },
   };
-  if (c().module.debugMode.enabled === true) {
+  if (config().module.debugMode.enabled === true) {
     console.warn(`プレイヤー ${player.name} (ID: ${player.id}) を監視しています`);
 
   }
-  
+
 }
 
 world.afterEvents.playerSpawn.subscribe((event) => {
   const player = event.player as Player;
   if (player && player.id) {
     delete playerData[player.id];
-    if (c().module.debugMode.enabled === true) {
+    if (config().module.debugMode.enabled === true) {
       console.warn(`プレイヤー ${player.name} (ID: ${player.id}) の監視を停止しました`);
 
     }
@@ -148,12 +148,12 @@ function addPositionHistory(player: Player): void {
   }
 
   // デバッグログ出力
-  if (config.debugMode) {
+  if (configs.debugMode) {
     console.log(`[DEBUG] ${player.name} new position: ${player.location.x}, ${player.location.y}, ${player.location.z}`);
   }
 
   // 位置履歴の制限
-  if (data.positionHistory.length > config.antiCheat.rollbackTicks + 1) {
+  if (data.positionHistory.length > configs.antiCheat.rollbackTicks + 1) {
     data.positionHistory.shift();
   }
 }
@@ -175,13 +175,13 @@ function executeRollback(player: Player): void {
   const data = playerData[player.id];
   if (!data) return;
 
-  const rollbackIndex = data.positionHistory.length - config.antiCheat.rollbackTicks - 1;
+  const rollbackIndex = data.positionHistory.length - configs.antiCheat.rollbackTicks - 1;
   if (rollbackIndex >= 0) {
     const rollbackPosition = data.positionHistory[rollbackIndex];
     // 1 tick 遅延させてロールバック
     system.run(() => {
       player.teleport(rollbackPosition, { dimension: player.dimension });
-      
+
       console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をロールバックしました`);
     });
   }
@@ -222,7 +222,7 @@ function executeFreeze(player: Player): void {
     // データのリセット
     resetPlayerData(data, player);
     data.violationCount = 0;
-  }, config.antiCheat.freezeDuration);
+  }, configs.antiCheat.freezeDuration);
 }
 
 // 2点間の距離を計算
@@ -339,8 +339,8 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   const movementAngle = Math.atan2(currentPosition.z - previousPosition.z, currentPosition.x - previousPosition.x);
   const playerRotationAngle = player.getRotation().y;
   const angleDifference = Math.abs(movementAngle - playerRotationAngle);
-  
-  
+
+
 
   data.lastRotationY = angleDifference;
 
@@ -362,7 +362,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
       const jumpHeight = currentPosition.y - Math.min(previousPosition.y, twoTicksAgoPosition.y);
 
       if (
-        jumpHeight > 1.5 || 
+        jumpHeight > 1.5 ||
         horizontalAcceleration > 2.1 ||
         (verticalAcceleration > 1.3 && previousVerticalAcceleration > 0.8) ||
         velocityChangeRate > 0.9 ||
@@ -376,7 +376,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     }
   }
 
-  
+
 
   return null;
 }
@@ -484,8 +484,8 @@ function detectXrayOnSight(player: Player): void {
   if (!data) return;
   const currentTime = Date.now();
 
-  // プレイヤーのレティクルからブロックを取得 (最大距離: config.antiCheat.xrayDetectionDistance)
-  const targetBlock = getBlockFromReticle(player, config.antiCheat.xrayDetectionDistance);
+  // プレイヤーのレティクルからブロックを取得 (最大距離: configs.antiCheat.xrayDetectionDistance)
+  const targetBlock = getBlockFromReticle(player, configs.antiCheat.xrayDetectionDistance);
 
   // ブロックが存在し、かつXray検知対象の場合
   if (targetBlock && targetXrayBlockIds.includes(targetBlock.typeId)) {
@@ -748,10 +748,10 @@ function runTick(): void {
     if (!player) continue;
     const data = playerData[player.id];
     if (!data) continue;
-  
 
 
-    
+
+
 
     if (playerData[playerId].isFrozen) {
       // Freeze中のプレイヤーはy座標500に固定
@@ -762,10 +762,10 @@ function runTick(): void {
       // 位置履歴を追加
       addPositionHistory(player);
 
-      
 
 
-      
+
+
 
       //player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a現在Pingシステム実験中: ${playerData[playerId].spikeLaggingData.pingStatus} tick/ping"}]}`);
 
@@ -775,7 +775,7 @@ function runTick(): void {
         playerData[playerId].boundaryCenter = player.location;
       }
 
-      
+
 
       const clickTpOutOfBoundaryDetection = detectClickTpOutOfBoundary(player);
       if (clickTpOutOfBoundaryDetection) {
@@ -790,13 +790,13 @@ function runTick(): void {
       }
 
       //SpeedHack
-      const speedHacks = checkPlayerSpeed(player); 
+      const speedHacks = checkPlayerSpeed(player);
       if (speedHacks) {
-        handleCheatDetection(player,speedHacks) 
+        handleCheatDetection(player, speedHacks)
       }
 
-      
-    
+
+
       // AirJump検出
       const airJumpDetection = detectAirJump(player);
       if (airJumpDetection) {
@@ -804,11 +804,11 @@ function runTick(): void {
       }
 
       // Xray検知 (視認時、ベータシステムが有効な場合のみ)
-      if (config.antiCheat.betasystem) {
+      if (configs.antiCheat.betasystem) {
         detectXrayOnSight(player);
       }
 
-      
+
 
       for (const blockLocationString in playerData[playerId].xrayData.suspiciousBlocks) {
         const suspiciousBlock = playerData[playerId].xrayData.suspiciousBlocks[blockLocationString];
@@ -839,7 +839,7 @@ function handleCheatDetection(player: Player, detection: { cheatType: string }):
   if (!data) return;
 
   const isLagging = false;
-  const detectionThreshold = isLagging ? config.antiCheat.detectionThreshold * 2 : config.antiCheat.detectionThreshold;
+  const detectionThreshold = isLagging ? configs.antiCheat.detectionThreshold * 2 : configs.antiCheat.detectionThreshold;
 
   data.violationCount++;
   if (data.violationCount >= detectionThreshold) {
@@ -862,7 +862,7 @@ function logPlayerData(playerIdToDisplay: string): void {
   const simplifiedData = Object.fromEntries(
     Object.entries(playerData || playerIdToDisplay)
       .filter(([playerId]) => playerId)
-      .map(([playerId, data]) => [playerId, { ping: data.spikeLaggingData, xray: data.xrayData}])
+      .map(([playerId, data]) => [playerId, { ping: data.spikeLaggingData, xray: data.xrayData }])
   );
   console.warn(`[DEBUG] playerData: ${JSON.stringify(simplifiedData, null, 2)}`);
 }
@@ -936,7 +936,7 @@ registerCommand({
   parent: false,
   maxArgs: 2,
   minArgs: 1,
-  require: (player: Player) => verifier(player, c().commands['anticheat']),
+  require: (player: Player) => verifier(player, config().commands['anticheat']),
   executor: (player: Player, args: string[]) => {
     switch (args[0]) {
       case 'on':

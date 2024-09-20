@@ -1,6 +1,6 @@
 import { isPlayer, registerCommand, verifier } from '../../Modules/Handler';
 import { Player, world } from '@minecraft/server';
-import { c } from '../../Modules/Util';
+import { config } from '../../Modules/Util';
 import { ActionFormData } from '@minecraft/server-ui';
 import { translate } from '../langs/list/LanguageManager';
 
@@ -18,7 +18,7 @@ function submitReport(player: Player, reportedPlayerName: string, reason: string
     if (reportedPlayerName !== 'testPlayer') {
         const targetPlayer = isPlayer(reportedPlayerName);
         if (!targetPlayer) {
-            player.sendMessage(translate(player,'command.reportNotPlayer'))
+            player.sendMessage(translate(player, 'command.reportNotPlayer'))
             return;
         }
     }
@@ -30,7 +30,7 @@ function submitReport(player: Player, reportedPlayerName: string, reason: string
         timestamp: Date.now(),
     });
 
-    player.sendMessage(translate(player,'command.reportSubmit'))
+    player.sendMessage(translate(player, 'command.reportSubmit'))
 
     // staffに通知
     notifyStaff(player.name, reportedPlayerName);
@@ -40,7 +40,7 @@ function notifyStaff(reporter: string, reportedPlayer: string) {
     world.getPlayers()
         .filter((p) => p.hasTag('op') || p.hasTag('staff'))
         .forEach((staff) => {
-            staff.sendMessage(translate(staff,"command.newReport",{reporter:`${reporter}`,reportedPlayer:`${reportedPlayer}`}))
+            staff.sendMessage(translate(staff, "command.newReport", { reporter: `${reporter}`, reportedPlayer: `${reportedPlayer}` }))
         });
 }
 
@@ -85,7 +85,7 @@ export function checkReports(player: Player) {
         // 選択されたリクエスターのレポートを表示するフォーム
         const reporterReports = sortedReports.filter((report) => report.reporter === selectedReporter);
         const reporterForm = new ActionFormData()
-            .title(translate(player,"command.ui.reportTitle",{selectedReporter:`${selectedReporter}`}));
+            .title(translate(player, "command.ui.reportTitle", { selectedReporter: `${selectedReporter}` }));
 
         reporterReports.forEach((report) => {
             const reportTime = new Date(report.timestamp).toLocaleString();
@@ -101,34 +101,34 @@ export function checkReports(player: Player) {
 
             // 選択されたレポートの詳細を表示するフォーム
             const detailsForm = new ActionFormData()
-                .title(translate(player,"command.ui.reportDetails"))
-                .body(translate(player, "command.ui.reportBody", 
+                .title(translate(player, "command.ui.reportDetails"))
+                .body(translate(player, "command.ui.reportBody",
                     {
-                        reporter:`${selectedReport.reporter}`,
-                        reportedPlayer:`${selectedReport.reportedPlayer}`,
-                        reason:`${selectedReport.reason}`,
+                        reporter: `${selectedReport.reporter}`,
+                        reportedPlayer: `${selectedReport.reportedPlayer}`,
+                        reason: `${selectedReport.reason}`,
                         timestamp: `${new Date(selectedReport.timestamp).toLocaleString()}`
                     }))
-                .button(translate(player,"back"));
+                .button(translate(player, "back"));
 
-        
 
-    
+
+
 
             detailsForm
-            //@ts-ignore
-            .show(player)
-            .then((response) => {
-                if (response.canceled) {
-                } else {
-                    if (response.selection === 0) {
-                        checkReports(player);
+                //@ts-ignore
+                .show(player)
+                .then((response) => {
+                    if (response.canceled) {
+                    } else {
+                        if (response.selection === 0) {
+                            checkReports(player);
+
+                        }
 
                     }
 
-                }
-
-            })
+                })
         });
     });
 }
@@ -139,7 +139,7 @@ registerCommand({
     parent: false,
     maxArgs: 100,
     minArgs: 3,
-    require: (player: Player) => verifier(player, c().commands['report']),
+    require: (player: Player) => verifier(player, config().commands['report']),
     executor: (player: Player, args: string[]) => {
         if (args[1] !== '-r') {
             player.sendMessage('Invalid command format. Use report <player> -r <reason>.');

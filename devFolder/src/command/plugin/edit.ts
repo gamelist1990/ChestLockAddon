@@ -1,4 +1,4 @@
-import { c } from '../../Modules/Util';
+import { config } from '../../Modules/Util';
 import { registerCommand, verifier, prefix, runCommand } from '../../Modules/Handler';
 import { Player, world, system, BlockTypes, EntityInventoryComponent } from '@minecraft/server';
 import { translate } from '../langs/list/LanguageManager';
@@ -29,7 +29,7 @@ world.beforeEvents.playerBreakBlock.subscribe(event => {
       }
     } else {
       handleBlockBreakForSelection(player, event.block.location);
-      event.cancel = true; 
+      event.cancel = true;
     }
   }
 });
@@ -45,9 +45,9 @@ function handleBlockBreakForSelection(player: Player, blockLocation: any): void 
     selection.pos2 = blockLocation;
     player.sendMessage(translate(player, "command.SecondPointSet"));
     player.sendMessage(translate(player, "command.SelectionCompleted"));
-    selection.selecting = false; 
+    selection.selecting = false;
 
-    
+
     executeCommandAfterSelection(player);
   }
 }
@@ -183,7 +183,7 @@ function fillBlocksWithUndo(pos1: any, pos2: any, blockId: string, player: Playe
       for (let z = Math.max(minZ, worldBounds.minZ); z <= Math.min(maxZ, worldBounds.maxZ); z++) {
         try {
           originalBlocks.push(getBlockData({ x, y, z }));
-        } catch (error:any) {
+        } catch (error: any) {
           if (error.message.includes("Block not found")) {
             console.log("指定された座標にブロックが見つかりませんでした。スクリプトを続行します。");
           } else {
@@ -555,7 +555,7 @@ function executeCommandAfterSelection(player: Player) {
       // -clear を使用した場合はプレイヤーデータを削除
       delete playerData[player.name];
 
-    }  else if (args[0] === '-walls' && args.length === 2) { // walls コマンドを追加
+    } else if (args[0] === '-walls' && args.length === 2) { // walls コマンドを追加
       const blockId = args[1];
       if (isValidBlockId(blockId)) {
         data.commandArgs = args;
@@ -615,7 +615,7 @@ registerCommand({
   parent: false,
   maxArgs: 3, // 最大引数を3に増やす
   minArgs: 1,
-  require: (player: Player) => verifier(player, c().commands['edit']),
+  require: (player: Player) => verifier(player, config().commands['edit']),
   executor: (player: Player, args: string[]) => {
     // プレイヤーのデータを取得または初期化
     if (!playerData[player.name]) {

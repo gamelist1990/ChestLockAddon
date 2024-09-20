@@ -1,4 +1,4 @@
-import { c } from '../Modules/Util';
+import { config } from '../Modules/Util';
 import { registerCommand, verifier } from '../Modules/Handler';
 import { Player } from '@minecraft/server';
 
@@ -8,7 +8,7 @@ registerCommand({
   parent: false,
   maxArgs: 1,
   minArgs: 0,
-  require: (player: Player) => verifier(player, c().commands['sample']),
+  require: (player: Player) => verifier(player, config().commands['sample']),
   executor: (player: Player, args: string[]) => {
     player.sendMessage('Sample command executed | サンプルコマンドが実行されました');
     if (args.length > 0) {

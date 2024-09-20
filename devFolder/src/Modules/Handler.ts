@@ -1,5 +1,5 @@
 import { Player, world } from '@minecraft/server';
-import { c } from './Util';
+import { config } from './Util';
 import { translate } from '../command/langs/list/LanguageManager';
 
 export const prefix = '!';
@@ -37,17 +37,17 @@ export function getAllCommandNames(player?: Player) {
       // player が指定されていない場合はすべてのコマンドを返す
       if (!player) return true;
 
-      const commandConfig = c().commands[command.name];
+      const commandConfig = config().commands[command.name];
 
       // adminOnly が true かつプレイヤーが管理者でない場合は除外
-      if (commandConfig.adminOnly && !player.hasTag(c().admin)) {
+      if (commandConfig.adminOnly && !player.hasTag(config().admin)) {
         return false;
       }
 
       // requireTag が設定されている場合は、プレイヤーがすべてのタグを持っているか確認
       if (
         commandConfig.requireTag.length > 0 &&
-        !commandConfig.requireTag.some((tag) => player.hasTag(tag)) 
+        !commandConfig.requireTag.some((tag) => player.hasTag(tag))
       ) {
         return false;
       }
@@ -71,7 +71,7 @@ export function verifier(player: Player, setting: CommandConfig): boolean {
   if (setting.enabled !== true) {
     player.sendMessage(translate(player, 'desabledCom'));
     return false;
-  } else if (setting.adminOnly === true && !player.hasTag(c().admin)) {
+  } else if (setting.adminOnly === true && !player.hasTag(config().admin)) {
     player.sendMessage(translate(player, 'unavailable'));
     return false;
   } else if (
@@ -150,7 +150,7 @@ world.beforeEvents.chatSend.subscribe((event: any) => {
   if (commandName === 'yes' && pendingCommand && pendingCommand.player === player) {
     const { command, args: pendingArgs } = pendingCommand;
     const correctCommandOptions = commands[command];
-    if (correctCommandOptions && verifier(player, c().commands[command])) {
+    if (correctCommandOptions && verifier(player, config().commands[command])) {
       correctCommandOptions.executor(player, pendingArgs);
     }
     pendingCommand = null;
@@ -161,7 +161,7 @@ world.beforeEvents.chatSend.subscribe((event: any) => {
   const commandOptions = commands[commandName];
 
   if (commandOptions) {
-    if (verifier(player, c().commands[commandName])) {
+    if (verifier(player, config().commands[commandName])) {
       commandOptions.executor(player, args);
     }
   } else {
@@ -187,7 +187,7 @@ export function runCommand(playerName: string, commandName: string, args: string
   const commandOptions = commands[commandName];
 
   if (commandOptions) {
-    if (verifier(player, c().commands[commandName])) {
+    if (verifier(player, config().commands[commandName])) {
       commandOptions.executor(player, args);
     }
   } else {

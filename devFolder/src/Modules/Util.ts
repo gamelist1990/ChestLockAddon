@@ -12,7 +12,7 @@ interface moduleConfig   {
 }
 
 //コマンド登録 関数C
-export const c = (): { commands: { [key: string]: CommandConfig }; admin: string, module: {[key: string]: moduleConfig}; } => ({
+export const config = (): { commands: { [key: string]: CommandConfig }; admin: string, module: {[key: string]: moduleConfig}; } => ({
   commands: {
     chest: {
       enabled: true,
@@ -100,6 +100,11 @@ export const c = (): { commands: { [key: string]: CommandConfig }; admin: string
       requireTag: ["staff","op"],
     },
     invsee: {
+      enabled: true,
+      adminOnly: true,
+      requireTag: [],
+    }, 
+    echest: {
       enabled: true,
       adminOnly: true,
       requireTag: [],

@@ -1,5 +1,5 @@
 import { Player } from '@minecraft/server';
-import { c } from '../../Modules/Util';
+import { config } from '../../Modules/Util';
 import { ver } from '../../Modules/version';
 import { registerCommand, getAllCommandNames, verifier, prefix } from '../../Modules/Handler'; // コマンドが登録されているファイルをインポート
 import { translate } from '../langs/list/LanguageManager';
@@ -10,7 +10,7 @@ registerCommand({
   parent: false,
   maxArgs: 0,
   minArgs: 0,
-  require: (player: Player) => verifier(player, c().commands['help']),
+  require: (player: Player) => verifier(player, config().commands['help']),
   executor: (player: Player) => {
     const helpMessages = getAllCommandNames(player);
     const version = `§aVer.${ver}`;

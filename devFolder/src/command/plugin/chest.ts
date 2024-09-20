@@ -1,5 +1,5 @@
 import { registerCommand, verifier, isPlayer } from '../../Modules/Handler';
-import { c } from '../../Modules/Util';
+import { config } from '../../Modules/Util';
 import { ver } from '../../Modules/version';
 import { saveData, loadData, chestLockAddonData } from '../../Modules/DataBase';
 import { world, Player, system, Vector3, PlayerPlaceBlockBeforeEvent } from '@minecraft/server';
@@ -11,7 +11,7 @@ interface ChestProtectionData {
   members: string[];
 }
 
-const CHEST_CHECK_RADIUS = 64; 
+const CHEST_CHECK_RADIUS = 64;
 
 const CHECK_INTERVAL = 20 * 60; // 1分 (20ティック/秒 * 60秒)
 
@@ -24,7 +24,7 @@ registerCommand({
   parent: false,
   maxArgs: 2,
   minArgs: 1,
-  require: (player: Player) => verifier(player, c().commands['chest']),
+  require: (player: Player) => verifier(player, config().commands['chest']),
   executor: async (player: Player, args: string[]) => {
     if (args.length === 0) {
       sendInvalidCommandMessage(player);
@@ -233,8 +233,8 @@ export function showProtectedChestData(player: Player) {
   player.sendMessage(JSON.stringify(protectedChests));
   player.sendMessage('\n');
   player.sendMessage('§a---- Protected Chests Data By DataBase ----');
-  player.sendMessage(JSON.stringify(data,null,2));
-  console.warn(JSON.stringify(data,null,2));
+  player.sendMessage(JSON.stringify(data, null, 2));
+  console.warn(JSON.stringify(data, null, 2));
 }
 
 // protectedChests をリセットする関数

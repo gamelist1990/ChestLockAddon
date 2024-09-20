@@ -1,5 +1,5 @@
 import { Player, world } from '@minecraft/server';
-import { c } from '../../Modules/Util';
+import { config } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
 
 // === 辞書データ ===
@@ -678,7 +678,7 @@ registerCommand({
   parent: false,
   maxArgs: 1,
   minArgs: 1,
-  require: (player: Player) => verifier(player, c().commands['jpch']),
+  require: (player: Player) => verifier(player, config().commands['jpch']),
   executor: (player: Player, args: string[]) => {
     const input = args[0];
 

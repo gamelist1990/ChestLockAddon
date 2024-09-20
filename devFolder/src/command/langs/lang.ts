@@ -1,5 +1,5 @@
 import { Player } from '@minecraft/server';
-import { c } from '../../Modules/Util';
+import { config } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
 import { getAvailableLanguages, changeLanguage, translate } from './list/LanguageManager'; // 言語管理の関数をインポート
 
@@ -9,7 +9,7 @@ registerCommand({
   parent: false,
   maxArgs: 2,
   minArgs: 1,
-  require: (player: Player) => verifier(player, c().commands['lang']),
+  require: (player: Player) => verifier(player, config().commands['lang']),
   executor: (player: Player, args: string[]) => {
     if (args[0] === 'list') {
       const languages = getAvailableLanguages();
@@ -21,7 +21,7 @@ registerCommand({
     } else if (args[0] === 'change' && args[1]) {
       const success = changeLanguage(player, args[1]);
       if (success) {
-        player.sendMessage(translate(player, 'lang_change', { language:`${args[1]}`}));
+        player.sendMessage(translate(player, 'lang_change', { language: `${args[1]}` }));
       } else {
         player.sendMessage(translate(player, 'lang_failed'));
         player.sendMessage(`§c${args[1]}`);

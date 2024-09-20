@@ -1,4 +1,4 @@
-import { c } from '../../Modules/Util';
+import { config } from '../../Modules/Util';
 import { prefix, registerCommand, verifier } from '../../Modules/Handler';
 import { Player, world, system } from '@minecraft/server';
 import { translate } from '../langs/list/LanguageManager';
@@ -104,7 +104,7 @@ registerCommand({
   parent: false,
   maxArgs: 2,
   minArgs: 1,
-  require: (player: Player) => verifier(player, c().commands['tpa']),
+  require: (player: Player) => verifier(player, config().commands['tpa']),
   executor: (player: Player, args: string[]) => {
     if (args[0] === '-r' && args.length === 2) {
       const targetPlayer = player.dimension.getPlayers().find((p) => p.name === args[1]);

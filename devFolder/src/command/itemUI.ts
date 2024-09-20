@@ -9,7 +9,7 @@ import {
   EntityInventoryComponent,
 } from '@minecraft/server';
 import { registerCommand, verifier } from '../Modules/Handler';
-import { c } from '../Modules/Util';
+import { config } from '../Modules/Util';
 import { translate } from './langs/list/LanguageManager';
 
 export const customCommandsConfig = {
@@ -56,7 +56,7 @@ function addItemToPlayerInventory(player: Player) {
     system.run(() => {
       item.nameTag = customCommandsConfig.ui.ui_item_name;
     });
-  } catch (error) {}
+  } catch (error) { }
   const enchantable = item.getComponent(ItemComponentTypes.Enchantable);
 
   if (enchantable instanceof ItemEnchantableComponent) {
@@ -81,6 +81,6 @@ registerCommand({
   parent: false,
   maxArgs: 1,
   minArgs: 1,
-  require: (player: Player) => verifier(player, c().commands['item']),
+  require: (player: Player) => verifier(player, config().commands['item']),
   executor: (player: Player) => addItemToPlayerInventory(player),
 });

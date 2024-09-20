@@ -1,4 +1,4 @@
-import { c } from '../../Modules/Util';
+import { config } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
 import { showBasicUI } from './ui';
 import { Player, system } from '@minecraft/server';
@@ -10,7 +10,7 @@ registerCommand({
   parent: false,
   maxArgs: 0,
   minArgs: 0,
-  require: (player: Player) => verifier(player, c().commands['ui']),
+  require: (player: Player) => verifier(player, config().commands['ui']),
   executor: (player: Player) => {
     player.sendMessage(translate(player, 'closeChat'));
     system.runTimeout(() => {

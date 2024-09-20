@@ -1,6 +1,6 @@
-import { c } from '../../Modules/Util';
-import { saveData,loadData,chestLockAddonData } from '../../Modules/DataBase';
-import { registerCommand, verifier,prefix } from '../../Modules/Handler';
+import { config } from '../../Modules/Util';
+import { saveData, loadData, chestLockAddonData } from '../../Modules/DataBase';
+import { registerCommand, verifier, prefix } from '../../Modules/Handler';
 import { Player, world, system } from '@minecraft/server';
 import { translate } from '../langs/list/LanguageManager';
 
@@ -45,19 +45,19 @@ function handleBlockBreak(event: any) {
 
     if (gate.creatingPlayer && gate.creatingPlayer.name === player.name) {
       // 1つ目のブロック破壊処理
-      if (!gate.gateArea.firstPos) { 
+      if (!gate.gateArea.firstPos) {
         gate.gateArea.firstPos = { x: event.block.location.x, y: event.block.location.y, z: event.block.location.z };
-        player.sendMessage(translate(player,"TheFirestBlock"));
+        player.sendMessage(translate(player, "TheFirestBlock"));
         event.cancel = true;
-        return; 
-      } else { 
+        return;
+      } else {
         // 2つ目のブロック破壊処理
         gate.gateArea.secondPos = { x: event.block.location.x, y: event.block.location.y, z: event.block.location.z };
-        player.sendMessage(translate(player,"TheSecond"));
+        player.sendMessage(translate(player, "TheSecond"));
         gate.creatingPlayer = undefined;
         event.cancel = true;
         saveGate();
-        return; 
+        return;
       }
     }
   }
@@ -66,7 +66,7 @@ function handleBlockBreak(event: any) {
 // サブコマンドの処理関数
 function handleCreate(player: Player, args: string[]) {
   if (args.length !== 5) {
-    player.sendMessage(translate(player,"WarpUsage"));
+    player.sendMessage(translate(player, "WarpUsage"));
     return;
   }
 
@@ -76,7 +76,7 @@ function handleCreate(player: Player, args: string[]) {
   const destinationZ = parseInt(args[4], 10);
 
   if (warpGates.some(gate => gate.name === gatename)) {
-    player.sendMessage(translate(player,"AlreadyWarp"));
+    player.sendMessage(translate(player, "AlreadyWarp"));
     return;
   }
 
@@ -88,78 +88,78 @@ function handleCreate(player: Player, args: string[]) {
   };
   warpGates.push(newGate);
 
-  player.sendMessage(translate(player,"CreateGate",{gatename:`${gatename}`}));
+  player.sendMessage(translate(player, "CreateGate", { gatename: `${gatename}` }));
 }
 
 function handleDelete(player: Player, args: string[]) {
   if (args.length !== 2) {
-    player.sendMessage(translate(player,"Invalid"));
+    player.sendMessage(translate(player, "Invalid"));
     return;
   }
 
   const gatename = args[1];
   const gateIndex = warpGates.findIndex((gate) => gate.name === gatename);
   if (gateIndex === -1) {
-    player.sendMessage(translate(player,"NotWarp"));
+    player.sendMessage(translate(player, "NotWarp"));
     return;
   }
   warpGates.splice(gateIndex, 1);
-  player.sendMessage(translate(player,"deleteWarp",{gatename:`${gatename}`}));
+  player.sendMessage(translate(player, "deleteWarp", { gatename: `${gatename}` }));
   saveGate();
 }
 
 function handleList(player: Player) {
-    if (warpGates.length === 0) {
-      player.sendMessage(translate(player,"NotWarpSetting"));
-      return;
-    }
-  
-    let message = translate(player,"listGate");
-    for (const gate of warpGates) {
-      message += `§7- ${gate.name}: (${gate.destination.x}, ${gate.destination.y}, ${gate.destination.z})\n`;
-    }
-    player.sendMessage(message);
-    saveGate();
+  if (warpGates.length === 0) {
+    player.sendMessage(translate(player, "NotWarpSetting"));
+    return;
   }
+
+  let message = translate(player, "listGate");
+  for (const gate of warpGates) {
+    message += `§7- ${gate.name}: (${gate.destination.x}, ${gate.destination.y}, ${gate.destination.z})\n`;
+  }
+  player.sendMessage(message);
+  saveGate();
+}
 
 // コマンド登録
 registerCommand({
-    name: 'warpgate',
-    description: 'warpgateCom',
-    parent: false,
-    maxArgs: 5,
-    minArgs: 1,
-    require: (player: Player) => verifier(player, c().commands['warpgate']),
-    executor: (player: Player, args: string[]) => {
-      if (args.length === 0) {
-        player.sendMessage(translate(player,"Invalid"));
-        return;
-      }
-  
-      const subCommand = args[0].toLowerCase();
-  
-      switch (subCommand) {
-        case '-create':
-          handleCreate(player, args);
-          break;
-  
-        case '-delete':
-          handleDelete(player, args);
-          break;
-        case '-list':
-          handleList(player);
-          break;
-        case '-dev':
-          console.warn(JSON.stringify(warpGates,null,2));
-          break;
-  
-        default:
-          player.sendMessage(translate(player,"UsageGate",{prefix:`${prefix}`}));
-          break;
-      }
-    },
-  });
-  
+  name: 'warpgate',
+  description: 'warpgateCom',
+  parent: false,
+  maxArgs: 5,
+  minArgs: 1,
+  require: (player: Player) => verifier(player, config().commands['warpgate']),
+  executor: (player: Player, args: string[]) => {
+    if (args.length === 0) {
+      player.sendMessage(translate(player, "Invalid"));
+      return;
+    }
+
+    const subCommand = args[0].toLowerCase();
+
+    switch (subCommand) {
+      case '-create':
+        handleCreate(player, args);
+        break;
+
+      case '-delete':
+        handleDelete(player, args);
+        break;
+      case '-list':
+        handleList(player);
+        break;
+      case '-dev':
+        console.warn(JSON.stringify(warpGates, null, 2));
+        break;
+
+      default:
+        player.sendMessage(translate(player, "UsageGate", { prefix: `${prefix}` }));
+        break;
+    }
+  },
+});
+
 
 // プレイヤーがゲートの範囲内に入ったかチェックする関数
 function checkGateEntry(player: Player) {
@@ -184,9 +184,9 @@ function checkGateEntry(player: Player) {
       playerZ >= minZ && playerZ <= maxZ
     ) {
       player.teleport(gate.destination);
-      player.sendMessage(translate(player,"TPGATE",{gate:`${gate.name}`}));
+      player.sendMessage(translate(player, "TPGATE", { gate: `${gate.name}` }));
       // 重複テレポートを防ぐために break;
-      break; 
+      break;
     }
   }
 }

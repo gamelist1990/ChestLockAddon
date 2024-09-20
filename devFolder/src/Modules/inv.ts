@@ -2,6 +2,8 @@
  * @author r4isen1920
  * @license MIT
  */
+
+
 export { projectPlayerInventory };
 
 import { world, system, EquipmentSlot, Player, ItemStack } from "@minecraft/server";
