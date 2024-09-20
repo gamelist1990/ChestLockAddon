@@ -3,6 +3,22 @@ export const translations = {
     msgid: "§f>>§4Reported player not found",
     msgstr: "§f>>§4報告対象のプレイヤーが見つかりませんでした"
   },
+  "command.echestInvalid": {
+    msgid: "§f>>§4Invalid usage. §fUse: echest -view <playername>",
+    msgstr: "§f>>§4無効な使い方 §f使用方法: echest -view <playername>"
+  },
+  "command.echestDocs": {
+    msgid: "View Ender Chest",
+    msgstr: "エンダーチェスト確認"
+  },
+  "command.echest": {
+    msgid: "§f>>§b${tragetplayer}§a's Ender Chest:§f",
+    msgstr: "§f>>§b${tragetplayer}§aのエンダーチェスト:§f"
+  },
+  "command.echestEmpty": {
+    msgid: "§f>>§b{tragetplayer}§a's ender chest is §gempty.",
+    msgstr: "§f>>§b{tragetplayer}§aのエンダーチェストは§g空§aでした"
+  },
   "command.WarnTarget": {
     msgid: "§f>>§4You have been warned. §eReason§f: {reason}. §6Total warnings§f: {warnings} §bIf you are warned more than 3 times, you will be KICKED!",
     msgstr: "§f>>§4あなたはスタッフに警告されました §e理由§f: {reason}. §6警告件数§f: {warnings} |§b三回以上警告されるとKickされます"
@@ -100,7 +116,7 @@ export const translations = {
     msgstr: "§a== レポート メニュー ==\n\n§l§b報告者§f:{reporter}\n\n§l§6報告されたプレイヤー§f: {reportedPlayer}\n\n§l§2理由§f: {reason}\n\n§l§g報告日時§f: {timestamp}\n\n§a===================="
   },
   "command.about": {
-    msgid: "§a== About ChestLockAddon ==\n\nChestLockAddon is a useful utility addon for Minecraft version 1.21.22 that provides chest protection and more.\n\n§b== Main Features ==\n• Chest Protection: Protect your chests from other players.\n• Multilingual Support: Change the language setting with the lang command.\n• Teleport Request: Send a teleport request to another player with the tpa command.\n• And more: More useful commands will be added in the future.\n\n§b== Links ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== Notes ==\nThis addon is under development and may contain unexpected bugs. If you find any bugs, please report them on GitHub or Discord.\n\n§a== Message from the Developer ==\nWe welcome your feedback to make ChestLockAddon a better addon.",
+    msgid: "§a== About ChestLockAddon ==\n\nChestLockAddon is a useful utility addon for Minecraft version 1.21.30 that provides chest protection and more.\n\n§b== Main Features ==\n• Chest Protection: Protect your chests from other players.\n• Multilingual Support: Change the language setting with the lang command.\n• Teleport Request: Send a teleport request to another player with the tpa command.\n• And more: More useful commands will be added in the future.\n\n§b== Links ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== Notes ==\nThis addon is under development and may contain unexpected bugs. If you find any bugs, please report them on GitHub or Discord.\n\n§a== Message from the Developer ==\nWe welcome your feedback to make ChestLockAddon a better addon.",
     msgstr: "§a== ChestLockAddon について ==\n\nChestLockAddonは、Minecraftのバージョン1.21.30に対応した、チェスト保護機能などを提供する便利なユーティリティアドオンです。\n\n§b== 主な機能 ==\n• チェスト保護: あなたのチェストを他のプレイヤーから保護します。\n• 多言語対応: lang コマンドで言語設定を変更できます。\n• PS4/5向けUI: ui コマンドでPS4/5向けUIを開けます。\n• テレポートリクエスト: tpa コマンドで他のプレイヤーにテレポートリクエストを送れます。\n• その他: 今後も便利なコマンドが追加される予定です。\n\n§b== リンク ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== 注意点 ==\nアドオンは開発中のため、予期せぬバグが発生する可能性があります。バグを発見した場合は、GitHubやDiscordで報告してください。\n\n§a== 開発者からのメッセージ ==\nChestLockAddonをより良いアドオンにするために、皆様からのフィードバックをお待ちしております。"
   },
   "command.Undone": {

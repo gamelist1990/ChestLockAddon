@@ -3,6 +3,22 @@
     "msgid": "§f>>§4Reported player not found",
     "msgstr": "§f>>§4報告対象のプレイヤーが見つかりませんでした"
   },
+  "command.echestInvalid": {
+    "msgid": "§f>>§4Invalid usage. §fUse: echest -view <playername>",
+    "msgstr": "§f>>§4無効な使い方 §f使用方法: echest -view <playername>"
+  },
+  "command.echestDocs": {
+    "msgid": "View Ender Chest",
+    "msgstr": "エンダーチェスト確認"
+  },
+  "command.echest": {
+    "msgid": "§f>>§b${tragetplayer}§a's Ender Chest:§f",
+    "msgstr": "§f>>§b${tragetplayer}§aのエンダーチェスト:§f"
+  },
+  "command.echestEmpty": {
+    "msgid": "§f>>§b{tragetplayer}§a's ender chest is §gempty.",
+    "msgstr": "§f>>§b{tragetplayer}§aのエンダーチェストは§g空§aでした"
+  },
   "command.WarnTarget": {
     "msgid": "§f>>§4You have been warned. §eReason§f: {reason}. §6Total warnings§f: {warnings} §bIf you are warned more than 3 times, you will be KICKED!",
     "msgstr": "§f>>§4あなたはスタッフに警告されました §e理由§f: {reason}. §6警告件数§f: {warnings} |§b三回以上警告されるとKickされます"
@@ -127,7 +143,7 @@
     "msgid": [
       "§a== About ChestLockAddon ==",
       "",
-      "ChestLockAddon is a useful utility addon for Minecraft version 1.21.22 that provides chest protection and more.",
+      "ChestLockAddon is a useful utility addon for Minecraft version 1.21.30 that provides chest protection and more.",
       "",
       "§b== Main Features ==",
       "• Chest Protection: Protect your chests from other players.",

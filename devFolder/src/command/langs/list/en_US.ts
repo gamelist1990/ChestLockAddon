@@ -3,6 +3,22 @@ export const translations = {
     msgid: "§f>>§4Reported player not found",
     msgstr: ""
   },
+  "command.echestInvalid": {
+    msgid: "§f>>§4Invalid usage. §fUse: echest -view <playername>",
+    msgstr: ""
+  },
+  "command.echestDocs": {
+    msgid: "View Ender Chest",
+    msgstr: ""
+  },
+  "command.echest": {
+    msgid: "§f>>§b${tragetplayer}§a's Ender Chest:§f",
+    msgstr: ""
+  },
+  "command.echestEmpty": {
+    msgid: "§f>>§b{tragetplayer}§a's ender chest is §gempty.",
+    msgstr: ""
+  },
   "command.WarnTarget": {
     msgid: "§f>>§4You have been warned. §eReason§f: {reason}. §6Total warnings§f: {warnings} §bIf you are warned more than 3 times, you will be KICKED!",
     msgstr: ""
@@ -100,7 +116,7 @@ export const translations = {
     msgstr: ""
   },
   "command.about": {
-    msgid: "§a== About ChestLockAddon ==\n\nChestLockAddon is a useful utility addon for Minecraft version 1.21.22 that provides chest protection and more.\n\n§b== Main Features ==\n• Chest Protection: Protect your chests from other players.\n• Multilingual Support: Change the language setting with the lang command.\n• Teleport Request: Send a teleport request to another player with the tpa command.\n• And more: More useful commands will be added in the future.\n\n§b== Links ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== Notes ==\nThis addon is under development and may contain unexpected bugs. If you find any bugs, please report them on GitHub or Discord.\n\n§a== Message from the Developer ==\nWe welcome your feedback to make ChestLockAddon a better addon.",
+    msgid: "§a== About ChestLockAddon ==\n\nChestLockAddon is a useful utility addon for Minecraft version 1.21.30 that provides chest protection and more.\n\n§b== Main Features ==\n• Chest Protection: Protect your chests from other players.\n• Multilingual Support: Change the language setting with the lang command.\n• Teleport Request: Send a teleport request to another player with the tpa command.\n• And more: More useful commands will be added in the future.\n\n§b== Links ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== Notes ==\nThis addon is under development and may contain unexpected bugs. If you find any bugs, please report them on GitHub or Discord.\n\n§a== Message from the Developer ==\nWe welcome your feedback to make ChestLockAddon a better addon.",
     msgstr: ""
   },
   "command.Undone": {

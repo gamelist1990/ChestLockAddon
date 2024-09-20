@@ -3,6 +3,22 @@
     "msgid": "§f>>§4Reported player not found",
     "msgstr": ""
   },
+  "command.echestInvalid": {
+    "msgid": "§f>>§4Invalid usage. §fUse: echest -view <playername>",
+    "msgstr": ""
+  },
+  "command.echestDocs": {
+    "msgid": "View Ender Chest",
+    "msgstr": ""
+  },
+  "command.echest": {
+    "msgid": "§f>>§b${tragetplayer}§a's Ender Chest:§f",
+    "msgstr": ""
+  },
+  "command.echestEmpty": {
+    "msgid": "§f>>§b{tragetplayer}§a's ender chest is §gempty.",
+    "msgstr": ""
+  },
   "command.WarnTarget": {
     "msgid": "§f>>§4You have been warned. §eReason§f: {reason}. §6Total warnings§f: {warnings} §bIf you are warned more than 3 times, you will be KICKED!",
     "msgstr": ""
@@ -115,7 +131,7 @@
     "msgid": [
       "§a== About ChestLockAddon ==",
       "",
-      "ChestLockAddon is a useful utility addon for Minecraft version 1.21.22 that provides chest protection and more.",
+      "ChestLockAddon is a useful utility addon for Minecraft version 1.21.30 that provides chest protection and more.",
       "",
       "§b== Main Features ==",
       "• Chest Protection: Protect your chests from other players.",

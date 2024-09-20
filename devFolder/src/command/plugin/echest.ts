@@ -1,37 +1,50 @@
-import { registerCommand, verifier } from '../../Modules/Handler';
+import { isPlayer, registerCommand, verifier } from '../../Modules/Handler';
 import { Player } from '@minecraft/server';
 import { getEnderChest } from '../../Modules/viewChest';
 import { config } from '../../Modules/Util';
+import { translate } from '../langs/list/LanguageManager';
 
 registerCommand({
     name: 'echest',
-    description: 'View a player\'s ender chest contents.',
+    description: 'command.echestDocs',
     parent: false,
     maxArgs: 2,
     minArgs: 2,
     require: (player: Player) => verifier(player, config().commands['echest']),
     executor: (player: Player, args: string[]) => {
         if (args[0] !== '-view') {
-            player.sendMessage('Invalid usage. Use: /echest -view <playername>');
+            player.sendMessage(translate(player,"command.echestInvalid"));
             return;
         }
 
         const targetPlayerName = args[1];
-        const targetPlayer = player.dimension.getPlayers().find(p => p.name === targetPlayerName);
+        const targetPlayer = isPlayer(targetPlayerName);
 
         if (!targetPlayer) {
-            player.sendMessage(`Player ${targetPlayerName} not found.`);
+            player.sendMessage(
+                translate(player, 'commands.list.playerNotFound', {
+                    tragetplayer: `${targetPlayerName}`,
+                }),
+            );
             return;
         }
 
         const enderChest = getEnderChest(targetPlayer);
 
         if (!enderChest) {
-            player.sendMessage(`${targetPlayerName}'s ender chest is empty.`);
+            player.sendMessage(
+                translate(player, 'commands.echestEmpty', {
+                    tragetplayer: `${targetPlayerName}`,
+                }),
+            );
             return;
         }
 
-        player.sendMessage(`${targetPlayerName}'s Ender Chest:`);
+        player.sendMessage(
+            translate(player, 'commands.echest', {
+                tragetplayer: `${targetPlayerName}`,
+            }),
+        );
         for (let i = 0; i < 27; i++) {
             const item = enderChest.getItem(i);
             if (item) {
