@@ -1,12 +1,12 @@
 import { world, Player, EntityHealthComponent } from '@minecraft/server';
-import { c } from '../../Modules/Util';
+import { c, getDimension } from '../../Modules/Util';
 import { registerCommand, isPlayer, verifier, prefix } from '../../Modules/Handler';
-import { getGamemode, getPing } from '../../Modules/Util';
+import { getGamemode, getPing  } from '../../Modules/Util';
 import { translate } from '../langs/list/LanguageManager';
 
 registerCommand({
   name: 'list',
-  description: 'Displayplayerinformation',
+  description: 'Display player information',
   parent: false,
   maxArgs: 2,
   minArgs: 0,
@@ -38,7 +38,7 @@ registerCommand({
     } else {
       player.sendMessage(translate(player, 'commands.list.usage', { prefix: `${prefix}` }));
     }
-  }
+  },
 });
 
 function sendPlayerInfoToChat(player: Player, targetPlayer: Player): void {
@@ -64,6 +64,21 @@ function sendPlayerInfoToChat(player: Player, targetPlayer: Player): void {
 
   const ping = getPing(targetPlayerData);
 
+  //const device = clientdevice(targetPlayerData);
+  const device = 0;
+  const deviceName = device === 0 ? "Desktop" : device === 1 ? "Mobile" : device === 2 ? "Console" : "Unknown";
+
+  const dimension = getDimension(targetPlayerData);
+
+  //const memoryTier = getMemoryTier(targetPlayerData);
+  const memoryTier = 0;
+  const memoryTierName = memoryTier === 0 ? "Memory:Undetermined" :
+    memoryTier === 1 ? "Memory:1.5GB" :
+    memoryTier === 2 ? "Memory:2GB" :
+    memoryTier === 3 ? "Memory:4GB" :
+    memoryTier === 4 ? "Memory:8GB" :
+    memoryTier === 5 ? "Memory:8GB or more" : "Memory:Unknown";
+
   player.sendMessage(
     translate(player, 'commands.list.playerInfo', {
       name: `${targetPlayerData.name}`,
@@ -74,6 +89,9 @@ function sendPlayerInfoToChat(player: Player, targetPlayer: Player): void {
       health: `${health}`,
       GameMode: `${gameMode}`,
       ping: `${ping.toString()}`,
+      device: `${deviceName}`,
+      dimension: `${dimension}`,
+      memory: `${memoryTierName}`
     }),
   );
 }
@@ -92,6 +110,17 @@ function sendAllPlayersInfoToChat(player: Player): void {
 
     const ping = getPing(targetPlayerData);
 
+    const device = 0;
+    const deviceName = device === 0 ? "Desktop" : device === 1 ? "Mobile" : device === 2 ? "Console" : "Unknown";
+    const dimension = getDimension(targetPlayerData);
+    const memoryTier = 0;
+    const memoryTierName = memoryTier === 0 ? "Memory:Undetermined" :
+      memoryTier === 1 ? "Memory:1.5GB" :
+      memoryTier === 2 ? "Memory:2GB" :
+      memoryTier === 3 ? "Memory:4GB" :
+      memoryTier === 4 ? "Memory:8GB" :
+      memoryTier === 5 ? "Memory:8GB or more" : "Memory:Unknown";
+
     player.sendMessage(
       translate(player, 'commands.list.playerInfo', {
         name: `${targetPlayerData.name}`,
@@ -102,6 +131,9 @@ function sendAllPlayersInfoToChat(player: Player): void {
         health: `${health}`,
         GameMode: `${gameMode}`,
         ping: `${ping.toString()}`,
+        device: `${deviceName}`,
+        dimension: `${dimension}`,
+        memory: `${memoryTierName}`
       }),
     );
   });

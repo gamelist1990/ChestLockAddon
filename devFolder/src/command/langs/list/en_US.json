@@ -532,7 +532,7 @@
     "msgstr": ""
   },
   "commands.list.playerInfo": {
-    "msgid": "§6 ==== Player Info =====\n §2Name: §f{name},\n §2ID: §f{TargetID},\n §2Location: §f({TargetX}, {TargetY}, {TargetZ}),\n §2Health: §f{health},\n §2Game Mode:§f {GameMode},\n §2Ping: {ping}\n §6 ===========",
+    "msgid": "§6 ==== Player Info =====\n §2Name: §f{name},\n §2ID: §f{TargetID},\n §2dimension:§f{dimension}\n §2Location: §f({TargetX}, {TargetY}, {TargetZ}),\n §2Health: §f{health},\n §2Game Mode:§f {GameMode},\n §2Ping:§f {ping}\n §2Device: §f{device}\n §2Memory: §f{memory}\n §6 ===========",
     "msgstr": ""
   },
   "commands.list.playerNotFound": {

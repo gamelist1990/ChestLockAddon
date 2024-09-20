@@ -4,3 +4,4 @@ import './warpgate';
 import './edit';
 import './lore';
 import './packet';
+import './invsee';
