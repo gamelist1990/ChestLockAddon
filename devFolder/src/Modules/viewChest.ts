@@ -1,47 +1,48 @@
 import { ItemTypes, Player } from "@minecraft/server";
 
-
-/** Soruce Code https://github.com/jasonlaubb/Matrix-AntiCheat/blob/main/ac_BP/src/Functions/moderateModel/echestView.ts#L17  */
 /**
- * @author jasonlaubb
- * @license AGPLv3
+ * Ender Chest Container class to store and access Ender Chest contents.
  */
-
-// Constant all item!
-var all = ItemTypes.getAll();
-const ALL_ITEM: string[] = all.map((item) => item.id);
-
 class EnderChestContainer {
-    private container: { [key: number]: string } = [];
+    private container: { [key: number]: string } = {};
+
     constructor(container: { [key: number]: string }) {
         this.container = container;
     }
-    public getItem(i: number) {
+
+    /**
+     * Get the item ID at the specified slot index.
+     * @param i Slot index (0-26)
+     * @returns Item ID or undefined if slot is empty.
+     */
+    public getItem(i: number): string | undefined {
         return this.container[i];
     }
 }
 
-
+/**
+ * Retrieves the contents of a player's Ender Chest.
+ * @param player The player whose Ender Chest to access.
+ * @returns EnderChestContainer object or null if Ender Chest is empty.
+ */
 export function getEnderChest(player: Player): EnderChestContainer | null {
-    const itemIncluded = [];
     const container: { [key: number]: string } = {};
-    for (const item of ALL_ITEM) {
-        try {
-            // check how the types of item did the echest included
-            player.runCommand(`testfor @s[hasitem={item=${item},location=slot.enderchest}]`);
-            itemIncluded.push(item);
-        } catch { }
-    }
-    if (itemIncluded.length == 0) return null;
+
+    // Iterate through Ender Chest slots (0-26)
     for (let i = 0; i < 27; i++) {
-        // use the filtered item type and checks for every slot (0-27)
-        for (const item of itemIncluded) {
+        // Iterate through all item types
+        for (const item of ItemTypes.getAll()) {
             try {
-                player.runCommand(`testfor @s[hasitem={item=${item},location=slot.enderchest,slot=${i}}]`);
-                container[i] = item;
-                break;
-            } catch { }
+                // Check if the current slot contains the current item type
+                player.runCommand(`testfor @s[hasitem={item=${item.id},location=slot.enderchest,slot=${i}}]`);
+                container[i] = item.id; // Store the item ID if found
+                break; // Move to the next slot
+            } catch {
+                // Ignore errors (item not found in the slot)
+            }
         }
     }
-    return new EnderChestContainer(container);
+
+    // Return EnderChestContainer if items were found, otherwise null
+    return Object.keys(container).length > 0 ? new EnderChestContainer(container) : null;
 }
