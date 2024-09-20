@@ -36,7 +36,7 @@ function submitReport(player: Player, reportedPlayerName: string, reason: string
     notifyStaff(player.name, reportedPlayerName);
 }
 
-function notifyStaff(reporter: string, reportedPlayer: string) {
+export function notifyStaff(reporter: string, reportedPlayer: string) {
     world.getPlayers()
         .filter((p) => p.hasTag('op') || p.hasTag('staff'))
         .forEach((staff) => {

@@ -1,9 +1,9 @@
-import { Player, world, system } from '@minecraft/server';
-import { registerCommand, verifier } from '../../Modules/Handler';
-import { config } from '../../Modules/Util';
-import { showPlayerLanguage, resetPlayerLanguages } from '../langs/list/LanguageManager';
+import { Player, system } from '@minecraft/server';
+import { isPlayer, registerCommand, verifier } from '../../Modules/Handler';
+import { config, tempkick } from '../../Modules/Util';
+import { showPlayerLanguage, resetPlayerLanguages, translate } from '../langs/list/LanguageManager';
 import { showProtectedChestData, resetProtectedChests } from '../plugin/chest';
-import { resetData, logData, chestLockAddonData } from './../../Modules/DataBase';
+import { resetData, logData } from './../../Modules/DataBase';
 
 registerCommand({
   name: 'dev',
@@ -34,12 +34,16 @@ registerCommand({
       } else {
         logData();
       }
-    } else if (subCommand === 'test') {
-      if (option === 'on') {
-        test = true;
-        runTick();
-      } else if (option === 'off') {
-        test = false;
+    } else if (subCommand === 'tempkick') {
+      if (option === args[2]) {
+        const playerName = isPlayer(args[2]);
+        if (playerName) {
+          system.runTimeout(() => {
+            tempkick(playerName)
+          }, 1)
+        }
+      } else {
+        player.sendMessage(translate(player, "PlayerNotFound"))
       }
     } else {
       player.sendMessage('Unknown subcommand');
@@ -47,15 +51,3 @@ registerCommand({
   },
 });
 
-
-let test = false;
-
-
-function runTick(): void {
-  if (test) {
-    world.sendMessage(JSON.stringify(chestLockAddonData, null, 2))
-
-  }
-
-  system.run(runTick);
-}

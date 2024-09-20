@@ -1,7 +1,7 @@
 import { config,kick, tempkick } from '../../Modules/Util';
 import { isPlayer, registerCommand, verifier } from '../../Modules/Handler';
 import { GameMode, Player, system, world, Vector3, Dimension, TeleportOptions, Vector2 } from '@minecraft/server';
-import { checkReports } from './report';
+import { checkReports, notifyStaff } from './report';
 import { translate } from '../langs/list/LanguageManager';
 
 function announce(player: Player, message: string) {
@@ -47,8 +47,8 @@ function restorePlayerLocation(player: Player) {
     }
 }
 
-const nightVisionEffectId = "night_vision"; //  Minecraft における暗視効果の ID
-const nightVisionEffectDuration = 10; //  事実上永久に
+const nightVisionEffectId = "night_vision"; 
+const nightVisionEffectDuration = 10;
 
 function startTrackingPlayer(player: Player, targetPlayer: Player) {
     const intervalId = system.runInterval(() => {
@@ -127,6 +127,7 @@ function warnPlayer(player: Player, targetPlayer: Player, reason: string, kickFl
     //targetPlayer.sendMessage(`You have been warned. Reason: ${reason}. Total warnings: ${warnings.count}`);
     translate(player, "command.WarnTarget", { reason: `${reason}`, warnings: `${warnings.count}` }, targetPlayer);
     player.sendMessage(translate(player, "command.WarnPlayer", { target: `${targetPlayer.name}`, warnings: `${warnings.count}`, reason: `${reason}` }));
+    notifyStaff(player.name,targetPlayer.name);
 
     if (kickFlag) {
         kick(targetPlayer, `§cYou have been kicked for receiving §e${warnings.count} warnings. Reasons: §b${warnings.reasons.join(', ')}
