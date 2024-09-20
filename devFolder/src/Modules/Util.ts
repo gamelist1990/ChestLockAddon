@@ -126,7 +126,7 @@ export const config = (): { commands: { [key: string]: CommandConfig }; admin: s
 
 
 
-export function getGamemode(playerName: string) {
+export function getGamemode(playerName: string): number {
   const gamemodes: GameMode[] = [
     GameMode.survival,
     GameMode.creative,
@@ -134,24 +134,28 @@ export function getGamemode(playerName: string) {
     GameMode.spectator,
   ];
 
-  for (let i = 0; i < 4; i++) {
-    if (
-      world.getPlayers({
-        name: playerName,
-        gameMode: gamemodes[i],
-      }).length != 0
-    )
-      return i;
+  for (const [index, gameMode] of gamemodes.entries()) {
+    if (world.getPlayers({ name: playerName, gameMode }).length > 0) {
+      return index;
+    }
   }
 
   return 0;
 }
 
-export const getPing = (player: Player) => player.pingTick ?? 0;
+export function getPing(player: Player): number {
+  const ping = player.pingTick ?? 20;
+  return ping
+}
 
 export function getAllPlayerNames(currentPlayer: Player): string[] {
-  const players = world.getPlayers();
-  return players.filter((p) => p.name !== currentPlayer.name).map((p) => p.nameTag);
+  const playerNames: string[] = [];
+  for (const player of world.getPlayers()) {
+    if (player.name !== currentPlayer.name) {
+      playerNames.push(player.nameTag);
+    }
+  }
+  return playerNames;
 }
 
 

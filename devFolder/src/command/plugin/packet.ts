@@ -25,10 +25,10 @@ let monitoring = false;
 const playerData: { [playerId: string]: PlayerData } = {};
 let currentTick = 0;
 
-const spikeLaggingData = new Map<string, {
+const pingData = new Map<string, {
   lastLocation: Vector3;
   lastTick: number;
-  isSpikeLagging: boolean;
+  isLagg: boolean;
   ping: number;
   lastVelocity: Vector3;
 }>();
@@ -40,9 +40,9 @@ interface XrayData {
   suspiciousBlocks: { [blockLocation: string]: { timestamp: number; count: number } };
 }
 
-interface SpikeLaggingData {
+interface pingData {
   pingStatus: string;
-  isSpikeLagging: boolean;
+  isLagg: boolean;
   ping: number;
   lastLocation: Vector3; // 追加
   lastVelocity: Vector3; // 追加
@@ -69,7 +69,7 @@ interface PlayerData {
   enderPearlInterval: any;
   lastPosition: Vector3 | null;
   xrayData: XrayData;
-  spikeLaggingData: SpikeLaggingData;
+  pingData: pingData;
   lastRotationY: number;
   boundaryCenter: Vector3;
   boundaryRadius: number;
@@ -104,8 +104,8 @@ function initializePlayerData(player: Player): void {
     xrayData: {
       suspiciousBlocks: {},
     },
-    spikeLaggingData: {
-      isSpikeLagging: false,
+    pingData: {
+      isLagg: false,
       pingStatus: '',
       ping: 0,
       lastLocation: player.location,
@@ -302,7 +302,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     return null;
   }
 
-  if (playerData[player.id].spikeLaggingData.ping > 60) {
+  if (playerData[player.id].pingData.ping > 60) {
     return null;
   }
 
@@ -601,11 +601,11 @@ function checkPlayerSpeed(player: Player): { cheatType: string } | null {
 
 
 
-function updateSpikeLaggingData(player: Player): void {
-  const sl = spikeLaggingData.get(player.id) ?? {
+function updateping(player: Player): void {
+  const sl = pingData.get(player.id) ?? {
     lastLocation: player.location,
     lastTick: system.currentTick,
-    isSpikeLagging: false,
+    isLagg: false,
     ping: 0,
     lastVelocity: { x: 0, y: 0, z: 0 }, // 初期速度を0に設定
   };
@@ -643,12 +643,12 @@ function updateSpikeLaggingData(player: Player): void {
   sl.lastLocation = currentLocation;
   sl.lastTick = currentTick;
   sl.lastVelocity = player.getVelocity(); // 現在の速度を保存
-  spikeLaggingData.set(player.id, sl);
+  pingData.set(player.id, sl);
 
   if (playerData[player.id]) {
-    playerData[player.id].spikeLaggingData.ping = sl.ping;
+    playerData[player.id].pingData.ping = sl.ping;
     // ping状態をプレイヤーデータに保存
-    playerData[player.id].spikeLaggingData.pingStatus = pingStatus;
+    playerData[player.id].pingData.pingStatus = pingStatus;
   }
 }
 
@@ -657,16 +657,16 @@ function getVector3Length(vec: Vector3): number {
   return Math.sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
 
-function checkSpikeLagging(player: Player): void {
-  const sl = spikeLaggingData.get(player.id);
+function checklagping(player: Player): void {
+  const sl = pingData.get(player.id);
   if (!sl) return;
-  if (Math.trunc(sl.ping / 20) >= 850) sl.isSpikeLagging = true;
-  else sl.isSpikeLagging = false;
-  spikeLaggingData.set(player.id, sl);
 
-  // プレイヤーデータの更新
+  sl.isLagg = Math.trunc(sl.ping / 20) >= 850;
+  pingData.set(player.id, sl);
+
+  // プレイヤーデータの更新 (存在する場合のみ)
   if (playerData[player.id]) {
-    playerData[player.id].spikeLaggingData.isSpikeLagging = sl.isSpikeLagging;
+    playerData[player.id].pingData.isLagg = sl.isLagg;
   }
 }
 
@@ -767,7 +767,7 @@ function runTick(): void {
 
 
 
-      //player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a現在Pingシステム実験中: ${playerData[playerId].spikeLaggingData.pingStatus} tick/ping"}]}`);
+      //player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a現在Pingシステム実験中: ${playerData[playerId].pingData.pingStatus} tick/ping"}]}`);
 
 
 
@@ -862,7 +862,7 @@ function logPlayerData(playerIdToDisplay: string): void {
   const simplifiedData = Object.fromEntries(
     Object.entries(playerData || playerIdToDisplay)
       .filter(([playerId]) => playerId)
-      .map(([playerId, data]) => [playerId, { ping: data.spikeLaggingData, xray: data.xrayData }])
+      .map(([playerId, data]) => [playerId, { ping: data.pingData, xray: data.xrayData }])
   );
   console.warn(`[DEBUG] playerData: ${JSON.stringify(simplifiedData, null, 2)}`);
 }
@@ -880,8 +880,8 @@ export function RunAntiCheat(): void {
 
   system.runInterval(() => {
     world.getPlayers().forEach(player => {
-      checkSpikeLagging(player);
-      updateSpikeLaggingData(player);
+      checklagping(player);
+      updateping(player);
     });
   }, 20);
 
