@@ -7,6 +7,10 @@
 
 [Download Here👈](https://github.com/gamelist1990/ChestLockAddon/releases)
 
+## Support
+
+[Discord](https://discord.com/invite/GJyqBm7Pyd)
+
 ## Update
 
 **Version 1.1** Fixed bugs and added new features from the previous 1.1
