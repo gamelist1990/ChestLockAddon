@@ -9,18 +9,18 @@
 
 ## Update
 
-**Version 1.1** Updated to support Minecraft Version 1.21.30
-[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.0...1.1)
+**Version 1.1** Fixed bugs and added new features from the previous 1.1
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.1...1.2)
 
 **Changes:**
 For detailed changes, please refer to the ChangeLog above☝
 
 Here is a brief summary of the changes:
 
-- This update brings compatibility with Minecraft Version 1.21.30.
-- Includes various bug fixes.
-- Introduces a new feature: Staff command.
-- Added a report command.
+- Updated to Version 1.2
+- Other bug fixes
+- Added Freecam mode to Staff command.
+- Added other Warn (can send warnings).
 
 ![alt text](image/EN,image.png)
 
