@@ -3,6 +3,14 @@ export const translations = {
     msgid: "§f>>§4Reported player not found",
     msgstr: ""
   },
+  "command.invalid_page_number": {
+    msgid: "§f>>§l§4Invalid page number",
+    msgstr: ""
+  },
+  "command.helpPage": {
+    msgid: "§2--- Showing help page {pageNumber} of {totalPages} ({PREFIX}help <page: int>) ---\n",
+    msgstr: ""
+  },
   "command.echestInvalid": {
     msgid: "§f>>§4Invalid usage. §fUse: echest -view <playername>",
     msgstr: ""
@@ -630,10 +638,6 @@ export const translations = {
   "Developer commands": {
     msgid: "Dev command (This command allows developers and administrators to reset and verify dynamic properties)",
     msgstr: "개발자 명령어!!"
-  },
-  "available_commands": {
-    msgid: "§6 Currently available commands:",
-    msgstr: "현재 사용 가능한 명령어"
   },
   "help_command_description": {
     msgid: "Help command (This command displays help information)",

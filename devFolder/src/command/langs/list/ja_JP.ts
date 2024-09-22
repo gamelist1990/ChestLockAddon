@@ -3,6 +3,14 @@ export const translations = {
     msgid: "§f>>§4Reported player not found",
     msgstr: "§f>>§4報告対象のプレイヤーが見つかりませんでした"
   },
+  "command.invalid_page_number": {
+    msgid: "§f>>§l§4Invalid page number",
+    msgstr: "§f>>§l§4無効なページ番号です"
+  },
+  "command.helpPage": {
+    msgid: "§2--- Showing help page {pageNumber} of {totalPages} ({PREFIX}help <page: int>) ---\n",
+    msgstr: "§2--- ヘルプページの {pageNumber}/{totalPages} ページを表示 ({PREFIX}help <ページ: 番号>) ---\n"
+  },
   "command.echestInvalid": {
     msgid: "§f>>§4Invalid usage. §fUse: echest -view <playername>",
     msgstr: "§f>>§4無効な使い方 §f使用方法: echest -view <playername>"
@@ -630,10 +638,6 @@ export const translations = {
   "Developer commands": {
     msgid: "Dev command (This command allows developers and administrators to reset and verify dynamic properties)",
     msgstr: "デベロッパー専用コマンド(tag OPが必要)"
-  },
-  "available_commands": {
-    msgid: "§6 Currently available commands:",
-    msgstr: "§6現在使用可能なコマンド"
   },
   "help_command_description": {
     msgid: "Help command (This command displays help information)",

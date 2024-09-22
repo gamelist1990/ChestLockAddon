@@ -74,12 +74,13 @@ world.afterEvents.playerSpawn.subscribe((event: any) => {
   // プレイヤーの名前を取得
   const playerName = player.name;
 
-  // プレイヤーがすでにメッセージを表示されているか確認
-  if (!playersShownMessage[playerName]) {
-    system.runTimeout(() => {
-      showJoinMessage(player);
-      playersShownMessage[playerName] = true;
-    }, 160);
+  if (joinModules.joinLogEnabled) {
+    if (!playersShownMessage[playerName]) {
+      system.runTimeout(() => {
+        showJoinMessage(player);
+        playersShownMessage[playerName] = true;
+      }, 160);
+    }
   }
 });
 
