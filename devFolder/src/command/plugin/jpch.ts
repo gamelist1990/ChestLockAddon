@@ -155,8 +155,8 @@ const dictionaryData: DictionaryEntry[] = [
   { kanji: 'スケルトン', hiragana: 'すけるとん' },
   { kanji: 'エンダーマン', hiragana: 'えんだーまん' },
   { kanji: 'ネザー', hiragana: 'ねざー' },
-  { kanji: 'エンド', hiragana: 'えんどら' },
-  { kanji: 'エンドラ', hiragana: 'えんど' },
+  { kanji: 'エンドラ', hiragana: 'えんどら' },
+  { kanji: 'エンド', hiragana: 'えんど' },
   { kanji: 'ポーション', hiragana: 'ぽーしょん' },
   { kanji: 'エンチャント', hiragana: 'えんちゃんとする' },
   { kanji: 'レッドストーン', hiragana: 'れっどすとーん' },
@@ -286,7 +286,7 @@ const dictionaryData: DictionaryEntry[] = [
   { kanji: '抜ける', hiragana: 'ぬける' },
   { kanji: '分後', hiragana: 'ぷんご' },
   { kanji: '相談', hiragana: 'そうだん' },
-  { kanji: '相談所', hiragana: '相談所' },
+  { kanji: '相談所', hiragana: 'そうだんじょ' },
   { kanji: '修正', hiragana: 'しゅうせい' },
   { kanji: '発見', hiragana: 'はっけん' },
   { kanji: '場所', hiragana: 'ばしょ' },
@@ -348,7 +348,11 @@ const dictionaryData: DictionaryEntry[] = [
   { kanji: 'コメント', hiragana: 'こめんと' },
   { kanji: 'モザイク', hiragana: 'もざいく' },
   { kanji: '宿泊', hiragana: 'しゅくはく' },
-
+  { kanji: '修繕', hiragana: 'しゅうぜん' },
+  { kanji: 'ドイツ', hiragana: 'どいつ' },
+  { kanji: '帝国', hiragana: 'ていこく' },
+  { kanji: '生活', hiragana: 'せいかつ' },
+  { kanji: '方が', hiragana: 'ほうが' },
 ];
 
 const dictionary: { [key: string]: string[] } = {};
@@ -449,41 +453,49 @@ const conversionTable: { [key: string]: string[] } = {
   kya: ['きゃ', 'キャ', 'kya'],
   kyu: ['きゅ', 'キュ', 'kyu'],
   kyo: ['きょ', 'キョ', 'kyo'],
+  kye: ['きぇ', 'シェ', 'kye'],
 
   // "S" sounds with "ya", "yu", "yo"
   sya: ['しゃ', 'シャ', 'sya'],
   syu: ['しゅ', 'シュ', 'syu'],
   syo: ['しょ', 'ショ', 'syo'],
+  sye: ['しぇ', 'シェ', 'sye'],
 
   // "Ch" sounds with "ya", "yu", "yo"
   cha: ['ちゃ', 'チャ', 'cha'],
   chu: ['ちゅ', 'チュ', 'chu'],
   cho: ['ちょ', 'チョ', 'cho'],
+  che: ['ちぇ', 'チョ', 'che'],
 
   // "N" sounds with "ya", "yu", "yo"
   nya: ['にゃ', 'ニャ', 'nya'],
   nyu: ['にゅ', 'ニュ', 'nyu'],
   nyo: ['にょ', 'ニョ', 'nyo'],
+  nye: ['にぇ', 'ニェ', 'nye'],
 
   // "H" sounds with "ya", "yu", "yo"
   hya: ['ひゃ', 'ヒャ', 'hya'],
   hyu: ['ひゅ', 'ヒュ', 'hyu'],
   hyo: ['ひょ', 'ヒョ', 'hyo'],
+  hye: ['ひぇ', 'ヒェ', 'hye'],
 
   // "M" sounds with "ya", "yu", "yo"
   mya: ['みゃ', 'ミャ', 'mya'],
   myu: ['みゅ', 'ミュ', 'myu'],
   myo: ['みょ', 'ミョ', 'myo'],
+  mye: ['みぇ', 'ミェ', 'mye'],
 
   // "R" sounds with "ya", "yu", "yo"
   rya: ['りゃ', 'リャ', 'rya'],
   ryu: ['りゅ', 'リュ', 'ryu'],
   ryo: ['りょ', 'リョ', 'ryo'],
+  rye: ['りぇ', 'リェ', 'rye'],
 
   // "G" sounds with "ya", "yu", "yo"
   gya: ['ぎゃ', 'ギャ', 'gya'],
   gyu: ['ぎゅ', 'ギュ', 'gyu'],
   gyo: ['ぎょ', 'ギョ', 'gyo'],
+  gye: ['ぎぇ', 'ギェ', 'gye'],
 
   // "J" sounds with "ya", "yu", "yo"
   ja: ['じゃ', 'ジャ', 'ja'],
@@ -495,11 +507,13 @@ const conversionTable: { [key: string]: string[] } = {
   bya: ['びゃ', 'ビャ', 'bya'],
   byu: ['びゅ', 'ビュ', 'byu'],
   byo: ['びょ', 'ビョ', 'byo'],
+  bye: ['びぇ', 'ビェ', 'bye'],
 
   // "P" sounds with "ya", "yu", "yo"
   pya: ['ぴゃ', 'ピャ', 'pya'],
   pyu: ['ぴゅ', 'ピュ', 'pyu'],
   pyo: ['ぴょ', 'ピョ', 'pyo'],
+  pye: ['ぴぇ', 'ピェ', 'pye'],
 
   // Double Consonant Sounds (before 'k' sounds)
   kka: ['っか', 'null'],
@@ -519,6 +533,9 @@ const conversionTable: { [key: string]: string[] } = {
   ttu: ['っつ', 'null'],
   tte: ['って', 'null'],
   tto: ['っと', 'null'],
+  tye: ['ちぇ', 'null'],
+
+
 
   // Custom
 
@@ -532,6 +549,8 @@ const conversionTable: { [key: string]: string[] } = {
   xa: ['ぁ', 'ァ', 'xa'],
   le: ['ぇ', 'ェ', 'le'],
   xe: ['ぇ', 'ェ', 'xe'],
+  lu: ['ぅ', 'ゥ', 'lu'],
+  xu: ['ぅ', 'ゥ', 'xu'],
 
   // Long Sound Mark
   '-': ['ー', 'ー', '-'],
@@ -544,20 +563,16 @@ function romajiToHiragana(romaji: string): string {
   let result = '';
   let i = 0;
   while (i < romaji.length) {
-    // 3文字から始まる変換を探す
     if (i < romaji.length - 2 && conversionTable[romaji.substring(i, i + 3)]) {
       result += conversionTable[romaji.substring(i, i + 3)][0];
       i += 3;
     } else if (i < romaji.length - 1 && conversionTable[romaji.substring(i, i + 2)]) {
-      // 2文字から始まる変換を探す
       result += conversionTable[romaji.substring(i, i + 2)][0];
       i += 2;
     } else if (conversionTable[romaji[i]]) {
-      // 1文字の変換を探す
       result += conversionTable[romaji[i]][0];
       i++;
     } else {
-      // 変換テーブルにない場合はそのまま追加
       result += romaji[i];
       i++;
     }
@@ -565,7 +580,6 @@ function romajiToHiragana(romaji: string): string {
   return result;
 }
 
-// === 最長一致検索による単語分割 (改良版) ===
 function splitIntoWords(text: string): string[] {
   const words: string[] = [];
   let currentWord = '';
@@ -605,9 +619,8 @@ function hiraganaToKanji(hiraganaText: string): string {
   let result = '';
   for (const word of words) {
     if (dictionary[word]) {
-      // 辞書のエントリを長さの降順にソート
       const sortedEntries = dictionary[word].sort((a, b) => b.length - a.length);
-      result += sortedEntries[0]; // 最も長い一致を使用
+      result += sortedEntries[0]; 
     } else {
       result += word;
     }
