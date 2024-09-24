@@ -3,6 +3,7 @@ import { Player, world } from '@minecraft/server';
 import { config } from '../../Modules/Util';
 import { ActionFormData } from '@minecraft/server-ui';
 import { translate } from '../langs/list/LanguageManager';
+import { chestLockAddonData, loadData, saveData } from '../../Modules/DataBase';
 
 
 interface Report {
@@ -12,7 +13,22 @@ interface Report {
     timestamp: number;
 }
 
-const reports: Report[] = [];
+let reports: Report[] = [];
+
+
+export function resetReports() {
+    reports.length = 0; // 配列を空にすることでレポートをリセット
+    saveData('reports', reports);
+    console.warn("Report Data Reset")
+}
+
+export function loadReport(): void {
+    loadData();
+    const data = chestLockAddonData.reports;
+    if (data && typeof data === 'object') {
+        reports = data;
+    }
+}
 
 function submitReport(player: Player, reportedPlayerName: string, reason: string) {
     if (reportedPlayerName !== 'testPlayer') {
@@ -31,6 +47,7 @@ function submitReport(player: Player, reportedPlayerName: string, reason: string
     });
 
     player.sendMessage(translate(player, 'command.reportSubmit'))
+    saveData('reports', reports); 
 
     // staffに通知
     notifyStaff(player.name, reportedPlayerName);

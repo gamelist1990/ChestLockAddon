@@ -1,7 +1,7 @@
-import { config,kick, tempkick } from '../../Modules/Util';
+import { config, kick, tempkick } from '../../Modules/Util';
 import { isPlayer, registerCommand, verifier } from '../../Modules/Handler';
 import { GameMode, Player, system, world, Vector3, Dimension, TeleportOptions, Vector2 } from '@minecraft/server';
-import { checkReports, notifyStaff } from './report';
+import { checkReports, notifyStaff, resetReports } from './report';
 import { translate } from '../langs/list/LanguageManager';
 
 function announce(player: Player, message: string) {
@@ -47,7 +47,7 @@ function restorePlayerLocation(player: Player) {
     }
 }
 
-const nightVisionEffectId = "night_vision"; 
+const nightVisionEffectId = "night_vision";
 const nightVisionEffectDuration = 10;
 
 function startTrackingPlayer(player: Player, targetPlayer: Player) {
@@ -127,7 +127,7 @@ function warnPlayer(player: Player, targetPlayer: Player, reason: string, kickFl
     //targetPlayer.sendMessage(`You have been warned. Reason: ${reason}. Total warnings: ${warnings.count}`);
     translate(player, "command.WarnTarget", { reason: `${reason}`, warnings: `${warnings.count}` }, targetPlayer);
     player.sendMessage(translate(player, "command.WarnPlayer", { target: `${targetPlayer.name}`, warnings: `${warnings.count}`, reason: `${reason}` }));
-    notifyStaff(player.name,targetPlayer.name);
+    notifyStaff(player.name, targetPlayer.name);
 
     if (kickFlag) {
         kick(targetPlayer, `§cYou have been kicked for receiving §e${warnings.count} warnings. Reasons: §b${warnings.reasons.join(', ')}
@@ -170,6 +170,8 @@ registerCommand({
                 system.runTimeout(() => {
                     checkReports(player);
                 }, 60);
+            } else if (option === '-reset') {
+                resetReports();
             }
         } else if (subCommand === 'freecam') {
             if (option === '-p') {

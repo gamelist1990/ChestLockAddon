@@ -459,7 +459,8 @@ function handleChestInteraction(event: any) {
     if (
       chestData.owner !== event.player.name &&
       !chestData.members?.includes(event.player.name) &&
-      !event.player.hasTag('op')
+      !event.player.hasTag('op') &&
+      !event.player.hasTag('staff')
     ) {
       event.cancel = true;
       event.player.sendMessage(translate(event.player, 'isLookChest'));
@@ -474,7 +475,7 @@ function handleChestBreak(event: any) {
   if (chestData) {
     if (event.player) {
       const player = event.player;
-      if (chestData.owner === player.name || player.hasTag('op')) {
+      if (chestData.owner === player.name || player.hasTag('op') || player.hasTag('staff')) {
         delete protectedChests[chestKey];
         saveProtectedChests();
         player.sendMessage(translate(player, 'ProChestBreak'));

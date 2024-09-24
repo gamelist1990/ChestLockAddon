@@ -6,3 +6,4 @@ import './lore';
 import './packet';
 import './invsee';
 import './echest';
+import './offhand';

@@ -297,12 +297,15 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   if (!data || data.isTeleporting || player.isGliding || data.recentlyUsedEnderPearl || getGamemode(player.name) === 1) {
     return null;
   }
+  if (getGamemode(player.name) === 3) {
+    return null;
+  }
 
   if (hasAnyEffectExcept(player, getExcludedEffects())) {
     return null;
   }
 
-  if (playerData[player.id].pingData.ping > 60) {
+  if (playerData[player.id].pingData.ping > 50) {
     return null;
   }
 
@@ -403,6 +406,9 @@ function detectClickTpOutOfBoundary(player: Player): { cheatType: string } | nul
   if (getGamemode(player.name) === 1) {
     return null;
   }
+  if (getGamemode(player.name) === 3) {
+    return null;
+  }
 
   const distanceToCenter = calculateDistance(player.location, data.boundaryCenter);
 
@@ -493,7 +499,7 @@ function detectXrayOnSight(player: Player): void {
     const distanceToBlock = calculateDistance(player.location, targetBlock.location);
 
     // ブロックが3ブロック以上離れている場合のみ処理
-    if (distanceToBlock > 6) {
+    if (distanceToBlock > 4) {
       const blockLocationString = `${targetBlock.location.x},${targetBlock.location.y},${targetBlock.location.z}`;
 
       // 座標が有効な範囲内にあるかどうかをチェック
@@ -581,7 +587,7 @@ function checkPlayerSpeed(player: Player): { cheatType: string } | null {
   const velocity = player.getVelocity();
   const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z); // Calculate the speed from velocity components
   const data = playerData[player.id];
-  const maxAllowedSpeed = 14;
+  const maxAllowedSpeed = 13;
 
   if (!data || data.isTeleporting || player.isGliding || data.recentlyUsedEnderPearl || getGamemode(player.name) === 1) {
     return null;
@@ -767,7 +773,7 @@ function runTick(): void {
 
 
 
-      //player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a現在Pingシステム実験中: ${playerData[playerId].pingData.pingStatus} tick/ping"}]}`);
+     // player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a現在Pingシステム実験中: ${playerData[playerId].pingData.pingStatus} tick/ping"}]}`);
 
 
 
@@ -862,7 +868,7 @@ function logPlayerData(playerIdToDisplay: string): void {
   const simplifiedData = Object.fromEntries(
     Object.entries(playerData || playerIdToDisplay)
       .filter(([playerId]) => playerId)
-      .map(([playerId, data]) => [playerId, { ping: data.pingData, xray: data.xrayData }])
+      .map(([playerId, data]) => [playerId, { xray: data.xrayData }])
   );
   console.warn(`[DEBUG] playerData: ${JSON.stringify(simplifiedData, null, 2)}`);
 }

@@ -3,6 +3,30 @@
     "msgid": "§f>>§4Reported player not found",
     "msgstr": ""
   },
+  "command.NotEnchant": {
+    "msgid": "§f>>§6Enchanted items §4cannot be equipped in the offhand",
+    "msgstr": ""
+  },
+  "command.alreadyOffhand": {
+    "msgid": "§f>>§6Offhand item§4 already exists",
+    "msgstr": ""
+  },
+  "command.OffhandItem": {
+    "msgid": "§f>>§aOffhand item set.",
+    "msgstr": ""
+  },
+  "command.NoMainHand": {
+    "msgid": "§f>>§6No item in mainhand.",
+    "msgstr": ""
+  },
+  "command.RemoveOffhand": {
+    "msgid": "§f>>§aOffhand item Remove",
+    "msgstr": ""
+  },
+  "command.offhandUsage": {
+    "msgid": "§f>>§b Invalid argument Use -set",
+    "msgstr": ""
+  },
   "command.invalid_page_number": {
     "msgid": "§f>>§l§4Invalid page number",
     "msgstr": ""

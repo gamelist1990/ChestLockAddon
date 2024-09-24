@@ -3,6 +3,30 @@ export const translations = {
     msgid: "§f>>§4Reported player not found",
     msgstr: "§f>>§4報告対象のプレイヤーが見つかりませんでした"
   },
+  "command.NotEnchant": {
+    msgid: "§f>>§6Enchanted items §4cannot be equipped in the offhand",
+    msgstr: "§f>>§6エンチャント§4アイテムはオフハンドに設定出来ません！"
+  },
+  "command.alreadyOffhand": {
+    msgid: "§f>>§6Offhand item§4 already exists",
+    msgstr: "§f>>§6既にオフハンド§4にアイテムが設定されています"
+  },
+  "command.OffhandItem": {
+    msgid: "§f>>§aOffhand item set.",
+    msgstr: "§f>>§aオフハンドにアイテムを設定しました"
+  },
+  "command.NoMainHand": {
+    msgid: "§f>>§6No item in mainhand.",
+    msgstr: "§f>>§6設定するアイテムを手に持って下さい"
+  },
+  "command.RemoveOffhand": {
+    msgid: "§f>>§aOffhand item Remove",
+    msgstr: "§f>>§aオフハンドのアイテムが削除されました"
+  },
+  "command.offhandUsage": {
+    msgid: "§f>>§b Invalid argument Use -set",
+    msgstr: "§f>>§b無効な引数です -set を使用して下さい"
+  },
   "command.invalid_page_number": {
     msgid: "§f>>§l§4Invalid page number",
     msgstr: "§f>>§l§4無効なページ番号です"

@@ -21,6 +21,7 @@ export function loadData(): void {
   }
 }
 
+
 // データの出力関数
 export function logData(): void {
   console.warn(JSON.stringify(chestLockAddonData, null, 2));

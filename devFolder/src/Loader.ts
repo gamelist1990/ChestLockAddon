@@ -8,6 +8,7 @@ import { customCommandsConfig } from './command/itemUI';
 import { config, tempkick } from './Modules/Util';
 import { loadData } from './Modules/DataBase';
 import { banPlayers } from './Modules/globalBan';
+import { loadReport } from './command/utility/report';
 //import { RunAntiCheat } from './command/plugin/packet';
 
 const startTime = Date.now();
@@ -27,6 +28,7 @@ world.afterEvents.worldInitialize.subscribe(async () => {
   try {
     loadPlayerLanguages();
     loadData();
+    loadReport();
     //RunAntiCheat();
     loadGate();
     loadjoinModules();
