@@ -2,8 +2,6 @@ import { config, getGamemode } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
 import { Player, world, system, Vector3, Block } from '@minecraft/server';
 
-//packet.tsの検出アルゴリズム自体を変更予定
-
 // ----------------------------------
 // --- 設定 ---
 // ----------------------------------
@@ -15,6 +13,10 @@ const configs = {
     freezeDuration: 20 * 10,
     betasystem: true,
     xrayDetectionDistance: 10,
+    // 最大許容速度 (ブロック/ティック)
+    maxAllowedSpeed: 0.7,
+    // 速度違反検出のしきい値 (ブロック/ティック)
+    speedViolationThreshold: 0.1,
   },
 };
 
@@ -30,7 +32,9 @@ const pingData = new Map<string, {
   lastTick: number;
   isLagg: boolean;
   ping: number;
-  lastVelocity: Vector3;
+  movementHistory: { tick: number; location: Vector3; isJumping: boolean }[];
+  averagePing: number;
+  pingCoefficient: number;
 }>();
 
 // ----------------------------------
@@ -44,12 +48,7 @@ interface pingData {
   pingStatus: string;
   isLagg: boolean;
   ping: number;
-  lastLocation: Vector3; // 追加
-  lastVelocity: Vector3; // 追加
-  lastRotationY: number; // 追加
-  lastTick: number; // 追加
 }
-
 
 interface PlayerData {
   lastGroundY: number;
@@ -73,6 +72,8 @@ interface PlayerData {
   lastRotationY: number;
   boundaryCenter: Vector3;
   boundaryRadius: number;
+  lastFallVelocity: Vector3 | null;
+  unnaturalAccelerationTicksY: number;
 }
 
 // ----------------------------------
@@ -86,6 +87,8 @@ function initializePlayerData(player: Player): void {
     lastFallDistance: 0,
     positionHistory: [player.location],
     lastTime: Date.now(),
+    lastFallVelocity: null,
+    unnaturalAccelerationTicksY: 0,
     violationCount: 0,
     isTeleporting: false,
     lastTeleportTime: 0,
@@ -102,23 +105,17 @@ function initializePlayerData(player: Player): void {
     boundaryCenter: player.location,
     boundaryRadius: 10,
     xrayData: {
-      suspiciousBlocks: {}, 
+      suspiciousBlocks: {},
     },
     pingData: {
       isLagg: false,
       pingStatus: '',
       ping: 0,
-      lastLocation: player.location,
-      lastVelocity: { x: 0, y: 0, z: 0 }, // 初期速度を0に設定
-      lastRotationY: player.getRotation().y, // 初期回転を現在の回転に設定
-      lastTick: 0,
     },
   };
   if (config().module.debugMode.enabled === true) {
     console.warn(`プレイヤー ${player.name} (ID: ${player.id}) を監視しています`);
-
   }
-
 }
 
 world.afterEvents.playerSpawn.subscribe((event) => {
@@ -127,7 +124,6 @@ world.afterEvents.playerSpawn.subscribe((event) => {
     delete playerData[player.id];
     if (config().module.debugMode.enabled === true) {
       console.warn(`プレイヤー ${player.name} (ID: ${player.id}) の監視を停止しました`);
-
     }
   }
 });
@@ -139,7 +135,6 @@ function addPositionHistory(player: Player): void {
 
   if (player.isGliding) {
     data.isTeleporting = true;
-    // クールタイム終了後にテレポートフラグをリセット
     system.runTimeout(() => {
       data.isTeleporting = false;
     }, 3 * 20);
@@ -178,15 +173,12 @@ function executeRollback(player: Player): void {
   const rollbackIndex = data.positionHistory.length - configs.antiCheat.rollbackTicks - 1;
   if (rollbackIndex >= 0) {
     const rollbackPosition = data.positionHistory[rollbackIndex];
-    // 1 tick 遅延させてロールバック
     system.run(() => {
       player.teleport(rollbackPosition, { dimension: player.dimension });
-
       console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をロールバックしました`);
     });
   }
 
-  // データのリセット
   resetPlayerData(data, player);
 }
 
@@ -209,17 +201,14 @@ function executeFreeze(player: Player): void {
   data.isFrozen = true;
   data.freezeStartTime = currentTick;
 
-  // プレイヤーをy座標500にテレポート
   player.teleport({ x: player.location.x, y: 500, z: player.location.z }, { dimension: player.dimension });
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をfreezeしました`);
-  player.sendMessage("異常な行動を検出した為フリーズしました(10秒程度で解除されます)")
+  player.sendMessage("異常な行動を検出した為フリーズしました(10秒程度で解除されます)");
 
-  // 一定時間後にfreeze解除
   system.runTimeout(() => {
     data.isFrozen = false;
     console.warn(`プレイヤー ${player.name} (ID: ${player.id}) のfreezeを解除しました`);
-    player.sendMessage("フリーズを解除しました")
-    // データのリセット
+    player.sendMessage("フリーズを解除しました");
     resetPlayerData(data, player);
     data.violationCount = 0;
   }, configs.antiCheat.freezeDuration);
@@ -228,15 +217,6 @@ function executeFreeze(player: Player): void {
 // 2点間の距離を計算
 function calculateDistance(pos1: Vector3, pos2: Vector3): number {
   return Math.sqrt((pos2.x - pos1.x) ** 2 + (pos2.y - pos1.y) ** 2 + (pos2.z - pos1.z) ** 2);
-}
-
-// プレイヤーとボートの距離をチェックする関数
-//@ts-ignore
-function isNearBoat(player: Player): boolean {
-  return world
-    .getDimension('overworld')
-    .getEntities()
-    .some((entity) => entity.typeId === 'minecraft:boat' && calculateDistance(player.location, entity.location) <= 5);
 }
 
 // エンダーパールとウィンドチャージの使用を記録
@@ -248,7 +228,6 @@ world.afterEvents.itemUse.subscribe((event) => {
     const data = playerData[player.id] || {};
     playerData[player.id] = data;
 
-    // 既存のタイムアウトをクリア
     if (data.enderPearlInterval) {
       data.enderPearlInterval = null;
     }
@@ -258,13 +237,11 @@ world.afterEvents.itemUse.subscribe((event) => {
   }
 });
 
-
 function isPlayerActuallyOnGround(player: Player): boolean {
   const playerLocation = player.location;
   const playerDimension = player.dimension;
   const blockRadiusToCheck = 1;
 
-  // Define world boundaries (example values, adjust as needed)
   const minWorldX = -30000000;
   const maxWorldX = 30000000;
   const minWorldY = -64;
@@ -276,11 +253,8 @@ function isPlayerActuallyOnGround(player: Player): boolean {
     for (let z = Math.max(minWorldZ, Math.floor(playerLocation.z) - blockRadiusToCheck); z <= Math.min(maxWorldZ, Math.floor(playerLocation.z) + blockRadiusToCheck); z++) {
       for (let y = Math.max(minWorldY, Math.floor(playerLocation.y) - 1); y >= Math.max(minWorldY, Math.floor(playerLocation.y) - blockRadiusToCheck) && y <= maxWorldY; y--) {
         const block = playerDimension.getBlock({ x, y, z });
-        if (block) {
-          const blockPerm = block.permutation;
-          if (blockPerm.hasTag("collision")) {
-            return true;
-          }
+        if (block && block.permutation.hasTag("collision")) {
+          return true;
         }
       }
     }
@@ -288,16 +262,10 @@ function isPlayerActuallyOnGround(player: Player): boolean {
   return false;
 }
 
-
-
-
-// AirJump検出 まだ未完成
+// AirJump検出
 function detectAirJump(player: Player): { cheatType: string } | null {
   const data = playerData[player.id];
-  if (!data || data.isTeleporting || player.isGliding || data.recentlyUsedEnderPearl || getGamemode(player.name) === 1) {
-    return null;
-  }
-  if (getGamemode(player.name) === 3) {
+  if (!data || data.isTeleporting || player.isGliding || data.recentlyUsedEnderPearl || getGamemode(player.name) === 1 || getGamemode(player.name) === 3) {
     return null;
   }
 
@@ -339,14 +307,6 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 
   const velocityChangeRate = (currentVelocityY - twoTicksAgoVelocityY) / (50 * 2);
 
-  const movementAngle = Math.atan2(currentPosition.z - previousPosition.z, currentPosition.x - previousPosition.x);
-  const playerRotationAngle = player.getRotation().y;
-  const angleDifference = Math.abs(movementAngle - playerRotationAngle);
-
-
-
-  data.lastRotationY = angleDifference;
-
   // ジャンプ状態の判定
   if (isActuallyOnGround) {
     data.isJumping = false;
@@ -373,20 +333,14 @@ function detectAirJump(player: Player): { cheatType: string } | null {
       ) {
         data.jumpCounter++;
         if (data.jumpCounter >= 1) {
-          return { cheatType: '(AirJump|Fly)' }; // 通常のAirJumpとして検出
+          return { cheatType: '(AirJump|Fly)' };
         }
       }
     }
   }
 
-
-
   return null;
 }
-
-
-
-
 
 function calculateHorizontalSpeed(pos1: Vector3, pos2: Vector3) {
   return Math.sqrt((pos1.x - pos2.x) ** 2 + (pos1.z - pos2.z) ** 2);
@@ -399,23 +353,14 @@ function calculateVerticalVelocity(positionHistory: string | any[], ticksAgo: nu
   return 0;
 }
 
-
 function detectClickTpOutOfBoundary(player: Player): { cheatType: string } | null {
   const data = playerData[player.id];
-  if (!data) return null;
-  if (getGamemode(player.name) === 1) {
-    return null;
-  }
-  if (getGamemode(player.name) === 3) {
-    return null;
-  }
+  if (!data || getGamemode(player.name) === 1 || getGamemode(player.name) === 3) return null;
 
   const distanceToCenter = calculateDistance(player.location, data.boundaryCenter);
 
-  // プレイヤーが落下中かどうかを判定するフラグを追加
-  const isFalling = player.isFalling; // isFalling() はプレイヤーが落下中かどうかを返す関数と仮定
+  const isFalling = player.isFalling;
 
-  // 境界の外に出た場合、かつ落下中でない場合、かつ15ブロック以内
   if (distanceToCenter > data.boundaryRadius && distanceToCenter <= data.boundaryRadius + 5 && !isFalling) {
     return { cheatType: 'ClickTP (実験中)' };
   }
@@ -428,13 +373,11 @@ function getBlockFromReticle(player: Player, maxDistance: number): Block | null 
   const playerLocation = player.getHeadLocation();
   const viewDirection = player.getViewDirection();
 
-  // 有効な座標範囲を定義
   const minCoordinate = -30000000;
   const maxCoordinate = 30000000;
   const minYCoordinate = -64;
   const maxYCoordinate = 255;
 
-  // 光線上の各点を計算
   for (let i = 0; i <= maxDistance; i++) {
     const currentPosition = {
       x: Math.floor(playerLocation.x + viewDirection.x * i),
@@ -442,21 +385,17 @@ function getBlockFromReticle(player: Player, maxDistance: number): Block | null 
       z: Math.floor(playerLocation.z + viewDirection.z * i),
     };
 
-    // 座標が有効な範囲内にあるかどうかをチェック
     if (
       currentPosition.x < minCoordinate || currentPosition.x > maxCoordinate ||
       currentPosition.y < minYCoordinate || currentPosition.y > maxYCoordinate ||
       currentPosition.z < minCoordinate || currentPosition.z > maxCoordinate
     ) {
-      continue; // 無効な座標の場合は次のループへ
+      continue;
     }
 
-    // ブロックを取得
     const block = playerDimension.getBlock(currentPosition);
 
-    // ブロックが存在し、かつXray検知対象の場合
     if (block && targetXrayBlockIds.includes(block.typeId)) {
-      // 周囲6方向のブロックを取得
       const surroundingBlocks = [
         playerDimension.getBlock({ x: currentPosition.x + 1, y: currentPosition.y, z: currentPosition.z }),
         playerDimension.getBlock({ x: currentPosition.x - 1, y: currentPosition.y, z: currentPosition.z }),
@@ -466,21 +405,16 @@ function getBlockFromReticle(player: Player, maxDistance: number): Block | null 
         playerDimension.getBlock({ x: currentPosition.x, y: currentPosition.y, z: currentPosition.z - 1 }),
       ];
 
-      // 周囲にairブロックが存在するかチェック
       const isTouchingAir = surroundingBlocks.some(surroundingBlock => surroundingBlock && surroundingBlock.typeId === 'minecraft:air');
 
-      // airブロックと触れていない場合のみブロックを返す
       if (!isTouchingAir) {
         return block;
       }
     }
   }
 
-  // 指定距離以内に指定種類のブロックが見つからない場合は null を返す
   return null;
 }
-
-
 
 const targetXrayBlockIds = ['minecraft:diamond_ore', 'minecraft:ancient_debris', 'minecraft:emerald_ore', 'minecraft:iron_ore'];
 
@@ -490,19 +424,14 @@ function detectXrayOnSight(player: Player): void {
   if (!data) return;
   const currentTime = Date.now();
 
-  // プレイヤーのレティクルからブロックを取得 (最大距離: configs.antiCheat.xrayDetectionDistance)
   const targetBlock = getBlockFromReticle(player, configs.antiCheat.xrayDetectionDistance);
 
-  // ブロックが存在し、かつXray検知対象の場合
   if (targetBlock && targetXrayBlockIds.includes(targetBlock.typeId)) {
-    // プレイヤーとブロックの距離を計算
     const distanceToBlock = calculateDistance(player.location, targetBlock.location);
 
-    // ブロックが3ブロック以上離れている場合のみ処理
     if (distanceToBlock > 4) {
       const blockLocationString = `${targetBlock.location.x},${targetBlock.location.y},${targetBlock.location.z}`;
 
-      // 座標が有効な範囲内にあるかどうかをチェック
       const minCoordinate = -30000000;
       const maxCoordinate = 30000000;
       const minYCoordinate = -64;
@@ -513,26 +442,21 @@ function detectXrayOnSight(player: Player): void {
         targetBlock.location.y >= minYCoordinate && targetBlock.location.y <= maxYCoordinate &&
         targetBlock.location.z >= minCoordinate && targetBlock.location.z <= maxCoordinate
       ) {
-        // 既に同じ座標のブロックが登録されているかチェック
         if (data.xrayData.suspiciousBlocks[blockLocationString]) {
-          // 既存データの場合はcountを増やす
           data.xrayData.suspiciousBlocks[blockLocationString].count++;
         } else {
-          // 新規データの場合は追加
           data.xrayData.suspiciousBlocks[blockLocationString] = {
             timestamp: currentTime,
-            count: 1, // 初期カウントは1
+            count: 1,
           };
         }
       }
     }
   }
 
-  // Xray検知対象外のブロックを見ている場合は、suspiciousBlocks から削除
   for (const blockLocationString in data.xrayData.suspiciousBlocks) {
     const blockData = data.xrayData.suspiciousBlocks[blockLocationString];
 
-    // 3秒以上経過し、視界から外れている場合のみ削除
     if (currentTime - blockData.timestamp > 5000 &&
       !(
         targetBlock &&
@@ -546,9 +470,6 @@ function detectXrayOnSight(player: Player): void {
   }
 }
 
-
-
-
 // ブロック破壊時のXrayチェック
 world.beforeEvents.playerBreakBlock.subscribe((event) => {
   const player = event.player;
@@ -557,14 +478,10 @@ world.beforeEvents.playerBreakBlock.subscribe((event) => {
 
   if (!data) return;
 
-  // 1 tick 遅延させてチェック
   system.run(() => {
     const blockLocationString = `${blockLocation.x},${blockLocation.y},${blockLocation.z}`;
-    // 破壊したブロックが疑わしいブロックとして記録されているかチェック
     if (data.xrayData.suspiciousBlocks[blockLocationString]) {
-      // Xray判定
       world.sendMessage(`§l§a[自作§3AntiCheat]§fプレイヤー ${player.name} (ID: ${player.id}) が Xray を使用している可能性があります(バグの可能性もあり)`);
-      // 疑わしいブロックの記録を削除
       delete data.xrayData.suspiciousBlocks[blockLocationString];
     }
   });
@@ -581,14 +498,8 @@ function getExcludedEffects(): string[] {
   ];
 }
 
-
-
 function checkPlayerSpeed(player: Player): { cheatType: string } | null {
-  const velocity = player.getVelocity();
-  const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z); // Calculate the speed from velocity components
   const data = playerData[player.id];
-  const maxAllowedSpeed = 13;
-
   if (!data || data.isTeleporting || player.isGliding || data.recentlyUsedEnderPearl || getGamemode(player.name) === 1) {
     return null;
   }
@@ -597,15 +508,71 @@ function checkPlayerSpeed(player: Player): { cheatType: string } | null {
     return null;
   }
 
-  if (speed > maxAllowedSpeed) {
-    return { cheatType: 'Speed' }; // Return the cheat type if speed exceeds the maximum allowed speed
+  const currentLocation = player.location;
+  const previousLocation = data.lastPosition || currentLocation;
+
+  const horizontalDistance = Math.sqrt(
+    (currentLocation.x - previousLocation.x) ** 2 + (currentLocation.z - previousLocation.z) ** 2
+  );
+
+  const timeElapsed = (Date.now() - data.lastTime) / 50;
+
+  const horizontalSpeed = horizontalDistance / timeElapsed;
+
+  if (horizontalSpeed > configs.antiCheat.maxAllowedSpeed + configs.antiCheat.speedViolationThreshold) {
+    return { cheatType: 'Speed' };
   }
 
   return null;
 }
 
+function estimatePingFromMovement(movementHistory: { tick: number; location: Vector3; isJumping: boolean }[]): number {
+  if (movementHistory.length < 2) {
+    return 0;
+  }
 
+  let totalDistance = 0;
+  let totalTime = 0;
+  let totalVelocityChange = 0;
 
+  for (let i = 1; i < movementHistory.length; i++) {
+    const prev = movementHistory[i - 1];
+    const curr = movementHistory[i];
+
+    const distance = calculateDistance3D(prev.location, curr.location);
+    totalDistance += distance;
+
+    const timeDiff = curr.tick - prev.tick;
+    totalTime += timeDiff;
+
+    const velocity = distance / timeDiff;
+
+    if (i > 1) {
+      const prevVelocity = calculateDistance3D(movementHistory[i - 2].location, prev.location) / (prev.tick - movementHistory[i - 2].tick);
+      totalVelocityChange += Math.abs(velocity - prevVelocity);
+    }
+
+    if (curr.isJumping) {
+      totalVelocityChange += 5;
+    }
+  }
+
+  const averageSpeed = totalDistance / totalTime;
+
+  const averageVelocityChange = totalVelocityChange / (movementHistory.length - 1);
+
+  const pingCoefficient = 20;
+  let estimatedPing = Math.floor((averageSpeed + averageVelocityChange) * pingCoefficient);
+
+  if (estimatedPing > 1000) estimatedPing = 1000;
+  if (estimatedPing < 0) estimatedPing = 0;
+
+  return estimatedPing;
+}
+
+function calculateDistance3D(pos1: Vector3, pos2: Vector3): number {
+  return Math.sqrt((pos2.x - pos1.x) ** 2 + (pos2.y - pos1.y) ** 2 + (pos2.z - pos1.z) ** 2);
+}
 
 function updateping(player: Player): void {
   const sl = pingData.get(player.id) ?? {
@@ -613,54 +580,52 @@ function updateping(player: Player): void {
     lastTick: system.currentTick,
     isLagg: false,
     ping: 0,
-    lastVelocity: { x: 0, y: 0, z: 0 }, // 初期速度を0に設定
+    movementHistory: [],
+    averagePing: 0,
+    pingCoefficient: 20,
   };
 
   const currentTick = system.currentTick;
-  const timeDiff = currentTick - sl.lastTick; // 移動にかかった時間 (tick)
   const currentLocation = player.location;
 
-  // 期待される移動距離を計算
-  const expectedDistance = getVector3Length(sl.lastVelocity) * timeDiff;
+  sl.movementHistory.push({ tick: currentTick, location: currentLocation, isJumping: player.isJumping });
 
-  // 実際の移動距離を計算
-  const actualDistance = calculateDistance(sl.lastLocation, currentLocation);
+  if (sl.movementHistory.length > 100) {
+    sl.movementHistory.shift();
+  }
 
-  // 移動距離の差を計算
-  const distanceDiff = Math.abs(expectedDistance - actualDistance);
+  const estimatedPing = estimatePingFromMovement(sl.movementHistory);
 
-  // ping 値を推定 (調整が必要)
-  const pingCoefficient = 10; // ping 係数 (調整が必要)
-  sl.ping = Math.floor(distanceDiff * pingCoefficient);
+  const minPingCoefficient = 10;
+  const maxPingCoefficient = 50;
+  if (sl.pingCoefficient < minPingCoefficient) sl.pingCoefficient = minPingCoefficient;
+  if (sl.pingCoefficient > maxPingCoefficient) sl.pingCoefficient = maxPingCoefficient;
 
-  // ping 値の上限を設定
-  if (sl.ping > 1000) sl.ping = 1000;
-
-  // ping値に基づいて状態を判定 (閾値は調整が必要)
-  let pingStatus = `良好:${sl.ping}`;
-  if (sl.ping < 50) {
-    pingStatus = `良好:${sl.ping}`;
-  } else if (sl.ping < 150) {
-    pingStatus = `普通:${sl.ping}`;
+  const adjustedPing = estimatedPing * (sl.pingCoefficient / 20);
+  const pingHistoryLength = 5;
+  if (sl.averagePing === 0) {
+    sl.averagePing = adjustedPing;
   } else {
-    pingStatus = `悪い:${sl.ping}`;
+    sl.averagePing = (sl.averagePing * (pingHistoryLength - 1) + adjustedPing) / pingHistoryLength;
+  }
+
+  let pingStatus = `良好:${sl.averagePing}`;
+  if (sl.averagePing < 50) {
+    pingStatus = `良好:${sl.averagePing}`;
+  } else if (sl.averagePing < 150) {
+    pingStatus = `普通:${sl.averagePing}`;
+  } else {
+    pingStatus = `悪い:${sl.averagePing}`;
   }
 
   sl.lastLocation = currentLocation;
   sl.lastTick = currentTick;
-  sl.lastVelocity = player.getVelocity(); // 現在の速度を保存
   pingData.set(player.id, sl);
 
   if (playerData[player.id]) {
-    playerData[player.id].pingData.ping = sl.ping;
-    // ping状態をプレイヤーデータに保存
+    playerData[player.id].pingData.ping = sl.averagePing;
     playerData[player.id].pingData.pingStatus = pingStatus;
   }
-}
-
-// Vector3の長さを計算する関数を定義
-function getVector3Length(vec: Vector3): number {
-  return Math.sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
 
 function checklagping(player: Player): void {
@@ -670,12 +635,10 @@ function checklagping(player: Player): void {
   sl.isLagg = Math.trunc(sl.ping / 20) >= 850;
   pingData.set(player.id, sl);
 
-  // プレイヤーデータの更新 (存在する場合のみ)
   if (playerData[player.id]) {
     playerData[player.id].pingData.isLagg = sl.isLagg;
   }
 }
-
 
 function detectNoFall(player: Player): { cheatType: string } | null {
   const data = playerData[player.id];
@@ -683,60 +646,49 @@ function detectNoFall(player: Player): { cheatType: string } | null {
     return null;
   }
 
-  const minYCoordinate = -64;
-  const maxYCoordinate = 255;
+  if (player.isFalling) {
+    const currentVelocity = player.getVelocity();
+    const previousVelocity = data.lastFallVelocity || { x: 0, y: 0, z: 0 };
 
+    const verticalAcceleration = (currentVelocity.y - previousVelocity.y) / (50 / 20);
+    const velocityChangeThresholdY = 0.5;
+    const accelerationThresholdY = 0.2;
+    const unnaturalAccelerationDurationY = 5;
 
-  const currentY = player.location.y;
-  const previousY = data.positionHistory.length >= 2 ? data.positionHistory[data.positionHistory.length - 2].y : currentY;
-
-  if (currentY < minYCoordinate || currentY > maxYCoordinate) {
-    return null; // 範囲外の場合は判定しない
-  }
-
-  // previousY が有効範囲内にあるかチェック
-  if (previousY < minYCoordinate || previousY > maxYCoordinate) {
-    return null; // 範囲外の場合は判定しない
-  }
-
-  // OnGroundSpoofのチェック
-  if (player.isOnGround && player.isFalling) {
-    const fallThreshold = 0.1;
-    if (currentY < previousY - fallThreshold) {
-      return { cheatType: 'NoFall (OnGroundSpoof)' };
+    if (Math.abs(currentVelocity.y - previousVelocity.y) > velocityChangeThresholdY) {
+      return { cheatType: 'NoFall (Velocity Change Y)' };
     }
-  }
 
-  // 落下速度調整のチェック (player.isFalling を考慮)
-  if (!player.isOnGround && player.isFalling) {
-    const velocityHistory = data.positionHistory.slice(-4).map(pos => pos.y); // 過去3ティック + 現在のY座標
-    const acceleration = calculateAcceleration(velocityHistory); // 加速度を計算
-
-    // 加速度が閾値を超えている、または速度が不自然に増加している場合
-    if (acceleration > 0.3 || velocityHistory[4] > velocityHistory[2] + 0.1) {
-      return { cheatType: 'NoFall' };
+    if (Math.abs(verticalAcceleration) < accelerationThresholdY) {
+      data.unnaturalAccelerationTicksY++;
+      if (data.unnaturalAccelerationTicksY >= unnaturalAccelerationDurationY) {
+        return { cheatType: 'NoFall (Unnatural Acceleration Y)' };
+      }
+    } else {
+      data.unnaturalAccelerationTicksY = 0;
     }
+
+    const horizontalVelocityChange = calculateHorizontalVelocityChange(currentVelocity, previousVelocity);
+    const velocityChangeThresholdXZ = 0.3;
+
+    if (horizontalVelocityChange > velocityChangeThresholdXZ) {
+      return { cheatType: 'NoFall (Velocity Change XZ)' };
+    }
+
+    data.lastFallVelocity = currentVelocity;
+  } else {
+    data.lastFallVelocity = null;
+    data.unnaturalAccelerationTicksY = 0;
   }
 
   return null;
 }
 
-function calculateAcceleration(velocityHistory: number[]): number {
-  if (velocityHistory.length < 3) return 0; // 計算に必要なデータがない場合は0を返す
-
-  const v1 = (velocityHistory[2] - velocityHistory[1]) / (50 / 20); // 2ティック前の速度
-  const v2 = (velocityHistory[3] - velocityHistory[2]) / (50 / 20); // 1ティック前の速度
-
-  return (v2 - v1) / (50 / 20);
+function calculateHorizontalVelocityChange(currentVelocity: Vector3, previousVelocity: Vector3): number {
+  const horizontalVelocityChangeX = Math.abs(currentVelocity.x - previousVelocity.x);
+  const horizontalVelocityChangeZ = Math.abs(currentVelocity.z - previousVelocity.z);
+  return Math.max(horizontalVelocityChangeX, horizontalVelocityChangeZ);
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -747,74 +699,46 @@ function runTick(): void {
 
   const currentTime = Date.now();
 
-  //logPlayerData('-4294967295');
-
   for (const playerId in playerData) {
     const player = world.getPlayers().find((p) => p.id === playerId);
     if (!player) continue;
     const data = playerData[player.id];
     if (!data) continue;
 
-
-
-
-
     if (playerData[playerId].isFrozen) {
-      // Freeze中のプレイヤーはy座標500に固定
       player.teleport({ x: player.location.x, y: 500, z: player.location.z }, { dimension: player.dimension });
     } else {
-      // 1ティック前の位置を保存
       playerData[playerId].lastPosition = player.location;
-      // 位置履歴を追加
       addPositionHistory(player);
-
-
-
-
-
-
-     // player.runCommandAsync(`titleraw @s actionbar {"rawtext":[{"text":"§a現在Pingシステム実験中: ${playerData[playerId].pingData.pingStatus} tick/ping"}]}`);
-
-
 
       if (currentTick % 3 === 0) {
         playerData[playerId].boundaryCenter = player.location;
       }
-
-
 
       const clickTpOutOfBoundaryDetection = detectClickTpOutOfBoundary(player);
       if (clickTpOutOfBoundaryDetection) {
         handleCheatDetection(player, clickTpOutOfBoundaryDetection);
       }
 
-
-      //Nofall (BETA)
       const noFallDetection = detectNoFall(player);
       if (noFallDetection) {
         handleCheatDetection(player, noFallDetection);
       }
 
-      //SpeedHack
+
       const speedHacks = checkPlayerSpeed(player);
       if (speedHacks) {
-        handleCheatDetection(player, speedHacks)
+        handleCheatDetection(player, speedHacks);
       }
 
-
-
-      // AirJump検出
       const airJumpDetection = detectAirJump(player);
       if (airJumpDetection) {
         handleCheatDetection(player, airJumpDetection);
       }
 
-      // Xray検知 (視認時、ベータシステムが有効な場合のみ)
       if (configs.antiCheat.betasystem) {
         detectXrayOnSight(player);
       }
-
-
 
       for (const blockLocationString in playerData[playerId].xrayData.suspiciousBlocks) {
         const suspiciousBlock = playerData[playerId].xrayData.suspiciousBlocks[blockLocationString];
@@ -823,7 +747,6 @@ function runTick(): void {
         }
       }
 
-      // エンダーパールとウィンドチャージのクールダウン処理
       if (playerData[playerId].enderPearlInterval !== null) {
         playerData[playerId].enderPearlInterval--;
         if (playerData[playerId].enderPearlInterval <= 0) {
@@ -861,23 +784,6 @@ function handleCheatDetection(player: Player, detection: { cheatType: string }):
   }
 }
 
-
-// プレイヤーデータのログ出力 (デバッグ用)
-//@ts-ignore //playerIdToDisplay: string
-function logPlayerData(playerIdToDisplay: string): void {
-  const simplifiedData = Object.fromEntries(
-    Object.entries(playerData || playerIdToDisplay)
-      .filter(([playerId]) => playerId)
-      .map(([playerId, data]) => [playerId, { xray: data.xrayData }])
-  );
-  console.warn(`[DEBUG] playerData: ${JSON.stringify(simplifiedData, null, 2)}`);
-}
-
-
-
-
-
-
 // アンチチートの開始
 export function RunAntiCheat(): void {
   monitoring = true;
@@ -913,8 +819,6 @@ function unfreezePlayer(player: Player): void {
   if (data && data.isFrozen) {
     data.isFrozen = false;
     console.warn(`プレイヤー ${player.name} (ID: ${player.id}) のfreezeを解除しました`);
-    // データのリセット
-    resetPlayerData(data, player);
     data.violationCount = 0;
   }
 }
@@ -926,12 +830,7 @@ function freezePlayer(player: Player): void {
   data.isFrozen = true;
   player.teleport({ x: player.location.x, y: 60000, z: player.location.z }, { dimension: player.dimension });
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をfreezeさせました`);
-  // データのリセット
-  resetPlayerData(data, player);
 }
-
-
-
 
 // ----------------------------------
 // --- コマンド登録 ---
