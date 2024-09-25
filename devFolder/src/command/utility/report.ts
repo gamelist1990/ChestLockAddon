@@ -53,6 +53,27 @@ function submitReport(player: Player, reportedPlayerName: string, reason: string
     notifyStaff(player.name, reportedPlayerName);
 }
 
+
+export function ServerReport(player: Player, reason: string) {
+    if (!isPlayer(player.name)) {
+        // プレイヤーがサーバーでない場合の処理 (必要であれば)
+        console.warn("ServerReport function called by a non-server entity.");
+        return;
+    }
+
+    reports.push({
+        reporter: "Server", // レポーターを "Server" に設定
+        reportedPlayer: player.name,
+        reason: reason,
+        timestamp: Date.now(),
+    });
+
+    saveData('reports', reports);
+
+    // staffに通知
+    notifyStaff("Server", player.name);
+}
+
 export function notifyStaff(reporter: string, reportedPlayer: string) {
     world.getPlayers()
         .filter((p) => p.hasTag('op') || p.hasTag('staff'))

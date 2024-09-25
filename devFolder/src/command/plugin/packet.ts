@@ -1,6 +1,7 @@
 import { config, getGamemode } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
 import { Player, world, system, Vector3, Block } from '@minecraft/server';
+import { ServerReport } from '../utility/report';
 
 // ----------------------------------
 // --- 設定 ---
@@ -498,7 +499,7 @@ function getExcludedEffects(): string[] {
   ];
 }
 
-function checkPlayerSpeed(player: Player): { cheatType: string } | null {
+function checkPlayerSpeed(player: Player): { cheatType: string; value?: number } | null {
   const data = playerData[player.id];
   if (!data || data.isTeleporting || player.isGliding || data.recentlyUsedEnderPearl || getGamemode(player.name) === 1) {
     return null;
@@ -520,7 +521,7 @@ function checkPlayerSpeed(player: Player): { cheatType: string } | null {
   const horizontalSpeed = horizontalDistance / timeElapsed;
 
   if (horizontalSpeed > configs.antiCheat.maxAllowedSpeed + configs.antiCheat.speedViolationThreshold) {
-    return { cheatType: 'Speed' };
+    return { cheatType: 'Speed', value: horizontalSpeed }; // 速度を数値として返す
   }
 
   return null;
@@ -640,54 +641,43 @@ function checklagping(player: Player): void {
   }
 }
 
-function detectNoFall(player: Player): { cheatType: string } | null {
-  const data = playerData[player.id];
-  if (!data || data.isTeleporting || player.isGliding || getGamemode(player.name) === 1) {
-    return null;
-  }
 
-  if (player.isFalling) {
-    const currentVelocity = player.getVelocity();
-    const previousVelocity = data.lastFallVelocity || { x: 0, y: 0, z: 0 };
 
-    const verticalAcceleration = (currentVelocity.y - previousVelocity.y) / (50 / 20);
-    const velocityChangeThresholdY = 0.5;
-    const accelerationThresholdY = 0.2;
-    const unnaturalAccelerationDurationY = 5;
 
-    if (Math.abs(currentVelocity.y - previousVelocity.y) > velocityChangeThresholdY) {
-      return { cheatType: 'NoFall (Velocity Change Y)' };
-    }
 
-    if (Math.abs(verticalAcceleration) < accelerationThresholdY) {
-      data.unnaturalAccelerationTicksY++;
-      if (data.unnaturalAccelerationTicksY >= unnaturalAccelerationDurationY) {
-        return { cheatType: 'NoFall (Unnatural Acceleration Y)' };
+function monitorItemUseOn(player: Player, itemId: string): void {
+  if (!monitoring) return; // アンチチートが無効の場合は何もしない
+
+  let lastUseTimes: number[] = []; // 最後にアイテムを使用した時刻を保存する配列
+
+  world.afterEvents.itemUseOn.subscribe((event) => {
+    if (monitoring && event.source.id === player.id && event.itemStack.typeId === itemId) {
+      lastUseTimes.push(Date.now()); // アイテムを使用した時刻を配列に追加
+
+      // 5秒以内の使用回数をカウント
+      const recentUseCount = lastUseTimes.filter((time) => Date.now() - time <= 3000).length;
+
+      if (recentUseCount >=1) {
+        const location = event.source.location;
+        let reason = `§f§a(ID: ${player.name})§b \n(アイテム: ${itemId}) \n§f|§6 (x: ${Math.floor(location.x)}, y: ${Math.floor(location.y)}, z: ${Math.floor(location.z)})`;
+        console.warn(reason);
       }
-    } else {
-      data.unnaturalAccelerationTicksY = 0;
+
+      if (recentUseCount >= 5) {
+        // 5秒間に10回以上使用された場合
+        const location = event.source.location;
+        world.sendMessage(`§l§a[自作§3AntiCheat]§fプレイヤー ${player.name} (ID: ${player.id}) が ${itemId} を短時間に大量に使用しました (x: ${Math.floor(location.x)}, y: ${Math.floor(location.y)}, z: ${Math.floor(location.z)})`);
+        let reason = `§f§a(ID: ${player.id})§b \n(アイテム: ${itemId} 短時間に大量に使用) \n§f|§6 (x: ${Math.floor(location.x)}, y: ${Math.floor(location.y)}, z: ${Math.floor(location.z)})`;
+        ServerReport(player, reason);
+
+        // 配列をリセットして連続検知を防ぐ
+        lastUseTimes = [];
+      }
+
+      // 古い使用時刻を削除
+      lastUseTimes = lastUseTimes.filter((time) => Date.now() - time <= 3000);
     }
-
-    const horizontalVelocityChange = calculateHorizontalVelocityChange(currentVelocity, previousVelocity);
-    const velocityChangeThresholdXZ = 0.3;
-
-    if (horizontalVelocityChange > velocityChangeThresholdXZ) {
-      return { cheatType: 'NoFall (Velocity Change XZ)' };
-    }
-
-    data.lastFallVelocity = currentVelocity;
-  } else {
-    data.lastFallVelocity = null;
-    data.unnaturalAccelerationTicksY = 0;
-  }
-
-  return null;
-}
-
-function calculateHorizontalVelocityChange(currentVelocity: Vector3, previousVelocity: Vector3): number {
-  const horizontalVelocityChangeX = Math.abs(currentVelocity.x - previousVelocity.x);
-  const horizontalVelocityChangeZ = Math.abs(currentVelocity.z - previousVelocity.z);
-  return Math.max(horizontalVelocityChangeX, horizontalVelocityChangeZ);
+  });
 }
 
 
@@ -720,10 +710,11 @@ function runTick(): void {
         handleCheatDetection(player, clickTpOutOfBoundaryDetection);
       }
 
-      const noFallDetection = detectNoFall(player);
-      if (noFallDetection) {
-        handleCheatDetection(player, noFallDetection);
-      }
+      
+
+      
+
+      
 
 
       const speedHacks = checkPlayerSpeed(player);
@@ -763,7 +754,7 @@ function runTick(): void {
 }
 
 // チート検出時の処理
-function handleCheatDetection(player: Player, detection: { cheatType: string }): void {
+function handleCheatDetection(player: Player, detection: { cheatType: string; value?: number }): void {
   const data = playerData[player.id];
   if (!data) return;
 
@@ -772,7 +763,13 @@ function handleCheatDetection(player: Player, detection: { cheatType: string }):
 
   data.violationCount++;
   if (data.violationCount >= detectionThreshold) {
-    const logMessage = `§l§a[自作§3AntiCheat]§fプレイヤー ${player.name} (ID: ${player.id}) が ${detection.cheatType} を使用している可能性があります`;
+    let logMessage = `§l§a[自作§3AntiCheat]§fプレイヤー ${player.name} (ID: ${player.id}) が ${detection.cheatType} を使用している可能性があります`;
+
+    // 数値がある場合、メッセージに追加
+    if (detection.value !== undefined) {
+      logMessage += ` (値: ${detection.value})`;
+    }
+
     console.warn(logMessage);
     world.sendMessage(logMessage);
 
@@ -789,6 +786,14 @@ export function RunAntiCheat(): void {
   monitoring = true;
   world.getPlayers().forEach(initializePlayerData);
   system.run(runTick);
+  system.runTimeout(()=>{
+    world.getPlayers().forEach(player => {
+    const monitoredItems = ["minecraft:flint_and_steel"]; // 監視対象のアイテム
+    monitoredItems.forEach((itemId) => {
+      monitorItemUseOn(player, itemId);
+    });
+  },1)})
+
 
   system.runInterval(() => {
     world.getPlayers().forEach(player => {

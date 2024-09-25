@@ -5,4 +5,5 @@ import './tpa';
 import './join';
 import './report';
 import './staff';
+import './server';
 
