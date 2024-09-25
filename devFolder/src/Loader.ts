@@ -9,6 +9,7 @@ import { config, tempkick } from './Modules/Util';
 import { loadData } from './Modules/DataBase';
 import { banPlayers } from './Modules/globalBan';
 import { loadReport } from './command/utility/report';
+import { ver } from './Modules/version';
 //import { RunAntiCheat } from './command/plugin/packet';
 
 const startTime = Date.now();
@@ -82,6 +83,6 @@ world.afterEvents.playerSpawn.subscribe((event: any) => {
 });
 
 if (config().module.debugMode.enabled === true) {
-  console.warn('Full ChestLock Addon Data loaded!!');
+  console.warn(`Full ChestLock Addon Data loaded!! Version${ver}`);
 
 }
