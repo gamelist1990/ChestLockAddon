@@ -10,7 +10,7 @@ import { translate } from '../langs/list/LanguageManager';
  * @param player プレイヤー
  * @param targetSlot クローン先のスロット
  */
-function renameItem(item: any, NewName: string, player: Player, targetSlot: number) {
+export function renameItem(item: any, NewName: string, player: Player, targetSlot: number) {
     system.runTimeout(() => {
         if (item) {
             item.nameTag = NewName;

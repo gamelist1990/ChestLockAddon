@@ -106,7 +106,7 @@ function initializePlayerData(player: Player): void {
     boundaryCenter: player.location,
     boundaryRadius: 10,
     xrayData: {
-      suspiciousBlocks: {},
+      suspiciousBlocks: {}, // suspiciousBlocks を初期化
     },
     pingData: {
       isLagg: false,
@@ -120,11 +120,13 @@ function initializePlayerData(player: Player): void {
 }
 
 world.afterEvents.playerSpawn.subscribe((event) => {
-  const player = event.player as Player;
-  if (player && player.id) {
-    delete playerData[player.id];
-    if (config().module.debugMode.enabled === true) {
-      console.warn(`プレイヤー ${player.name} (ID: ${player.id}) の監視を停止しました`);
+  if (monitoring) { // アンチチートが有効な時のみ実行
+    const player = event.player as Player;
+    if (player && player.id) {
+      delete playerData[player.id];
+      if (config().module.debugMode.enabled === true) {
+        console.warn(`プレイヤー ${player.name} (ID: ${player.id}) の監視を停止しました`);
+      }
     }
   }
 });
@@ -422,7 +424,7 @@ const targetXrayBlockIds = ['minecraft:diamond_ore', 'minecraft:ancient_debris',
 // ブロックXray検知 (視認時)
 function detectXrayOnSight(player: Player): void {
   const data = playerData[player.id];
-  if (!data) return;
+  if (!data || !data.xrayData) return;
   const currentTime = Date.now();
 
   const targetBlock = getBlockFromReticle(player, configs.antiCheat.xrayDetectionDistance);
