@@ -104,11 +104,6 @@ export const config = (): { commands: { [key: string]: CommandConfig }; admin: s
       adminOnly: true,
       requireTag: [],
     }, 
-    echest: {
-      enabled: true,
-      adminOnly: true,
-      requireTag: [],
-    }, 
     offhand: {
       enabled: true,
       adminOnly: false,
