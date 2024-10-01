@@ -48,7 +48,7 @@ function restorePlayerLocation(player: Player) {
 }
 
 const nightVisionEffectId = "night_vision";
-const nightVisionEffectDuration = 10;
+const nightVisionEffectDuration = 1;
 
 function startTrackingPlayer(player: Player, targetPlayer: Player) {
     const intervalId = system.runInterval(() => {

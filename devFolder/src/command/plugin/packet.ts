@@ -1,6 +1,6 @@
 import { config, getGamemode } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
-import { Player, world, system, Vector3, Block } from '@minecraft/server';
+import { Player, world, system, Vector3, Block, GameMode } from '@minecraft/server';
 import { ServerReport } from '../utility/report';
 
 // ----------------------------------
@@ -14,10 +14,10 @@ const configs = {
     freezeDuration: 20 * 10,
     betasystem: true,
     xrayDetectionDistance: 10,
-    // 最大許容速度 (ブロック/ティック)
     maxAllowedSpeed: 0.7,
-    // 速度違反検出のしきい値 (ブロック/ティック)
     speedViolationThreshold: 0.1,
+    allowedVerticalAcceleration: 0.15,
+    unnaturalAccelerationThreshold: 5,
   },
 };
 
@@ -53,6 +53,7 @@ interface pingData {
 
 interface PlayerData {
   lastGroundY: number;
+  originalGamemode: GameMode;
   lastFallDistance: number;
   airJumpDetected: boolean;
   jumpStartTime: number;
@@ -85,6 +86,7 @@ interface PlayerData {
 function initializePlayerData(player: Player): void {
   playerData[player.id] = {
     lastGroundY: 0,
+    originalGamemode: GameMode.survival,
     lastFallDistance: 0,
     positionHistory: [player.location],
     lastTime: Date.now(),
@@ -196,25 +198,49 @@ function hasAnyEffectExcept(player: Player, excludedEffects: string[]): boolean 
   return player.getEffects().some((effect) => !excludedEffects.includes(effect.typeId));
 }
 
-// Freeze実行
-function executeFreeze(player: Player): void {
+async function executeFreeze(player: Player): Promise<void> {
   const data = playerData[player.id];
   if (!data) return;
 
   data.isFrozen = true;
   data.freezeStartTime = currentTick;
 
-  player.teleport({ x: player.location.x, y: 500, z: player.location.z }, { dimension: player.dimension });
+  // 元のゲームモードを保存
+  data.originalGamemode = player.getGameMode();
+
+  // アドベンチャーモードに変更
+  player.setGameMode(GameMode.adventure);
+
+  // プレイヤーの居た場所に、元の向きでTP
+  player.teleport(player.location, {
+    dimension: player.dimension
+  });
+
+
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をfreezeしました`);
   player.sendMessage("異常な行動を検出した為フリーズしました(10秒程度で解除されます)");
 
   system.runTimeout(() => {
+    unfreezePlayer(player);
+  }, configs.antiCheat.freezeDuration);
+}
+
+
+function unfreezePlayer(player: Player): void {
+  const data = playerData[player.id];
+  if (data && data.isFrozen) {
     data.isFrozen = false;
+
+    // 元のゲームモードに戻す
+    player.setGameMode(data.originalGamemode); 
+
+    
+
     console.warn(`プレイヤー ${player.name} (ID: ${player.id}) のfreezeを解除しました`);
     player.sendMessage("フリーズを解除しました");
     resetPlayerData(data, player);
     data.violationCount = 0;
-  }, configs.antiCheat.freezeDuration);
+  }
 }
 
 // 2点間の距離を計算
@@ -273,6 +299,10 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   }
 
   if (hasAnyEffectExcept(player, getExcludedEffects())) {
+    return null;
+  }
+
+  if (player.hasTag("kb")) {
     return null;
   }
 
@@ -362,7 +392,7 @@ function detectClickTpOutOfBoundary(player: Player): { cheatType: string } | nul
 
   const distanceToCenter = calculateDistance(player.location, data.boundaryCenter);
 
-  const isFalling = player.isFalling;
+  const isFalling = player.isFalling && player.getVelocity().y < -0.1;
 
   if (distanceToCenter > data.boundaryRadius && distanceToCenter <= data.boundaryRadius + 5 && !isFalling) {
     return { cheatType: 'ClickTP (実験中)' };
@@ -479,7 +509,8 @@ world.beforeEvents.playerBreakBlock.subscribe((event) => {
   const blockLocation = event.block.location;
   const data = playerData[player.id];
 
-  if (!data) return;
+  if (!monitoring) return;
+  if (player.hasTag("mine")) return;
 
   system.run(() => {
     const blockLocationString = `${blockLocation.x},${blockLocation.y},${blockLocation.z}`;
@@ -683,6 +714,45 @@ function monitorItemUseOn(player: Player, itemId: string): void {
 }
 
 
+// Fly検知関数
+function detectFly(player: Player): { cheatType: string } | null {
+  const data = playerData[player.id];
+  if (!data || data.isTeleporting || player.isGliding || data.recentlyUsedEnderPearl || getGamemode(player.name) === 1 || getGamemode(player.name) === 3) {
+    return null;
+  }
+
+  if (hasAnyEffectExcept(player, getExcludedEffects())) {
+    return null;
+  }
+
+
+  // プレイヤーが空中にいて、飛行状態でないことを確認
+  if (!isPlayerActuallyOnGround(player) && !player.isFlying) {
+    const currentVelocity = player.getVelocity();
+
+    // 垂直方向の速度変化を計算
+    const verticalAcceleration = data.lastFallVelocity ? currentVelocity.y - data.lastFallVelocity.y : 0;
+
+    // 不自然な加速度を検出
+    if (Math.abs(verticalAcceleration) > configs.antiCheat.allowedVerticalAcceleration) {
+      data.unnaturalAccelerationTicksY++;
+    } else {
+      data.unnaturalAccelerationTicksY = 0;
+    }
+
+    // 一定時間以上不自然な加速度が続いたらFlyと判定
+    if (data.unnaturalAccelerationTicksY >= configs.antiCheat.unnaturalAccelerationThreshold) {
+      return { cheatType: 'Fly(実験中)' };
+    }
+  } else {
+    data.unnaturalAccelerationTicksY = 0; // 地上または飛行状態ならリセット
+  }
+
+  data.lastFallVelocity = player.getVelocity(); // 速度を更新
+
+  return null;
+}
+
 
 // ティックごとの処理
 function runTick(): void {
@@ -716,7 +786,10 @@ function runTick(): void {
 
       
 
-      
+      const flyCheck = detectFly(player);
+      if (flyCheck) {
+        handleCheatDetection(player, flyCheck);
+      }
 
 
       const speedHacks = checkPlayerSpeed(player);
@@ -820,15 +893,6 @@ function AddNewPlayers(): void {
   system.runTimeout(AddNewPlayers, 20 * 60);
 }
 
-// プレイヤーのFreeze解除
-function unfreezePlayer(player: Player): void {
-  const data = playerData[player.id];
-  if (data && data.isFrozen) {
-    data.isFrozen = false;
-    console.warn(`プレイヤー ${player.name} (ID: ${player.id}) のfreezeを解除しました`);
-    data.violationCount = 0;
-  }
-}
 
 // プレイヤーのFreeze
 function freezePlayer(player: Player): void {
