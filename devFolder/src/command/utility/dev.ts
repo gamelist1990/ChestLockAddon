@@ -44,10 +44,20 @@ registerCommand({
         }
       } else {
         player.sendMessage(translate(player, "PlayerNotFound"))
-      }
+      } 
+    } else if(subCommand === 'admin') {
+      test(player);
+
     } else {
       player.sendMessage('Unknown subcommand');
     }
   },
 });
+
+function test(player:Player) {
+  system.runTimeout(()=>{
+    player.nameTag = `§2(§bAdmin§2)§f${player.name}`
+  })
+}
+
 
