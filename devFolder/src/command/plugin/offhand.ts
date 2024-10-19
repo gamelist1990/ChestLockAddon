@@ -172,6 +172,7 @@ function runTick() {
     for (const player of world.getPlayers()) {
         if (player.isEmoting) {
             handleEmoteBlockPlacement(player);
+            
         }
     }
 
