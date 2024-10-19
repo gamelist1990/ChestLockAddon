@@ -1,6 +1,6 @@
 import { config } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
-import { Player, ItemStack, EquipmentSlot, world, system, BlockRaycastOptions } from '@minecraft/server';
+import { Player, ItemStack, EquipmentSlot, world, system, BlockRaycastOptions, Direction } from '@minecraft/server';
 import { translate } from '../langs/list/LanguageManager';
 
 interface OffhandItemData {
@@ -37,7 +37,7 @@ function setOffhandItem(player: Player) {
         const hasEnchantments = enchantableComponent ? enchantableComponent.getEnchantments().length > 0 : false;
 
         if (hasEnchantments) {
-            player.sendMessage(translate(player,"command.NotEnchant"));
+            player.sendMessage(translate(player, "command.NotEnchant"));
             return;
         }
 
@@ -108,13 +108,32 @@ function handleEmoteBlockPlacement(player: Player) {
                 !lastPlacementTime[player.name] ||
                 currentTime - lastPlacementTime[player.name] >= 3000
             ) {
-                // プレイヤーの視線方向ベクトルを取得
-                const viewVector = player.getViewDirection();
+                const blockLocation = blockHit.block.location;
+                let x = blockLocation.x;
+                let y = blockLocation.y;
+                let z = blockLocation.z;
 
-                // 設置位置を計算 (視線方向ベクトルを利用)
-                const x = blockHit.block.location.x + viewVector.x;
-                const y = blockHit.block.location.y + viewVector.y;
-                const z = blockHit.block.location.z + viewVector.z;
+                // プレイヤーが見ているブロックの面に基づいて設置位置を調整
+                switch (blockHit.face) {
+                    case Direction.Up:
+                        y++;
+                        break;
+                    case Direction.Down:
+                        y--;
+                        break;
+                    case Direction.North:
+                        z--;
+                        break;
+                    case Direction.South:
+                        z++;
+                        break;
+                    case Direction.West:
+                        x--;
+                        break;
+                    case Direction.East:
+                        x++;
+                        break;
+                }
 
                 const setblockPromise = player.runCommandAsync(`setblock ${x} ${y} ${z} ${offhandItem.typeId}`);
 
