@@ -302,6 +302,16 @@ world.afterEvents.itemUse.subscribe((event) => {
   }
 });
 
+function hasEffect(player:Player, effectName:any) {
+  try {
+    // getEffect() はエフェクトが存在しない場合に undefined を返す
+    return player.getEffect(effectName) !== undefined;
+  } catch (error) {
+    // getEffect() はエフェクトが存在しない場合にエラーをスローすることもある
+    return false;
+  }
+}
+
 // AirJump検出
 function detectAirJump(player: Player): { cheatType: string } | null {
   const data = playerDataManager.get(player);
@@ -318,6 +328,10 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   ) {
     return null;
   }
+
+  if (hasEffect(player, "speed")) {
+   return null;
+  } 
 
   const isJumping = player.isJumping; // ジャンプ中かどうか
   const isOnGround = player.isOnGround; // 地面にいるかどうか
@@ -345,7 +359,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   if (data.positionHistory.length < 2) {
     lastPosition = currentPosition; // lastPositionを更新
     playerDataManager.update(player, { lastPosition: lastPosition }); // lastPositionのみを更新
-    return null; // 関数全体を終了
+    return null; 
   } else {
     previousPosition = data.positionHistory[data.positionHistory.length - 2];
   }
@@ -376,7 +390,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     jumpStartTime = currentTick;
   } else if (isJumpingData && !isOnGround) {
     // 空中にいる間
-    if (isJumping && currentTick - jumpStartTime > 2) {
+    if (isJumping && currentTick - jumpStartTime > 1) {
       // ジャンプボタンが押し続けられている場合はAirJumpの可能性あり
       airJumpDetected = true;
     }
@@ -385,22 +399,14 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 
     // AirJump判定 (しきい値を調整)
     if (
-      jumpHeight > 1.5 || // 通常のジャンプよりも高い
-      horizontalAcceleration > 1.3 || // 水平方向に急激な加速
+      jumpHeight > 2.3 || // 通常のジャンプよりも高い
+      horizontalAcceleration > 1.6 || // 水平方向に急激な加速
       (verticalAcceleration > 0.8 && previousVerticalAcceleration > 0.5) || // 垂直方向に急激な加速
-      velocityChangeRate > 0.5 || // 短時間での速度変化が大きい
-      (player.isJumping && horizontalSpeed > 0.6) // ジャンプ中に水平方向に移動している
+      velocityChangeRate > 0.8 || // 短時間での速度変化が大きい
+      (player.isJumping && horizontalSpeed > 0.7) // ジャンプ中に水平方向に移動している
     ) {
       jumpCounter++;
 
-      // デバッグログ (必要に応じて出力)
-      // console.log(`[DEBUG AirJump] ${player.name} - AirJump判定`);
-      // console.log(`  jumpHeight: ${jumpHeight}`);
-      // console.log(`  horizontalAcceleration: ${horizontalAcceleration}`);
-      // console.log(`  verticalAcceleration: ${verticalAcceleration}`);
-      // console.log(`  previousVerticalAcceleration: ${previousVerticalAcceleration}`);
-      // console.log(`  velocityChangeRate: ${velocityChangeRate}`);
-      // console.log(`  horizontalSpeed (while jumping): ${horizontalSpeed}`);
 
       if (jumpCounter >= 1) {
         // AirJumpとして検知
