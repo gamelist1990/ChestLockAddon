@@ -783,8 +783,12 @@ export const translations = {
     msgid: "§a All chest protection data has been reset.",
     msgstr: "§aKaikki arkun suojaus tiedot on nollattu."
   },
+  "command_chest_ContributedToChest": {
+    msgid: "§a Thanks for going out of your way to make it a large chest",
+    msgstr: ""
+  },
   "isLookChest": {
-    msgid: "§c This chest is locked.",
+    msgid: "§c This chest is locked by {owner}",
     msgstr: "§cTämä arkku on lukittu"
   },
   "isProChest": {

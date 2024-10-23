@@ -783,8 +783,12 @@ export const translations = {
     msgid: "§a All chest protection data has been reset.",
     msgstr: "§a모든 상자 보호 데이터가 초기화되었습니다."
   },
+  "command_chest_ContributedToChest": {
+    msgid: "§a Thanks for going out of your way to make it a large chest",
+    msgstr: ""
+  },
   "isLookChest": {
-    msgid: "§c This chest is locked.",
+    msgid: "§c This chest is locked by {owner}",
     msgstr: "§c이 상자는 잠겨 있습니다"
   },
   "isProChest": {

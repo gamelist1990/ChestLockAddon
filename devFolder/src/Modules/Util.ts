@@ -1,4 +1,4 @@
-import { Player, GameMode, world, system,  } from '@minecraft/server';
+import { Player, GameMode, world, system, PlatformType, MemoryTier,  } from '@minecraft/server';
 
 interface CommandConfig {
   enabled: boolean;
@@ -153,10 +153,7 @@ export function getGamemode(playerName: string): number {
   return 0;
 }
 
-export function getPing(player: Player): number {
-  const ping = player.pingTick ?? 20;
-  return ping
-}
+
 
 export function getAllPlayerNames(currentPlayer: Player): string[] {
   const playerNames: string[] = [];
@@ -174,7 +171,7 @@ export function kick(player: Player, reason: string, by: string) {
   world.getDimension(player.dimension.id).runCommandAsync(`kick "${player.name}" ${textReason}`);
 }
 
-/* 
+
 export function clientdevice(player: Player): number {
   const systemInfo = player.clientSystemInfo;
   switch (systemInfo.platformType) {
@@ -188,10 +185,10 @@ export function clientdevice(player: Player): number {
       return -1;//不明
   }
 }
-  */
 
 
-/**
+
+
  export function getMemoryTier(player: Player): number {
   const systemInfo = player.clientSystemInfo;
   switch (systemInfo.memoryTier) {
@@ -211,7 +208,7 @@ export function clientdevice(player: Player): number {
       return -1; // Unknown
   }
 }
- */
+
 
 
 
@@ -237,4 +234,5 @@ export function tempkick(player: Player) {
     player.triggerEvent('chestlock:tempkick')
   },1)
 }
+
 

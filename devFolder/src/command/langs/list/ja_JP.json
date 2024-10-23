@@ -880,9 +880,13 @@
     "msgid": "§a All chest protection data has been reset.",
     "msgstr": "§a全てのチェスト保護データをリセットしました"
   },
+  "command_chest_ContributedToChest": {
+    "msgid": "§a Thanks for going out of your way to make it a large chest",
+    "msgstr": "§a わざわざラージチェストにしてくれてありがとう！！"
+  },
   "isLookChest": {
-    "msgid": "§c This chest is locked.",
-    "msgstr": "§cこのチェストはロックされています"
+    "msgid": "§c This chest is locked by {owner}",
+    "msgstr": "§cこのチェストは{owner}によってロックされています"
   },
   "isProChest": {
     "msgid": "§c This chest is protected!",

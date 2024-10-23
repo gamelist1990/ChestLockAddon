@@ -783,8 +783,12 @@ export const translations = {
     msgid: "§a All chest protection data has been reset.",
     msgstr: "§aВсе данные защиты сундука были сброшены."
   },
+  "command_chest_ContributedToChest": {
+    msgid: "§a Thanks for going out of your way to make it a large chest",
+    msgstr: ""
+  },
   "isLookChest": {
-    msgid: "§c This chest is locked.",
+    msgid: "§c This chest is locked by {owner}",
     msgstr: "§cЭтот сундук заблокирован"
   },
   "isProChest": {

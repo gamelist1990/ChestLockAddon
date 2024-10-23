@@ -26,7 +26,7 @@ function getPingLevel(ping: number): string {
 }
 
 
-system.runInterval(() => {
+system.runInterval(async () => { // async 関数に変更
     if (isRealTimePingEnabled) {
         const players = world.getPlayers();
 
@@ -39,30 +39,31 @@ system.runInterval(() => {
 
             const playerData = playerPingData[player.name];
 
-            if (Date.now() - playerData.lastPingRequestTime > 1000) { // 1秒ごとにpingを計測
+            if (Date.now() - playerData.lastPingRequestTime > 1000) {
                 playerData.lastPingRequestTime = Date.now();
 
-                const startTime = Date.now();
+                const { ping, level } = await getPing(player);
 
-                new Promise<{ ping: number; level: string }>((resolve) => {
-                    system.run(() => {
-                        const endTime = Date.now();
-                        const ping = Math.abs(endTime - startTime - 50);
-
-                        const level = getPingLevel(ping);
-
-                        player.onScreenDisplay.setActionBar(`Ping: ${ping}ms | Level: ${level}`);
-                        console.log(`Player ${player.name}: Ping = ${ping}ms`);
-
-                        resolve({ ping, level }); // Promiseを解決し、pingとlevelを返す
-                    });
-                }).then(({ ping, level }) => {
-                    return { ping, level }; // pingとlevelを返す
-                });
+                player.onScreenDisplay.setActionBar(`Ping: ${ping}ms | Level: ${level}`);
+                console.log(`Player ${player.name}: Ping = ${ping}ms`);
             }
         }
     }
-}, 20); 
+}, 20);
+
+
+
+export function getPing(player: Player): Promise<{ ping: number; level: string }> {
+    const startTime = Date.now();
+    return new Promise<{ ping: number; level: string }>(resolve => {
+        player.runCommandAsync('testfor @s').then(() => {
+            const endTime = Date.now();
+            const ping = Math.abs(endTime - startTime - 50);
+            const level = getPingLevel(ping);
+            resolve({ ping, level });
+        });
+    });
+}
 
 
 export function toggleServerPause() {
@@ -133,7 +134,7 @@ export function checkBanList(player: Player) {
 
     player.sendMessage(banListMessage);
 }
-const startTime = Date.now(); 
+const startTime = Date.now();
 
 function displayServerInfo(player: Player, type: string) {
     switch (type) {
