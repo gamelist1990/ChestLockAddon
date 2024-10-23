@@ -5,6 +5,65 @@ import { renameItem } from '../plugin/lore';
 import { banPlayers } from '../../Modules/globalBan';
 
 let isServerPaused = false; // サーバーが一時停止されているかどうかを追跡する変数
+let isRealTimePingEnabled = false; // リアルタイムping検知が有効かどうか
+const playerPingData: Record<string, { lastPingRequestTime: number }> = {};
+
+
+
+
+function getPingLevel(ping: number): string {
+    if (ping < 40) {
+        return "§a通常";
+    } else if (ping < 120) {
+        return "§eちょいラグい";
+    } else if (ping < 300) {
+        return "§gかなりラグい";
+    } else if (ping < 800) {
+        return "§cめちゃラグい";
+    } else {
+        return "§dラグさ上限突破！！";
+    }
+}
+
+
+system.runInterval(() => {
+    if (isRealTimePingEnabled) {
+        const players = world.getPlayers();
+
+        for (const player of players) {
+            if (!playerPingData[player.name]) {
+                playerPingData[player.name] = {
+                    lastPingRequestTime: 0,
+                };
+            }
+
+            const playerData = playerPingData[player.name];
+
+            if (Date.now() - playerData.lastPingRequestTime > 1000) { // 1秒ごとにpingを計測
+                playerData.lastPingRequestTime = Date.now();
+
+                const startTime = Date.now();
+
+                new Promise<{ ping: number; level: string }>((resolve) => {
+                    system.run(() => {
+                        const endTime = Date.now();
+                        const ping = Math.abs(endTime - startTime - 50);
+
+                        const level = getPingLevel(ping);
+
+                        player.onScreenDisplay.setActionBar(`Ping: ${ping}ms | Level: ${level}`);
+                        console.log(`Player ${player.name}: Ping = ${ping}ms`);
+
+                        resolve({ ping, level }); // Promiseを解決し、pingとlevelを返す
+                    });
+                }).then(({ ping, level }) => {
+                    return { ping, level }; // pingとlevelを返す
+                });
+            }
+        }
+    }
+}, 20); 
+
 
 export function toggleServerPause() {
     isServerPaused = !isServerPaused; // 一時停止状態を反転
@@ -98,11 +157,13 @@ function displayServerInfo(player: Player, type: string) {
 }
 
 
+
+
 registerCommand({
     name: 'server',
     description: 'server_command_description',
     parent: false,
-    maxArgs: 2, // サブコマンド用に maxArgs を 2 に変更
+    maxArgs: 3, // サブコマンド用に maxArgs を 3 に変更
     minArgs: 1,
     require: (player: Player) => verifier(player, config().commands['server']),
     executor: (player: Player, args: string[]) => {
@@ -112,10 +173,29 @@ registerCommand({
             outputPlayerData(player);
         } else if (args[0] === '-checkban') {
             checkBanList(player);
-        } else if (args[0] === '-info' && args[1]) { // -info サブコマンドを追加
+        } else if (args[0] === '-info' && args[1]) {
             displayServerInfo(player, args[1]);
+        } else if (args[0] === '-ping') {
+            if (args[1] === '-true') {
+                isRealTimePingEnabled = true;
+                player.sendMessage('リアルタイムping検知を有効にしました。');
+            } else if (args[1] === '-false') {
+                isRealTimePingEnabled = false;
+                player.sendMessage('リアルタイムping検知を無効にしました。');
+            } else {
+                const startTime = Date.now();
+                new Promise<void>(resolve => {
+                    system.run(() => {
+                        const endTime = Date.now();
+                        const ping = Math.abs(endTime - startTime - 50);
+                        const level = getPingLevel(ping);
+                        player.sendMessage(`Ping: ${ping}ms | Level: ${level}`);
+                        resolve();
+                    });
+                }).then(() => { });
+            }
         } else {
-            player.sendMessage('Invalid argument. Use "-pause", "-check", "-checkban", or "-info <seed|uptime|tps>". | 無効な引数です。"-pause", "-check", "-checkban", または "-info <seed|uptime|tps>" を使用してください。');
+            player.sendMessage('Invalid argument. Use "-pause", "-check", "-checkban", "-info <seed|uptime|tps>", or "-ping [-true|-false]".');
         }
     },
 });
