@@ -18,18 +18,17 @@
 
 ## Update
 
-**Version 1.2**  前回の1.1のバグを修正したり新機能を追加しました
-[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.1...1.2)
+**Version 1.3**  新機能を追加しました
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.2...1.3)
 
 **更新点**
 詳細な変更点は☝のChangeLogを見てね
 
 ここでは簡潔に変更点をまとめます
 
-- Version1.2に更新
+- Version1.3に更新
 - その他バグ修正
-- StaffコマンドにFreecamモードを追加
-- その他Warnを追加(警告を送れます)
+
 
 ![alt text](image/image.png)
 

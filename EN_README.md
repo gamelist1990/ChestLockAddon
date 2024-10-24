@@ -13,18 +13,17 @@
 
 ## Update
 
-**Version 1.1** Fixed bugs and added new features from the previous 1.1
-[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.1...1.2)
+**Version 1.3** Fixed bugs and added new features from the previous 1.2
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.2...1.3)
 
 **Changes:**
 For detailed changes, please refer to the ChangeLog above☝
 
 Here is a brief summary of the changes:
 
-- Updated to Version 1.2
+- Updated to Version 1.3
 - Other bug fixes
-- Added Freecam mode to Staff command.
-- Added other Warn (can send warnings).
+
 
 ![alt text](image/EN,image.png)
 
