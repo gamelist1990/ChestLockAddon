@@ -235,9 +235,7 @@ function executeRollback(player: Player): void {
   playerDataManager.reset(player);
 }
 
-function hasAnyEffectExcept(player: Player, excludedEffects: string[]): boolean {
-  return player.getEffects().some((effect) => !excludedEffects.includes(effect.typeId));
-}
+
 
 async function executeFreeze(player: Player): Promise<void> {
   const data = playerDataManager.get(player);
@@ -304,10 +302,8 @@ world.afterEvents.itemUse.subscribe((event) => {
 
 function hasEffect(player:Player, effectName:any) {
   try {
-    // getEffect() はエフェクトが存在しない場合に undefined を返す
     return player.getEffect(effectName) !== undefined;
   } catch (error) {
-    // getEffect() はエフェクトが存在しない場合にエラーをスローすることもある
     return false;
   }
 }
@@ -322,9 +318,9 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     !data ||
     data.isTeleporting ||
     player.isGliding ||
-    data.recentlyUsedEnderPearl ||
-    getGamemode(player.name) === 1 ||
-    getGamemode(player.name) === 3
+    player.isInWater ||
+    player.isFlying ||
+    data.recentlyUsedEnderPearl 
   ) {
     return null;
   }
@@ -595,37 +591,7 @@ world.beforeEvents.playerBreakBlock.subscribe((event) => {
   });
 });
 
-function getExcludedEffects(): string[] {
-  return [
-    'minecraft:absorption',
-    'minecraft:bad_omen',
-    'minecraft:blindness',
-    'minecraft:conduit_power',
-    'minecraft:darkness',
-    'minecraft:fatal_poison',
-    'minecraft:fire_resistance',
-    'minecraft:glowing',
-    'minecraft:haste',
-    'minecraft:health_boost',
-    'minecraft:hunger',
-    'minecraft:instant_damage',
-    'minecraft:instant_health',
-    'minecraft:invisibility',
-    'minecraft:mining_fatigue',
-    'minecraft:nausea',
-    'minecraft:night_vision',
-    'minecraft:poison',
-    'minecraft:regeneration',
-    'minecraft:resistance',
-    'minecraft:saturation',
-    'minecraft:slow_falling',
-    'minecraft:slowness',
-    'minecraft:strength',
-    'minecraft:water_breathing',
-    'minecraft:weakness',
-    'minecraft:wither',
-  ];
-}
+
 
 function monitorItemUseOn(player: Player, itemId: string): void {
   if (!monitoring) return; // アンチチートが無効の場合は何もしない
@@ -770,26 +736,36 @@ function updateTimerData(player: Player, now: number) {
 }
 
 
+
+function isPlayerOnGround(player: Player): boolean {
+  const viewDirection = player.getViewDirection(); 
+  viewDirection.y = -1; // y座標を-1にして 下向きにビーム
+
+  const blockBelow = player.getBlockFromViewDirection({
+    maxDistance: 1.5, //距離は1.5Block
+    includePassableBlocks: false,
+  }); 
+  console.log(`IsPlayerOnground:${JSON.stringify(blockBelow,null,2)}`)
+
+  return blockBelow !== undefined && blockBelow.block.isSolid;
+}
+
 function detectFlyHack(player: Player): { cheatType: string } | null {
   const data = playerDataManager.get(player);
 
-  // プレイヤーデータが取得できない場合、テレポート中、グライディング中、エンダーパール使用後、
-  // クリエイティブモード、スペクテイターモードの場合は処理をスキップ
+ 
   if (
     !data ||
     data.isTeleporting ||
     player.isGliding ||
-    data.recentlyUsedEnderPearl ||
-    getGamemode(player.name) === 1 ||
-    getGamemode(player.name) === 3
+    player.isInWater ||
+    player.isFalling || 
+    player.isFlying ||
+    data.recentlyUsedEnderPearl
   ) {
     return null;
   }
 
-  // 特定の効果を除いて、効果が付与されている場合は処理をスキップ
-  if (hasAnyEffectExcept(player, getExcludedEffects())) {
-    return null;
-  }
 
   const isOnGround = player.isOnGround; // 地面にいるかどうか
   const currentPosition = player.location; // 現在の位置
@@ -813,7 +789,7 @@ function detectFlyHack(player: Player): { cheatType: string } | null {
   const velocityChangeRate = (currentVelocityY - twoTicksAgoVelocityY) / (50 * 2);
 
   // FlyHack判定 (地面にいない状態で異常な垂直移動)
-  if (!isOnGround && currentVelocityY > 0.5) {
+  if (!isPlayerOnGround(player) && currentVelocityY > 0.5) {
     // 異常な上昇速度
     if (
       currentVelocityY > 1.2 || // 高速上昇

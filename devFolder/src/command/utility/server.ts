@@ -196,7 +196,7 @@ registerCommand({
                 }).then(() => { });
             }
         } else {
-            player.sendMessage('Invalid argument. Use "-pause", "-check", "-checkban", "-info <seed|uptime|tps>", or "-ping [-true|-false]".');
+            player.sendMessage('Invalid argument. Use "-pause", "-check", "-checkban", "-info uptime", or "-ping [-true|-false]".');
         }
     },
 });

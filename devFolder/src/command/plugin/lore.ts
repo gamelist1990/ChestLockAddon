@@ -86,16 +86,17 @@ function removeSpecificLore(item: any, loreText: string, player: Player, targetS
     }, 1);
 }
 
+
 registerCommand({
     name: 'lore',
     description: 'loreCom',
     parent: false,
     maxArgs: -1,
-    minArgs: 2,
+    minArgs: 1, // Changed minArgs to 1 to allow for just 'lore -clear'
     require: (player: Player) => verifier(player, config().commands['lore']),
     executor: (player: Player, args: string[]) => {
         // 引数が提供されていない場合のチェックを追加
-        if (!args || args.length < 2) {
+        if (!args || args.length < 1) { // Changed condition to check for at least 1 argument
             player.sendMessage(translate(player, "command.UsageLore", { prefix: `${prefix}` }));
             return;
         }
@@ -123,10 +124,18 @@ registerCommand({
         const subCommand = args[0].toLowerCase();
 
         if (subCommand === '-set') {
+            if (args.length < 2) { // Check if there's enough arguments for -set
+                player.sendMessage(translate(player, "command.UsageLore", { prefix: `${prefix}` }));
+                return;
+            }
             const loreText = args.slice(1).join(' ');
             AddLore(heldItem, loreText, player, targetSlot);
             player.sendMessage(translate(player, "command.AddLore"));
         } else if (subCommand === '-remove') {
+            if (args.length < 2) { // Check if there's enough arguments for -remove
+                player.sendMessage(translate(player, "command.UsageLore", { prefix: `${prefix}` }));
+                return;
+            }
             const loreText = args.slice(1).join(' ');
             removeSpecificLore(heldItem, loreText, player, targetSlot);
             const currentLore = heldItem.getLore() || [];
@@ -136,6 +145,10 @@ registerCommand({
                 player.sendMessage(translate(player, "command.RemoveLore"));
             }
         } else if (subCommand === '-rename') {
+            if (args.length < 2) { // Check if there's enough arguments for -rename
+                player.sendMessage(translate(player, "command.UsageLore", { prefix: `${prefix}` }));
+                return;
+            }
             const NewName = args.slice(1).join(' ');
             renameItem(heldItem, NewName, player, targetSlot);
             player.sendMessage(translate(player, "command.ChangeNames"));
