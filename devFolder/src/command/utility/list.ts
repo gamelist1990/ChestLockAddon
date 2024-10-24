@@ -109,10 +109,10 @@ async function sendAllPlayersInfoToChat(player: Player): Promise<void> {
 
     const { ping } = await getPing(targetPlayerData);
 
-    const device = 0;
+    const device = clientdevice(targetPlayerData);
     const deviceName = device === 0 ? "Desktop" : device === 1 ? "Mobile" : device === 2 ? "Console" : "Unknown";
     const dimension = getDimension(targetPlayerData);
-    const memoryTier = 0;
+    const memoryTier = getMemoryTier(targetPlayerData);
     const memoryTierName = memoryTier === 0 ? "Memory:Undetermined" :
       memoryTier === 1 ? "Memory:1.5GB" :
         memoryTier === 2 ? "Memory:2GB" :
