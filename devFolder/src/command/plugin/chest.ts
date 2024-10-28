@@ -15,7 +15,7 @@ interface ChestProtectionData {
 }
 
 
-const CHEST_CHECK_RADIUS = 64;
+const CHEST_CHECK_RADIUS = 20;
 
 const CHECK_INTERVAL = 20 * 60; // 1分 (20ティック/秒 * 60秒)
 

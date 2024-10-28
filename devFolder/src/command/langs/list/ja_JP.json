@@ -906,7 +906,7 @@
   },
   "AddM": {
     "msgid": "§a {member} added as a member at location: {chestLocation}",
-    "msgstr": "§aをメンバーに追加しました。"
+    "msgstr": "§a{member}をメンバーに追加しました。座標: {chestLocation}"
   },
   "addYouM": {
     "msgid": "§a {playerName} has added you to the following chests: {chestLocation}",

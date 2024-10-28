@@ -1,6 +1,7 @@
 {
     "include": [
         "devFolder/src/**/*.ts",
+        "lbAddon/BH/src/**/*.ts",
         "gobal.d.ts"
     ],
     "exclude": [
