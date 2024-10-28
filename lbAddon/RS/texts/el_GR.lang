@@ -1,0 +1,41 @@
+pack.name=§l§bΔύσοσμοι βαθμολογικοί πίνακες §cRES §7v3.0
+pack.description=Προσθέτει τη δυνατότητα δημιουργίας κυμαινόμενου βαθμολογικού πίνακα στον κόσμο σας. Λάβετε τεκμηρίωση στο https://mcbehub.com, εγγραφείτε επίσης στο discord για να είστε ενημερωμένοι: https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = Δημιουργήστε προσαρμοσμένους πίνακες κατάταξης που παρακολουθούν δεδομένα παικτών στον κόσμο
+
+slb.error.command.createlb.objectiveletter=§eΣφάλμα: §c<objective> μπορεί να είναι μόνο αλφαβητικά γράμματα (A-Z)
+slb.error.command.createlb.objectivelength=§eΣφάλμα: §c<objective> Δεν ήταν δυνατή η πραγματοποίηση που εισαγάγατε επειδή είναι μεγαλύτερος από 16 χαρακτήρες!
+slb.error.command.createlb.missingagument=§eΣφάλμα: §cΠρέπει να εισαγάγετε όλα τα απαιτούμενα aguments. Εκτελέστε -help createlb για περισσότερες πληροφορίες.
+slb.error.command.createlb.missingpermission=§eΣφάλμα: §cΔεν έχετε άδεια να χρησιμοποιήσετε αυτήν την εντολή, δώστε την εντολή /tag @s προσθήκη κατόχου
+slb.error.command.createlb.xerror=§eΣφάλμα: Το §c<x> δεν μπόρεσε να επικυρωθεί επειδή δεν είναι ακέραιος
+slb.error.command.createlb.yerror=§eΣφάλμα: Το §c<y> δεν μπόρεσε να επικυρωθεί επειδή δεν είναι ακέραιος
+slb.error.command.createlb.zerror=§eΣφάλμα: Το §c<z> δεν μπόρεσε να επικυρωθεί επειδή δεν είναι ακέραιος
+slb.error.command.createlb.leaderboardlimit=§eΣφάλμα: §cΜπορείτε να έχετε μόνο έναν βαθμολογικό πίνακα για κάθε στόχο
+
+slb.help.command.createlb.description=§Δημιουργεί έναν αιωρούμενο βαθμολογικό πίνακα σε οποιαδήποτε τοποθεσία
+slb.help.command.createlb.usage=-lb δημιουργία <objective: string> <x> <y> <z>
+
+slb.failed.command.createlb=§eFail: §cΗ κατάργηση του βαθμολογικού πίνακα απέτυχε, ελέγξτε ότι εισαγάγατε τον σωστό στόχο και τις σωστές συντεταγμένες
+slb.success.command.createlb=§aΔημιουργήθηκε Leaderboard για §e%s §a στο §e%s§a, §e%s§a, §e%s §a Επιτυχώς!
+
+slb.error.command.removelb.objectiveletter=§eΣφάλμα: §c<objective> μπορεί να είναι μόνο αλφαβητικά γράμματα (A-Z)
+slb.error.command.removelb.objectivelength=§eΣφάλμα: §c<objective> Δεν ήταν δυνατή η πραγματοποίηση που εισαγάγατε επειδή είναι μεγαλύτερος από 16 χαρακτήρες!
+slb.error.command.removelb.missingagument=§eΣφάλμα: §cΠρέπει να εισαγάγετε όλα τα απαιτούμενα aguments. Εκτελέστε -help removelb για περισσότερες πληροφορίες.
+slb.error.command.removelb.missingpermission=§eΣφάλμα: §cΔεν έχετε άδεια να χρησιμοποιήσετε αυτήν την εντολή, δώστε την εντολή /tag @s προσθήκη κατόχου
+slb.error.command.removelb.xerror=§eΣφάλμα: Το §c<x> δεν μπόρεσε να επικυρωθεί επειδή δεν είναι ακέραιος
+slb.error.command.removelb.yerror=§eΣφάλμα: Το §c<y> δεν μπόρεσε να επικυρωθεί επειδή δεν είναι ακέραιος
+slb.error.command.removelb.zerror=§eΣφάλμα: Το §c<z> δεν μπόρεσε να επικυρωθεί επειδή δεν είναι ακέραιος
+slb.error.command.removelb.wrongDimension=§eΣφάλμα: §cΑυτός ο πίνακας κατάταξης είναι η ιδιότητα %s που πρέπει να βρίσκεται στην ίδια διάσταση με αυτήν για να καταργήσετε
+slb.error.command.removelb.noobjective=§eΣφάλμα: §cΔεν ήταν δυνατή η εύρεση βαθμολογικού πίνακα για %s
+
+slb.help.command.removelb.description=§eΚαταργεί έναν βαθμολογικό πίνακα από μια τοποθεσία
+slb.help.command.removelb.usage=-lb αφαιρέστε <objective: string> <x> <y> <z>
+
+slb.failed.command.removelb=§eFail: §cΗ κατάργηση του βαθμολογικού πίνακα απέτυχε, ελέγξτε ότι εισαγάγατε τον σωστό στόχο και τις σωστές συντεταγμένες
+slb.success.command.removelb=§aΚαταργήθηκε το Leaderboard για το §e%s §a στο §e%s§a, §e%s§a, §e%s §a Επιτυχώς!
+
+slb.help.default=Το §aThis World χρησιμοποιεί το Smelly Leaderboards ένα αιωρούμενο σύστημα βαθμολογικών πινάκων για να εμφανίζει τις βαθμολογίες των παικτών ώστε οι παίκτες να δημιουργήσουν ένα leaderboard ξεκινούν μαθαίνοντας πώς να εκτελείτε την εντολή §e-help createlb
+
+slb.command.list.nodata=§cΔεν δημιουργήθηκαν πίνακες αποτελεσμάτων!
+slb.command.list.leaderboard=§e%s §aLeaderboard στο §e%s§a, §e%s§a, §e%s §ain διάσταση §e%s
+
+

@@ -1,0 +1,41 @@
+pack.name=l§bSmelly Leaderboards cRES 7v3.0
+pack.description=Menambahkan kemampuan untuk membuat papan peringkat mengambang di dunia Anda. Dapatkan dokumentasi di https://mcbehub.com, juga bergabung dengan perselisihan untuk tetap mendapatkan informasi terbaru: https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = Buat papan peringkat khusus yang melacak data pemain di dunia
+
+slb.error.command.createlb.objectiveletter=eError: c<objective> hanya boleh huruf abjad (A-Z)
+slb.error.command.createlb.objectivelength=eError: c<objective> Anda tidak dapat dibuat karena lebih panjang dari 16 Karakter!
+slb.error.command.createlb.missingagument=eError: cAnda harus memasukkan semua agument yang diperlukan. Jalankan -help createlb untuk informasi lebih lanjut.
+slb.error.command.createlb.missingpermission=eError: cAnda tidak memiliki izin untuk menggunakan perintah ini, silakan jalankan perintah /tag @s add owner
+slb.error.command.createlb.xerror=eError: c<x> tidak dapat divalidasi karena bukan bilangan bulat
+slb.error.command.createlb.yerror=eError: c<y> tidak dapat divalidasi karena bukan bilangan bulat
+slb.error.command.createlb.zerror=eError: c<z> tidak dapat divalidasi karena bukan bilangan bulat
+slb.error.command.createlb.leaderboardlimit=eError: cAnda hanya dapat memiliki satu papan peringkat untuk setiap tujuan
+
+slb.help.command.createlb.description=Membuat papan peringkat mengambang di lokasi mana pun
+slb.help.command.createlb.usage=-lb buat <tujuan: string> <x> <y> <z>
+
+slb.failed.command.createlb=eFail: cPapan Peringkat Gagal dihapus, harap periksa apakah Anda memasukkan tujuan dan koordinat yang benar
+slb.success.command.createlb=Membuat Papan Peringkat untuk e%s a di e%s§a, e%s§a, e%s a Berhasil!
+
+slb.error.command.removelb.objectiveletter=eError: c<objective> hanya boleh huruf abjad (A-Z)
+slb.error.command.removelb.objectivelength=eError: c<objective> Anda tidak dapat dibuat karena lebih panjang dari 16 Karakter!
+slb.error.command.removelb.missingagument=eError: cAnda harus memasukkan semua agument yang diperlukan. Jalankan -help removelb untuk informasi lebih lanjut.
+slb.error.command.removelb.missingpermission=eError: cAnda tidak memiliki izin untuk menggunakan perintah ini, silakan jalankan perintah /tag @s add owner
+slb.error.command.removelb.xerror=eError: c<x> tidak dapat divalidasi karena bukan bilangan bulat
+slb.error.command.removelb.yerror=eError: c<y> tidak dapat divalidasi karena bukan bilangan bulat
+slb.error.command.removelb.zerror=eError: c<z> tidak dapat divalidasi karena bukan bilangan bulat
+slb.error.command.removelb.wrongDimension=eError: cPapan peringkat ini adalah Dimensi %s yang Anda perlukan dalam dimensi yang sama dengan yang akan dihapus
+slb.error.command.removelb.noobjective=eError: cTidak dapat menemukan papan peringkat untuk %s
+
+slb.help.command.removelb.description=Menghapus papan peringkat dari suatu lokasi
+slb.help.command.removelb.usage=-lb hapus <tujuan: string> <x> <y> <z>
+
+slb.failed.command.removelb=eFail: cPapan Peringkat Gagal dihapus, harap periksa apakah Anda memasukkan tujuan dan koordinat yang benar
+slb.success.command.removelb=aDihapus Papan Peringkat untuk e%s a di e%s§a, e%s§a, e%s a Berhasil!
+
+slb.help.default=aThis World menggunakan Smelly Leaderboards, sistem papan peringkat mengambang untuk menampilkan skor pemain bagi pemain untuk membuat papan peringkat, mulai dengan mempelajari cara menjalankan perintah e-help createlb
+
+slb.command.list.nodata=cTidak ada papan skor yang dibuat!
+slb.command.list.leaderboard=e%s aLeaderboard di e%s§a, e%s§a, e%s dimensi e%s
+
+

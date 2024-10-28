@@ -1,0 +1,41 @@
+pack.name=§l§billaluktande topplistor §cRES §7v3.0
+pack.description=Lägger till möjligheten att skapa en flytande topplista i din värld. Få dokumentation på https://mcbehub.com, gå också med i discord för att hålla dig uppdaterad: https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = Skapa anpassade topplistor som spårar spelardata i världen
+
+slb.error.command.createlb.objectiveletter=§eError: §c<objective> kan endast vara alfabetiska bokstäver (A-Z)
+slb.error.command.createlb.objectivelength=§eError: §c<objective> Du skrev in kunde inte göras eftersom det är längre än 16 tecken!
+slb.error.command.createlb.missingagument=§eError: §cDu måste ange alla nödvändiga argument. Kör -help createlb för mer information.
+slb.error.command.createlb.missingpermission=§eError: §cDu har inte behörighet att använda detta kommando, vänligen kör kommandot /tagg @s add owner
+slb.error.command.createlb.xerror=§eError: §c<x> kunde inte valideras eftersom det inte är ett heltal
+slb.error.command.createlb.yerror=§eError: §c<y> kunde inte valideras eftersom det inte är ett heltal
+slb.error.command.createlb.zerror=§eError: §c<z> kunde inte valideras eftersom det inte är ett heltal
+slb.error.command.createlb.leaderboardlimit=§eError: §cDu kan bara ha en topplista för varje mål
+
+slb.help.command.createlb.description=§eSkapar en flytande topplista var som helst
+slb.help.command.createlb.usage=-lb skapa <objektiv: sträng> <x> <y> <z>
+
+slb.failed.command.createlb=§eFail: §cPoängtavlan kunde inte tas bort, kontrollera att du har angett rätt mål och koordinater
+slb.success.command.createlb=§aSkapade Leaderboard för §e%s §a vid §e%s§a, §e%s§a, §e%s §a Framgångsrik!
+
+slb.error.command.removelb.objectiveletter=§eError: §c<objective> kan endast vara alfabetiska bokstäver (A-Z)
+slb.error.command.removelb.objectivelength=§eError: §c<objective> Du skrev in kunde inte göras eftersom det är längre än 16 tecken!
+slb.error.command.removelb.missingagument=§eError: §cDu måste ange alla nödvändiga argument. Kör -help removelb för mer information.
+slb.error.command.removelb.missingpermission=§eError: §cDu har inte behörighet att använda detta kommando, vänligen kör kommandot /tagg @s add owner
+slb.error.command.removelb.xerror=§eError: §c<x> kunde inte valideras eftersom det inte är ett heltal
+slb.error.command.removelb.yerror=§eError: §c<y> kunde inte valideras eftersom det inte är ett heltal
+slb.error.command.removelb.zerror=§eError: §c<z> kunde inte valideras eftersom det inte är ett heltal
+slb.error.command.removelb.wrongDimension=§eError: §cDenna leaderboard är %s-dimensionen som du måste vara i samma dimension som den för att ta bort
+slb.error.command.removelb.noobjective=§eError: §cKunde inte hitta en topplista för %s
+
+slb.help.command.removelb.description=§eTar bort en topplista från en plats
+slb.help.command.removelb.usage=-lb ta bort <objektiv: sträng> <x> <y> <z>
+
+slb.failed.command.removelb=§eFail: §cPoängtavlan kunde inte tas bort, kontrollera att du har angett rätt mål och koordinater
+slb.success.command.removelb=§aBorttagen Leaderboard för §e%s §a vid §e%s§a, §e%s§a, §e%s §a Framgångsrik!
+
+slb.help.default=§aThis World använder Smelly Leaderboards, ett flytande leaderboard-system för att visa spelarnas poäng för spelare att skapa en leaderboard börja med att lära sig hur man kör kommandot §e-help createlb
+
+slb.command.list.nodata=§cDet finns inga resultattavlor skapade!
+slb.command.list.leaderboard=§e%s §aLeaderboard vid §e%s§a, §e%s§a, §e%s §en dimension §e%s
+
+

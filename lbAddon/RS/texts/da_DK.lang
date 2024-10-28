@@ -1,0 +1,41 @@
+pack.name=§l§b Ildelugtende Leaderboards §cRES §7v3.0
+pack.description=Tilføjer muligheden for at skabe et flydende leaderboard i din verden. Få dokumentation på https://mcbehub.com, deltag også i discord for at holde dig opdateret: https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = Opret brugerdefinerede ranglister, der sporer spillerdata i verden
+
+slb.error.command.createlb.objectiveletter=§eError: §c<objektiv> kan kun være alfabetiske bogstaver (A-Z)
+slb.error.command.createlb.objectivelength=§eError: §c<objective> Du indtastede kunne ikke laves, fordi det er længere end 16 tegn!
+slb.error.command.createlb.missingagument=§eFejl: §cDu skal indtaste alle nødvendige argumenter. Kør -help createlb for mere information.
+slb.error.command.createlb.missingpermission=§eFejl: §cDu har ikke tilladelse til at bruge denne kommando, giv venligst kør kommandoen /tag @s add ejer
+slb.error.command.createlb.xerror=§eError: §c<x> kunne ikke valideres, fordi det ikke er et heltal
+slb.error.command.createlb.yerror=§eError: §c<y> kunne ikke valideres, fordi det ikke er et heltal
+slb.error.command.createlb.zerror=§eError: §c<z> kunne ikke valideres, fordi det ikke er et heltal
+slb.error.command.createlb.leaderboardlimit=§eFejl: §cDu kan kun have én leaderboard for hvert mål
+
+slb.help.command.createlb.description=§eOpretter en flydende rangliste hvor som helst
+slb.help.command.createlb.usage=-lb opret <objektiv: streng> <x> <y> <z>
+
+slb.failed.command.createlb=§eFail: §c Leaderboardet kunne ikke fjernes, tjek venligst, at du har indtastet det rigtige mål og koordinater
+slb.success.command.createlb=§aOprettet Leaderboard for §e%s §a ved §e%s§a, §e%s§a, §e%s §a.
+
+slb.error.command.removelb.objectiveletter=§eError: §c<objektiv> kan kun være alfabetiske bogstaver (A-Z)
+slb.error.command.removelb.objectivelength=§eError: §c<objective> Du indtastede kunne ikke laves, fordi det er længere end 16 tegn!
+slb.error.command.removelb.missingagument=§eFejl: §cDu skal indtaste alle nødvendige argumenter. Kør -help removelb for mere information.
+slb.error.command.removelb.missingpermission=§eFejl: §cDu har ikke tilladelse til at bruge denne kommando, giv venligst kør kommandoen /tag @s add ejer
+slb.error.command.removelb.xerror=§eError: §c<x> kunne ikke valideres, fordi det ikke er et heltal
+slb.error.command.removelb.yerror=§eError: §c<y> kunne ikke valideres, fordi det ikke er et heltal
+slb.error.command.removelb.zerror=§eError: §c<z> kunne ikke valideres, fordi det ikke er et heltal
+slb.error.command.removelb.wrongDimension=§eFejl: §cDette leaderboard er %s-dimensionen, du skal være i samme dimension som den for at fjerne
+slb.error.command.removelb.noobjective=§eFejl: §cKunne ikke finde et leaderboard for %s
+
+slb.help.command.removelb.description=§eFjerner en rangliste fra en placering
+slb.help.command.removelb.usage=-lb fjern <objektiv: streng> <x> <y> <z>
+
+slb.failed.command.removelb=§eFail: §c Leaderboardet kunne ikke fjernes, tjek venligst, at du har indtastet det rigtige mål og koordinater
+slb.success.command.removelb=§aFjernet Leaderboard for §e%s §a ved §e%s§a, §e%s§a, §e%s §a.
+
+slb.help.default=§aThis World bruger Smelly Leaderboards, et flydende leaderboard-system til at vise spillernes resultater, så spillere kan oprette et leaderboard. Start med at lære, hvordan man kører kommandoen §e-help createlb
+
+slb.command.list.nodata=§cDer er ingen resultattavler oprettet!
+slb.command.list.leaderboard=§e%s §aLeaderboard ved §e%s§a, §e%s§a, §e%s §en dimension §e%s
+
+

@@ -1,0 +1,41 @@
+pack.name=§l§bStinkende Bestenlisten §cRES §7v3.0
+pack.description=Fügt die Möglichkeit hinzu, eine schwebende Rangliste in Ihrer Welt zu erstellen. Holen Sie sich die Dokumentation auf https://mcbehub.com, treten Sie auch dem Discord bei, um auf dem Laufenden zu bleiben: https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = Erstellen Sie benutzerdefinierte Bestenlisten, die Spielerdaten auf der ganzen Welt verfolgen
+
+slb.error.command.createlb.objectiveletter=§eError: §c<objective> darf nur alphabetische Buchstaben sein (A-Z)
+slb.error.command.createlb.objectivelength=§eError: §c<objective> Ihre Eingabe konnte nicht durchgeführt werden, da sie länger als 16 Zeichen ist!
+slb.error.command.createlb.missingagument=§eFehler: §cSie müssen alle erforderlichen Agumente eingeben. Führen Sie -help createlb aus, um weitere Informationen zu erhalten.
+slb.error.command.createlb.missingpermission=§eError: §cDu hast keine Berechtigung diesen Befehl zu verwenden, bitte gib run den Befehl /tag @s add owner
+slb.error.command.createlb.xerror=§eError: §c<x> konnte nicht validiert werden, da es sich nicht um eine Ganzzahl handelt
+slb.error.command.createlb.yerror=§eError: §c<y> konnte nicht validiert werden, da es sich nicht um eine Ganzzahl handelt
+slb.error.command.createlb.zerror=§eError: §c<z> konnte nicht validiert werden, da es sich nicht um eine ganze Zahl handelt
+slb.error.command.createlb.leaderboardlimit=§eError: §cDu kannst nur eine Rangliste für jedes Ziel haben
+
+slb.help.command.createlb.description=§eErstellt an jedem Ort eine schwebende Bestenliste
+slb.help.command.createlb.usage=-lb <Ziel: Zeichenfolge> <x> <y> <z> erstellen
+
+slb.failed.command.createlb=§eFail: §cDie Bestenliste konnte nicht entfernt werden. Bitte überprüfen Sie, ob Sie das richtige Ziel und die richtigen Koordinaten eingegeben haben
+slb.success.command.createlb=§aBestenliste für §e%s §a bei §e%s§a, §e%s§a, §e%s §a erstellt Erfolgreich!
+
+slb.error.command.removelb.objectiveletter=§eError: §c<objective> darf nur alphabetische Buchstaben sein (A-Z)
+slb.error.command.removelb.objectivelength=§eError: §c<objective> Ihre Eingabe konnte nicht durchgeführt werden, da sie länger als 16 Zeichen ist!
+slb.error.command.removelb.missingagument=§eFehler: §cSie müssen alle erforderlichen Agumente eingeben. Führen Sie -help removelb aus, um weitere Informationen zu erhalten.
+slb.error.command.removelb.missingpermission=§eError: §cDu hast keine Berechtigung diesen Befehl zu verwenden, bitte gib run den Befehl /tag @s add owner
+slb.error.command.removelb.xerror=§eError: §c<x> konnte nicht validiert werden, da es sich nicht um eine Ganzzahl handelt
+slb.error.command.removelb.yerror=§eError: §c<y> konnte nicht validiert werden, da es sich nicht um eine Ganzzahl handelt
+slb.error.command.removelb.zerror=§eError: §c<z> konnte nicht validiert werden, da es sich nicht um eine ganze Zahl handelt
+slb.error.command.removelb.wrongDimension=§eFehler: §cDiese Bestenliste ist die %s-Dimension, die Sie in derselben Dimension haben müssen, um sie zu entfernen
+slb.error.command.removelb.noobjective=§eFehler: §cKonnte keine Bestenliste für %s finden
+
+slb.help.command.removelb.description=§eEntfernt eine Bestenliste von einem Ort
+slb.help.command.removelb.usage=-lb entfernen <Ziel: Zeichenfolge> <x> <y> <z>
+
+slb.failed.command.removelb=§eFail: §cDie Bestenliste konnte nicht entfernt werden. Bitte überprüfen Sie, ob Sie das richtige Ziel und die richtigen Koordinaten eingegeben haben
+slb.success.command.removelb=§aBestenliste für §e%s §a bei §e%s§a, §e%s§a, §e%s §a entfernt Erfolgreich!
+
+slb.help.default=§aThis World verwendet Smelly Leaderboards, ein schwebendes Ranglistensystem, um die Punktzahlen der Spieler anzuzeigen, damit die Spieler eine Rangliste erstellen können, indem sie lernen, wie man den Befehl §e-help createlb ausführt
+
+slb.command.list.nodata=§cEs wurden keine Anzeigetafeln erstellt!
+slb.command.list.leaderboard=§e%s §aLeaderboard bei §e%s§a, §e%s§a, §e%s §eine Dimension §e%s
+
+

@@ -1,0 +1,41 @@
+pack.name=§l§bSmelly Leaderboards §cRES §7v3.0
+pack.description=Adds the ability to create a floating leaderboard in your world. Get documentation on https://mcbehub.com, also join the discord to stay up to date: https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = Create custom leaderboards that track players data in the world
+
+slb.error.command.createlb.objectiveletter=§eError: §c<objective> can be only Alphbetical letters (A-Z)
+slb.error.command.createlb.objectivelength=§eError: §c<objective> You entered could not be made because it is longer than 16 Characters!
+slb.error.command.createlb.missingagument=§eError: §cYou need to enter all required aguments. Run -help createlb for more information.
+slb.error.command.createlb.missingpermission=§eError: §cYou do not have permission to use this command please give run the command /tag @s add owner
+slb.error.command.createlb.xerror=§eError: §c<x> could not be validated because it is not an integer
+slb.error.command.createlb.yerror=§eError: §c<y> could not be validated because it is not an integer
+slb.error.command.createlb.zerror=§eError: §c<z> could not be validated because it is not an integer
+slb.error.command.createlb.leaderboardlimit=§eError: §cYou can only have one leaderboard for each objective
+
+slb.help.command.createlb.description=§eCreates a floating leaderboard at any location
+slb.help.command.createlb.usage=-lb create <objective: string> <x> <y> <z>
+
+slb.failed.command.createlb=§eFail: §cThe Leaderboard Failed to get removed please check that you entered the right objective and coordinates
+slb.success.command.createlb=§aCreated Leaderboard for §e%s §a at §e%s§a, §e%s§a, §e%s §a Succesfully!
+
+slb.error.command.removelb.objectiveletter=§eError: §c<objective> can be only Alphbetical letters (A-Z)
+slb.error.command.removelb.objectivelength=§eError: §c<objective> You entered could not be made because it is longer than 16 Characters!
+slb.error.command.removelb.missingagument=§eError: §cYou need to enter all required aguments. Run -help removelb for more information.
+slb.error.command.removelb.missingpermission=§eError: §cYou do not have permission to use this command please give run the command /tag @s add owner
+slb.error.command.removelb.xerror=§eError: §c<x> could not be validated because it is not an integer
+slb.error.command.removelb.yerror=§eError: §c<y> could not be validated because it is not an integer
+slb.error.command.removelb.zerror=§eError: §c<z> could not be validated because it is not an integer
+slb.error.command.removelb.wrongDimension=§eError: §cThis leaderboard is the %s Dimension you need to be in the same dimesion as it to remove
+slb.error.command.removelb.noobjective=§eError: §cCould not find a leaderboard for %s
+
+slb.help.command.removelb.description=§eRemoves a leaderboard from a location
+slb.help.command.removelb.usage=-lb remove <objective: string> <x> <y> <z>
+
+slb.failed.command.removelb=§eFail: §cThe Leaderboard Failed to get removed please check that you entered the right objective and coordinates
+slb.success.command.removelb=§aRemoved Leaderboard for §e%s §a at §e%s§a, §e%s§a, §e%s §a Succesfully!
+
+slb.help.default=§aThis World is using Smelly Leaderboards a floating leaderboard system to display players scores for players to create a leaderboard start by learning how run the command §e-help createlb
+
+slb.command.list.nodata=§cThere are no scoreboards created!
+slb.command.list.leaderboard=§e%s §aLeaderboard at §e%s§a, §e%s§a, §e%s §ain dimension §e%s
+
+

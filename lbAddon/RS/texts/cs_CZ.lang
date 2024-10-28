@@ -1,0 +1,41 @@
+pack.name=§l§bSmradlavé žebříčky §cRES §7v3.0
+pack.description=Přidává možnost vytvořit plovoucí výsledkovou tabulku ve vašem světě. Získejte dokumentaci na https://mcbehub.com, připojte se také k rozporu, abyste zůstali v obraze: https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = Vytvářejte vlastní žebříčky, které sledují data hráčů ve světě
+
+slb.error.command.createlb.objectiveletter=§eChyba: §c<objektiv> mohou být pouze písmena abecedy (A-Z)
+slb.error.command.createlb.objectivelength=§eChyba: §c<objekt> Zadaný text nelze provést, protože je delší než 16 znaků!
+slb.error.command.createlb.missingagument=§eChyba: §cMusíte zadat všechny požadované prvky. Spusťte -help createlb pro více informací.
+slb.error.command.createlb.missingpermission=§eChyba: §cNemáte oprávnění k použití tohoto příkazu, prosím spusťte příkaz /tag @s add owner
+slb.error.command.createlb.xerror=§eError: §c<x> nelze ověřit, protože to není celé číslo
+slb.error.command.createlb.yerror=§eError: §c<y> nelze ověřit, protože to není celé číslo
+slb.error.command.createlb.zerror=§eError: §c<z> nelze ověřit, protože to není celé číslo
+slb.error.command.createlb.leaderboardlimit=§eError: §cPro každý cíl můžete mít pouze jeden žebříček
+
+slb.help.command.createlb.description=§eVytváří plovoucí výsledkovou tabulku na libovolném místě
+slb.help.command.createlb.usage=-lb vytvořit <cíl: řetězec> <x> <y> <z>
+
+slb.failed.command.createlb=§eFail: §cŽebříčku se nepodařilo odstranit, zkontrolujte, zda jste zadali správný cíl a souřadnice
+slb.success.command.createlb=§aVytvořen žebříček pro §e%s §a v §e%s§a, §e%s§a, §e%s §a Úspěšně!
+
+slb.error.command.removelb.objectiveletter=§eChyba: §c<objektiv> mohou být pouze písmena abecedy (A-Z)
+slb.error.command.removelb.objectivelength=§eChyba: §c<objekt> Zadaný text nelze provést, protože je delší než 16 znaků!
+slb.error.command.removelb.missingagument=§eChyba: §cMusíte zadat všechny požadované prvky. Další informace získáte spuštěním -help removelb.
+slb.error.command.removelb.missingpermission=§eChyba: §cNemáte oprávnění k použití tohoto příkazu, prosím spusťte příkaz /tag @s add owner
+slb.error.command.removelb.xerror=§eError: §c<x> nelze ověřit, protože to není celé číslo
+slb.error.command.removelb.yerror=§eError: §c<y> nelze ověřit, protože to není celé číslo
+slb.error.command.removelb.zerror=§eError: §c<z> nelze ověřit, protože to není celé číslo
+slb.error.command.removelb.wrongDimension=§eChyba: §cTato výsledková tabulka je %s dimenze, kterou musíte mít ve stejné dimenzi, abyste ji mohli odstranit
+slb.error.command.removelb.noobjective=§eChyba: §cNelze najít výsledkovou tabulku pro %s
+
+slb.help.command.removelb.description=§eOdstraní výsledkovou tabulku z místa
+slb.help.command.removelb.usage=-lb remove <cíl: řetězec> <x> <y> <z>
+
+slb.failed.command.removelb=§eFail: §cŽebříčku se nepodařilo odstranit, zkontrolujte, zda jste zadali správný cíl a souřadnice
+slb.success.command.removelb=§aOdstraněno žebříček pro §e%s §a na §e%s§a, §e%s§a, §e%s §a Úspěšně!
+
+slb.help.default=§aThis World používá Smelly Leaderboards, plovoucí systém žebříčků, který zobrazuje skóre hráčů pro hráče, aby vytvořili žebříček začátek tím, že se naučíte, jak spustit příkaz §e-help createlb
+
+slb.command.list.nodata=§c Nejsou vytvořeny žádné výsledkové tabulky!
+slb.command.list.leaderboard=§e%s §aLeaderboard na §e%s§a, §e%s§a, §e%s §aaaa dimenze §e%s
+
+

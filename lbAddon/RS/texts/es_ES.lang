@@ -1,0 +1,41 @@
+pack.name=§l§bTablas de clasificación malolientes §cRES §7v3.0
+pack.description=Agrega la capacidad de crear una tabla de clasificación flotante en su mundo. Obtenga documentación en https://mcbehub.com, también únase a Discord para mantenerse actualizado: https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = Cree tablas de clasificación personalizadas que rastreen los datos de los jugadores en el mundo
+
+slb.error.command.createlb.objectiveletter=§eError: §c<objetivo> solo pueden ser letras alfabéticas (A-Z)
+slb.error.command.createlb.objectivelength=§eError: §c<objetivo> que ingresó no se pudo realizar porque tiene más de 16 Caracteres!
+slb.error.command.createlb.missingagument=§eError: §cNecesita ingresar todos los argumentos requeridos. Ejecute -help createlb para obtener más información.
+slb.error.command.createlb.missingpermission=§eError: §cNo tiene permiso para usar este comando, ejecute el comando /etiquetar @s agregar propietario
+slb.error.command.createlb.xerror=§eError: §c<x> no se pudo validar porque no es un número entero
+slb.error.command.createlb.yerror=§eError: §c<y> no se pudo validar porque no es un número entero
+slb.error.command.createlb.zerror=§eError: §c<z> no se pudo validar porque no es un número entero
+slb.error.command.createlb.leaderboardlimit=§eError: §cSolo puedes tener una tabla de clasificación para cada objetivo
+
+slb.help.command.createlb.description=§eCrea una tabla de clasificación flotante en cualquier ubicación
+slb.help.command.createlb.usage=-lb create <objetivo: cadena> <x> <y> <z>
+
+slb.failed.command.createlb=§eFail: §cLa tabla de clasificación no se eliminó, verifique que ingresó el objetivo y las coordenadas correctos
+slb.success.command.createlb=§aCreé la tabla de clasificación para §e%s §a en §e%s§a, §e%s§a, §e%s §a ¡Con éxito!
+
+slb.error.command.removelb.objectiveletter=§eError: §c<objetivo> solo pueden ser letras alfabéticas (A-Z)
+slb.error.command.removelb.objectivelength=§eError: §c<objetivo> que ingresó no se pudo realizar porque tiene más de 16 Caracteres!
+slb.error.command.removelb.missingagument=§eError: §cNecesita ingresar todos los argumentos requeridos. Ejecute -help removelb para obtener más información.
+slb.error.command.removelb.missingpermission=§eError: §cNo tiene permiso para usar este comando, ejecute el comando /etiquetar @s agregar propietario
+slb.error.command.removelb.xerror=§eError: §c<x> no se pudo validar porque no es un número entero
+slb.error.command.removelb.yerror=§eError: §c<y> no se pudo validar porque no es un número entero
+slb.error.command.removelb.zerror=§eError: §c<z> no se pudo validar porque no es un número entero
+slb.error.command.removelb.wrongDimension=§eError: §cEsta tabla de clasificación es la dimensión %s que debe estar en la misma dimensión para eliminar
+slb.error.command.removelb.noobjective=§eError: §cNo se pudo encontrar una tabla de clasificación para %s
+
+slb.help.command.removelb.description=§eElimina una tabla de clasificación de una ubicación
+slb.help.command.removelb.usage=-lb remove <objetivo: cadena> <x> <y> <z>
+
+slb.failed.command.removelb=§eFail: §cLa tabla de clasificación no se eliminó, verifique que ingresó el objetivo y las coordenadas correctos
+slb.success.command.removelb=§aSe eliminó la clasificación para §e%s §a en §e%s§a, §e%s§a, §e%s §a ¡Con éxito!
+
+slb.help.default=§aThis World está utilizando Smelly Leaderboards, un sistema de clasificación flotante para mostrar los puntajes de los jugadores para que los jugadores creen una tabla de clasificación, comience aprendiendo cómo ejecutar el comando §e-help createlb
+
+slb.command.list.nodata=§c¡No hay marcadores creados!
+slb.command.list.leaderboard=§e%s §aTabla de clasificación en §e%s§a, §e%s§a, §e%s §una dimensión §e%s
+
+

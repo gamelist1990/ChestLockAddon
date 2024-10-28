@@ -1,0 +1,41 @@
+pack.name=§l§bSmradľavé rebríčky §cRES §7v3.0
+pack.description=Pridáva možnosť vytvoriť plávajúcu tabuľku výsledkov vo vašom svete. Získajte dokumentáciu na https://mcbehub.com, tiež sa pripojte k sporu, aby ste zostali v obraze: https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = Vytvorte si vlastné rebríčky, ktoré sledujú údaje hráčov vo svete
+
+slb.error.command.createlb.objectiveletter=§eChyba: §c<cieľ> môžu byť iba písmená abecedy (A-Z)
+slb.error.command.createlb.objectivelength=§eChyba: §c<cieľ> Zadaný údaj sa nedal urobiť, pretože je dlhší ako 16 znakov!
+slb.error.command.createlb.missingagument=§eChyba: §cMusíte zadať všetky požadované agumenty. Ďalšie informácie získate spustením -help createlb.
+slb.error.command.createlb.missingpermission=§eChyba: §cNemáte povolenie na použitie tohto príkazu, spustite príkaz /tag @s add owner
+slb.error.command.createlb.xerror=§eChyba: §c<x> nebolo možné overiť, pretože to nie je celé číslo
+slb.error.command.createlb.yerror=§eChyba: §c<y> nebolo možné overiť, pretože to nie je celé číslo
+slb.error.command.createlb.zerror=§eChyba: §c<z> nebolo možné overiť, pretože to nie je celé číslo
+slb.error.command.createlb.leaderboardlimit=§eChyba: §cPre každý cieľ môžete mať iba jednu tabuľku výsledkov
+
+slb.help.command.createlb.description=§eVytvorí plávajúcu tabuľku výsledkov na akomkoľvek mieste
+slb.help.command.createlb.usage=-lb vytvoriť <cieľ: reťazec> <x> <y> <z>
+
+slb.failed.command.createlb=§eFail: §cRebríček sa nepodarilo odstrániť, skontrolujte, či ste zadali správny cieľ a súradnice
+slb.success.command.createlb=§aVytvorený rebríček pre §e%s §a na §e%s§a, §e%s§a, §e%s §a Úspešne!
+
+slb.error.command.removelb.objectiveletter=§eChyba: §c<cieľ> môžu byť iba písmená abecedy (A-Z)
+slb.error.command.removelb.objectivelength=§eChyba: §c<cieľ> Zadaný údaj sa nedal urobiť, pretože je dlhší ako 16 znakov!
+slb.error.command.removelb.missingagument=§eChyba: §cMusíte zadať všetky požadované agumenty. Ďalšie informácie získate spustením -help removelb.
+slb.error.command.removelb.missingpermission=§eChyba: §cNemáte povolenie na použitie tohto príkazu, spustite príkaz /tag @s add owner
+slb.error.command.removelb.xerror=§eChyba: §c<x> nebolo možné overiť, pretože to nie je celé číslo
+slb.error.command.removelb.yerror=§eChyba: §c<y> nebolo možné overiť, pretože to nie je celé číslo
+slb.error.command.removelb.zerror=§eChyba: §c<z> nebolo možné overiť, pretože to nie je celé číslo
+slb.error.command.removelb.wrongDimension=§eChyba: §cTento rebríček je dimenzia %s, ktorú musíte mať v rovnakej dimenzii, aby ste ju mohli odstrániť
+slb.error.command.removelb.noobjective=§eChyba: §cNepodarilo sa nájsť rebríček pre %s
+
+slb.help.command.removelb.description=§eOdstráni tabuľku výsledkov z miesta
+slb.help.command.removelb.usage=-lb remove <cieľ: reťazec> <x> <y> <z>
+
+slb.failed.command.removelb=§eFail: §cRebríček sa nepodarilo odstrániť, skontrolujte, či ste zadali správny cieľ a súradnice
+slb.success.command.removelb=§aOdstránený rebríček pre §e%s §a na §e%s§a, §e%s§a, §e%s §a Úspešne!
+
+slb.help.default=§aTento svet používa Smelly Leaderboards, plávajúci systém výsledkových tabuliek na zobrazenie skóre hráčov, aby si hráči vytvorili začiatok rebríčka tým, že sa naučili, ako spustiť príkaz §e-help createlb
+
+slb.command.list.nodata=§cNie sú vytvorené žiadne tabuľky výsledkov!
+slb.command.list.leaderboard=§e%s §aRebríček v §e%s§a, §e%s§a, §e%s §aká dimenzia §e%s
+
+

@@ -1,0 +1,41 @@
+pack.name=§l§b Табла с миризливи лидери §cRES §7v3.0
+pack.description=Добавя възможност за създаване на плаваща класация във вашия свят. Вземете документация на https://mcbehub.com, присъединете се също към discord, за да сте в течение: https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = Създайте персонализирани класации, които проследяват данните на играчите по света
+
+slb.error.command.createlb.objectiveletter=§eГрешка: §c<обектив> може да бъде само азбучни букви (A-Z)
+slb.error.command.createlb.objectivelength=§eError: §c<обектив> Въведените от вас не могат да бъдат направени, защото са по-дълги от 16 знака!
+slb.error.command.createlb.missingagument=§eГрешка: §cТрябва да въведете всички необходими агументи. Изпълнете -help createlb за повече информация.
+slb.error.command.createlb.missingpermission=§eГрешка: §cНямате разрешение да използвате тази команда, моля, дайте стартиране на командата /tag @s add owner
+slb.error.command.createlb.xerror=§Error: §c<x> не може да бъде валидиран, защото не е цяло число
+slb.error.command.createlb.yerror=§eError: §c<y> не може да бъде валидиран, защото не е цяло число
+slb.error.command.createlb.zerror=§eError: §c<z> не може да бъде валидиран, защото не е цяло число
+slb.error.command.createlb.leaderboardlimit=§eГрешка: §cМожете да имате само една класация за всяка цел
+
+slb.help.command.createlb.description=§eСъздава плаващо класиране на всяко място
+slb.help.command.createlb.usage=-lb създаване <цел: низ> <x> <y> <z>
+
+slb.failed.command.createlb=§eFail: §cThe Leaderboard неуспешно премахване, моля, проверете дали сте въвели правилната цел и координати
+slb.success.command.createlb=§aСъздадена класация за §e%s §a при §e%s§a, §e%s§a, §e%s §a Успешно!
+
+slb.error.command.removelb.objectiveletter=§eГрешка: §c<обектив> може да бъде само азбучни букви (A-Z)
+slb.error.command.removelb.objectivelength=§eError: §c<обектив> Въведените от вас не могат да бъдат направени, защото са по-дълги от 16 знака!
+slb.error.command.removelb.missingagument=§eГрешка: §cТрябва да въведете всички необходими агументи. Изпълнете -help removelb за повече информация.
+slb.error.command.removelb.missingpermission=§eГрешка: §cНямате разрешение да използвате тази команда, моля, дайте стартиране на командата /tag @s add owner
+slb.error.command.removelb.xerror=§Error: §c<x> не може да бъде валидиран, защото не е цяло число
+slb.error.command.removelb.yerror=§eError: §c<y> не може да бъде валидиран, защото не е цяло число
+slb.error.command.removelb.zerror=§eError: §c<z> не може да бъде валидиран, защото не е цяло число
+slb.error.command.removelb.wrongDimension=§eГрешка: §cТова класация е измерението %s, което трябва да сте в същото измерение като него, за да премахнете
+slb.error.command.removelb.noobjective=§eГрешка: §cНе можах да намеря класация за %s
+
+slb.help.command.removelb.description=§e Премахва класация от място
+slb.help.command.removelb.usage=-lb премахнете <цел: низ> <x> <y> <z>
+
+slb.failed.command.removelb=§eFail: §cThe Leaderboard неуспешно премахване, моля, проверете дали сте въвели правилната цел и координати
+slb.success.command.removelb=§a Премахнато класиране за §e%s §a при §e%s§a, §e%s§a, §e%s §a Успешно!
+
+slb.help.default=§aThis World използва Smelly Leaderboards плаваща система за класиране за показване на резултатите на играчите, за да могат играчите да създадат класация, като научат как да изпълняват командата §e-help createlb
+
+slb.command.list.nodata=§cНяма създадени табла!
+slb.command.list.leaderboard=§e%s §aLeaderboard при §e%s§a, §e%s§a, §e%s §ain измерение §e%s
+
+

@@ -1,0 +1,23 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "pack.name",
+    "description": "pack.description",
+    "min_engine_version": [1, 17, 0],
+    "uuid": "d9283d78-c60b-48c3-a1b9-591af724d868",
+    "version": [3, 0, 0]
+  },
+  "modules": [
+    {
+      "description": "Resource Module",
+      "type": "resources",
+      "uuid": "34c46105-8920-4015-b91c-b400f997b18d",
+      "version": [3, 0, 0]
+    }
+  ],
+  "metadata": {
+    "authors": ["Smell of curry"],
+    "license": "MIT",
+    "url": "https://www.youtube.com/c/SmellofCurry"
+  }
+}

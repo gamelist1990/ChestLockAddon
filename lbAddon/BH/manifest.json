@@ -1,0 +1,59 @@
+{
+    "format_version": 2,
+    "header": {
+        "name": "pack.name",
+        "description": "pack.description",
+        "min_engine_version": [
+            1,
+            19,
+            0
+        ],
+        "uuid": "d0ad21fa-c91e-4dae-aad2-8787ef1141d5",
+        "version": [
+            3,
+            0,
+            0
+        ]
+    },
+    "modules": [
+        {
+            "description": "Data Module",
+            "type": "data",
+            "uuid": "e78a52b4-b225-444d-9bb0-16ca45132b55",
+            "version": [
+                3,
+                0,
+                0
+            ]
+        },
+        {
+            "description": "ScriptAPI Module",
+            "language": "javascript",
+            "type": "script",
+            "uuid": "b722d303-65c6-4cf9-bcb2-2c9e573e04a4",
+            "version": [
+                3,
+                0,
+                0
+            ],
+            "entry": "scripts/index.js"
+        }
+    ],
+    "dependencies": [
+      {
+        "module_name": "@minecraft/server",
+        "version": "2.0.0-alpha"
+    },
+    {
+        "module_name": "@minecraft/server-ui",
+        "version": "2.0.0-alpha"
+    }
+    ],
+    "metadata": {
+        "authors": [
+            "Smell of curry"
+        ],
+        "license": "MIT",
+        "url": "https://github.com/smell-of-curry/Smelly-Anti-Cheat"
+    }
+}

@@ -1,0 +1,41 @@
+pack.name=§l§b Classifiche puzzolenti §cRES §7v3.0
+pack.description=Aggiunge la possibilità di creare una classifica mobile nel tuo mondo. Ottieni la documentazione su https://mcbehub.com, unisciti anche a discord per rimanere aggiornato: https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = Crea classifiche personalizzate che tengono traccia dei dati dei giocatori nel mondo
+
+slb.error.command.createlb.objectiveletter=§eErrore: §c<obiettivo> può essere solo lettere alfabetiche (A-Z)
+slb.error.command.createlb.objectivelength=§eErrore: §c<obiettivo> Non è stato possibile eseguire l'inserimento perché è più lungo di 16 caratteri!
+slb.error.command.createlb.missingagument=§eErrore: §cÈ necessario inserire tutti gli aguments richiesti. Esegui -help createlb per ulteriori informazioni.
+slb.error.command.createlb.missingpermission=§eError: §cNon hai il permesso per usare questo comando, esegui il comando /tag @s aggiungi proprietario
+slb.error.command.createlb.xerror=§eError: §c<x> non può essere convalidato perché non è un numero intero
+slb.error.command.createlb.yerror=§eError: §c<y> non può essere convalidato perché non è un numero intero
+slb.error.command.createlb.zerror=§eError: §c<z> non può essere convalidato perché non è un numero intero
+slb.error.command.createlb.leaderboardlimit=§eErrore: §cPuoi avere solo una classifica per ogni obiettivo
+
+slb.help.command.createlb.description=§eCrea una classifica mobile in qualsiasi posizione
+slb.help.command.createlb.usage=-lb create <obiettivo: stringa> <x> <y> <z>
+
+slb.failed.command.createlb=§eFail: §cLa classifica Non è stata rimossa, controlla di aver inserito l'obiettivo e le coordinate corrette
+slb.success.command.createlb=§aCreata la classifica per §e%s §a in §e%s§a, §e%s§a, §e%s §a Con successo!
+
+slb.error.command.removelb.objectiveletter=§eErrore: §c<obiettivo> può essere solo lettere alfabetiche (A-Z)
+slb.error.command.removelb.objectivelength=§eErrore: §c<obiettivo> Non è stato possibile eseguire l'inserimento perché è più lungo di 16 caratteri!
+slb.error.command.removelb.missingagument=§eErrore: §cÈ necessario inserire tutti gli aguments richiesti. Esegui -help removelb per ulteriori informazioni.
+slb.error.command.removelb.missingpermission=§eError: §cNon hai il permesso per usare questo comando, esegui il comando /tag @s aggiungi proprietario
+slb.error.command.removelb.xerror=§eError: §c<x> non può essere convalidato perché non è un numero intero
+slb.error.command.removelb.yerror=§eError: §c<y> non può essere convalidato perché non è un numero intero
+slb.error.command.removelb.zerror=§eError: §c<z> non può essere convalidato perché non è un numero intero
+slb.error.command.removelb.wrongDimension=§eErrore: §cQuesta classifica è la dimensione %s di cui devi essere nella stessa dimensione per rimuovere
+slb.error.command.removelb.noobjective=§eErrore: §cImpossibile trovare una classifica per %s
+
+slb.help.command.removelb.description=§eRimuove una classifica da una posizione
+slb.help.command.removelb.usage=-lb remove <obiettivo: stringa> <x> <y> <z>
+
+slb.failed.command.removelb=§eFail: §cLa classifica Non è stata rimossa, controlla di aver inserito l'obiettivo e le coordinate corrette
+slb.success.command.removelb=§aRimossa la classifica per §e%s §a in §e%s§a, §e%s§a, §e%s §a Con successo!
+
+slb.help.default=§aQuesto mondo utilizza Smelly Leaderboards, un sistema di classifiche mobili per visualizzare i punteggi dei giocatori affinché i giocatori possano creare una classifica inizia imparando come eseguire il comando §e-help createlb
+
+slb.command.list.nodata=§cNon sono stati creati tabelloni segnapunti!
+slb.command.list.leaderboard=§e%s §aLeaderboard in §e%s§a, §e%s§a, §e%s §una dimensione §e%s
+
+

@@ -1,0 +1,41 @@
+pack.name=§l§bSmelly 排行榜§cRES §7v3.0
+pack.description=添加在您的世界中创建浮动排行榜的功能。在 https://mcbehub.com 上获取文档，同时加入 discord 以保持最新状态：https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = 创建自定义排行榜以跟踪世界各地的玩家数据
+
+slb.error.command.createlb.objectiveletter=§eError: §c<objective> 只能是字母 (A-Z)
+slb.error.command.createlb.objectivelength=§eError: §c<objective> 您输入的内容超过 16 个字符，无法输入！
+slb.error.command.createlb.missingagument=§e错误：§c您需要输入所有必需的参数。运行 -help createlb 以获取更多信息。
+slb.error.command.createlb.missingpermission=§e错误：§c您没有使用此命令的权限，请给运行命令 /tag @s add owner
+slb.error.command.createlb.xerror=§eError: §c<x> 无法验证，因为它不是整数
+slb.error.command.createlb.yerror=§eError: §c<y> 无法验证，因为它不是整数
+slb.error.command.createlb.zerror=§eError: §c<z> 无法验证，因为它不是整数
+slb.error.command.createlb.leaderboardlimit=§e错误：§c每个目标只能有一个排行榜
+
+slb.help.command.createlb.description=§e在任何位置创建浮动排行榜
+slb.help.command.createlb.usage=-lb 创建 <目标：字符串> <x> <y> <z>
+
+slb.failed.command.createlb=§eFail: §c排行榜未能移除请检查您输入的目标和坐标是否正确
+slb.success.command.createlb=§a在 §e%s§a、§e%s§a、§e%s §a 处为 §e%s §a 创建排行榜成功！
+
+slb.error.command.removelb.objectiveletter=§eError: §c<objective> 只能是字母 (A-Z)
+slb.error.command.removelb.objectivelength=§eError: §c<objective> 您输入的内容超过 16 个字符，无法输入！
+slb.error.command.removelb.missingagument=§e错误：§c您需要输入所有必需的参数。运行 -help removelb 以获取更多信息。
+slb.error.command.removelb.missingpermission=§e错误：§c您没有使用此命令的权限，请给运行命令 /tag @s add owner
+slb.error.command.removelb.xerror=§eError: §c<x> 无法验证，因为它不是整数
+slb.error.command.removelb.yerror=§eError: §c<y> 无法验证，因为它不是整数
+slb.error.command.removelb.zerror=§eError: §c<z> 无法验证，因为它不是整数
+slb.error.command.removelb.wrongDimension=§eError: §c此排行榜是 %s 维度，您需要与要删除的维度相同
+slb.error.command.removelb.noobjective=§eError: §c找不到 %s 的排行榜
+
+slb.help.command.removelb.description=§e从某个位置移除排行榜
+slb.help.command.removelb.usage=-lb 移除 <目标：字符串> <x> <y> <z>
+
+slb.failed.command.removelb=§eFail: §c排行榜未能移除请检查您输入的目标和坐标是否正确
+slb.success.command.removelb=§a删除了 §e%s §a 在 §e%s§a、§e%s§a、§e%s §a 的排行榜成功！
+
+slb.help.default=§aThis World 正在使用 Smelly Leaderboards 浮动排行榜系统来显示玩家分数，以便玩家通过学习如何运行命令来创建排行榜开始 §e-help createlb
+
+slb.command.list.nodata=§c没有创建记分牌！
+slb.command.list.leaderboard=§e%s §aLeaderboard at §e%s§a, §e%s§a, §e%s §ain dimension §e%s
+
+

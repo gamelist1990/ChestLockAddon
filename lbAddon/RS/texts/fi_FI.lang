@@ -1,0 +1,41 @@
+pack.name=§l§b Smelly Leaderboards §cRES §7v3.0
+pack.description=Lisää mahdollisuuden luoda kelluva tulostaulukko maailmassasi. Hanki dokumentaatio osoitteesta https://mcbehub.com, liity myös erimielisyyteen pysyäksesi ajan tasalla: https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = Luo mukautettuja tulostaulukoita, jotka seuraavat pelaajien tietoja maailmassa
+
+slb.error.command.createlb.objectiveletter=§eError: §c<objective> voi olla vain aakkoskirjaimia (A-Z)
+slb.error.command.createlb.objectivelength=§eError: §c<objective> Antamaasi arvoa ei voitu tehdä, koska se on pidempi kuin 16 merkkiä!
+slb.error.command.createlb.missingagument=§eVirhe: §cSinun on syötettävä kaikki vaaditut argumentit. Suorita -help createlb saadaksesi lisätietoja.
+slb.error.command.createlb.missingpermission=§eError: §cSinulla ei ole oikeutta käyttää tätä komentoa, anna ajaa komento /tag @s add omistaja
+slb.error.command.createlb.xerror=§eError: §c<x> ei voitu vahvistaa, koska se ei ole kokonaisluku
+slb.error.command.createlb.yerror=§eError: §c<y> ei voitu vahvistaa, koska se ei ole kokonaisluku
+slb.error.command.createlb.zerror=§eError: §c<z> ei voitu vahvistaa, koska se ei ole kokonaisluku
+slb.error.command.createlb.leaderboardlimit=§eError: §cSinulla voi olla vain yksi tulostaulukko kutakin tavoitetta kohden
+
+slb.help.command.createlb.description=§eLuo kelluvan tulostaulukon mihin tahansa paikkaan
+slb.help.command.createlb.usage=-lb luo <tavoite: merkkijono> <x> <y> <z>
+
+slb.failed.command.createlb=§eFail: §cTulostaulukon poistaminen epäonnistui, tarkista että annoit oikean tavoitteen ja koordinaatit
+slb.success.command.createlb=§aLuotu tulostaulukko kohteelle §e%s §a osoitteessa §e%s§a, §e%s§a, §e%s §a Onnistuneesti!
+
+slb.error.command.removelb.objectiveletter=§eError: §c<objective> voi olla vain aakkoskirjaimia (A-Z)
+slb.error.command.removelb.objectivelength=§eError: §c<objective> Antamaasi arvoa ei voitu tehdä, koska se on pidempi kuin 16 merkkiä!
+slb.error.command.removelb.missingagument=§eVirhe: §cSinun on syötettävä kaikki vaaditut argumentit. Suorita -help removelb saadaksesi lisätietoja.
+slb.error.command.removelb.missingpermission=§eError: §cSinulla ei ole oikeutta käyttää tätä komentoa, anna ajaa komento /tag @s add omistaja
+slb.error.command.removelb.xerror=§eError: §c<x> ei voitu vahvistaa, koska se ei ole kokonaisluku
+slb.error.command.removelb.yerror=§eError: §c<y> ei voitu vahvistaa, koska se ei ole kokonaisluku
+slb.error.command.removelb.zerror=§eError: §c<z> ei voitu vahvistaa, koska se ei ole kokonaisluku
+slb.error.command.removelb.wrongDimension=§eVirhe: §cTämä tulostaulukko on %s-ulottuvuus, jonka on oltava samassa mittasuhteessa sen kanssa poistaaksesi
+slb.error.command.removelb.noobjective=§eVirhe: §cEi löytynyt tulostaulukkoa kohteelle %s
+
+slb.help.command.removelb.description=§ePoistaa tulostaulukon paikasta
+slb.help.command.removelb.usage=-lb poista <tavoite: merkkijono> <x> <y> <z>
+
+slb.failed.command.removelb=§eFail: §cTulostaulukon poistaminen epäonnistui, tarkista että annoit oikean tavoitteen ja koordinaatit
+slb.success.command.removelb=§aPoistettu pistetaulukko §e%s §a: §e%s§a, §e%s§a, §e%s §a Onnistuneesti!
+
+slb.help.default=§aThis World käyttää Smelly Leaderboards kelluvaa tulostaulukkojärjestelmää näyttääkseen pelaajien tulokset, jotta pelaajat voivat luoda tulostaulukon. Aloita opettelemalla suorittamaan komento §e-help createlb
+
+slb.command.list.nodata=§c Tulostauluja ei ole luotu!
+slb.command.list.leaderboard=§e%s §aLeaderboard osoitteessa §e%s§a, §e%s§a, §e%s §e%s
+
+

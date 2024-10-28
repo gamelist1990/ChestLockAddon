@@ -1,0 +1,41 @@
+pack.name=§l§bKokulu Liderler §cRES §7v3.0
+pack.description=Dünyanızda kayan bir lider tablosu oluşturma yeteneği ekler. https://mcbehub.com adresinden belgeler alın, güncel kalmak için anlaşmazlığa da katılın: https://discord.gg/dMa3A5UYKX
+slb.help.command.lb.description = Dünyadaki oyuncuların verilerini izleyen özel skor tabloları oluşturun
+
+slb.error.command.createlb.objectiveletter=§eHata: §c<objective> yalnızca Alfabetik harfler olabilir (A-Z)
+slb.error.command.createlb.objectivelength=§eHata: §c<objective> 16 Karakterden uzun olduğu için girdiğiniz yapılamadı!
+slb.error.command.createlb.missingagument=§eHata: §cGerekli tüm açıklamaları girmeniz gerekiyor. Daha fazla bilgi için -help createlb komutunu çalıştırın.
+slb.error.command.createlb.missingpermission=§eHata: §cBu komutu kullanma izniniz yok, lütfen /tag @s sahibi ekle komutunu çalıştırın
+slb.error.command.createlb.xerror=§eError: §c<x> bir tamsayı olmadığı için doğrulanamadı
+slb.error.command.createlb.yerror=§eError: §c<y> bir tamsayı olmadığı için doğrulanamadı
+slb.error.command.createlb.zerror=§eError: §c<z> bir tamsayı olmadığı için doğrulanamadı
+slb.error.command.createlb.leaderboardlimit=§eHata: §cHer hedef için yalnızca bir lider tablonuz olabilir
+
+slb.help.command.createlb.description=§eHerhangi bir yerde yüzen bir lider panosu oluşturur
+slb.help.command.createlb.usage=-lb <hedef: string> oluştur <x> <y> <z>
+
+slb.failed.command.createlb=§eFail: §cSkor Tablosu kaldırılamadı, lütfen doğru hedefi ve koordinatları girdiğinizi kontrol edin
+slb.success.command.createlb=§e%s§a, §e%s§a, §e%s §a'da §e%s §a için Lider Tablosu Oluşturuldu Başarıyla!
+
+slb.error.command.removelb.objectiveletter=§eHata: §c<objective> yalnızca Alfabetik harfler olabilir (A-Z)
+slb.error.command.removelb.objectivelength=§eHata: §c<objective> 16 Karakterden uzun olduğu için girdiğiniz yapılamadı!
+slb.error.command.removelb.missingagument=§eHata: §cGerekli tüm açıklamaları girmeniz gerekiyor. Daha fazla bilgi için -help removelb komutunu çalıştırın.
+slb.error.command.removelb.missingpermission=§eHata: §cBu komutu kullanma izniniz yok, lütfen /tag @s sahibi ekle komutunu çalıştırın
+slb.error.command.removelb.xerror=§eError: §c<x> bir tamsayı olmadığı için doğrulanamadı
+slb.error.command.removelb.yerror=§eError: §c<y> bir tamsayı olmadığı için doğrulanamadı
+slb.error.command.removelb.zerror=§eError: §c<z> bir tamsayı olmadığı için doğrulanamadı
+slb.error.command.removelb.wrongDimension=§eHata: §cBu lider panosu, kaldırmak için aynı boyutta olmanız gereken %s Boyutudur
+slb.error.command.removelb.noobjective=§eHata: §c%s için bir skor tablosu bulunamadı
+
+slb.help.command.removelb.description=§eBir konumdan bir skor tablosunu kaldırır
+slb.help.command.removelb.usage=-lb kaldır <hedef: string> <x> <y> <z>
+
+slb.failed.command.removelb=§eFail: §cSkor Tablosu kaldırılamadı, lütfen doğru hedefi ve koordinatları girdiğinizi kontrol edin
+slb.success.command.removelb=§e%s§a, §e%s§a, §e%s §a'da §e%s § için Lider Tablosu Kaldırıldı Başarıyla!
+
+slb.help.default=§aThis World, oyuncuların skor tablosu oluşturması için oyuncuların puanlarını görüntülemek için Smelly Leaderboards kayan bir skor tablosu sistemi kullanıyor §e-help createlb komutunun nasıl çalıştırılacağını öğrenerek başlayın
+
+slb.command.list.nodata=§cSkor tablosu oluşturulmadı!
+slb.command.list.leaderboard=§e%s §eaderboard §e%s§a, §e%s§a, §e%s §e%s konumunda §e%s
+
+
