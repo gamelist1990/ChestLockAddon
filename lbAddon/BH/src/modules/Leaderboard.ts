@@ -21,6 +21,7 @@ export class Leaderboard {
     this.addLeaderboard = addLeaderboard;
     this.create();
     db_leaderboards[this.objective] = this; // db_leaderboards に Leaderboard オブジェクトを保存
+    this.saveDynamicProperties();
   }
 
   /**
@@ -31,10 +32,27 @@ export class Leaderboard {
     if (this.entity) { // Check if the entity is valid
       this.entity.nameTag = "Updating...";
       this.entity.setDynamicProperty("objective", this.objective);
+      this.entity.setDynamicProperty("addLeaderboard", this.addLeaderboard.toString()); // ダイナミックプロパティに追加
+      this.saveDynamicProperties(); // ダイナミックプロパティを保存
     } else {
       console.warn("Failed to create leaderboard: Entity is null.");
     }
   }
+
+  /**
+   * Saves the dynamic properties to the entity's NBT data
+   */
+  saveDynamicProperties(): void {
+    if (this.entity !== null) {
+      this.entity.setDynamicProperty("objective", this.objective);
+      this.entity.setDynamicProperty("addLeaderboard", this.addLeaderboard.toString());
+      this.entity.addTag("isLeaderboard"); // リーダーボードエンティティであることを示すタグ
+    }
+  }
+
+
+
+
 
   /**
    * Tries to delete this leaderboard
@@ -88,6 +106,19 @@ export class Leaderboard {
 
         this.entity.nameTag = `${leaderboardTitle}\n${color}\n${Scores.join("\n")}`;
       }
+    }
+  }
+
+  
+}
+
+export function loadLeaderboards() {
+  for (const entity of world.getDimension("overworld").getEntities()) {
+    if (entity.hasTag("isLeaderboard")) {
+      const objective = entity.getDynamicProperty("objective") as string || "";
+      const addLeaderboard = entity.getDynamicProperty("addLeaderboard") === "true";
+
+      new Leaderboard(objective, entity, world.getDimension("overworld"), addLeaderboard);
     }
   }
 }
