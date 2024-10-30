@@ -48,6 +48,7 @@ system.runInterval(() => {
   }
 }, 20 * 5);
 
-world.afterEvents.worldInitialize.subscribe(() => {
+
+system.runTimeout(() => {
   loadLeaderboards();
-});
+}, 20 * 3)
