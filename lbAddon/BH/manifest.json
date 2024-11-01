@@ -8,7 +8,7 @@
             19,
             0
         ],
-        "uuid": "d0ad21fa-c91e-4dae-aad2-8787ef1141d5",
+        "uuid": "bbd36c91-e448-47ad-9298-d7a97a6ebf99",
         "version": [
             3,
             0,
@@ -19,7 +19,7 @@
         {
             "description": "Data Module",
             "type": "data",
-            "uuid": "e78a52b4-b225-444d-9bb0-16ca45132b55",
+            "uuid": "e2cd1108-b313-40f8-97b4-5c4f69398491",
             "version": [
                 3,
                 0,
@@ -30,7 +30,7 @@
             "description": "ScriptAPI Module",
             "language": "javascript",
             "type": "script",
-            "uuid": "b722d303-65c6-4cf9-bcb2-2c9e573e04a4",
+            "uuid": "1a282586-3a83-431a-8451-b233a01b583b",
             "version": [
                 3,
                 0,
@@ -40,14 +40,14 @@
         }
     ],
     "dependencies": [
-      {
-        "module_name": "@minecraft/server",
-        "version": "2.0.0-alpha"
-    },
-    {
-        "module_name": "@minecraft/server-ui",
-        "version": "2.0.0-alpha"
-    }
+        {
+            "module_name": "@minecraft/server",
+            "version": "2.0.0-alpha"
+        },
+        {
+            "module_name": "@minecraft/server-ui",
+            "version": "2.0.0-alpha"
+        }
     ],
     "metadata": {
         "authors": [
@@ -55,6 +55,7 @@
             "Koukunn_"
         ],
         "license": "MIT",
-        "url": "https://github.com/smell-of-curry/Smelly-Anti-Cheat"
+        "url": "https://github.com/smell-of-curry/Smelly-Anti-Cheat",
+        "NEWURl": "https://github.com/gamelist1990/ChestLockAddon"
     }
 }

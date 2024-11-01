@@ -1,4 +1,5 @@
 import { ScoreboardIdentity, system, world } from "@minecraft/server";
+import { isPlayer } from "../../Modules/Handler";
 
 system.afterEvents.scriptEventReceive.subscribe((event) => {
     const { message, id } = event;
@@ -41,6 +42,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
                 let playerNameResolved = key;
                 const matchTag = key.match(/\[tag=([^\]]+)\]/);
                 const matchScore = key.match(/\[score=([^,]+)(?:,True)?\]/);
+                const matchPlayer = key.match(/\[allPlayer]/);
 
                 if (matchTag) {
                     const tagName = matchTag[1];
@@ -68,19 +70,24 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
 
                     if (highestScorePlayer) {
                         if (key.includes(",True")) {
-                            playerNameResolved = key.replace(`[score=${scoreTitle},True]`, highestScorePlayer.displayName);
+                            const player = isPlayer(highestScorePlayer.displayName);
+                            playerNameResolved = player
+                                ? key.replace(`[score=${scoreTitle},True]`, highestScorePlayer.displayName)
+                                : key.replace(`[score=${scoreTitle},True]`, "オフライン");
                         } else {
                             playerNameResolved = key.replace(`[score=${scoreTitle}]`, highestScore.toString());
                         }
                     } else {
                         console.warn(`スコア ${scoreTitle} に該当するプレイヤーが見つかりませんでした。`);
                     }
+                } else if (matchPlayer) {
+                    const playerCount = world.getPlayers().length;
+                    playerNameResolved = key.replace(`[allPlayer]`, playerCount.toString());
                 }
 
                 displayScoreboard.setScore(playerNameResolved, score);
             }
 
-            //console.log(`スコアボード "${scoreboardName}" を更新しました。`);
 
 
         } catch (error) {

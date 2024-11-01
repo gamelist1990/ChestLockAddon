@@ -157,6 +157,41 @@ function displayServerInfo(player: Player, type: string) {
     }
 }
 
+function addNametag(player: Player, targetPlayer: Player | undefined, nametag: string) {
+    const target = targetPlayer || player;
+    const prefixNametag = `${nametag}|${target.name}`;
+    system.runTimeout(() => {
+        if (target.nameTag !== prefixNametag) { // 既に同じネームタグが設定されている場合は何もしない
+            target.nameTag = prefixNametag;
+            const messageTarget = targetPlayer || player;
+            messageTarget.sendMessage(`Nametag added: ${nametag}`);
+            if (player !== target) {
+                player.sendMessage(`Added nametag "${nametag}" to ${target.name}`);
+            }
+        } else {
+            player.sendMessage('Nametag already exists.');
+        }
+    }, 1)
+
+
+}
+
+function removeNametag(player: Player, targetPlayer: Player | undefined) {
+    const target = targetPlayer || player;
+    system.runTimeout(() => {
+        if (target.nameTag.includes('|')) {
+            target.nameTag = target.name; // プレイヤー名のみを設定
+            const messageTarget = targetPlayer || player;
+            messageTarget.sendMessage('Nametag removed.');
+            if (player !== target) {
+                player.sendMessage(`Removed nametag from ${target.name}`);
+            }
+        } else {
+            player.sendMessage('No nametag to remove.');
+        }
+    },1)
+
+}
 
 
 
@@ -164,7 +199,7 @@ registerCommand({
     name: 'server',
     description: 'server_command_description',
     parent: false,
-    maxArgs: 3, // サブコマンド用に maxArgs を 3 に変更
+    maxArgs: 4, // サブコマンド用に maxArgs を 3 に変更
     minArgs: 1,
     require: (player: Player) => verifier(player, config().commands['server']),
     executor: (player: Player, args: string[]) => {
@@ -195,8 +230,30 @@ registerCommand({
                     });
                 }).then(() => { });
             }
+        } else if (args[0] === '-nametag') {
+            if (args[1] === 'add' && args[2]) {
+                addNametag(player, undefined, args[2]); // 自分自身にネームタグを追加
+            } else if (args[1] === 'addTo' && args[2] && args[3]) {
+                const targetPlayer = world.getPlayers().find(p => p.name === args[2].replace('@', ''));
+                if (targetPlayer) {
+                    addNametag(player, targetPlayer, args[3]); // 指定したプレイヤーにネームタグを追加
+                } else {
+                    player.sendMessage(`Player ${args[2]} not found.`);
+                }
+            } else if (args[1] === 'remove') {
+                removeNametag(player, undefined); // 自分自身のネームタグを削除
+            } else if (args[1] === 'removeTo' && args[2]) {
+                const targetPlayer = world.getPlayers().find(p => p.name === args[2].replace('@', ''));
+                if (targetPlayer) {
+                    removeNametag(player, targetPlayer); // 指定したプレイヤーのネームタグを削除
+                } else {
+                    player.sendMessage(`Player ${args[2]} not found.`);
+                }
+            } else {
+                player.sendMessage('Invalid nametag command. Use "-nametag add <nametag>", "-nametag addTo <player> <nametag>", "-nametag remove", or "-nametag removeTo <player>".');
+            }
         } else {
-            player.sendMessage('Invalid argument. Use "-pause", "-check", "-checkban", "-info uptime", or "-ping [-true|-false]".');
+            player.sendMessage('Invalid argument. Use "-pause", "-check", "-checkban", "-info uptime", "-ping [-true|-false]", or "-nametag ..."');
         }
     },
 });
