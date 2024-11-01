@@ -1,5 +1,6 @@
 devFolder/scripts/
 node_modules
+lbAddon/node_modules
 .github
 AllAddon
 addon

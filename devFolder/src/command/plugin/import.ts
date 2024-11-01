@@ -7,3 +7,4 @@ import './packet';
 import './invsee';
 import './offhand';
 import './cps';
+import './scoreboard';
