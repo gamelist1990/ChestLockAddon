@@ -1,97 +1,90 @@
-import { system, world, ScoreboardIdentity } from "@minecraft/server";
-
-function processPlaceholder(participant: ScoreboardIdentity, placeholder: string): string {
-    try {
-        const json = JSON.parse(placeholder);
-
-        if (json.text === "PlayerName") {
-            const result = participant.displayName;
-            console.log(`Replaced {PlayerName} with: ${result}`);
-            return result;
-        } else if (json.text === "locate") {
-            const player = world.getPlayers().find(p => p.name === participant.displayName);
-            if (player) {
-                const location = player.location;
-                const result = `${Math.floor(location.x)}.${Math.floor(location.y)}.${Math.floor(location.z)}`;
-                console.log(`Replaced {"text":"locate"} with: ${result}`);
-                return result;
-            } else {
-                console.warn(`Player "${participant.displayName}" not found, cannot get location.`);
-                return placeholder;
-            }
-        } else if (json.tag) {
-            const tag = json.tag;
-            const playersWithTag = world.getPlayers({ tags: [tag] });
-
-            if (typeof json.number === "boolean" && json.number) {
-                const result = playersWithTag.length.toString();
-                console.log(`Replaced {"tag":"${tag}", "number":true} with: ${result}`);
-                return result;
-            } else {
-                const result = playersWithTag.map(p => p.name).join(", ");
-                console.log(`Replaced {"tag":"${tag}"} with: ${result}`);
-                return result;
-            }
-        } else {
-            console.warn(`Unknown placeholder: ${JSON.stringify(json)}`);
-            return placeholder;
-        }
-    } catch (error) {
-        console.warn(`Invalid JSON placeholder: ${placeholder}`, error);
-        return placeholder;
-    }
-}
+import { ScoreboardIdentity, system, world } from "@minecraft/server";
 
 system.afterEvents.scriptEventReceive.subscribe((event) => {
     const { message, id } = event;
-
     if (id === "ch:score") {
         try {
             const scoreboardName = message.split("=")[1];
-            const scoreboard = world.scoreboard.getObjective(scoreboardName);
+            const originalScoreboard = world.scoreboard.getObjective(scoreboardName);
 
-            if (!scoreboard) {
-                console.warn(`Scoreboard "${scoreboardName}" not found.`);
+            if (!originalScoreboard) {
+                console.error(`スコアボード "${scoreboardName}"が見つかりませんでした。`);
                 return;
             }
 
-            const newScoreboardName = `ch_${scoreboardName}`;
-            let newScoreboard = world.scoreboard.getObjective(newScoreboardName);
-            if (!newScoreboard) {
-                newScoreboard = world.scoreboard.addObjective(newScoreboardName, newScoreboardName);
+            // 表示用のスコアボードを取得 (存在しない場合は新規作成)
+            const displayScoreboardName = `ch_${originalScoreboard.id}`;
+            let displayScoreboard = world.scoreboard.getObjective(displayScoreboardName);
+            if (!displayScoreboard) {
+                displayScoreboard = world.scoreboard.addObjective(
+                    displayScoreboardName,
+                    originalScoreboard.displayName,
+                );
             }
 
-            console.log(`Copying scoreboard "${scoreboardName}" to "${newScoreboardName}"...`);
+            // scoreData にスコア、プレイヤー名、スコアボード名を関連付けて保存
+            const scoreData: { [key: string]: { player: ScoreboardIdentity, score: number, scoreboardName: string } } = {};
 
-            for (const participant of scoreboard.getParticipants()) {
-                let score = scoreboard.getScore(participant);
-
-                if (score === undefined) {
-                    score = 0;
-                    console.warn(`Player ${participant.displayName} has no score in scoreboard ${scoreboardName}, setting score to 0.`);
+            for (const participant of originalScoreboard.getParticipants()) {
+                const score = originalScoreboard.getScore(participant);
+                if (score !== undefined) {
+                    scoreData[participant.displayName] = { player: participant, score: score, scoreboardName: scoreboardName };
+                    //console.log(`スコアボードクリア: ${participant.displayName} = ${score}`);
                 }
-
-                let display_name = participant.displayName;
-
-                display_name = display_name.replace(/\{(.*?)\}/g, (_match, placeholder) => processPlaceholder(participant, placeholder));
-
-                const player = world.getPlayers().find(p => p.name === participant.displayName);
-
-                if (player) {
-                    newScoreboard.setScore(world.getPlayers().find(p => p.name === display_name) || participant, score);
-                } else {
-                    newScoreboard.setScore(participant, score);
-                    console.warn(`Player "${participant.displayName}" not found, using ScoreboardIdentity.`);
-                }
-
-
-                console.log(`Set score for ${display_name} to ${score} in scoreboard ${newScoreboardName}`);
             }
 
-            console.log(`Scoreboard "${scoreboardName}" copied to "${newScoreboardName}".`);
+         for (const participant of displayScoreboard.getParticipants()) {
+                displayScoreboard.removeParticipant(participant);
+            }
+
+            for (const [key, { score }] of Object.entries(scoreData)) {
+                let playerNameResolved = key;
+                const matchTag = key.match(/\[tag=([^\]]+)\]/);
+                const matchScore = key.match(/\[score=([^,]+)(?:,True)?\]/);
+
+                if (matchTag) {
+                    const tagName = matchTag[1];
+                    const playerCount = world.getPlayers().filter(player => player.hasTag(tagName)).length;
+                    playerNameResolved = key.replace(/\[tag=([^\]]+)\]/, playerCount.toString());
+                } else if (matchScore) {
+                    const scoreTitle = matchScore[1];
+
+                    
+                    let highestScorePlayer: ScoreboardIdentity | null = null;
+                    let highestScore = -Infinity;
+
+                    const targetScoreboard = world.scoreboard.getObjective(scoreTitle);
+                    if (targetScoreboard) {
+                        for (const participant of targetScoreboard.getParticipants()) {
+                            const scoreValue = targetScoreboard.getScore(participant);
+                            if (scoreValue !== undefined && scoreValue > highestScore) {
+                                highestScore = scoreValue;
+                                highestScorePlayer = participant;
+                            }
+                        }
+                    } else {
+                        console.warn(`スコアボード "${scoreTitle}" が見つかりませんでした。`);
+                    }
+
+                    if (highestScorePlayer) {
+                        if (key.includes(",True")) {
+                            playerNameResolved = key.replace(`[score=${scoreTitle},True]`, highestScorePlayer.displayName);
+                        } else {
+                            playerNameResolved = key.replace(`[score=${scoreTitle}]`, highestScore.toString());
+                        }
+                    } else {
+                        console.warn(`スコア ${scoreTitle} に該当するプレイヤーが見つかりませんでした。`);
+                    }
+                }
+
+                displayScoreboard.setScore(playerNameResolved, score);
+            }
+
+            //console.log(`スコアボード "${scoreboardName}" を更新しました。`);
+
 
         } catch (error) {
-            console.error(`Error processing score update: ${error}`);
+            console.error(`スコアボード更新処理中にエラーが発生しました: ${error}`);
         }
     }
 });
