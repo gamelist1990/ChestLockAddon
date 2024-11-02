@@ -34,7 +34,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
                 }
             }
 
-         for (const participant of displayScoreboard.getParticipants()) {
+            for (const participant of displayScoreboard.getParticipants()) {
                 displayScoreboard.removeParticipant(participant);
             }
 
@@ -51,7 +51,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
                 } else if (matchScore) {
                     const scoreTitle = matchScore[1];
 
-                    
+
                     let highestScorePlayer: ScoreboardIdentity | null = null;
                     let highestScore = -Infinity;
 
@@ -92,6 +92,76 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
 
         } catch (error) {
             console.error(`スコアボード更新処理中にエラーが発生しました: ${error}`);
+        }
+    }
+});
+
+
+
+
+system.afterEvents.scriptEventReceive.subscribe((event) => {
+    const args = event.message.replace(/^\/ch:team\s+/, "").split(/\s+/);
+
+    if (event.id === "ch:team") {
+        if (args.length === 0) {
+            console.error("使用方法: /ch:team set <チーム数>:<チーム内上限人数> <タグ名> <スコアボードタイトル>");
+            return;
+        }
+
+        const subcommand = args[0];
+
+        if (subcommand === "set") {
+            if (args.length < 4) {
+                console.error("引数が不足しています。使用方法: /ch:team set <チーム数>:<チーム内上限人数> <タグ名> <スコアボードタイトル>");
+                return;
+            }
+            const teamParams = args[1].split(":");
+            const numTeams = parseInt(teamParams[0]);
+            const maxTeamSize = parseInt(teamParams[1]);
+            const tagName = args[2];
+            const scoreTitle = args[3];
+
+            if (isNaN(numTeams) || numTeams < 1) {
+                console.error("チーム数は1以上の整数で指定してください。");
+                return;
+            }
+            if (isNaN(maxTeamSize) || maxTeamSize < 1) {
+                console.error("チーム内上限人数は1以上の整数で指定してください。");
+                return;
+            }
+
+            const objective = world.scoreboard.getObjective(scoreTitle);
+            if (!objective) {
+                console.error(`スコアボード '${scoreTitle}' が見つかりません。`);
+                return;
+            }
+
+            const players = world.getPlayers().filter(player => player.hasTag(tagName));
+            const teamAssignments: { [playerName: string]: number } = {};
+            const teamSizes: { [teamNumber: number]: number } = {};
+
+            const shuffledPlayers = players.sort(() => Math.random() - 0.5);
+
+            for (const player of shuffledPlayers) {
+                let assigned = false;
+                for (let team = 1; team <= numTeams; team++) {
+                    if (teamSizes[team] === undefined || teamSizes[team] < maxTeamSize) {
+                        teamAssignments[player.name] = team;
+                        objective.setScore(player, team);
+                        teamSizes[team] = (teamSizes[team] || 0) + 1;
+                        assigned = true;
+                        break; 
+                    }
+                }
+                if (!assigned) {
+                  //  console.warn(`${player.name} のチーム割り当てに失敗しました。上限に達している可能性があります。`);
+                }
+            }
+
+            //console.log(`チーム分け完了: ${JSON.stringify(teamAssignments)}`);
+
+        } else {
+            console.error("無効なサブコマンドです。 set を使用してください。");
         }
     }
 });
