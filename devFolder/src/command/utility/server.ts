@@ -174,7 +174,7 @@ function addNametag(player: Player | undefined, targetPlayer: Player | undefined
             return; // 処理を終了
         } else { // 同じ名前タグが存在しない場合
             target.nameTag = prefixNametag;
-            target.sendMessage(`[server] ネームタグが追加されたよ！: ${nametag}`);
+            //target.sendMessage(`[server] ネームタグが追加されたよ！: ${nametag}`);
             if (player && player !== target) {
                 player.sendMessage(`[server] ネームタグを "${nametag}" に対して追加しました ${target.name}`);
             }
@@ -331,7 +331,6 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
                         console.warn("Invalid subcommand:", subcommand);
                     }
                 } else {
-                    console.warn("タグ付きプレイヤーが見つかりませんでした:", tagName);
                     return;
                 }
 
