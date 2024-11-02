@@ -158,22 +158,25 @@ function displayServerInfo(player: Player, type: string) {
 }
 
 function addNametag(player: Player | undefined, targetPlayer: Player | undefined, nametag: string) {
-    const target = targetPlayer || player; // targetPlayerが渡されたらそれを、そうでなければplayerを使う
+    const target = targetPlayer || player;
     if (!target) {
         // targetが取得できなかった場合の処理 (エラーメッセージなど)
         return;
     }
+
     const prefixNametag = `${nametag}|${target.name}`;
+
     system.runTimeout(() => {
-        if (target.nameTag !== prefixNametag) {
-            target.nameTag = prefixNametag;
-            target.sendMessage(`Nametag added: ${nametag}`);
-            if (player && player !== target) {
-                player.sendMessage(`Added nametag "${nametag}" to ${target.name}`);
-            }
-        } else {
+        if (target.nameTag === prefixNametag) { // 既に同じ名前タグが存在する場合
             if (player) {
-                player.sendMessage('Nametag already exists.');
+                player.sendMessage('[server] 既にネームタグ付いてまっせ.');
+            }
+            return; // 処理を終了
+        } else { // 同じ名前タグが存在しない場合
+            target.nameTag = prefixNametag;
+            target.sendMessage(`[server] ネームタグが追加されたよ！: ${nametag}`);
+            if (player && player !== target) {
+                player.sendMessage(`[server] ネームタグを "${nametag}" に対して追加しました ${target.name}`);
             }
         }
     }, 1);
@@ -188,13 +191,13 @@ function removeNametag(player: Player | undefined, targetPlayer: Player | undefi
     system.runTimeout(() => {
         if (target.nameTag.includes('|')) {
             target.nameTag = target.name;
-            target.sendMessage('Nametag removed.');
+            target.sendMessage('[server] 追加されていたネームタグを削除しました');
             if (player && player !== target) {
-                player.sendMessage(`Removed nametag from ${target.name}`);
+                player.sendMessage(`[server]  ${target.name}のネームタグを削除!`);
             }
         } else {
             if (player) {
-                player.sendMessage('No nametag to remove.');
+                player.sendMessage('[server] ネームタグないぜ.');
             }
         }
     }, 1);
@@ -291,46 +294,86 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
 
             let targetPlayerName = subargs[1].replace(/^"|"$/g, ''); // Remove quotes if present
 
-
             let targetPlayer: Player | undefined = undefined;
 
-            try {
+            // [tag=xx] の形式でタグ名を取得
+            const tagMatch = targetPlayerName.match(/\[tag=(.*?)\]/);
 
-                targetPlayer = isPlayer(targetPlayerName);
-                if (!targetPlayer) {
-                    console.warn("Player not found:", targetPlayerName);
+            if (tagMatch) {
+                const tagName = tagMatch[1]; 
+
+                // tag に一致するプレイヤーを検索
+                targetPlayer = world.getPlayers().find(player =>
+                    player.getTags().filter((tag) => tag === tagName).length > 0
+                );
+
+                if (targetPlayer) {
+                    // タグ付きプレイヤーが見つかった場合、処理を実行
+                    if (subcommand === "add") {
+                        if (subargs.length < 3) {
+                            console.error("Missing nametag argument.");
+                            return;
+                        }
+                        const nametag = subargs.slice(2).join(" ").replace(/^"|"$/g, ''); // Improved handling of spaces within quotes
+
+                        try {
+                            addNametag(undefined, targetPlayer, nametag); // addNametag を使用してタグを追加
+                        } catch (error) {
+                            console.error("Error adding nametag:", error);
+                        }
+                    } else if (subcommand === "remove") {
+                        try {
+                            removeNametag(undefined, targetPlayer); // removeNametag を使用してタグを削除
+                        } catch (error) {
+                            console.error("Error removing nametag:", error);
+                        }
+                    } else {
+                        console.warn("Invalid subcommand:", subcommand);
+                    }
+                } else {
+                    console.warn("タグ付きプレイヤーが見つかりませんでした:", tagName);
                     return;
                 }
-            } catch (error) {
-                console.error("Error finding player:", error);
-                return;
-            }
 
-
-
-            if (subcommand === "add") {
-                if (subargs.length < 3) {
-                    console.error("Missing nametag argument.");
-                    return;
-                }
-                const nametag = subargs.slice(2).join(" ").replace(/^"|"$/g, '');; // Improved handling of spaces within quotes
-
-
-                try {
-                    addNametag(undefined, targetPlayer, nametag);
-                } catch (error) {
-                    console.error("Error adding nametag:", error);
-                }
-
-            } else if (subcommand === "remove") {
-                try {
-                    removeNametag(undefined, targetPlayer);
-                } catch (error) {
-                    console.error("Error removing nametag:", error);
-                }
             } else {
-                console.warn("Invalid subcommand:", subcommand);
+                // タグ名が指定されていない場合は通常のプレイヤーを検索
+                try {
+                    targetPlayer = isPlayer(targetPlayerName);
+                    if (!targetPlayer) {
+                        console.warn("プレイヤーが見つかりませんでした:", targetPlayerName);
+                        return;
+                    }
+                } catch (error) {
+                    console.error("プレイヤーの検索中にエラーが発生しました:", error);
+                    return;
+                }
+            }
+
+            // targetPlayer が定義されている場合、add または remove の処理を実行
+            if (targetPlayer) {
+                if (subcommand === "add") {
+                    if (subargs.length < 3) {
+                        console.error("Missing nametag argument.");
+                        return;
+                    }
+                    const nametag = subargs.slice(2).join(" ").replace(/^"|"$/g, ''); // Improved handling of spaces within quotes
+
+                    try {
+                        addNametag(undefined, targetPlayer, nametag); // addNametag を使用してタグを追加
+                    } catch (error) {
+                        console.error("Error adding nametag:", error);
+                    }
+
+                } else if (subcommand === "remove") {
+                    try {
+                        removeNametag(undefined, targetPlayer); // removeNametag を使用してタグを削除
+                    } catch (error) {
+                        console.error("Error removing nametag:", error);
+                    }
+                } else {
+                    console.warn("Invalid subcommand:", subcommand);
+                }
             }
         }
-        }
-    });
+    }
+});
