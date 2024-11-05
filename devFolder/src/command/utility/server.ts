@@ -8,6 +8,8 @@ let isServerPaused = false; // サーバーが一時停止されているかど�
 let isRealTimePingEnabled = false; // リアルタイムping検知が有効かどうか
 const playerPingData: Record<string, { lastPingRequestTime: number }> = {};
 
+let startTime = Date.now();
+
 
 
 
@@ -108,13 +110,13 @@ export function outputPlayerData(player: Player) {
     // プレイヤーの手持ちアイテムを取得
     const inventoryComponent = player.getComponent('minecraft:inventory') as EntityInventoryComponent;
     if (inventoryComponent && inventoryComponent.container) {
-        const item = inventoryComponent.container.getItem(0); // ホットバーの最初のスロットからアイテムを取得
-        if (item && item.typeId === 'minecraft:writable_book') { // writable_bookかどうかを確認
+        const item = inventoryComponent.container.getItem(0); 
+        if (item && item.typeId === 'minecraft:writable_book') { 
 
             // 全プレイヤーの情報をJSON文字列に変換
             const allPlayerData = JSON.stringify(playerData);
 
-            renameItem(item, allPlayerData, player, 0); // renameItem関数で名前を変更
+            renameItem(item, allPlayerData, player, 0); 
 
         } else {
             player.sendMessage('ホットバーの最初のスロットに書き込み可能な本を持ってください。');
@@ -134,33 +136,45 @@ export function checkBanList(player: Player) {
 
     player.sendMessage(banListMessage);
 }
-const startTime = Date.now();
 
-function displayServerInfo(player: Player, type: string) {
+export function getServerUptime(): string {
+    const elapsedTimeMs = Date.now() - startTime;
+    const uptimeSeconds = Math.floor(elapsedTimeMs / 1000);
+    const uptimeMinutes = Math.floor(uptimeSeconds / 60);
+    const uptimeHours = Math.floor(uptimeMinutes / 60);
+    const uptimeDays = Math.floor(uptimeHours / 24);
+
+    const remainingHours = uptimeHours % 24;
+    const remainingMinutes = uptimeMinutes % 60;
+    const remainingSeconds = uptimeSeconds % 60;
+
+    return `${uptimeDays}d ${remainingHours}h ${remainingMinutes}m ${remainingSeconds}s`;
+}
+
+function displayServerInfo(player: Player | undefined, type: string) {
     switch (type) {
         case 'uptime':
-            // スクリプト開始時からの経過時間をミリ秒単位で取得
-            const elapsedTimeMs = Date.now() - startTime;
-            // ミリ秒を秒に変換
-            const uptimeSeconds = Math.floor(elapsedTimeMs / 1000);
-            const uptimeMinutes = Math.floor(uptimeSeconds / 60);
-            const uptimeHours = Math.floor(uptimeMinutes / 60);
-            const uptimeDays = Math.floor(uptimeHours / 24);
-            const remainingHours = uptimeHours % 24;
-            const remainingMinutes = uptimeMinutes % 60;
-            const remainingSeconds = uptimeSeconds % 60;
-
-            world.sendMessage(`サーバーの起動時間: ${uptimeDays}d ${remainingHours}h ${remainingMinutes}m ${remainingSeconds}s`);
+            const uptime = getServerUptime();
+            if (player) {
+                player.sendMessage(`サーバーの起動時間: ${uptime}`);
+            } else {
+                world.sendMessage(`サーバーの起動時間: ${uptime}`); 
+            }
             break;
         default:
-            player.sendMessage('Invalid info type.');
+            if (player) {
+                player.sendMessage('Invalid info type.');
+            } else {
+                console.warn('Invalid info type.'); 
+            }
+
+
     }
 }
 
 function addNametag(player: Player | undefined, targetPlayer: Player | undefined, nametag: string) {
     const target = targetPlayer || player;
     if (!target) {
-        // targetが取得できなかった場合の処理 (エラーメッセージなど)
         return;
     }
 
@@ -171,8 +185,8 @@ function addNametag(player: Player | undefined, targetPlayer: Player | undefined
             if (player) {
                 player.sendMessage('[server] 既にネームタグ付いてまっせ.');
             }
-            return; // 処理を終了
-        } else { // 同じ名前タグが存在しない場合
+            return; 
+        } else { 
             target.nameTag = prefixNametag;
             //target.sendMessage(`[server] ネームタグが追加されたよ！: ${nametag}`);
             if (player && player !== target) {
@@ -185,7 +199,6 @@ function addNametag(player: Player | undefined, targetPlayer: Player | undefined
 function removeNametag(player: Player | undefined, targetPlayer: Player | undefined) {
     const target = targetPlayer || player;
     if (!target) {
-        // targetが取得できなかった場合の処理 (エラーメッセージなど)
         return;
     }
     system.runTimeout(() => {
@@ -209,7 +222,7 @@ registerCommand({
     name: 'server',
     description: 'server_command_description',
     parent: false,
-    maxArgs: 4, // サブコマンド用に maxArgs を 3 に変更
+    maxArgs: 4, 
     minArgs: 1,
     require: (player: Player) => verifier(player, config().commands['server']),
     executor: (player: Player, args: string[]) => {
@@ -242,20 +255,20 @@ registerCommand({
             }
         } else if (args[0] === '-nametag') {
             if (args[1] === 'add' && args[2]) {
-                addNametag(player, undefined, args[2]); // 自分自身にネームタグを追加
+                addNametag(player, undefined, args[2]); 
             } else if (args[1] === 'addTo' && args[2] && args[3]) {
                 const targetPlayer = world.getPlayers().find(p => p.name === args[2].replace('@', ''));
                 if (targetPlayer) {
-                    addNametag(player, targetPlayer, args[3]); // 指定したプレイヤーにネームタグを追加
+                    addNametag(player, targetPlayer, args[3]);
                 } else {
                     player.sendMessage(`Player ${args[2]} not found.`);
                 }
             } else if (args[1] === 'remove') {
-                removeNametag(player, undefined); // 自分自身のネームタグを削除
+                removeNametag(player, undefined);
             } else if (args[1] === 'removeTo' && args[2]) {
                 const targetPlayer = world.getPlayers().find(p => p.name === args[2].replace('@', ''));
                 if (targetPlayer) {
-                    removeNametag(player, targetPlayer); // 指定したプレイヤーのネームタグを削除
+                    removeNametag(player, targetPlayer); 
                 } else {
                     player.sendMessage(`Player ${args[2]} not found.`);
                 }

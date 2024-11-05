@@ -10,7 +10,7 @@ interface ChestProtectionData {
   isLocked: boolean;
   members: string[];
   locations: {
-    [key: string]: string; // ラージチェストの場合は2つのキーを保持 "1": "x,y,z", "2": "x,y,z"
+    [key: string]: string;
   };
 }
 
@@ -18,6 +18,8 @@ interface ChestProtectionData {
 const CHEST_CHECK_RADIUS = 20;
 
 const CHECK_INTERVAL = 20 * 60; // 1分 (20ティック/秒 * 60秒)
+const MAX_CHESTS_PER_PLAYER = 12; // プレイヤーごとのチェスト保護上限
+
 
 let protectedChests: Record<string, ChestProtectionData> = {};
 
@@ -151,22 +153,23 @@ function showNearbyChestInfo(player: Player) {
 
 //オーナーが持つチェスト数を確認
 function countProtectedChestsByOwner(owner: string): number {
-  let count = 0;
-  for (const chestKey in protectedChests) {
-    if (protectedChests[chestKey].owner === owner) {
-      count++;
-    }
-  }
-  return count;
+  return Object.values(protectedChests).filter(data => data.owner === owner).length;
 }
 
 // チェストを保護する関数
 function protectChest(player: Player, lockState: boolean) {
   const nearbyChestLocation = findNearbyChest(player);
+  const playerName = player.name;
 
   if (nearbyChestLocation) {
     const adjacentChest = findAdjacentChest(nearbyChestLocation);
     let chestLocations: { [key: string]: string } = {};
+    if (countProtectedChestsByOwner(playerName) >= MAX_CHESTS_PER_PLAYER) {
+      player.sendMessage(translate(player, 'MaxChestLimitReached', { limit: `${MAX_CHESTS_PER_PLAYER}` }));
+      return;
+    }
+
+
 
     if (adjacentChest.isLargeChest && adjacentChest.location) {
       chestLocations["1"] = getChestKey(nearbyChestLocation);
@@ -393,7 +396,6 @@ function isWithinDetectionArea(location: Vector3, radius: number): boolean {
   return false;
 }
 
-// 保護されたチェストかどうか判定
 
 
 
@@ -710,17 +712,13 @@ function listMembers(player: Player) {
   }
 }
 
-// データの保存関数
-//function saveProtectedChests() {
-//  const data = JSON.stringify(protectedChests);
-//  world.setDynamicProperty("protectedChests", data);
-//}
 
+//データ保存
 function saveProtectedChests(): void {
   saveData('protectedChests', protectedChests);
 }
 
-// データの読み込み関数
+// データの読み込み
 export function loadProtectedChests(): void {
   loadData();
   const data = chestLockAddonData.protectedChests;

@@ -1,5 +1,80 @@
 import { ScoreboardIdentity, system, world } from "@minecraft/server";
 import { isPlayer } from "../../Modules/Handler";
+import { getServerUptime } from "../utility/server";
+import { ver } from "../../Modules/version";
+import { banPlayers } from "../../Modules/globalBan";
+
+let serverTime = getServerUptime();
+let uptime = "";
+if (typeof serverTime === 'string') {
+    const dhmUptime = serverTime.match(/(\d+)d (\d+)h (\d+)m/)?.[0] || "0d 0h 0m"; 
+    uptime = dhmUptime;
+}
+
+const simpleReplacements: { [key: string]: string | (() => string) } = {
+    "[allPlayer]": () => world.getPlayers().length.toString(),
+    "[uptime]": () => uptime.toString(),
+    "[ver]": () => ver,
+    "[banUser]": () => banPlayers.length.toString(),
+};
+
+function resolvePlayerName(key: string): string {
+    let playerNameResolved = key;
+
+    //simpleで定義されたやつを先に見る
+    for (const [pattern, replacement] of Object.entries(simpleReplacements)) {
+        playerNameResolved = playerNameResolved.replace(new RegExp(pattern.replace(/([\[\]])/g, "\\$1")), typeof replacement === 'function' ? replacement() : replacement);
+    }
+
+    // tagの置換(完成)
+    const matchTag = playerNameResolved.match(/\[tag=([^\]]+)\]/);
+    if (matchTag) {
+        const tagName = matchTag[1];
+        const playerCount = world.getPlayers().filter(player => player.hasTag(tagName)).length;
+        playerNameResolved = playerNameResolved.replace(/\[tag=([^\]]+)\]/, playerCount.toString());
+    }
+
+    // scoreの置換(完成)
+    const matchScore = playerNameResolved.match(/\[score=([^,]+)(?:,True)?\]/);
+    if (matchScore) {
+        const scoreTitle = matchScore[1];
+        let highestScorePlayer: ScoreboardIdentity | null = null;
+        let highestScore = -Infinity;
+
+        const targetScoreboard = world.scoreboard.getObjective(scoreTitle);
+        if (targetScoreboard) {
+            for (const participant of targetScoreboard.getParticipants()) {
+                const scoreValue = targetScoreboard.getScore(participant);
+                if (scoreValue !== undefined && scoreValue > highestScore) {
+                    highestScore = scoreValue;
+                    highestScorePlayer = participant;
+                }
+            }
+        } else {
+            console.warn(`スコアボード "${scoreTitle}" が見つかりませんでした。`);
+        }
+
+        if (highestScorePlayer) {
+            if (playerNameResolved.includes(",True")) {
+                playerNameResolved = playerNameResolved.replace(`[score=${scoreTitle},True]`, highestScorePlayer.displayName);
+            } else {
+                playerNameResolved = playerNameResolved.replace(`[score=${scoreTitle}]`, highestScore.toString());
+            }
+
+
+            if (!isPlayer(highestScorePlayer.displayName) && playerNameResolved.includes(",True")) {
+                playerNameResolved = playerNameResolved.replace(`[score=${scoreTitle},True]`, "オフライン");
+            }
+
+        } else {
+            console.warn(`スコア ${scoreTitle} に該当するプレイヤーが見つかりませんでした。`);
+        }
+    }
+
+
+    return playerNameResolved;
+}
+
 
 system.afterEvents.scriptEventReceive.subscribe((event) => {
     const { message, id } = event;
@@ -13,7 +88,6 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
                 return;
             }
 
-            // 表示用のスコアボードを取得 (存在しない場合は新規作成)
             const displayScoreboardName = `ch_${originalScoreboard.id}`;
             let displayScoreboard = world.scoreboard.getObjective(displayScoreboardName);
             if (!displayScoreboard) {
@@ -23,14 +97,12 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
                 );
             }
 
-            // scoreData にスコア、プレイヤー名、スコアボード名を関連付けて保存
-            const scoreData: { [key: string]: { player: ScoreboardIdentity, score: number, scoreboardName: string } } = {};
+            const scoreData: { [key: string]: { player: ScoreboardIdentity, score: number } } = {};
 
             for (const participant of originalScoreboard.getParticipants()) {
                 const score = originalScoreboard.getScore(participant);
                 if (score !== undefined) {
-                    scoreData[participant.displayName] = { player: participant, score: score, scoreboardName: scoreboardName };
-                    //console.log(`スコアボードクリア: ${participant.displayName} = ${score}`);
+                    scoreData[participant.displayName] = { player: participant, score };
                 }
             }
 
@@ -39,56 +111,9 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
             }
 
             for (const [key, { score }] of Object.entries(scoreData)) {
-                let playerNameResolved = key;
-                const matchTag = key.match(/\[tag=([^\]]+)\]/);
-                const matchScore = key.match(/\[score=([^,]+)(?:,True)?\]/);
-                const matchPlayer = key.match(/\[allPlayer]/);
-
-                if (matchTag) {
-                    const tagName = matchTag[1];
-                    const playerCount = world.getPlayers().filter(player => player.hasTag(tagName)).length;
-                    playerNameResolved = key.replace(/\[tag=([^\]]+)\]/, playerCount.toString());
-                } else if (matchScore) {
-                    const scoreTitle = matchScore[1];
-
-
-                    let highestScorePlayer: ScoreboardIdentity | null = null;
-                    let highestScore = -Infinity;
-
-                    const targetScoreboard = world.scoreboard.getObjective(scoreTitle);
-                    if (targetScoreboard) {
-                        for (const participant of targetScoreboard.getParticipants()) {
-                            const scoreValue = targetScoreboard.getScore(participant);
-                            if (scoreValue !== undefined && scoreValue > highestScore) {
-                                highestScore = scoreValue;
-                                highestScorePlayer = participant;
-                            }
-                        }
-                    } else {
-                        console.warn(`スコアボード "${scoreTitle}" が見つかりませんでした。`);
-                    }
-
-                    if (highestScorePlayer) {
-                        if (key.includes(",True")) {
-                            const player = isPlayer(highestScorePlayer.displayName);
-                            playerNameResolved = player
-                                ? key.replace(`[score=${scoreTitle},True]`, highestScorePlayer.displayName)
-                                : key.replace(`[score=${scoreTitle},True]`, "オフライン");
-                        } else {
-                            playerNameResolved = key.replace(`[score=${scoreTitle}]`, highestScore.toString());
-                        }
-                    } else {
-                        console.warn(`スコア ${scoreTitle} に該当するプレイヤーが見つかりませんでした。`);
-                    }
-                } else if (matchPlayer) {
-                    const playerCount = world.getPlayers().length;
-                    playerNameResolved = key.replace(`[allPlayer]`, playerCount.toString());
-                }
-
-                displayScoreboard.setScore(playerNameResolved, score);
+                const resolvedName = resolvePlayerName(key);
+                displayScoreboard.setScore(resolvedName, score);
             }
-
-
 
         } catch (error) {
             console.error(`スコアボード更新処理中にエラーが発生しました: ${error}`);

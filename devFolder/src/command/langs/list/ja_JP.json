@@ -802,7 +802,7 @@
   },
   "MaxChestLimitReached": {
     "msgid": "§c The installation limit of {protectChest} has been reached.",
-    "msgstr": "§c既に設置上限である{protectChest}に達しています"
+    "msgstr": "§c既に設置上限である{limit}に達しています"
   },
   "chestLocksCount": {
     "msgid": "§a You are currently protecting {protectChest} chests.",
