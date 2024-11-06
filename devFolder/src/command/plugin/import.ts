@@ -9,4 +9,5 @@ import './offhand';
 import './cps';
 import './scoreboard';
 import './hub';
+import './vote';
 
