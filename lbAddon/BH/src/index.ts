@@ -1,5 +1,6 @@
 import { Entity, world, system } from "@minecraft/server";
 import "./modules/commands";
+import "./modules/vote";
 import { loadLeaderboards } from "./modules/Leaderboard";
 
 export const db_leaderboards: { [objective: string]: any } = {};
@@ -49,7 +50,6 @@ system.runInterval(() => {
   }
   system.runTimeout(() => {
     loadLeaderboards();
-    console.log("start..Load")
 
   })
 }, 20 * 5);
