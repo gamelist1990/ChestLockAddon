@@ -704,8 +704,8 @@ export const translations = {
     msgstr: "§c無効なコマンドです。\n§aチェスト保護コマンドの使用方法:\n  §bchest lock        - チェストをロックします\n  §bchest info       - 近くのチェストの情報を表示します\n  §bchest unlock      - チェストのロックを解除します\n  §bchest protect <lock/unlock> - チェストの保護状態を切り替えます\n  §bchest add <playername>   - チェストのメンバーを追加します\n  §bchest remove <playername>  - チェストのメンバーを削除します\n  §bchest all        - チェストのメンバー一覧を表示します\n  §bchest list        - 現在保護しているチェストのリストを表示します\n  §b_______________________________________\n  §b作者: こう君        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
   },
   "MaxChestLimitReached": {
-    msgid: "§c The installation limit of {protectChest} has been reached.",
-    msgstr: "§c既に設置上限である{protectChest}に達しています"
+    msgid: "§c The installation limit of {limit} has been reached.",
+    msgstr: "§c既に設置上限である{limit}に達しています"
   },
   "chestLocksCount": {
     msgid: "§a You are currently protecting {protectChest} chests.",
@@ -809,7 +809,7 @@ export const translations = {
   },
   "AddM": {
     msgid: "§a {member} added as a member at location: {chestLocation}",
-    msgstr: "§aをメンバーに追加しました。"
+    msgstr: "§a{member}をメンバーに追加しました。座標: {chestLocation}"
   },
   "addYouM": {
     msgid: "§a {playerName} has added you to the following chests: {chestLocation}",

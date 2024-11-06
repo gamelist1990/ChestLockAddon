@@ -704,7 +704,7 @@ export const translations = {
     msgstr: "§c无效的命令。\n§a箱子保护命令使用方式：\n  §bchest lock        - 锁定箱子\n  §bchest info       - 显示最近的箱子信息\n  §bchest unlock      - 解锁箱子\n  §bchest protect <lock/unlock> - 切换箱子保护\n  §bchest add <playername>   - 添加箱子的成员\n  §bchest remove <playername>  - 移除箱子的成员\n  §bchest all        - 显示箱子的成员列表\n  §bchest list        - 显示箱子列表\n  §b_______________________________________\n  §b作者：Koukun        - 许可证 AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
   },
   "MaxChestLimitReached": {
-    msgid: "§c The installation limit of {protectChest} has been reached.",
+    msgid: "§c The installation limit of {limit} has been reached.",
     msgstr: "§c{protectChest} 的安装限制已达到"
   },
   "chestLocksCount": {

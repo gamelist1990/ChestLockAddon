@@ -119,6 +119,11 @@ export const config = (): { commands: { [key: string]: CommandConfig }; admin: s
       adminOnly: true,
       requireTag: [],
     }, 
+    hub: {
+      enabled: true,
+      adminOnly: false,
+      requireTag: [],
+    }, 
     
   },
   admin: 'op',

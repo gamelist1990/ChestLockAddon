@@ -704,7 +704,7 @@ export const translations = {
     msgstr: "§c잘못된 명령어입니다.\n§a상자 보호 명령어 사용법:.\n  §bchest lock        - 상자 잠금\n  §bchest info       - 가장 가까운 상자 정보 표시\n  §bchest unlock      - 상자 잠금 해제\n  §bchest protect <lock/unlock> - 상자 보호 토글\n  §bchest add <playername>   - 상자에 멤버 추가\n  §bchest remove <playername>  - 상자의 멤버 제거\n  §bchest all        - 상자 멤버 목록 표시\n  §bchest list        - 상자 목록 표시\n  §b_______________________________________\n  §b제작자: Koukun        - 라이선스 AGPL-3.0\n  §b유튜브 URL         - https://www.youtube.com/@PEXkoukunn"
   },
   "MaxChestLimitReached": {
-    msgid: "§c The installation limit of {protectChest} has been reached.",
+    msgid: "§c The installation limit of {limit} has been reached.",
     msgstr: "§c{protectChest} 설치 제한에 도달했습니다"
   },
   "chestLocksCount": {

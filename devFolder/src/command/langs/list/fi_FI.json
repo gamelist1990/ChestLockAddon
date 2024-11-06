@@ -753,7 +753,7 @@
     "msgstr": "§cVirheellinen komento.\n§aArkun suojauksen komennon käyttö:.\n §bchest lock - lukitsee arkun\n §bchest info - näyttää tiedot lähimmästä arkusta\n §bchest unlock - avaa arkun\n §bchest protect <lock/unlock> - kytkee arkun suojauksen päälle tai pois\n §bchest add <pelaajan nimi> - lisää jäsenen arkkuun\n §bchest remove <pelaajan nimi> - poistaa jäsenen arkusta\n §bchest all - näyttää listan arkun jäsenistä\n   §bchest list -näyttää listan arkuista\n   §b_______________________________________\n §bTekijä: Koukun - Lisenssi AGPL-3.0 \n §bYoutubeURL - https://www.youtube.com/@PEXkoukunn"
   },
   "MaxChestLimitReached": {
-    "msgid": "§c The installation limit of {protectChest} has been reached.",
+    "msgid": "§c The installation limit of {limit} has been reached.",
     "msgstr": "§c{protectChest} asennusraja on jo saavutettu"
   },
   "chestLocksCount": {

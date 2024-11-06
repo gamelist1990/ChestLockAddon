@@ -704,7 +704,7 @@ export const translations = {
     msgstr: "§cНеверная команда.\n§aИспользование команды защиты сундука:.\n  §bchest lock        - заблокировать сундук\n  §bchest info       - показать информацию о ближайшем сундуке\n  §bchest unlock      - разблокировать сундук\n  §bchest protect <lock/unlock> - переключить защиту сундука\n  §bchest add <playername>   - добавить участника в сундук\n  §bchest remove <playername>  - удалить участника из сундука\n  §bchest all        - показать список участников сундука\n  §bchest list        - показать список сундуков\n  §b_______________________________________\n  §bАвтор: Koukun        - Лицензия AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
   },
   "MaxChestLimitReached": {
-    msgid: "§c The installation limit of {protectChest} has been reached.",
+    msgid: "§c The installation limit of {limit} has been reached.",
     msgstr: "§cДостигнут предел установки {protectChest}"
   },
   "chestLocksCount": {

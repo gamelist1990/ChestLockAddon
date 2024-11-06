@@ -1,4 +1,4 @@
-import { Entity, world,system } from "@minecraft/server";
+import { Entity, world, system } from "@minecraft/server";
 import "./modules/commands";
 import { loadLeaderboards } from "./modules/Leaderboard";
 
@@ -7,7 +7,7 @@ export const db_leaderboards: { [objective: string]: any } = {};
 
 function updateLeaderboard(entity: Entity) {
   const objective = entity.getDynamicProperty("objective") as string;
-  if (!objective) return; 
+  if (!objective) return;
 
   const leaderboard = db_leaderboards[objective];
 
@@ -15,6 +15,7 @@ function updateLeaderboard(entity: Entity) {
     leaderboard.update();
   }
 }
+
 
 
 // スコアボード "xp" を作成 (まだ存在しない場合)
@@ -46,9 +47,13 @@ system.runInterval(() => {
     // スコアボード "xp" にプレイヤーのレベルを保存
     xpObjective.setScore(player.name, level);  // xpObjective を使用 
   }
+  system.runTimeout(() => {
+    loadLeaderboards();
+    console.log("start..Load")
+
+  })
 }, 20 * 5);
 
 
-system.runTimeout(() => {
-  loadLeaderboards();
-}, 20 * 3)
+
+

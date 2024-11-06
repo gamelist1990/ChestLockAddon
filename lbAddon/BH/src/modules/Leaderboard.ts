@@ -113,12 +113,40 @@ export class Leaderboard {
 }
 
 export function loadLeaderboards() {
+  // 既にロードされているリーダーボードのエンティティIDを保存する配列
+  const loadedEntityIds: string[] = [];
+
   for (const entity of world.getDimension("overworld").getEntities()) {
     if (entity.hasTag("isLeaderboard")) {
-      const objective = entity.getDynamicProperty("objective") as string || "";
-      const addLeaderboard = entity.getDynamicProperty("addLeaderboard") === "true";
+      const entityId = entity.id;
+      loadedEntityIds.push(entityId); // ロードされているエンティティIDを記録
 
-      new Leaderboard(objective, entity, world.getDimension("overworld"), addLeaderboard);
+      if (!checkedLeaderboards[entityId]) {
+        const objective = entity.getDynamicProperty("objective") as string || "";
+        const addLeaderboard = entity.getDynamicProperty("addLeaderboard") === "true";
+
+        const leaderboard = new Leaderboard(objective, entity, world.getDimension("overworld"), addLeaderboard);
+        checkedLeaderboards[entityId] = objective; // objective を記録
+        db_leaderboards[objective] = leaderboard; // db_leaderboards にも追加 (必要であれば)
+      }
+    }
+  }
+
+  // 以前ロードされていたが、今回はロードされていないエンティティを削除
+  for (const entityId in checkedLeaderboards) {
+    if (!loadedEntityIds.includes(entityId)) {
+      const objective = checkedLeaderboards[entityId]; // objective を取得
+      if (db_leaderboards[objective] && db_leaderboards[objective].entity) {
+        db_leaderboards[objective].delete();
+        delete db_leaderboards[objective]; // db_leaderboards からも削除
+      }
+      delete checkedLeaderboards[entityId]; // checkedLeaderboards から削除
     }
   }
 }
+
+let checkedLeaderboards: { [entityId: string]: string } = {};
+
+world.afterEvents.worldInitialize.subscribe(() => {
+  checkedLeaderboards = {};
+});

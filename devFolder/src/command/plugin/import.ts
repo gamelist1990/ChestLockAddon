@@ -8,3 +8,5 @@ import './invsee';
 import './offhand';
 import './cps';
 import './scoreboard';
+import './hub';
+

@@ -704,7 +704,7 @@ export const translations = {
     msgstr: ""
   },
   "MaxChestLimitReached": {
-    msgid: "§c The installation limit of {protectChest} has been reached.",
+    msgid: "§c The installation limit of {limit} has been reached.",
     msgstr: ""
   },
   "chestLocksCount": {

@@ -767,7 +767,7 @@
     ]
   },
   "MaxChestLimitReached": {
-    "msgid": "§c The installation limit of {protectChest} has been reached.",
+    "msgid": "§c The installation limit of {limit} has been reached.",
     "msgstr": "§c{protectChest} 설치 제한에 도달했습니다"
   },
   "chestLocksCount": {

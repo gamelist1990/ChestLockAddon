@@ -4,16 +4,10 @@ import { getServerUptime } from "../utility/server";
 import { ver } from "../../Modules/version";
 import { banPlayers } from "../../Modules/globalBan";
 
-let serverTime = getServerUptime();
-let uptime = "";
-if (typeof serverTime === 'string') {
-    const dhmUptime = serverTime.match(/(\d+)d (\d+)h (\d+)m/)?.[0] || "0d 0h 0m"; 
-    uptime = dhmUptime;
-}
 
 const simpleReplacements: { [key: string]: string | (() => string) } = {
     "[allPlayer]": () => world.getPlayers().length.toString(),
-    "[uptime]": () => uptime.toString(),
+    "[uptime]": () => getServerUptime().match(/(\d+)d (\d+)h (\d+)m/)?.[0] || "0d 0h 0m",
     "[ver]": () => ver,
     "[banUser]": () => banPlayers.length.toString(),
 };
