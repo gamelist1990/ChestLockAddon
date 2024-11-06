@@ -319,6 +319,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     data.isTeleporting ||
     player.isGliding ||
     player.isInWater ||
+    getGamemode(player.name) === 1 ||
     player.isFlying ||
     data.recentlyUsedEnderPearl 
   ) {
@@ -395,8 +396,8 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 
     // AirJump判定 (しきい値を調整)
     if (
-      jumpHeight > 2.3 || // 通常のジャンプよりも高い
-      horizontalAcceleration > 1.6 || // 水平方向に急激な加速
+      jumpHeight > 2.5 || // 通常のジャンプよりも高い
+      horizontalAcceleration > 1.9 || // 水平方向に急激な加速
       (verticalAcceleration > 0.8 && previousVerticalAcceleration > 0.5) || // 垂直方向に急激な加速
       velocityChangeRate > 0.8 || // 短時間での速度変化が大きい
       (player.isJumping && horizontalSpeed > 0.7) // ジャンプ中に水平方向に移動している
