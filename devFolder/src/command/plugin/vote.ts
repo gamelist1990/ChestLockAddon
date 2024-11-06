@@ -1,17 +1,35 @@
 import { world, system, Entity, Player } from '@minecraft/server';
-import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
+import { ActionFormData, ModalFormData, ModalFormResponse } from '@minecraft/server-ui';
 
 interface VoteItem {
     name: string;
     score: number;
 }
 
-let voteEndTime: number | null = null;
-let voteData: { duration: number; resultText: string; allowMultipleVotes: boolean } = {
+interface VoteData {
+    duration: number;
+    resultText: string;
+    allowMultipleVotes: boolean;
+    editingScoreboard: boolean;
+}
+
+const VOTE_DATA_KEY = 'vote_data';
+
+const defaultVoteData: VoteData = {
     duration: 60,
     resultText: '投票結果:',
-    allowMultipleVotes: true, // デフォルトは複数投票を許可
+    allowMultipleVotes: true,
+    editingScoreboard: false,
 };
+
+let voteData: VoteData = defaultVoteData;
+
+function saveVoteData(): void {
+    world.setDynamicProperty(VOTE_DATA_KEY, JSON.stringify(voteData)); // 変更後のコード
+    console.log('投票データを保存しました:', voteData);
+}
+
+let voteEndTime: number | null = null;
 
 function resetVoteScoreboard(): void {
     const scoreboard = world.scoreboard.getObjective('vote_scoreboard');
@@ -19,10 +37,11 @@ function resetVoteScoreboard(): void {
         console.warn('vote_scoreboard が見つかりません。');
         return;
     }
-
     scoreboard.getParticipants().forEach(participant => {
         scoreboard.setScore(participant, 0);
     });
+
+    world.getPlayers().forEach(player => player.removeTag("voted"));
 
     console.log('vote_scoreboard のスコアをリセットしました。');
 }
@@ -52,18 +71,17 @@ function announceResults(voteItems: VoteItem[], customResultText: string): void 
         scoreboard = world.scoreboard.addObjective(scoreboardName, "投票結果");
     }
 
-    let results = customResultText + "\n";
-    voteItems.forEach(item => {
-        results += `${item.name}: ${item.score}票\n`;
-        if (scoreboard) {
-            scoreboard.setScore(item.name, item.score);
-        }
+    let results = customResultText + '\n';
+    voteItems.sort((a, b) => b.score - a.score);
+    voteItems.forEach((item, index) => {
+        results += `${index + 1}位: ${item.name} - ${item.score}票\n`;
     });
     world.sendMessage(results);
+
 }
 
 function startVote(duration: number): void {
-    voteEndTime = system.currentTick + duration * 20; // ティック単位で計算
+    voteEndTime = system.currentTick + duration * 20;
     world.sendMessage(`投票開始！${duration}秒後に終了します。`);
 }
 
@@ -120,7 +138,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
         }
 
         scoreboard.setScore(selectedItem.name, selectedItem.score + 1);
-        player.addTag("voted"); // 投票済みタグを追加
+        player.addTag("voted");
 
         player.sendMessage(`${selectedItem.name} に投票しました。`);
 
@@ -140,23 +158,25 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             player.sendMessage("投票が開始されていません。");
 
         }
-    } else if (id === "ch:Vreset" && player.hasTag("op")) {
+    } else if (id === "ch:Vreset") {
         resetVoteScoreboard();
         voteEndTime = null;
-        player.sendMessage("投票スコアボードをリセットしました。");
-
     } else if (id === "ch:Vsettings" && player.hasTag("op")) {
         const form = new ModalFormData()
             .title("投票設定")
             .textField("投票時間（秒）", "", voteData.duration.toString())
             .textField("投票結果のタイトル", "", voteData.resultText)
-            .toggle("複数投票を許可", voteData.allowMultipleVotes);
+            .toggle("複数投票を許可", voteData.allowMultipleVotes)
+            .toggle("スコアボード編集", voteData.editingScoreboard);
         //@ts-ignore
-        form.show(player).then((response) => {
+        form.show(player).then((response: ModalFormResponse) => {
             if (response.canceled || !response.formValues) return;
+
             const durationString = response.formValues[0] as string;
             const resultText = response.formValues[1] as string;
             const allowMultipleVotes = response.formValues[2] as boolean;
+            voteData.editingScoreboard = response.formValues[3] as boolean;
+
 
             const newDuration = parseInt(durationString, 10);
 
@@ -171,10 +191,71 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             player.sendMessage(`投票時間を ${newDuration} 秒に設定しました。`);
             player.sendMessage(`投票結果のタイトルを "${resultText}" に設定しました。`);
             player.sendMessage(`複数投票を${allowMultipleVotes ? '許可' : '禁止'}しました。`);
+
+            saveVoteData();
+
+            if (voteData.editingScoreboard) {
+                openScoreboardEditModal(player);
+            }
         });
     } else if (id === "ch:Vstart" && player.hasTag("op")) {
         startVote(voteData.duration);
     } else if (id === "ch:Vhelp") {
-        player.sendMessage("投票コマンド一覧:\n/tag @s add vote:start で投票開始\n/tag @s add vote:check で投票結果確認\n/tag @s add vote:reset で投票リセット\n/tag @s add vote:settings で投票時間設定");
+        player.sendMessage("投票コマンド一覧:\nvote:start で投票開始\nvote:check で投票結果確認\nvote:reset で投票リセット\n vote:settings で投票時間設定");
     }
-}); 
+});
+
+function openScoreboardEditModal(player: Player): void {
+    const voteItems = getVoteItemsFromScoreboard();
+
+    const form = new ActionFormData()
+        .title("スコアボード編集")
+        .button("追加")
+        .button("削除");
+    //@ts-ignore
+    form.show(player).then(async (response) => {
+        if (response.canceled) return;
+
+        const scoreboard = world.scoreboard.getObjective('vote_scoreboard');
+        if (!scoreboard) return;
+
+        if (response.selection === 0) {
+            const addForm = new ModalFormData()
+                .title("追加する項目")
+                .textField("項目名", "", "");
+            //@ts-ignore
+            addForm.show(player).then((addResponse: ModalFormResponse) => {
+                if (addResponse.canceled || !addResponse.formValues) return;
+                const newItem = addResponse.formValues[0] as string;
+                if (newItem.trim() !== "" && !voteItems.some(item => item.name === newItem)) {
+                    scoreboard.setScore(newItem, 0);
+                    player.sendMessage(`投票項目に "${newItem}" を追加しました。`);
+                } else {
+                    player.sendMessage(`投票項目 "${newItem}" は既に存在するか、無効です。`);
+                }
+                voteData.editingScoreboard = false;
+            });
+
+        } else if (response.selection === 1) {
+            const deleteForm = new ActionFormData().title("削除する項目を選択");
+            voteItems.forEach(item => deleteForm.button(item.name));
+            //@ts-ignore
+            deleteForm.show(player).then((deleteResponse) => {
+                if (deleteResponse.canceled || deleteResponse.selection === undefined) return;
+                const selectedItem = voteItems[deleteResponse.selection];
+                if (scoreboard.removeParticipant(selectedItem.name)) {
+                    player.sendMessage(`投票項目 "${selectedItem.name}" を削除しました。`);
+                } else {
+                    player.sendMessage(`投票項目 "${selectedItem.name}" の削除に失敗しました。`);
+                }
+                voteData.editingScoreboard = false;
+
+            });
+        }
+    });
+}
+
+
+system.run(() => {
+    console.log('読み込んだ投票データ:', voteData);
+});
