@@ -6,7 +6,11 @@ interface VoteItem {
     score: number;
 }
 
-let voteEndTime: number | null = null; // 投票終了時刻を保存する変数
+let voteEndTime: number | null = null; 
+let voteData: { duration: number; resultText: string } = {
+    duration: 60,
+    resultText: '投票結果:',
+};
 
 function resetVoteScoreboard(): void {
     const scoreboard = world.scoreboard.getObjective('vote_scoreboard');
@@ -16,7 +20,7 @@ function resetVoteScoreboard(): void {
     }
 
     scoreboard.getParticipants().forEach(participant => {
-        scoreboard.setScore(participant, 0); // スコアを0にリセット
+        scoreboard.setScore(participant, 0);
     });
 
     console.log('vote_scoreboard のスコアをリセットしました。');
@@ -40,14 +44,14 @@ function getVoteItemsFromScoreboard(): VoteItem[] {
     return voteItems;
 }
 
-function announceResults(voteItems: VoteItem[]): void {
+function announceResults(voteItems: VoteItem[], customResultText: string): void {
     const scoreboardName = "vote_channel";
     let scoreboard = world.scoreboard.getObjective(scoreboardName);
     if (!scoreboard) {
         scoreboard = world.scoreboard.addObjective(scoreboardName, "投票結果");
     }
 
-    let results = "投票結果:\n";
+    let results = customResultText + "\n";
     voteItems.forEach(item => {
         results += `${item.name}: ${item.score}票\n`;
         if (scoreboard) {
@@ -63,49 +67,17 @@ function startVote(duration: number): void {
 }
 
 function checkVoteStatus(): boolean {
-    return voteEndTime !== null && system.currentTick < voteEndTime; // 投票が進行中かどうか
+    return voteEndTime !== null && system.currentTick < voteEndTime; 
 }
 
-// 投票終了時の処理を行うためのイベントリスナー
 system.runInterval(() => {
-    if (voteEndTime !== null && system.currentTick >= voteEndTime) { // 投票が終了した場合
+    if (voteEndTime !== null && system.currentTick >= voteEndTime) { 
         const voteItems = getVoteItemsFromScoreboard();
-        announceResults(voteItems);
-        voteEndTime = null; // 投票終了フラグをリセット
+        announceResults(voteItems, voteData.resultText);
+        voteEndTime = null; 
         world.sendMessage("投票が終了しました。");
     }
 });
-
-// スコアボード 'vote:settings' を自動的に生成する
-function initializeVoteSettingsScoreboard(): void {
-    const scoreboard = world.scoreboard.getObjective('vote:settings');
-    if (!scoreboard) {
-        world.scoreboard.addObjective('vote:settings', '投票設定');
-        world.scoreboard.getObjective('vote:settings')?.setScore('duration', 300); // 初期値は300秒
-    }
-}
-
-function getVoteDurationFromScoreboard(): number {
-    const scoreboard = world.scoreboard.getObjective('vote:settings');
-    if (!scoreboard) {
-        console.warn('vote:settings が見つかりません。');
-        return 300; // デフォルト値
-    }
-    const score = scoreboard.getScore('duration');
-    return score !== undefined ? score : 300; // デフォルト値
-}
-
-function setVoteDurationToScoreboard(duration: number): void {
-    const scoreboard = world.scoreboard.getObjective('vote:settings');
-    if (!scoreboard) {
-        console.warn('vote:settings が見つかりません。');
-        return;
-    }
-    scoreboard.setScore('duration', duration);
-}
-
-// スクリプト開始時にスコアボードを初期化
-initializeVoteSettingsScoreboard();
 
 system.afterEvents.scriptEventReceive.subscribe(async (event) => {
     const { id, sourceEntity } = event;
@@ -149,15 +121,15 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
 
 
     } else if (id === "ch:Vcheck" && player.hasTag("op")) {
-        if (checkVoteStatus()) { // ここで checkVoteStatus を使用
+        if (checkVoteStatus()) { 
             player.sendMessage("投票はまだ終了していません。");
             const timeLeft = Math.floor((voteEndTime! - system.currentTick) / 20);
             player.sendMessage(`残り時間: ${timeLeft}秒`);
 
 
-        } else if (voteEndTime !== null) { // 投票が終了している場合
+        } else if (voteEndTime !== null) { 
             const voteItems = getVoteItemsFromScoreboard();
-            announceResults(voteItems);
+            announceResults(voteItems, voteData.resultText);
             voteEndTime = null;
             player.sendMessage("投票結果を確認するには、`/scoreboard の vote_channel` を実行してください。");
 
@@ -166,7 +138,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             player.sendMessage("投票が開始されていません。");
 
         }
-    } else if (id === "ch:Vreset" && player.hasTag("op")) { // ch:vresetイベントを追加
+    } else if (id === "ch:Vreset" && player.hasTag("op")) { 
         resetVoteScoreboard();
         voteEndTime = null;
         player.sendMessage("投票スコアボードをリセットしました。");
@@ -175,11 +147,13 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
     } else if (id === "ch:Vsettings" && player.hasTag("op")) {
         const form = new ModalFormData()
             .title("投票設定")
-            .textField("投票時間（秒）", "", getVoteDurationFromScoreboard().toString());
+            .textField("投票時間（秒）", "", voteData.duration.toString())
+            .textField("投票結果のタイトル", "", voteData.resultText);
         //@ts-ignore
         form.show(player).then((response) => {
             if (response.canceled || !response.formValues) return;
             const durationString = response.formValues[0] as string;
+            const resultText = response.formValues[1] as string;
 
             const newDuration = parseInt(durationString, 10);
 
@@ -188,13 +162,13 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
                 return;
             }
 
-            setVoteDurationToScoreboard(newDuration);
+            voteData.duration = newDuration;
+            voteData.resultText = resultText;
             player.sendMessage(`投票時間を ${newDuration} 秒に設定しました。`);
+            player.sendMessage(`投票結果のタイトルを "${resultText}" に設定しました。`);
         });
     } else if (id === "ch:Vstart" && player.hasTag("op")) {
-        // 設定された投票時間を使って投票を開始
-        const duration = getVoteDurationFromScoreboard();
-        startVote(duration);
+        startVote(voteData.duration);
     } else if (id === "ch:Vhelp") {
         player.sendMessage("投票コマンド一覧:\n/tag @s add vote:start で投票開始\n/tag @s add vote:check で投票結果確認\n/tag @s add vote:reset で投票リセット\n/tag @s add vote:settings で投票時間設定");
     }
