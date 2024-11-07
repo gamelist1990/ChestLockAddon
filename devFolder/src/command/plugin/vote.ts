@@ -29,6 +29,29 @@ function saveVoteData(): void {
     console.log('投票データを保存しました:', voteData);
 }
 
+function loadVoteData(): void {
+    const savedData = world.getDynamicProperty(VOTE_DATA_KEY);
+    if (savedData) {
+        try {
+            if (typeof savedData === 'string') { // savedData が文字列型であることを確認
+                voteData = JSON.parse(savedData);
+            } else {
+                console.warn('投票データが文字列型ではありません。デフォルト値を使用します:', savedData);
+                voteData = defaultVoteData;
+                saveVoteData();
+            }
+        } catch (e) {
+            console.warn('投票データの読み込みに失敗しました。デフォルト値を使用します:', e);
+            voteData = defaultVoteData;
+            saveVoteData();
+        }
+    } else {
+        voteData = defaultVoteData;
+        saveVoteData();
+    }
+    console.log('読み込んだ投票データ:', voteData);
+}
+
 let voteEndTime: number | null = null;
 
 function resetVoteScoreboard(): void {
@@ -71,13 +94,22 @@ function announceResults(voteItems: VoteItem[], customResultText: string): void 
         scoreboard = world.scoreboard.addObjective(scoreboardName, "投票結果");
     }
 
+    // スコアボードのリセット
+    scoreboard.getParticipants().forEach(participant => scoreboard.removeParticipant(participant));
+
+
     let results = customResultText + '\n';
     voteItems.sort((a, b) => b.score - a.score);
-    voteItems.forEach((item, index) => {
-        results += `${index + 1}位: ${item.name} - ${item.score}票\n`;
-    });
-    world.sendMessage(results);
 
+    let currentScore = 1;
+    for (let i = 0; i < voteItems.length && currentScore <= 10; i++) {
+        const item = voteItems[i];
+        results += `${i + 1}位: ${item.name} - ${item.score}票\n`;
+        scoreboard.setScore(item.name, currentScore);
+        currentScore++;
+    }
+
+    world.sendMessage(results);
 }
 
 function startVote(duration: number): void {
@@ -95,6 +127,7 @@ system.runInterval(() => {
         announceResults(voteItems, voteData.resultText);
         voteEndTime = null;
         world.sendMessage("投票が終了しました。");
+        resetVoteScoreboard();
     }
 });
 
@@ -257,5 +290,5 @@ function openScoreboardEditModal(player: Player): void {
 
 
 system.run(() => {
-    console.log('読み込んだ投票データ:', voteData);
+    loadVoteData();
 });
