@@ -18,7 +18,7 @@ interface ChestProtectionData {
 const CHEST_CHECK_RADIUS = 20;
 
 const CHECK_INTERVAL = 20 * 60; // 1分 (20ティック/秒 * 60秒)
-const MAX_CHESTS_PER_PLAYER = 12; // プレイヤーごとのチェスト保護上限
+const MAX_CHESTS_PER_PLAYER = 12; 
 
 
 let protectedChests: Record<string, ChestProtectionData> = {};

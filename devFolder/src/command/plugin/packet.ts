@@ -56,6 +56,7 @@ interface PlayerData {
   positionHistory: Vector3[];
   lastTime: number;
   violationCount: number;
+  lastBlinkCheck: number;
   isTeleporting: boolean;
   lastTeleportTime: number;
   isFrozen: boolean;
@@ -64,14 +65,17 @@ interface PlayerData {
   jumpCounter: number;
   recentlyUsedEnderPearl: boolean;
   enderPearlInterval: any;
-  lastPosition: Vector3 | null; 
+  lastPosition: Vector3 | null;
   xrayData: XrayData;
+  lastSpeedCheck: number;
+  speedViolationCount: number;
   lastRotationY: number;
   boundaryCenter: Vector3;
   boundaryRadius: number;
   lastDamageTime: number | null;
   lastBreakBlockTime: number | null;
   timerData: timerData;
+  beingHit: boolean;
 }
 
 // ----------------------------------
@@ -89,8 +93,11 @@ class PlayerDataManager {
       lastTime: Date.now(),
       violationCount: 0,
       isTeleporting: false,
+      lastBlinkCheck: 0,
       lastTeleportTime: 0,
       jumpStartTime: 0,
+      lastSpeedCheck: 0,
+      speedViolationCount: 0,
       isFrozen: false,
       airJumpDetected: false,
       freezeStartTime: 0,
@@ -102,6 +109,7 @@ class PlayerDataManager {
       lastRotationY: 0,
       boundaryCenter: player.location,
       boundaryRadius: 10,
+      beingHit: false,
       xrayData: {
         suspiciousBlocks: {},
       },
@@ -300,7 +308,7 @@ world.afterEvents.itemUse.subscribe((event) => {
   }
 });
 
-function hasEffect(player:Player, effectName:any) {
+function hasEffect(player: Player, effectName: any) {
   try {
     return player.getEffect(effectName) !== undefined;
   } catch (error) {
@@ -321,14 +329,19 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     player.isInWater ||
     getGamemode(player.name) === 1 ||
     player.isFlying ||
-    data.recentlyUsedEnderPearl 
+    data.recentlyUsedEnderPearl
   ) {
     return null;
   }
 
   if (hasEffect(player, "speed")) {
-   return null;
-  } 
+    return null;
+  }
+
+  //新規 殴られて羽目技されている際は検知を除外する
+  if (data && data.beingHit) {
+    return null;
+  }
 
   const isJumping = player.isJumping; // ジャンプ中かどうか
   const isOnGround = player.isOnGround; // 地面にいるかどうか
@@ -356,7 +369,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   if (data.positionHistory.length < 2) {
     lastPosition = currentPosition; // lastPositionを更新
     playerDataManager.update(player, { lastPosition: lastPosition }); // lastPositionのみを更新
-    return null; 
+    return null;
   } else {
     previousPosition = data.positionHistory[data.positionHistory.length - 2];
   }
@@ -367,7 +380,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 
   const currentVelocityY = currentVelocity.y;
   const previousVelocityY = calculateVerticalVelocity(currentPosition, lastPosition);
-  const twoTicksAgoVelocityY = previousPosition ? calculateVerticalVelocity(lastPosition, previousPosition) : 0; 
+  const twoTicksAgoVelocityY = previousPosition ? calculateVerticalVelocity(lastPosition, previousPosition) : 0;
 
   const verticalAcceleration = currentVelocityY - previousVelocityY;
   const previousVerticalAcceleration = previousVelocityY - twoTicksAgoVelocityY;
@@ -396,7 +409,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 
     // AirJump判定 (しきい値を調整)
     if (
-      jumpHeight > 2.5 || // 通常のジャンプよりも高い
+      jumpHeight > 2.2 || // 通常のジャンプよりも高い
       horizontalAcceleration > 1.9 || // 水平方向に急激な加速
       (verticalAcceleration > 0.8 && previousVerticalAcceleration > 0.5) || // 垂直方向に急激な加速
       velocityChangeRate > 0.8 || // 短時間での速度変化が大きい
@@ -739,14 +752,13 @@ function updateTimerData(player: Player, now: number) {
 
 
 function isPlayerOnGround(player: Player): boolean {
-  const viewDirection = player.getViewDirection(); 
+  const viewDirection = player.getViewDirection();
   viewDirection.y = -1; // y座標を-1にして 下向きにビーム
 
   const blockBelow = player.getBlockFromViewDirection({
     maxDistance: 1.5, //距離は1.5Block
     includePassableBlocks: false,
-  }); 
-  console.log(`IsPlayerOnground:${JSON.stringify(blockBelow,null,2)}`)
+  });
 
   return blockBelow !== undefined && blockBelow.block.isSolid;
 }
@@ -754,16 +766,21 @@ function isPlayerOnGround(player: Player): boolean {
 function detectFlyHack(player: Player): { cheatType: string } | null {
   const data = playerDataManager.get(player);
 
- 
+
   if (
     !data ||
     data.isTeleporting ||
     player.isGliding ||
     player.isInWater ||
-    player.isFalling || 
+    player.isFalling ||
     player.isFlying ||
     data.recentlyUsedEnderPearl
   ) {
+    return null;
+  }
+
+  //ここも同様に殴られている際の検知を除外
+  if (data && data.beingHit) {
     return null;
   }
 
@@ -771,7 +788,7 @@ function detectFlyHack(player: Player): { cheatType: string } | null {
   const isOnGround = player.isOnGround; // 地面にいるかどうか
   const currentPosition = player.location; // 現在の位置
 
-  let lastPosition = data.lastPosition; // 直前の位置 (ローカル変数に変更)
+  let lastPosition = data.lastPosition;
 
   // 直前の位置情報がない場合は処理をスキップ
   if (!lastPosition) {
@@ -823,6 +840,150 @@ function detectFlyHack(player: Player): { cheatType: string } | null {
   return null;
 }
 
+function detectSpeed(player: Player): { cheatType: string; value?: number } | null {
+  const data = playerDataManager.get(player);
+  if (!data) return null;
+
+  if (
+    !data ||
+    data.isTeleporting ||
+    player.isGliding ||
+    player.isFlying ||
+    data.recentlyUsedEnderPearl
+  ) {
+    return null;
+  }
+
+  //ここも同様に殴られている際の検知を除外
+  if (data && data.beingHit) {
+    return null;
+  }
+
+  const now = Date.now();
+
+  // Speedチェックの間隔 (ミリ秒)
+  const checkInterval = 500;
+
+  // 前回のチェックから一定時間経過していない場合はスキップ
+  if (now - data.lastSpeedCheck < checkInterval) {
+    return null;
+  }
+
+  // プレイヤーが移動していない場合はスキップ
+  const velocity = player.getVelocity();
+  if (velocity.x === 0 && velocity.z === 0) {
+    playerDataManager.update(player, { lastSpeedCheck: now });
+    return null;
+  }
+
+  const lastPosition = data.positionHistory[data.positionHistory.length - 2] || player.location; // 1ティック前の位置
+
+  // 水平方向の移動距離を計算
+  const distance = calculateHorizontalSpeed(player.location, lastPosition);
+  console.log(`[DEBUG] ${player.name} Distance: ${distance}`);
+  // 速度を計算 (ブロック/秒)
+  const speed = distance * (1000 / checkInterval);
+
+
+  // 許容速度 (ブロック/秒) - 適宜調整
+  const allowedSpeed = 0.7;
+
+  // SpeedHack判定
+  if (speed > allowedSpeed) {
+
+    if (player.isSprinting) {
+      // スプリント中は許容速度を上げる
+      if (speed > allowedSpeed * 1.8) {  // 1.3倍
+        console.log(`[DEBUG] ${player.name} SpeedHack (Sprinting) Detected! Speed: ${speed}`);
+        playerDataManager.update(player, { lastSpeedCheck: now, speedViolationCount: data.speedViolationCount + 1 });
+        return { cheatType: 'Speed (Sprinting)', value: speed };
+      }
+
+      playerDataManager.update(player, { lastSpeedCheck: now, speedViolationCount: 0 });
+      return null
+    }
+
+    if (hasEffect(player, "speed")) {
+      if (speed > allowedSpeed * 2.5) {
+        console.log(`[DEBUG] ${player.name} SpeedHack (SpeedPotion) Detected! Speed: ${speed}`);
+        playerDataManager.update(player, { lastSpeedCheck: now, speedViolationCount: data.speedViolationCount + 1 });
+        return { cheatType: 'Speed (Potion)', value: speed };
+      }
+    }
+
+    // SpeedHack検出
+    console.log(`[DEBUG] ${player.name} SpeedHack Detected! Speed: ${speed}`);
+    playerDataManager.update(player, { lastSpeedCheck: now, speedViolationCount: data.speedViolationCount + 1 });
+    return { cheatType: 'Speed', value: speed };
+  }
+
+  playerDataManager.update(player, { lastSpeedCheck: now, speedViolationCount: 0 });
+  return null;
+}
+
+function detectBlink(player: Player): { cheatType: string; value?: number } | null {
+  const data = playerDataManager.get(player);
+  if (!data) return null;
+
+  if (
+    !data ||
+    data.isTeleporting ||
+    player.isGliding ||
+    player.isFlying ||
+    data.recentlyUsedEnderPearl
+  ) {
+    return null;
+  }
+
+  //ここも同様に殴られている際の検知を除外
+  if (data && data.beingHit) {
+    return null;
+  }
+
+  const now = Date.now();
+  const checkInterval = 50; // チェック間隔 (ミリ秒)
+
+  // 前回のチェックから一定時間経過していない場合はスキップ
+  if (now - data.lastBlinkCheck < checkInterval) {
+    return null;
+  }
+
+  // 位置履歴が十分にない場合はスキップ
+  if (data.positionHistory.length < 2) {
+    playerDataManager.update(player, { lastBlinkCheck: now });
+    return null;
+  }
+
+  const lastPosition = data.positionHistory[data.positionHistory.length - 2]; // 1ティック前の位置
+  const distance = calculateDistance(player.location, lastPosition);
+
+  // Blinkのしきい値 (ブロック) - この値は調整が必要
+  const blinkThreshold = 2;
+
+  if (distance > blinkThreshold) {
+    console.log(`[DEBUG] ${player.name} Blink Detected! Distance: ${distance}`);
+    playerDataManager.update(player, { lastBlinkCheck: now });
+    return { cheatType: 'Blink', value: distance };
+  }
+
+  playerDataManager.update(player, { lastBlinkCheck: now });
+  return null;
+}
+
+
+world.afterEvents.entityHurt.subscribe((event: any) => {
+  if (event.hurtEntity instanceof Player) {
+    playerDataManager.update(event.hurtEntity, { lastDamageTime: Date.now() });
+
+    // beingHit状態をtrueにする
+    playerDataManager.update(event.hurtEntity, { beingHit: true });
+
+    // 一定時間後にbeingHit状態をfalseに戻す (e.g., 500ms = 0.5秒)
+    system.runTimeout(() => {
+      playerDataManager.update(event.hurtEntity, { beingHit: false });
+    }, 10);
+  }
+});
 
 // ティックごとの処理
 function runTick(): void {
@@ -838,7 +999,7 @@ function runTick(): void {
     if (!data) continue;
 
     if (data.isFrozen) {
-      player.teleport({ x: player.location.x, y: 500, z: player.location.z }, { dimension: player.dimension });
+      player.teleport({ x: player.location.x, y: player.location.y, z: player.location.z }, { dimension: player.dimension });
     } else {
       addPositionHistory(player);
 
@@ -868,6 +1029,17 @@ function runTick(): void {
 
       if (configs.antiCheat.betasystem) {
         detectXrayOnSight(player);
+
+        const blinkDetection = detectBlink(player);
+        if (blinkDetection) {
+          handleCheatDetection(player, blinkDetection);
+        }
+
+        const speedDetection = detectSpeed(player);
+        if (speedDetection) {
+          handleCheatDetection(player, speedDetection);
+        }
+
       }
 
       for (const blockLocationString in data.xrayData.suspiciousBlocks) {
@@ -886,7 +1058,7 @@ function runTick(): void {
 
       updateTimerData(player, currentTime);
 
-      playerDataManager.update(player, { lastTime: Date.now() }); // ループの最後に移動
+      playerDataManager.update(player, { lastTime: Date.now() });
     }
   }
 }
@@ -963,7 +1135,7 @@ function freezePlayer(player: Player): void {
   const data = playerDataManager.get(player);
   if (!data) return;
   playerDataManager.update(player, { isFrozen: true });
-  player.teleport({ x: player.location.x, y: 60000, z: player.location.z }, { dimension: player.dimension });
+  player.teleport({ x: player.location.x, y: player.location.y, z: player.location.z }, { dimension: player.dimension });
   console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をfreezeさせました`);
 }
 
