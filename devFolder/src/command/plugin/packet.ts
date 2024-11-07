@@ -1,6 +1,6 @@
 import { config, getGamemode } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
-import { Player, world, system, Vector3, Block, GameMode } from '@minecraft/server';
+import { Player, world, system, Vector3, Block, GameMode, EntityHurtAfterEvent, Entity } from '@minecraft/server';
 import { ServerReport } from '../utility/report';
 import xy from './xy';
 
@@ -76,6 +76,12 @@ interface PlayerData {
   lastBreakBlockTime: number | null;
   timerData: timerData;
   beingHit: boolean;
+  lastAttackTime: number;
+  attackFrequency: number[];
+  lastAttackedEntity: any | null;
+  aimbotTicks: number;
+  throughBlockHits: { [targetId: string]: number }; // ブロック越しヒット数の記録
+
 }
 
 // ----------------------------------
@@ -132,6 +138,11 @@ class PlayerDataManager {
         flagCounter: 0,
         lastHighTeleport: 0,
       },
+      lastAttackTime: 0,
+      attackFrequency: [],
+      lastAttackedEntity: null,
+      aimbotTicks: 0,
+      throughBlockHits: {},
     };
 
     if (config().module.debugMode.enabled === true) {
@@ -971,17 +982,113 @@ function detectBlink(player: Player): { cheatType: string; value?: number } | nu
 }
 
 
-world.afterEvents.entityHurt.subscribe((event: any) => {
+
+function detectKillAura(player: Player, event: EntityHurtAfterEvent): { cheatType: string } | null {
+  const data = playerDataManager.get(player);
+  if (!data) return null;
+
+  const damageSource = event.damageSource;
+  if (!damageSource) {
+    return null;
+  }
+
+  if (!(event.damageSource.cause == "entityAttack")) { 
+    return null;
+  }
+
+
+
+  const now = Date.now();
+  const attackedEntity = event.hurtEntity as Entity;
+
+  // 攻撃速度の検知
+  const attackInterval = now - data.lastAttackTime;
+  data.attackFrequency.push(attackInterval);
+  if (data.attackFrequency.length > 10) {
+    data.attackFrequency.shift();
+  }
+  const averageAttackInterval = data.attackFrequency.reduce((sum, interval) => sum + interval, 0) / data.attackFrequency.length;
+
+  if (averageAttackInterval < 50) {
+    console.log(`[DEBUG] ${player.name} Kill Aura (Attack Speed) Detected! Average Attack Interval: ${averageAttackInterval}ms`);
+    playerDataManager.update(player, { lastAttackTime: now });
+    return { cheatType: 'Kill Aura (Attack Speed)' };
+  }
+
+
+  // FOVチェック
+  const fovThreshold = 50;
+
+  if (data.lastAttackedEntity !== attackedEntity) {
+    const lastPositionFov = data.positionHistory[data.positionHistory.length - 2] || player.location;
+    const playerViewVector = player.getViewDirection();
+
+    // 手動で内積を計算
+    const dotProductFov = (
+      playerViewVector.x * (attackedEntity.location.x - lastPositionFov.x) +
+      playerViewVector.y * (attackedEntity.location.y - lastPositionFov.y) +
+      playerViewVector.z * (attackedEntity.location.z - lastPositionFov.z)
+    ) / (
+        Math.sqrt(playerViewVector.x * playerViewVector.x + playerViewVector.y * playerViewVector.y + playerViewVector.z * playerViewVector.z) *
+        Math.sqrt(
+          (attackedEntity.location.x - lastPositionFov.x) * (attackedEntity.location.x - lastPositionFov.x) +
+          (attackedEntity.location.y - lastPositionFov.y) * (attackedEntity.location.y - lastPositionFov.y) +
+          (attackedEntity.location.z - lastPositionFov.z) * (attackedEntity.location.z - lastPositionFov.z)
+        )
+      );
+
+    const angle = Math.acos(dotProductFov) * (180 / Math.PI);
+
+    if (angle > fovThreshold) {
+      console.log(`[DEBUG] ${player.name} Kill Aura (FOV) Detected! Angle: ${angle}`);
+      playerDataManager.update(player, { lastAttackedEntity: attackedEntity, lastAttackTime: now });
+
+      return { cheatType: 'Kill Aura (FOV)' };
+    }
+  }
+
+  if (!(attackedEntity instanceof Player)) return null;
+
+  const blockHit = player.getBlockFromViewDirection({ maxDistance: 5 });
+  if (blockHit && blockHit.block && blockHit.block.isSolid) {
+    if (!data.throughBlockHits[attackedEntity.id]) {
+      data.throughBlockHits[attackedEntity.id] = 0;
+    }
+    data.throughBlockHits[attackedEntity.id]++;
+
+    if (data.throughBlockHits[attackedEntity.id] >= 4) {
+      console.log(`[DEBUG] ${player.name} Kill Aura (Through Block) Detected! Hits: ${data.throughBlockHits[attackedEntity.id]}`);
+      delete data.throughBlockHits[attackedEntity.id];
+      playerDataManager.update(player, { lastAttackedEntity: attackedEntity, lastAttackTime: now });
+
+      return { cheatType: 'Kill Aura (Through Block)' };
+    }
+  } else {
+    delete data.throughBlockHits[attackedEntity.id];
+  }
+
+
+  playerDataManager.update(player, { lastAttackedEntity: attackedEntity, lastAttackTime: now });
+  return null;
+}
+
+
+world.afterEvents.entityHurt.subscribe((event: EntityHurtAfterEvent) => {
   if (event.hurtEntity instanceof Player) {
-    playerDataManager.update(event.hurtEntity, { lastDamageTime: Date.now() });
-
-    // beingHit状態をtrueにする
     playerDataManager.update(event.hurtEntity, { beingHit: true });
-
-    // 一定時間後にbeingHit状態をfalseに戻す (e.g., 500ms = 0.5秒)
     system.runTimeout(() => {
-      playerDataManager.update(event.hurtEntity, { beingHit: false });
+      if (event.hurtEntity instanceof Player) {
+        playerDataManager.update(event.hurtEntity, { beingHit: false });
+      }
     }, 10);
+  }
+
+  // 攻撃者がプレイヤーの場合のみKillAura検知を実行
+  if (event.hurtEntity instanceof Player) {
+    const killAuraDetection = detectKillAura(event.hurtEntity, event);
+    if (killAuraDetection) {
+      handleCheatDetection(event.hurtEntity, killAuraDetection);
+    }
   }
 });
 
