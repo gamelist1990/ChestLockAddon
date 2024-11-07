@@ -992,7 +992,7 @@ function detectKillAura(player: Player, event: EntityHurtAfterEvent): { cheatTyp
     return null;
   }
 
-  if (!(event.damageSource.cause == "entityAttack")) { 
+  if (!(event.damageSource.cause == "entityAttack")) {
     return null;
   }
 
@@ -1050,20 +1050,39 @@ function detectKillAura(player: Player, event: EntityHurtAfterEvent): { cheatTyp
   if (!(attackedEntity instanceof Player)) return null;
 
   const blockHit = player.getBlockFromViewDirection({ maxDistance: 5 });
+  const entitiesHit = player.getEntitiesFromViewDirection({ maxDistance: 5 });
+
+  // ブロックがあり、かつ固体ブロックの場合に計算開始！
   if (blockHit && blockHit.block && blockHit.block.isSolid) {
-    if (!data.throughBlockHits[attackedEntity.id]) {
-      data.throughBlockHits[attackedEntity.id] = 0;
-    }
-    data.throughBlockHits[attackedEntity.id]++;
+    const distanceToTarget = Math.sqrt(
+      Math.pow(blockHit.faceLocation.x - attackedEntity.location.x, 2) +
+      Math.pow(blockHit.faceLocation.y - attackedEntity.location.y, 2) +
+      Math.pow(blockHit.faceLocation.z - attackedEntity.location.z, 2)
+    );
+    const distanceToPlayer = Math.sqrt(
+      Math.pow(blockHit.faceLocation.x - player.location.x, 2) +
+      Math.pow(blockHit.faceLocation.y - player.location.y, 2) +
+      Math.pow(blockHit.faceLocation.z - player.location.z, 2)
+    );
+    const targetBehindBlock = distanceToTarget < distanceToPlayer;
+    if (targetBehindBlock && entitiesHit.some(entity => entity.entity.id === attackedEntity.id)) {
+      // カウンターを増加
+      if (!data.throughBlockHits[attackedEntity.id]) {
+        data.throughBlockHits[attackedEntity.id] = 0;
+      }
+      data.throughBlockHits[attackedEntity.id]++;
 
-    if (data.throughBlockHits[attackedEntity.id] >= 4) {
-      console.log(`[DEBUG] ${player.name} Kill Aura (Through Block) Detected! Hits: ${data.throughBlockHits[attackedEntity.id]}`);
-      delete data.throughBlockHits[attackedEntity.id];
-      playerDataManager.update(player, { lastAttackedEntity: attackedEntity, lastAttackTime: now });
+      // 4回以上ブロック越しヒットした場合、Kill Aura (Through Block) と判定
+      if (data.throughBlockHits[attackedEntity.id] >= 4) {
+        console.log(`[DEBUG] ${player.name} Kill Aura (Through Block) Detected! Hits: ${data.throughBlockHits[attackedEntity.id]}`);
+        delete data.throughBlockHits[attackedEntity.id];
+        playerDataManager.update(player, { lastAttackedEntity: attackedEntity, lastAttackTime: now });
 
-      return { cheatType: 'Kill Aura (Through Block)' };
+        return { cheatType: 'Kill Aura (Through Block)' };
+      }
     }
   } else {
+    // ブロックがない場合はカウンターをリセット
     delete data.throughBlockHits[attackedEntity.id];
   }
 
