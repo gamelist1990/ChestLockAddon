@@ -69,16 +69,16 @@ export function isPlayer(playerName: string): Player | undefined {
 
 export function verifier(player: Player, setting: CommandConfig): boolean {
   if (setting.enabled !== true) {
-    player.sendMessage(translate(player, 'desabledCom'));
+    player.sendMessage(translate(player, 'server.desabledCom'));
     return false;
   } else if (setting.adminOnly === true && !player.hasTag(config().admin)) {
-    player.sendMessage(translate(player, 'unavailable'));
+    player.sendMessage(translate(player, 'server.unavailable'));
     return false;
   } else if (
     setting.requireTag.length > 0 &&
     !player.getTags().some((tag: string) => setting.requireTag.includes(tag))
   ) {
-    player.sendMessage(translate(player, 'AllowTagCom'));
+    player.sendMessage(translate(player, 'server.AllowTagCom'));
     return false;
   }
   return true;
@@ -93,7 +93,7 @@ export function suggestCommand(player: Player, commandName: string) {
 
   if (possibleCommands.length > 0) {
     player.sendMessage(
-      translate(player, 'desableComSuggest', {
+      translate(player, 'server.desableComSuggest', {
         possibleCommands: `${possibleCommands[0]}`,
         prefix: `${prefix}`,
       }),
@@ -167,7 +167,7 @@ world.beforeEvents.chatSend.subscribe((event: any) => {
   } else {
     const suggestedCommand = suggestCommand(player, commandName);
     if (!suggestedCommand) {
-      player.sendMessage(translate(player, 'invalidCom', { commandName: `${commandName}` }));
+      player.sendMessage(translate(player, 'server.invalidCom', { commandName: `${commandName}` }));
     }
   }
 
@@ -191,6 +191,6 @@ export function runCommand(playerName: string, commandName: string, args: string
       commandOptions.executor(player, args);
     }
   } else {
-    player.sendMessage(translate(player, 'invalidCom', { commandName: `${commandName}` }));
+    player.sendMessage(translate(player, 'server.invalidCom', { commandName: `${commandName}` }));
   }
 }

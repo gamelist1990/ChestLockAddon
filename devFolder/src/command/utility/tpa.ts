@@ -14,13 +14,13 @@ function decreaseTimeoutTicks() {
 
       const targetPlayer = world.getPlayers().find((p) => p.name === target);
       if (targetPlayer) {
-        translate(targetPlayer, 'tpaRequestTimedOut', { playerName: requesterName }, targetPlayer);
+        targetPlayer.sendMessage(translate(targetPlayer, 'commnad.tpa.tpaRequestTimedOut', { playerName: requesterName }));
       }
 
       // リクエスト送信元にも通知
       const requester = world.getPlayers().find((p) => p.name === requesterName);
       if (requester) {
-        translate(requester, 'tpaRequestTimedOut', { playerName: target }, requester);
+        requester.sendMessage(translate(requester, 'commnad.tpa.tpaRequestTimedOut', { playerName: target }));
       }
 
       continue;
@@ -39,13 +39,13 @@ function sendTpaRequest(player: Player, targetPlayer: Player) {
   if (tpaRequests.has(player.name)) {
     const existingRequest = tpaRequests.get(player.name);
     if (existingRequest && existingRequest.target === targetPlayer.name) {
-      player.sendMessage(translate(player, 'tpaRequestAlreadySent'));
+      player.sendMessage(translate(player, 'commnad.tpa.tpaRequestAlreadySent'));
       return;
     }
   }
 
-  player.sendMessage(translate(player, 'tpaRequestSent', { playerName: targetPlayer.name }));
-  translate(player, 'tpaRequestReceived', { playerName: player.name }, targetPlayer);
+  player.sendMessage(translate(player, 'commnad.tpa.tpaRequestSent', { playerName: targetPlayer.name }));
+  targetPlayer.sendMessage(translate(targetPlayer, 'commnad.tpa.tpaRequestReceived', { playerName: player.name }));
 
   tpaRequests.set(player.name, {
     target: targetPlayer.name,
@@ -58,19 +58,19 @@ function acceptTpaRequest(player: Player, requesterName: string) {
   const request = tpaRequests.get(requesterName);
 
   if (!request) {
-    player.sendMessage(translate(player, 'noPendingTpaRequests'));
+    player.sendMessage(translate(player, 'commnad.tpa.noPendingTpaRequests'));
     return;
   }
 
   if (request.target !== player.name) {
-    player.sendMessage(translate(player, 'invalidTpaRequest'));
+    player.sendMessage(translate(player, 'commnad.tpa.invalidTpaRequest'));
     return;
   }
 
   const requester = player.dimension.getPlayers().find((p) => p.name === requesterName);
 
   if (!requester) {
-    player.sendMessage(translate(player, 'requesterNotFound'));
+    player.sendMessage(translate(player, 'commnad.tpa.requesterNotFound'));
     return;
   }
 
@@ -79,9 +79,9 @@ function acceptTpaRequest(player: Player, requesterName: string) {
   // 遅延処理を追加 (例: 3秒遅延)
   system.runTimeout(() => {
     requester.teleport(player.location, { dimension: player.dimension });
-    player.sendMessage(translate(player, 'tpaRequestAcceptes', { playerName: requester.name }));
-    translate(player, 'tpaRequestAccepted', { playerName: player.name }, requester);
-    translate(player, 'teleportedToPlayer', { playerName: player.name }, requester);
+    player.sendMessage(translate(player, 'commnad.tpa.tpaRequestAcceptes', { playerName: requester.name }));
+    requester.sendMessage(translate(requester, 'commnad.tpa.tpaRequestAccepted', { playerName: player.name }));
+    requester.sendMessage(translate(requester, 'commnad.tpa.teleportedToPlayer', { playerName: player.name }));
   }, 1);
 }
 
@@ -100,7 +100,7 @@ export function getTpaRequests(playerName: string): string[] {
 
 registerCommand({
   name: 'tpa',
-  description: 'Tpcommand',
+  description: 'tp_docs',
   parent: false,
   maxArgs: 2,
   minArgs: 1,
@@ -110,12 +110,12 @@ registerCommand({
       const targetPlayer = player.dimension.getPlayers().find((p) => p.name === args[1]);
 
       if (!targetPlayer) {
-        player.sendMessage(translate(player, 'PlayerNotFound', { playerName: args[1] }));
+        player.sendMessage(translate(player, 'server.PlayerNotFound', { playerName: args[1] }));
         return;
       }
 
       if (targetPlayer === player) {
-        player.sendMessage(translate(player, 'cannotTpaToSelf'));
+        player.sendMessage(translate(player, 'commnad.tpa.cannotTpaToSelf'));
         return;
       }
 
@@ -123,7 +123,9 @@ registerCommand({
     } else if (args[0] === '-a' && args.length === 2) {
       acceptTpaRequest(player, args[1]);
     } else {
-      player.sendMessage(translate(player, 'invalidTpaCommandUsage', { prefix: `${prefix}` }));
+      player.sendMessage(translate(player, 'commnad.tpa.invalidTpaCommandUsage', { prefix: `${prefix}` }));
     }
   },
 });
+
+ 

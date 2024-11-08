@@ -9,7 +9,7 @@ const PREFIX = prefix; // prefix を定数として定義
 
 registerCommand({
   name: 'help',
-  description: 'help_command_description',
+  description: 'help_docs',
   parent: false,
   maxArgs: 1,
   minArgs: 0,
@@ -22,7 +22,7 @@ registerCommand({
     if (args && args.length > 0) {
       pageNumber = parseInt(args[0]);
       if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > totalPages) {
-        player.sendMessage(translate(player, 'command.invalid_page_number'));
+        player.sendMessage(translate(player, 'command.help.invalid_page_number'));
         return;
       }
     }
@@ -32,7 +32,7 @@ registerCommand({
     const pageCommands = commands.slice(startIndex, endIndex);
 
     const version = `§aVer.${ver}`;
-    let helpMessage = translate(player, "command.helpPage", { pageNumber: `${pageNumber}`, totalPages: `${totalPages}`, PREFIX: `${PREFIX}`});
+    let helpMessage = translate(player, "command.help.helpPage", { pageNumber: `${pageNumber}`, totalPages: `${totalPages}`, PREFIX: `${PREFIX}`});
     pageCommands.forEach((msg) => {
       const commandDescription = translate(player, msg.description);
       helpMessage += `§b${prefix}${msg.name} - ${commandDescription}\n`;

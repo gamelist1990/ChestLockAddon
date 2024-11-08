@@ -18,7 +18,7 @@ interface ChestProtectionData {
 const CHEST_CHECK_RADIUS = 20;
 
 const CHECK_INTERVAL = 20 * 60; // 1分 (20ティック/秒 * 60秒)
-const MAX_CHESTS_PER_PLAYER = 12; 
+const MAX_CHESTS_PER_PLAYER = 12;
 
 
 let protectedChests: Record<string, ChestProtectionData> = {};
@@ -101,19 +101,19 @@ function listProtectedChests(player: Player) {
 
   if (playerChests.length > 0) {
     player.sendMessage(
-      translate(player, `ChestlistCom`, { playerChests: `${playerChests.length}` }),
+      translate(player, `command.chest.ChestlistCom`, { playerChests: `${playerChests.length}` }),
     );
     playerChests.forEach(([key]) => {
-      player.sendMessage(translate(player, `chestlocation`, { key: `${key}` }));
+      player.sendMessage(translate(player, `command.chest.chestlocation`, { key: `${key}` }));
     });
   } else {
-    player.sendMessage(translate(player, `notFound_chest`));
+    player.sendMessage(translate(player, `command.chest.notFound_chest`));
   }
 }
 
 function sendInvalidCommandMessage(player: Player) {
   const version = `§bVersion ${ver}`;
-  const message = translate(player, 'chest_help');
+  const message = translate(player, 'command.chest.chest_help');
 
   player.sendMessage(message);
   player.sendMessage(version);
@@ -123,31 +123,31 @@ function showNearbyChestInfo(player: Player) {
   const nearbyChestLocation = findNearbyChest(player);
 
   if (nearbyChestLocation) {
-    let message = translate(player, 'nearby_chest_info') + '\n';
-    message += `${translate(player, 'coordinate_x')}${nearbyChestLocation.x}\n`;
-    message += `${translate(player, 'coordinate_y')}${nearbyChestLocation.y}\n`;
-    message += `${translate(player, 'coordinate_z')}${nearbyChestLocation.z}\n`;
+    let message = translate(player, 'command.chest.nearby_chest_info') + '\n';
+    message += `${translate(player, 'command.chest.coordinate_x')}${nearbyChestLocation.x}\n`;
+    message += `${translate(player, 'command.chest.coordinate_y')}${nearbyChestLocation.y}\n`;
+    message += `${translate(player, 'command.chest.coordinate_z')}${nearbyChestLocation.z}\n`;
 
     const chestKey = getChestKey(nearbyChestLocation);
     const chestData = protectedChests[chestKey];
 
     if (chestData) {
-      message += translate(player, 'protected') + '\n';
-      message += `${translate(player, 'owner')}${chestData.owner}\n`;
+      message += translate(player, 'command.chest.protected') + '\n';
+      message += `${translate(player, 'command.chest.owner')}${chestData.owner}\n`;
       if (chestData.members && chestData.members.length > 0) {
-        message += `${translate(player, 'members')}${chestData.members.join(', ')}\n`;
+        message += `${translate(player, 'command.chest.members')}${chestData.members.join(', ')}\n`;
       }
 
       const adjacentChest = findAdjacentChest(nearbyChestLocation);
-      message += `${translate(player, 'large_chest')}${adjacentChest.isLargeChest ? translate(player, 'yes') : translate(player, 'no')}\n`;
+      message += `${translate(player, 'command.chest.large_chest')}${adjacentChest.isLargeChest ? translate(player, 'yes') : translate(player, 'no')}\n`;
     } else {
       const adjacentChest = findAdjacentChest(nearbyChestLocation);
-      message += `${translate(player, 'large_chest')}${adjacentChest.isLargeChest ? translate(player, 'yes') : translate(player, 'no')}\n`;
-      message += translate(player, 'not_protected') + '\n';
+      message += `${translate(player, 'command.chest.large_chest')}${adjacentChest.isLargeChest ? translate(player, 'yes') : translate(player, 'no')}\n`;
+      message += translate(player, 'command.chest.not_protected') + '\n';
     }
     player.sendMessage(message);
   } else {
-    player.sendMessage(translate(player, 'notFound_chest'));
+    player.sendMessage(translate(player, 'command.chest.notFound_chest'));
   }
 }
 
@@ -165,7 +165,7 @@ function protectChest(player: Player, lockState: boolean) {
     const adjacentChest = findAdjacentChest(nearbyChestLocation);
     let chestLocations: { [key: string]: string } = {};
     if (countProtectedChestsByOwner(playerName) >= MAX_CHESTS_PER_PLAYER) {
-      player.sendMessage(translate(player, 'MaxChestLimitReached', { limit: `${MAX_CHESTS_PER_PLAYER}` }));
+      player.sendMessage(translate(player, 'command.chest.MaxChestLimitReached', { limit: `${MAX_CHESTS_PER_PLAYER}` }));
       return;
     }
 
@@ -202,15 +202,15 @@ function protectChest(player: Player, lockState: boolean) {
 
     saveProtectedChests();
     player.sendMessage(
-      translate(player, `chest_lookstate`, {
+      translate(player, `command.chest.chest_lookstate`, {
         lcokstate: `§a(${lockState ? 'locked' : 'unlocked'} !!)`,
       }),
     );
     player.sendMessage(
-      translate(player, `chestLocksCount`, { protectChest: `${countProtectedChestsByOwner(player.name)}` }),
+      translate(player, `command.chest.chestLocksCount`, { protectChest: `${countProtectedChestsByOwner(player.name)}` }),
     );
   } else {
-    player.sendMessage(translate(player, 'notFound_chest'));
+    player.sendMessage(translate(player, 'command.chest.notFound_chest'));
   }
 }
 
@@ -251,7 +251,7 @@ export function showProtectedChestData(player: Player) {
 export function resetProtectedChests(player: Player) {
   protectedChests = {};
   saveProtectedChests();
-  player.sendMessage(translate(player, 'chest_removeData'));
+  player.sendMessage(translate(player, 'command.chest.chest_removeData'));
 }
 
 // イベントリスナー：チェストへのアクセスを制御
@@ -313,7 +313,7 @@ system.run(() => {
 
             saveProtectedChests();
             if (existingData.owner !== eventData.player.name && !existingData.members.includes(eventData.player.name)) {
-              eventData.player.sendMessage(translate(eventData.player, 'command_chest_ContributedToChest'));
+              eventData.player.sendMessage(translate(eventData.player, 'command.chest.ContributedToChest'));
             }
           } else {
           }
@@ -370,7 +370,7 @@ function handlePistonUse(eventData: PlayerPlaceBlockBeforeEvent) {
     // オーナーではない場合のみキャンセル
     if (!isOwner) {
       eventData.cancel = true;
-      player.sendMessage(translate(player, 'cannotPlaceItem'));
+      player.sendMessage(translate(player, 'command.chest.cannotPlaceItem'));
     }
   }
 }
@@ -454,7 +454,7 @@ function handleChestInteraction(event: any) {
         !event.player.hasTag('staff')
       ) {
         event.cancel = true;
-        event.player.sendMessage(translate(event.player, 'isLookChest', { owner: chestData.owner }));
+        event.player.sendMessage(translate(event.player, 'command.chest.isLookChest', { owner: chestData.owner }));
       }
     }
   }
@@ -480,10 +480,10 @@ function handleChestBreak(event: any) {
           delete protectedChests[locationKey];
         }
         saveProtectedChests();
-        player.sendMessage(translate(player, 'ProChestBreak'));
+        player.sendMessage(translate(player, 'command.chest.ProChestBreak'));
       } else {
         event.cancel = true;
-        player.sendMessage(translate(player, 'isProChest'));
+        player.sendMessage(translate(player, 'command.chest.isProChest'));
       }
     } else {
       event.cancel = true;
@@ -512,7 +512,7 @@ function handleExplosion(eventData: any) {
         if (source && source.typeId === 'minecraft:player') {
           // プレイヤーが原因の場合
           const player = source as Player;
-          player.sendMessage(translate(player, 'ExplosionWarning')); // 警告メッセージを送信
+          player.sendMessage(translate(player, 'command.chest.ExplosionWarning')); // 警告メッセージを送信
         }
       }
     }
@@ -596,13 +596,13 @@ function toggleChestProtection(player: Player, state: string) {
       chestData.isLocked = newLockState;
       saveProtectedChests();
       player.sendMessage(
-        translate(player, 'lockChange', { lock: `${newLockState ? 'locked' : 'unlocked'}` }),
+        translate(player, 'command.chest.lockChange', { lock: `${newLockState ? 'locked' : 'unlocked'}` }),
       );
     } else {
-      player.sendMessage(translate(player, 'NotChest'));
+      player.sendMessage(translate(player, 'command.chest.NotChest'));
     }
   } else {
-    player.sendMessage(translate(player, 'notFound_chest'));
+    player.sendMessage(translate(player, 'command.chest.notFound_chest'));
   }
 }
 
@@ -622,33 +622,32 @@ function addMember(player: Player, memberName: string) {
           chestData.members.push(memberName);
           saveProtectedChests();
           player.sendMessage(
-            translate(player, 'AddM', {
+            translate(player, 'command.chest.AddM', {
               member: `${memberName}`,
               chestLocation: `${nearbyChestLocation.x}, ${nearbyChestLocation.y}, ${nearbyChestLocation.z}`,
             }),
           );
 
           // 追加されたプレイヤーに通知
-          translate(
-            player,
-            'addYouM',
+          targetPlayer.sendMessage(translate(
+            targetPlayer,
+            'command.chest.addYouM',
             {
               playerName: player.name,
               chestLocation: `${nearbyChestLocation.x}, ${nearbyChestLocation.y}, ${nearbyChestLocation.z}`,
             },
-            targetPlayer,
-          );
+          ));
         } else {
-          player.sendMessage(translate(player, 'PlayerNotFound'));
+          player.sendMessage(translate(player, 'server.PlayerNotFound'));
         }
       } else {
-        player.sendMessage(translate(player, 'MAlreday', { member: `${memberName}` }));
+        player.sendMessage(translate(player, 'command.chest.MAlreday', { member: `${memberName}` }));
       }
     } else {
-      player.sendMessage(translate(player, 'NotChest'));
+      player.sendMessage(translate(player, 'command.chest.NotChest'));
     }
   } else {
-    player.sendMessage(translate(player, 'notFound_chest'));
+    player.sendMessage(translate(player, 'command.chest.notFound_chest'));
   }
 }
 
@@ -666,11 +665,11 @@ function removeMember(player: Player, memberName: string) {
       if (memberIndex !== -1) {
         chestData.members.splice(memberIndex, 1);
         saveProtectedChests();
-        player.sendMessage(translate(player, 'RemoveM', { member: `${memberName}` }));
+        player.sendMessage(translate(player, 'command.chest.RemoveM', { member: `${memberName}` }));
 
         translate(
           player,
-          'RemoveYouM',
+          'command.chest.RemoveYouM',
           {
             playerName: player.name,
             chestLocation: `${nearbyChestLocation.x}, ${nearbyChestLocation.y}, ${nearbyChestLocation.z}`,
@@ -679,13 +678,13 @@ function removeMember(player: Player, memberName: string) {
         );
       } else {
         player.sendMessage(`§c${memberName}`);
-        player.sendMessage(translate(player, 'NotM'));
+        player.sendMessage(translate(player, 'command.chest.NotM'));
       }
     } else {
-      player.sendMessage(translate(player, 'NotChest'));
+      player.sendMessage(translate(player, 'command.chest.NotChest'));
     }
   } else {
-    player.sendMessage(translate(player, 'notFound_chest'));
+    player.sendMessage(translate(player, 'command.chest.notFound_chest'));
   }
 }
 
@@ -699,16 +698,16 @@ function listMembers(player: Player) {
 
     if (chestData && chestData.owner === player.name) {
       if (chestData.members.length > 0) {
-        player.sendMessage(translate(player, 'allM'));
+        player.sendMessage(translate(player, 'command.chest.allM'));
         player.sendMessage(`§e${chestData.members.join(', ')}`);
       } else {
-        player.sendMessage(translate(player, 'NotFoundM'));
+        player.sendMessage(translate(player, 'command.chest.NotFoundM'));
       }
     } else {
-      player.sendMessage(translate(player, 'NotChest'));
+      player.sendMessage(translate(player, 'command.chest.NotChest'));
     }
   } else {
-    player.sendMessage(translate(player, 'notFound_chest'));
+    player.sendMessage(translate(player, 'command.chest.notFound_chest'));
   }
 }
 

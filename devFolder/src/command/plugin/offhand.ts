@@ -37,7 +37,7 @@ function setOffhandItem(player: Player) {
         const hasEnchantments = enchantableComponent ? enchantableComponent.getEnchantments().length > 0 : false;
 
         if (hasEnchantments) {
-            player.sendMessage(translate(player, "command.NotEnchant"));
+            player.sendMessage(translate(player, "command.offhand.NotEnchant"));
             return;
         }
 
@@ -45,7 +45,7 @@ function setOffhandItem(player: Player) {
         const offhandItem = equipments[4]; // Offhandのアイテムを取得
 
         if (offhandItem) {
-            player.sendMessage(translate(player, "command.alreadyOffhand"));
+            player.sendMessage(translate(player, "command.offhand.alreadyOffhand"));
         } else {
             system.runTimeout(() => {
                 // メインハンドのアイテムの個数と耐久値を取得
@@ -59,7 +59,7 @@ function setOffhandItem(player: Player) {
                 if (inventoryComponent && inventoryComponent.container) {
                     inventoryComponent.container.setItem(player.selectedSlotIndex, undefined);
                 }
-                player.sendMessage(translate(player, "command.OffhandItem"));
+                player.sendMessage(translate(player, "command.offhand.OffhandItem"));
 
                 // アイテムID、耐久値、エンチャント有無を保存
                 offhandData[player.name] = {
@@ -82,7 +82,7 @@ function checkOffhandItem(player: Player) {
     if (offhandData[player.name]) { // プレイヤーのオフハンドアイテムが設定されている場合
         if (!offhandItem || offhandItem.typeId !== offhandData[player.name].typeId) {
             // オフハンドアイテムが消えているか、異なるアイテムになっている場合
-            player.sendMessage(translate(player, "command.RemoveOffhand"));
+            player.sendMessage(translate(player, "command.offhand.RemoveOffhand"));
 
             delete offhandData[player.name]; // データを削除
         }
@@ -192,7 +192,7 @@ registerCommand({
         if (args[0] === '-set') {
             setOffhandItem(player);
         } else {
-            player.sendMessage(translate(player, "command.offhandUsage"));
+            player.sendMessage(translate(player, "command.offhand.offhandUsage"));
         }
     },
 });

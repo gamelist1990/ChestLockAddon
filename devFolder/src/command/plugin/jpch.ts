@@ -689,7 +689,7 @@ world.beforeEvents.chatSend.subscribe((event: any) => {
 
 registerCommand({
   name: 'jpch',
-  description: 'jpch_command_description',
+  description: 'jpch_docs',
   parent: false,
   maxArgs: 1,
   minArgs: 1,

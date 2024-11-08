@@ -47,13 +47,13 @@ function handleBlockBreak(event: any) {
       // 1つ目のブロック破壊処理
       if (!gate.gateArea.firstPos) {
         gate.gateArea.firstPos = { x: event.block.location.x, y: event.block.location.y, z: event.block.location.z };
-        player.sendMessage(translate(player, "TheFirestBlock"));
+        player.sendMessage(translate(player, "command.warp.TheFirestBlock"));
         event.cancel = true;
         return;
       } else {
         // 2つ目のブロック破壊処理
         gate.gateArea.secondPos = { x: event.block.location.x, y: event.block.location.y, z: event.block.location.z };
-        player.sendMessage(translate(player, "TheSecond"));
+        player.sendMessage(translate(player, "command.warp.TheSecond"));
         gate.creatingPlayer = undefined;
         event.cancel = true;
         saveGate();
@@ -66,7 +66,7 @@ function handleBlockBreak(event: any) {
 // サブコマンドの処理関数
 function handleCreate(player: Player, args: string[]) {
   if (args.length !== 5) {
-    player.sendMessage(translate(player, "WarpUsage"));
+    player.sendMessage(translate(player, "command.warp.WarpUsage"));
     return;
   }
 
@@ -76,7 +76,7 @@ function handleCreate(player: Player, args: string[]) {
   const destinationZ = parseInt(args[4], 10);
 
   if (warpGates.some(gate => gate.name === gatename)) {
-    player.sendMessage(translate(player, "AlreadyWarp"));
+    player.sendMessage(translate(player, "command.warp.AlreadyWarp"));
     return;
   }
 
@@ -88,33 +88,33 @@ function handleCreate(player: Player, args: string[]) {
   };
   warpGates.push(newGate);
 
-  player.sendMessage(translate(player, "CreateGate", { gatename: `${gatename}` }));
+  player.sendMessage(translate(player, "command.warp.CreateGate", { gatename: `${gatename}` }));
 }
 
 function handleDelete(player: Player, args: string[]) {
   if (args.length !== 2) {
-    player.sendMessage(translate(player, "Invalid"));
+    player.sendMessage(translate(player, "server.Invalid"));
     return;
   }
 
   const gatename = args[1];
   const gateIndex = warpGates.findIndex((gate) => gate.name === gatename);
   if (gateIndex === -1) {
-    player.sendMessage(translate(player, "NotWarp"));
+    player.sendMessage(translate(player, "command.warp.NotWarp"));
     return;
   }
   warpGates.splice(gateIndex, 1);
-  player.sendMessage(translate(player, "deleteWarp", { gatename: `${gatename}` }));
+  player.sendMessage(translate(player, "command.warp.deleteWarp", { gatename: `${gatename}` }));
   saveGate();
 }
 
 function handleList(player: Player) {
   if (warpGates.length === 0) {
-    player.sendMessage(translate(player, "NotWarpSetting"));
+    player.sendMessage(translate(player, "command.warp.NotWarpSetting"));
     return;
   }
 
-  let message = translate(player, "listGate");
+  let message = translate(player, "command.warp.listGate");
   for (const gate of warpGates) {
     message += `§7- ${gate.name}: (${gate.destination.x}, ${gate.destination.y}, ${gate.destination.z})\n`;
   }
@@ -125,14 +125,14 @@ function handleList(player: Player) {
 // コマンド登録
 registerCommand({
   name: 'warpgate',
-  description: 'warpgateCom',
+  description: 'warpgate_docs',
   parent: false,
   maxArgs: 5,
   minArgs: 1,
   require: (player: Player) => verifier(player, config().commands['warpgate']),
   executor: (player: Player, args: string[]) => {
     if (args.length === 0) {
-      player.sendMessage(translate(player, "Invalid"));
+      player.sendMessage(translate(player, "server.Invalid"));
       return;
     }
 
@@ -154,7 +154,7 @@ registerCommand({
         break;
 
       default:
-        player.sendMessage(translate(player, "UsageGate", { prefix: `${prefix}` }));
+        player.sendMessage(translate(player, "command.warp.UsageGate", { prefix: `${prefix}` }));
         break;
     }
   },
@@ -184,7 +184,7 @@ function checkGateEntry(player: Player) {
       playerZ >= minZ && playerZ <= maxZ
     ) {
       player.teleport(gate.destination);
-      player.sendMessage(translate(player, "TPGATE", { gate: `${gate.name}` }));
+      player.sendMessage(translate(player, "command.warp.TPGATE", { gate: `${gate.name}` }));
       // 重複テレポートを防ぐために break;
       break;
     }

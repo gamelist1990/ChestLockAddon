@@ -6,13 +6,13 @@ import { translate } from '../langs/list/LanguageManager';
 
 registerCommand({
   name: 'ui',
-  description: 'ui_command_description',
+  description: 'ui_docs',
   parent: false,
   maxArgs: 0,
   minArgs: 0,
   require: (player: Player) => verifier(player, config().commands['ui']),
   executor: (player: Player) => {
-    player.sendMessage(translate(player, 'closeChat'));
+    player.sendMessage(translate(player, 'server.closeChat'));
     system.runTimeout(() => {
       showBasicUI(player);
     }, 0);

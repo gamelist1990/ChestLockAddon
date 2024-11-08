@@ -89,7 +89,7 @@ function removeSpecificLore(item: any, loreText: string, player: Player, targetS
 
 registerCommand({
     name: 'lore',
-    description: 'loreCom',
+    description: 'lore_docs',
     parent: false,
     maxArgs: -1,
     minArgs: 1, // Changed minArgs to 1 to allow for just 'lore -clear'
@@ -97,7 +97,7 @@ registerCommand({
     executor: (player: Player, args: string[]) => {
         // 引数が提供されていない場合のチェックを追加
         if (!args || args.length < 1) { // Changed condition to check for at least 1 argument
-            player.sendMessage(translate(player, "command.UsageLore", { prefix: `${prefix}` }));
+            player.sendMessage(translate(player, "command.lore.UsageLore", { prefix: `${prefix}` }));
             return;
         }
 
@@ -117,7 +117,7 @@ registerCommand({
         }
 
         if (!heldItem) {
-            player.sendMessage(translate(player, "command.takeItem"));
+            player.sendMessage(translate(player, "command.lore.takeItem"));
             return;
         }
 
@@ -125,38 +125,38 @@ registerCommand({
 
         if (subCommand === '-set') {
             if (args.length < 2) { // Check if there's enough arguments for -set
-                player.sendMessage(translate(player, "command.UsageLore", { prefix: `${prefix}` }));
+                player.sendMessage(translate(player, "command.lore.UsageLore", { prefix: `${prefix}` }));
                 return;
             }
             const loreText = args.slice(1).join(' ');
             AddLore(heldItem, loreText, player, targetSlot);
-            player.sendMessage(translate(player, "command.AddLore"));
+            player.sendMessage(translate(player, "command.lore.AddLore"));
         } else if (subCommand === '-remove') {
             if (args.length < 2) { // Check if there's enough arguments for -remove
-                player.sendMessage(translate(player, "command.UsageLore", { prefix: `${prefix}` }));
+                player.sendMessage(translate(player, "command.lore.UsageLore", { prefix: `${prefix}` }));
                 return;
             }
             const loreText = args.slice(1).join(' ');
             removeSpecificLore(heldItem, loreText, player, targetSlot);
             const currentLore = heldItem.getLore() || [];
             if (currentLore.length === heldItem.getLore()?.length) {
-                player.sendMessage(translate(player, "command.NotFoundLore"));
+                player.sendMessage(translate(player, "command.lore.NotFoundLore"));
             } else {
-                player.sendMessage(translate(player, "command.RemoveLore"));
+                player.sendMessage(translate(player, "command.lore.RemoveLore"));
             }
         } else if (subCommand === '-rename') {
             if (args.length < 2) { // Check if there's enough arguments for -rename
-                player.sendMessage(translate(player, "command.UsageLore", { prefix: `${prefix}` }));
+                player.sendMessage(translate(player, "command.lore.UsageLore", { prefix: `${prefix}` }));
                 return;
             }
             const NewName = args.slice(1).join(' ');
             renameItem(heldItem, NewName, player, targetSlot);
-            player.sendMessage(translate(player, "command.ChangeNames"));
+            player.sendMessage(translate(player, "command.lore.ChangeNames"));
         } else if (subCommand === '-clear') {
             RemoveLore(heldItem, player, targetSlot);
-            player.sendMessage(translate(player, "command.RemoveLore"));
+            player.sendMessage(translate(player, "command.lore.RemoveLore"));
         } else {
-            player.sendMessage(translate(player, "command.UsageLore", { prefix: `${prefix}` }));
+            player.sendMessage(translate(player, "command.lore.UsageLore", { prefix: `${prefix}` }));
         }
     },
 });

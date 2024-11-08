@@ -31,7 +31,7 @@ export function loadjoinModules(): void {
 // コマンド登録
 registerCommand({
   name: 'join',
-  description: 'Joincommand',
+  description: 'join_docs',
   parent: false,
   maxArgs: 1,
   minArgs: 0,
@@ -42,11 +42,11 @@ registerCommand({
         joinModules.joinLogEnabled = true;
         savejoinModules();
         loadjoinModules();
-        player.sendMessage(translate(player, "Joinenabled"));
+        player.sendMessage(translate(player, "command.join.Joinenabled"));
       } else if (args[0] === '-false') {
         joinModules.joinLogEnabled = false;
         savejoinModules();
-        player.sendMessage(translate(player, "Joindisabled"));
+        player.sendMessage(translate(player, "command.join.Joindisabled"));
       } else if (args[0] === '-settings') {
         system.runTimeout(() => {
           openSettingsUI(player);
@@ -56,10 +56,10 @@ registerCommand({
           showJoinMessage(player);
         }, 60);
       } else {
-        player.sendMessage(translate(player, "Invalid"));
+        player.sendMessage(translate(player, "server.Invalid"));
       }
     } else {
-      player.sendMessage(translate(player, "UsageJoin"));
+      player.sendMessage(translate(player, "command.join.UsageJoin"));
     }
   },
 });
@@ -87,15 +87,15 @@ world.afterEvents.playerSpawn.subscribe((event: any) => {
 
 // 参加メッセージを表示する関数
 function showJoinMessage(player: Player) {
-  let message = translate(player, "welcome") + ':\n';
+  let message = translate(player, "command.join.welcome") + ':\n';
   joinModules.MessageSettings.forEach(rule => {
     message += `${rule}\n`;
   });
 
   let form = new ActionFormData()
-    .title(translate(player, "Rulejoin"))
+    .title(translate(player, "command.join.Rulejoin"))
     .body(message)
-    .button(translate(player, "yes"));
+    .button(translate(player, "command.chest.yes"));
 
   //@ts-ignore
   form.show(player).then(response => {
@@ -105,8 +105,8 @@ function showJoinMessage(player: Player) {
 // 設定UIを開く関数
 function openSettingsUI(player: Player) {
   let form = new ModalFormData()
-    .title(translate(player, 'joinSettings'))
-    .textField(translate(player, "RulesNumber"), translate(player, "RulesEnter"));
+    .title(translate(player, 'command.join.joinSettings'))
+    .textField(translate(player, "command.join.RulesNumber"), translate(player, "command.join.RulesEnter"));
   //@ts-ignore
   form.show(player).then(response => {
     if (response.canceled) return;
@@ -114,15 +114,15 @@ function openSettingsUI(player: Player) {
     if (response.formValues) {
       const ruleCount = parseInt(response.formValues[0] as string);
       if (isNaN(ruleCount) || ruleCount < 1) {
-        player.sendMessage(translate(player, 'Invalid'));
+        player.sendMessage(translate(player, 'server.Invalid'));
         return;
       }
 
       let ruleForm = new ModalFormData()
-        .title(translate(player, "RuleSettings"));
+        .title(translate(player, "command.join.RuleSettings"));
 
       for (let i = 1; i <= ruleCount; i++) {
-        ruleForm.textField(translate(player, "Rules", { i: `${i}` }), translate(player, "RuleEnter", { i: `${i}` }));
+        ruleForm.textField(translate(player, "command.join.Rules", { i: `${i}` }), translate(player, "command.join.RuleEnter", { i: `${i}` }));
       }
 
       //@ts-ignore
@@ -131,7 +131,7 @@ function openSettingsUI(player: Player) {
 
         if (ruleResponse.formValues) {
           joinModules.MessageSettings = ruleResponse.formValues.filter(value => typeof value === 'string') as string[];
-          player.sendMessage(translate(player, "RuleUpdate"));
+          player.sendMessage(translate(player, "command.join.RuleUpdate"));
           savejoinModules();
         }
       });

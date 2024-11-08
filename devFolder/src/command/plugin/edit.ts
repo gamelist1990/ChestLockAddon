@@ -40,11 +40,11 @@ function handleBlockBreakForSelection(player: Player, blockLocation: any): void 
 
   if (!selection.pos1) {
     selection.pos1 = blockLocation;
-    player.sendMessage(translate(player, "command.FirstPointSet"));
+    player.sendMessage(translate(player, "command.edit.FirstPointSet"));
   } else if (!selection.pos2) {
     selection.pos2 = blockLocation;
-    player.sendMessage(translate(player, "command.SecondPointSet"));
-    player.sendMessage(translate(player, "command.SelectionCompleted"));
+    player.sendMessage(translate(player, "command.edit.SecondPointSet"));
+    player.sendMessage(translate(player, "command.edit.SelectionCompleted"));
     selection.selecting = false;
 
 
@@ -58,7 +58,7 @@ function handleBlockBreakForSingleSelection(player: Player, blockLocation: any):
 
   // 点を設定
   selection.pos1 = blockLocation;
-  player.sendMessage(translate(player, "command.PointSet"));
+  player.sendMessage(translate(player, "command.edit.PointSet"));
   selection.selecting = false; // 範囲選択終了
 
   // 範囲選択完了後に、コマンドで指定された処理を実行
@@ -461,12 +461,12 @@ function executeCommandAfterSelection(player: Player) {
       if (tool === 'walls') {
         if (isValidBlockId(blockId)) {
           createWallsWithUndo(data.pos1, data.pos2, blockId, player);
-          player.sendMessage(translate(player, "command.WallsCreated"));
+          player.sendMessage(translate(player, "command.edit.WallsCreated"));
           system.runTimeout(() => {
             runCommand(player.name, 'edit', ['-start']);
           }, 20);
         } else {
-          player.sendMessage(translate(player, "command.InvalidBlockId"));
+          player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
         }
       } else if (tool === 'outline') {
         if (isValidBlockId(blockId)) {
@@ -477,17 +477,17 @@ function executeCommandAfterSelection(player: Player) {
             runCommand(player.name, 'edit', ['-start']);
           }, 20);
         } else {
-          player.sendMessage(translate(player, "command.InvalidBlockId"));
+          player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
         }
       } else if (tool === 'filledCircle') {
         if (isValidBlockId(blockId)) {
           // filledCircleRadius が設定されている場合はそれを使用、そうでなければデフォルト値 5 を使用
           const radius = toolData.filledCircleRadius || 5; // playerDataTool から半径を取得
           createFilledCircleWithUndo(data.pos1, radius, blockId, player);
-          player.sendMessage(translate(player, "FilledCircleCreated"));
+          player.sendMessage(translate(player, "command.edit.FilledCircleCreated"));
           runCommand(player.name, 'edit', ['-start']);
         } else {
-          player.sendMessage(translate(player, "command.InvalidBlockId"));
+          player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
         }
       } else if (tool === 'smooth') {
         if (isValidBlockId(blockId)) {
@@ -498,7 +498,7 @@ function executeCommandAfterSelection(player: Player) {
             runCommand(player.name, 'edit', ['-start']);
           }, 20);
         } else {
-          player.sendMessage(translate(player, "command.InvalidBlockId"));
+          player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
         }
       }
 
@@ -511,9 +511,9 @@ function executeCommandAfterSelection(player: Player) {
 
       if (isValidBlockId(blockId)) {
         fillBlocksWithUndo(data.pos1, data.pos2, blockId, player);
-        player.sendMessage(translate(player, "RangeSet", { blockId: blockId }));
+        player.sendMessage(translate(player, "command.RangeSet", { blockId: blockId }));
       } else {
-        player.sendMessage(translate(player, "command.InvalidBlockId"));
+        player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
       }
 
       // -set を使用した場合はプレイヤーデータを削除
@@ -560,9 +560,9 @@ function executeCommandAfterSelection(player: Player) {
       if (isValidBlockId(blockId)) {
         data.commandArgs = args;
         data.selecting = true;
-        player.sendMessage(translate(player, "StartRangeSelection2"));
+        player.sendMessage(translate(player, "command.edit.StartRangeSelection2"));
       } else {
-        player.sendMessage(translate(player, "command.InvalidBlockId"));
+        player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
       }
     } else if (args[0] === '-outline' && args.length === 3 && !isNaN(parseInt(args[1]))) { // outline コマンドを追加
       const radius = parseInt(args[1]);
@@ -571,9 +571,9 @@ function executeCommandAfterSelection(player: Player) {
         playerDataTool[player.name] = { tool: 'outline', blockId, outlineRadius: radius };
         data.commandArgs = args;
         data.selecting = true;
-        player.sendMessage(translate(player, "StartRangeSelection"));
+        player.sendMessage(translate(player, "command.edit.StartRangeSelection"));
       } else {
-        player.sendMessage(translate(player, "command.InvalidBlockId"));
+        player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
       }
     } else if (args[0] === '-filledCircle' && args.length === 3 && !isNaN(parseInt(args[1]))) { // filledCircle コマンドを追加
       const radius = parseInt(args[1]);
@@ -582,9 +582,9 @@ function executeCommandAfterSelection(player: Player) {
         playerDataTool[player.name] = { tool: 'filledCircle', blockId, filledCircleRadius: radius };
         data.commandArgs = args;
         data.selecting = true;
-        player.sendMessage(translate(player, "StartRangeSelection"));
+        player.sendMessage(translate(player, "command.edit.StartRangeSelection"));
       } else {
-        player.sendMessage(translate(player, "command.InvalidBlockId"));
+        player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
       }
     } else if (args[0] === '-smooth' && args.length === 3 && !isNaN(parseInt(args[1]))) { // smooth コマンドを追加
       const radius = parseInt(args[1]);
@@ -593,14 +593,14 @@ function executeCommandAfterSelection(player: Player) {
         playerDataTool[player.name] = { tool: 'smooth', blockId, smoothRadius: radius };
         data.commandArgs = args;
         data.selecting = true;
-        player.sendMessage(translate(player, "StartRangeSelection"));
+        player.sendMessage(translate(player, "command.edit.StartRangeSelection"));
       } else {
-        player.sendMessage(translate(player, "command.InvalidBlockId"));
+        player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
       }
 
     } else {
       // 不正な引数の場合はエラーメッセージを表示
-      player.sendMessage(translate(player, "InvalidCommandUsage", { prefix: `${prefix}` }));
+      player.sendMessage(translate(player, "command.edit.InvalidCommandUsage", { prefix: `${prefix}` }));
     }
 
     // プレイヤーデータ自体は削除しない (ツール使用時のみ削除)
@@ -611,7 +611,7 @@ function executeCommandAfterSelection(player: Player) {
 // コマンド登録
 registerCommand({
   name: 'edit',
-  description: 'editCom',
+  description: 'edit_docs',
   parent: false,
   maxArgs: 3, // 最大引数を3に増やす
   minArgs: 1,
@@ -631,7 +631,7 @@ registerCommand({
           playerDataTool[player.name] = { tool: 'walls', blockId };
           player.sendMessage(translate(player, "WallsToolSelected", { blockId: `${blockId}` }));
         } else {
-          player.sendMessage(translate(player, "command.InvalidBlockId"));
+          player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
         }
       } else if (args[1] === '-outline' && args.length === 4 && !isNaN(parseInt(args[2]))) {
         // outline ツールで半径とブロックIDを指定
@@ -641,7 +641,7 @@ registerCommand({
           playerDataTool[player.name] = { tool: 'outline', blockId, outlineRadius: radius }; // playerDataTool に半径を保存
           player.sendMessage(translate(player, "OutlineToolSelected", { radius: `${radius}`, blockId: `${blockId}` }));
         } else {
-          player.sendMessage(translate(player, "command.InvalidBlockId"));
+          player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
         }
       } else if (args[1] === '-filledCircle' && args.length === 4 && !isNaN(parseInt(args[2]))) {
         // filledCircle ツールで半径とブロックIDを指定
@@ -651,7 +651,7 @@ registerCommand({
           playerDataTool[player.name] = { tool: 'filledCircle', blockId, filledCircleRadius: radius }; // playerDataTool に半径を保存
           player.sendMessage(translate(player, "FilledCircleToolSelected", { radius: `${radius}`, blockId: `${blockId}` }));
         } else {
-          player.sendMessage(translate(player, "command.InvalidBlockId"));
+          player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
         }
       } else if (args[1] === '-smooth' && args.length === 4 && !isNaN(parseInt(args[2]))) {
         // outline ツールで半径とブロックIDを指定
@@ -661,14 +661,14 @@ registerCommand({
           playerDataTool[player.name] = { tool: 'smooth', blockId, smoothRadius: radius }; // playerDataTool に半径を保存
           player.sendMessage(translate(player, "OutlineToolSelected", { radius: `${radius}`, blockId: `${blockId}` }));
         } else {
-          player.sendMessage(translate(player, "command.InvalidBlockId"));
+          player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
         }
       } else if (args[1] === '-exit') {
         // ツールを終了
         delete playerDataTool[player.name];
-        player.sendMessage(translate(player, "ToolExited"));
+        player.sendMessage(translate(player, "command.edit.ToolExited"));
       } else {
-        player.sendMessage(translate(player, "ToolOptions"));
+        player.sendMessage(translate(player, "command.edit.toolOptions"));
       }
 
     } else if (args[0] === '-set' && args.length === 2) {
@@ -676,18 +676,18 @@ registerCommand({
       // 範囲選択を開始
       data.commandArgs = args; // コマンド引数を保存
       data.selecting = true;
-      player.sendMessage(translate(player, "StartRangeSelection2"));
+      player.sendMessage(translate(player, "command.edit.StartRangeSelection2"));
 
     } else if (args[0] === '-clear') {
       // -clear コマンド
       // 範囲選択を開始
       data.commandArgs = args; // コマンド引数を保存
       data.selecting = true;
-      player.sendMessage(translate(player, "StartRangeSelection2"));
+      player.sendMessage(translate(player, "command.edit.StartRangeSelection2"));
 
     } else if (args[0] === '-start') { // !edit -start コマンドの処理を追加
       data.selecting = true;
-      player.sendMessage(translate(player, "StartRangeSelection"));
+      player.sendMessage(translate(player, "command.edit.StartRangeSelection"));
 
     } else if (args[0] === '-undo') {
       // -undo コマンドの処理
@@ -698,15 +698,15 @@ registerCommand({
           lastAction.originalBlocks.forEach(blockData => {
             setBlockData(blockData);
           });
-          player.sendMessage(translate(player, "command.Undone"));
+          player.sendMessage(translate(player, "command.edit.Undone"));
         }
       } else {
-        player.sendMessage(translate(player, "command.NothingToUndo"));
+        player.sendMessage(translate(player, "command.edit.NothingToUndo"));
       }
 
     } else {
       // 不正な引数の場合はエラーメッセージを表示
-      player.sendMessage(translate(player, "InvalidCommandUsage", { prefix: `${prefix}` }));
+      player.sendMessage(translate(player, "command.edit.InvalidCommandUsage", { prefix: `${prefix}` }));
     }
   },
 });

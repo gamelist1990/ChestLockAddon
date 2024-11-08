@@ -6,13 +6,13 @@ import { ver } from '../Modules/version';
 
 registerCommand({
     name: 'about',
-    description: 'aboutCom',
+    description: 'about_docs',
     parent: false,
     maxArgs: 0,
     minArgs: 0,
     require: (player: Player) => verifier(player, config().commands['about']),
     executor: (player: Player) => {
-        player.sendMessage(translate(player, 'command.about'));
-        player.sendMessage(translate(player, 'ServerVersion', { version: `${ver}` }));
+        player.sendMessage(translate(player, 'command.about.about'));
+        player.sendMessage(translate(player, 'server.ServerVersion', { version: `${ver}` }));
     },
 });

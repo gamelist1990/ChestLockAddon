@@ -86,7 +86,7 @@ function startTrackingPlayer(player: Player, targetPlayer: Player) {
 
         // 対象プレイヤーが存在しない場合の処理
         if (!targetPlayer || !targetPlayer.isValid()) {
-            player.sendMessage(translate(player, "PlayerNotFound"));
+            player.sendMessage(translate(player, "server.PlayerNotFound"));
             restorePlayerLocation(player);
             stopTrackingPlayer(player);
             activeFreecamPlayers.delete(player.name);
@@ -125,27 +125,27 @@ function warnPlayer(player: Player, targetPlayer: Player, reason: string, kickFl
     playerWarnings.set(targetPlayer.name, warnings);
 
     //targetPlayer.sendMessage(`You have been warned. Reason: ${reason}. Total warnings: ${warnings.count}`);
-    translate(player, "command.WarnTarget", { reason: `${reason}`, warnings: `${warnings.count}` }, targetPlayer);
-    player.sendMessage(translate(player, "command.WarnPlayer", { target: `${targetPlayer.name}`, warnings: `${warnings.count}`, reason: `${reason}` }));
+    translate(player, "command.warn.WarnTarget", { reason: `${reason}`, warnings: `${warnings.count}` }, targetPlayer);
+    player.sendMessage(translate(player, "command.warn.WarnPlayer", { target: `${targetPlayer.name}`, warnings: `${warnings.count}`, reason: `${reason}` }));
     notifyStaff(player.name, targetPlayer.name);
 
     if (kickFlag) {
         kick(targetPlayer, `§cYou have been kicked for receiving §e${warnings.count} warnings. Reasons: §b${warnings.reasons.join(', ')}
 `, player.name);
-        player.sendMessage(translate(player, "command.WarnKickMes", { target: `${targetPlayer.name}`, warnings: `${warnings.count}` }))
+        player.sendMessage(translate(player, "command.warn.WarnKickMes", { target: `${targetPlayer.name}`, warnings: `${warnings.count}` }))
         playerWarnings.delete(targetPlayer.name);
     }
 
     if (warnings.count >= 3) {
         tempkick(targetPlayer);
-        player.sendMessage(translate(player, "command.WarnKickMes", { target: `${targetPlayer.name}`, warnings: `${warnings.count}` }))
+        player.sendMessage(translate(player, "command.warn.WarnKickMes", { target: `${targetPlayer.name}`, warnings: `${warnings.count}` }))
         playerWarnings.delete(targetPlayer.name);
     }
 }
 
 registerCommand({
     name: 'staff',
-    description: 'staff_command_description',
+    description: 'staff_docs',
     parent: false,
     maxArgs: 100,
     minArgs: 1,
@@ -155,7 +155,7 @@ registerCommand({
         const option = args[1];
 
         if (subCommand === 'freecam' && activeFreecamPlayers.has(player.name) && option !== '-exit') {
-            player.sendMessage(translate(player, "command.NoFreecam"));
+            player.sendMessage(translate(player, "command.staff.NoFreecam"));
             return;
         }
 
@@ -166,7 +166,7 @@ registerCommand({
             }
         } else if (subCommand === 'report') {
             if (option === '-check') {
-                player.sendMessage(translate(player, "closeChat"));
+                player.sendMessage(translate(player, "server.closeChat"));
                 system.runTimeout(() => {
                     checkReports(player);
                 }, 60);
@@ -183,7 +183,7 @@ registerCommand({
                     setPlayerToSpectator(player);
                     activeFreecamPlayers.add(player.name);
                 } else {
-                    player.sendMessage(translate(player, "commands.list.playerNotFound", { targetPlayer: `${targetName}` }));
+                    player.sendMessage(translate(player, "commands.list.PlayerNotFound", { targetPlayer: `${targetName}` }));
                 }
             } else if (option === '-s') {
                 savePlayerLocation(player);
@@ -207,7 +207,7 @@ registerCommand({
                     startTrackingPlayer(player, targetPlayer);
                     activeFreecamPlayers.add(player.name);
                 } else {
-                    player.sendMessage(translate(player, "commands.list.playerNotFound", { targetPlayer: `${targetName}` }));
+                    player.sendMessage(translate(player, "commands.list.PlayerNotFound", { targetPlayer: `${targetName}` }));
                 }
             }
         } else if (subCommand === 'warn') {
@@ -220,7 +220,7 @@ registerCommand({
                 if (targetPlayer) {
                     warnPlayer(player, targetPlayer, reason, kickFlag);
                 } else {
-                    player.sendMessage(translate(player, "commands.list.playerNotFound", { targetPlayer: `${targetName}` }));
+                    player.sendMessage(translate(player, "commands.list.PlayerNotFound", { targetPlayer: `${targetName}` }));
                 }
             }
         } else {

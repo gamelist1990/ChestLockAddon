@@ -43,7 +43,7 @@ registerCommand({
           }, 1)
         }
       } else {
-        player.sendMessage(translate(player, "PlayerNotFound"))
+        player.sendMessage(translate(player, "server.PlayerNotFound"))
       } 
     } else if(subCommand === 'admin') {
       test(player);

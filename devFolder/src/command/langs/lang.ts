@@ -13,7 +13,7 @@ registerCommand({
   executor: (player: Player, args: string[]) => {
     if (args[0] === 'list') {
       const languages = getAvailableLanguages();
-      let message = translate(player, 'lang_list');
+      let message = translate(player, 'command.lang.lang_list');
       languages.forEach((lang: string) => {
         message += `§b${lang}\n`;
       });
@@ -21,13 +21,13 @@ registerCommand({
     } else if (args[0] === 'change' && args[1]) {
       const success = changeLanguage(player, args[1]);
       if (success) {
-        player.sendMessage(translate(player, 'lang_change', { language: `${args[1]}` }));
+        player.sendMessage(translate(player, 'command.lang.lang_change', { language: `${args[1]}` }));
       } else {
-        player.sendMessage(translate(player, 'lang_failed'));
+        player.sendMessage(translate(player, 'command.lang.lang_failed'));
         player.sendMessage(`§c${args[1]}`);
       }
     } else {
-      player.sendMessage(translate(player, 'lang_invalid'));
+      player.sendMessage(translate(player, 'command.lang.lang_invalid'));
     }
   },
 });

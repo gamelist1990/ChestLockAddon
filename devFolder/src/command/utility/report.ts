@@ -34,7 +34,7 @@ function submitReport(player: Player, reportedPlayerName: string, reason: string
     if (reportedPlayerName !== 'testPlayer') {
         const targetPlayer = isPlayer(reportedPlayerName);
         if (!targetPlayer) {
-            player.sendMessage(translate(player, 'command.reportNotPlayer'))
+            player.sendMessage(translate(player, 'command.report.reportNotPlayer'))
             return;
         }
     }
@@ -46,7 +46,7 @@ function submitReport(player: Player, reportedPlayerName: string, reason: string
         timestamp: Date.now(),
     });
 
-    player.sendMessage(translate(player, 'command.reportSubmit'))
+    player.sendMessage(translate(player, 'command.report.reportSubmit'))
     saveData('reports', reports); 
 
     // staffに通知
@@ -78,13 +78,13 @@ export function notifyStaff(reporter: string, reportedPlayer: string) {
     world.getPlayers()
         .filter((p) => p.hasTag('op') || p.hasTag('staff'))
         .forEach((staff) => {
-            staff.sendMessage(translate(staff, "command.newReport", { reporter: `${reporter}`, reportedPlayer: `${reportedPlayer}` }))
+            staff.sendMessage(translate(staff, "command.report.newReport", { reporter: `${reporter}`, reportedPlayer: `${reportedPlayer}` }))
         });
 }
 
 export function checkReports(player: Player) {
     if (reports.length === 0) {
-        player.sendMessage(translate(player, "command.NotReport"))
+        player.sendMessage(translate(player, "command.report.NotReport"))
         return;
     }
 
@@ -173,7 +173,7 @@ export function checkReports(player: Player) {
 
 registerCommand({
     name: 'report',
-    description: 'report_command_description',
+    description: 'report_docs',
     parent: false,
     maxArgs: 100,
     minArgs: 3,

@@ -10,7 +10,7 @@ export function showBasicUI(player: Player): Promise<void> {
   player.playSound('mob.chicken.plop');
   const form = new ActionFormData()
     .title('Main Menu')
-    .body(translate(player, 'ChooseCom'));
+    .body(translate(player, 'ui.ChooseCom'));
 
   // ボタンの内容を条件分岐で変更
   if (player.hasTag("staff") || player.hasTag("op")) {
@@ -38,7 +38,7 @@ export function showBasicUI(player: Player): Promise<void> {
 
       let selection: number = response.selection !== undefined ? response.selection : -1;
 
-   
+
 
       switch (selection) {
         case 0:
@@ -69,8 +69,8 @@ export function showBasicUI(player: Player): Promise<void> {
       }
     })
     .catch((error: Error) => {
-      console.error(translate(player, 'FromError'), error);
-      player.sendMessage(translate(player, 'FromError') + error.message);
+      console.error(translate(player, 'ui.FromError'), error);
+      player.sendMessage(translate(player, 'ui.FromError') + error.message);
     });
 }
 
@@ -79,9 +79,9 @@ function showStaffUI(player: Player): Promise<void> {
   // スタッフUIの内容を定義
   const staffForm = new ActionFormData()
     .title('Staff Menu')
-    .button(translate(player,"ui.checkReports"))
+    .button(translate(player, "ui.checkReports"))
     .button(translate(player, "ui.warnmenu"))
-    .button(translate(player,"back"));
+    .button(translate(player, "back"));
 
   return staffForm
     //@ts-ignore
@@ -96,7 +96,7 @@ function showStaffUI(player: Player): Promise<void> {
           checkReports(player);
           break;
         case 1:
-          showWarnMainMenu(player); 
+          showWarnMainMenu(player);
           break;
         case 2:
           showBasicUI(player);
@@ -134,8 +134,8 @@ function showWarnMainMenu(player: Player): Promise<void> {
         }
       })
       .catch((error: Error) => {
-        console.error(translate(player, 'FromError'), error);
-        player.sendMessage(translate(player, 'FromError') + error.message);
+        console.error(translate(player, 'ui.FromError'), error);
+        player.sendMessage(translate(player, 'ui.FromError') + error.message);
       })
   );
 }
@@ -186,8 +186,8 @@ function showkick(player: Player): Promise<void> {
         }
       })
       .catch((error: Error) => {
-        console.error(translate(player, 'FromError'), error);
-        player.sendMessage(translate(player, 'FromError') + error.message);
+        console.error(translate(player, 'ui.FromError'), error);
+        player.sendMessage(translate(player, 'ui.FromError') + error.message);
       })
   );
 }
@@ -230,7 +230,7 @@ function showWarnMenu(player: Player): Promise<void> {
               if (modalResponse.canceled || modalResponse.formValues === undefined) return;
 
               const reason = modalResponse.formValues[0] as string;
-              runCommand(player.name, 'staff', ['warn','-p',targetPlayerName, '-r', reason]);
+              runCommand(player.name, 'staff', ['warn', '-p', targetPlayerName, '-r', reason]);
             });
           } else if (response.selection === playerNames.length) {
             showWarnMainMenu(player);
@@ -239,8 +239,8 @@ function showWarnMenu(player: Player): Promise<void> {
         }
       })
       .catch((error: Error) => {
-        console.error(translate(player, 'FromError'), error);
-        player.sendMessage(translate(player, 'FromError') + error.message);
+        console.error(translate(player, 'ui.FromError'), error);
+        player.sendMessage(translate(player, 'ui.FromError') + error.message);
       })
   );
 }
@@ -250,10 +250,10 @@ function showChestMenu(player: Player): Promise<void> {
   player.playSound('mob.chicken.plop');
   const form = new ActionFormData()
     .title('Chest Menu')
-    .body(translate(player, 'ChestCom'))
-    .button(translate(player, 'Chestinfo'))
-    .button(translate(player, 'Chestlock'))
-    .button(translate(player, 'ChestMember'))
+    .body(translate(player, 'ui.ChestCom'))
+    .button(translate(player, 'ui.Chestinfo'))
+    .button(translate(player, 'ui.Chestlock'))
+    .button(translate(player, 'ui.ChestMember'))
     .button(translate(player, 'back'));
 
   return form
@@ -279,8 +279,8 @@ function showChestMenu(player: Player): Promise<void> {
       }
     })
     .catch((error: Error) => {
-      console.error(translate(player, 'FromError'), error);
-      player.sendMessage(translate(player, 'FromError') + error.message);
+      console.error(translate(player, 'ui.FromError'), error);
+      player.sendMessage(translate(player, 'ui.FromError') + error.message);
     });
 }
 
@@ -288,10 +288,10 @@ function showLockMenu(player: Player): Promise<void> {
   player.playSound('mob.chicken.plop');
   const form = new ActionFormData()
     .title('Lock Menu')
-    .body(translate(player, 'lockinfo'))
-    .button(translate(player, 'locking'))
-    .button(translate(player, 'unlocking'))
-    .button(translate(player, 'ProtectChest'))
+    .body(translate(player, 'ui.lockinfo'))
+    .button(translate(player, 'ui.locking'))
+    .button(translate(player, 'ui.unlocking'))
+    .button(translate(player, 'ui.ProtectChest'))
     .button(translate(player, 'back'));
 
   return form
@@ -317,8 +317,8 @@ function showLockMenu(player: Player): Promise<void> {
       }
     })
     .catch((error: Error) => {
-      console.error(translate(player, 'FromError'), error);
-      player.sendMessage(translate(player, 'FromError') + error.message);
+      console.error(translate(player, 'ui.FromError'), error);
+      player.sendMessage(translate(player, 'ui.FromError') + error.message);
     });
 }
 
@@ -326,10 +326,10 @@ function showMemberMenu(player: Player): Promise<void> {
   player.playSound('mob.chicken.plop');
   const form = new ActionFormData()
     .title('Member Menu')
-    .body(translate(player, 'MemberChoose'))
-    .button(translate(player, 'MemberAdd'))
-    .button(translate(player, 'MemberRemove'))
-    .button(translate(player, 'Memberall'))
+    .body(translate(player, 'ui.MemberChoose'))
+    .button(translate(player, 'ui.MemberAdd'))
+    .button(translate(player, 'ui.MemberRemove'))
+    .button(translate(player, 'ui.Memberall'))
     .button(translate(player, 'back'));
 
   //@ts-ignore
@@ -356,15 +356,15 @@ function showMemberMenu(player: Player): Promise<void> {
       }
     })
     .catch((error: Error) => {
-      console.error(translate(player, 'FromError'), error);
-      player.sendMessage(translate(player, 'FromError') + error.message);
+      console.error(translate(player, 'ui.FromError'), error);
+      player.sendMessage(translate(player, 'ui.FromError') + error.message);
     });
 }
 
 function showAddMemberMenu(player: Player): Promise<void> {
   player.playSound('mob.chicken.plop');
   const onlinePlayers = player.dimension.getPlayers();
-  const form = new ActionFormData().title('Add Member').body(translate(player, 'AddMemberSelect'));
+  const form = new ActionFormData().title('Add Member').body(translate(player, 'ui.AddMemberSelect'));
 
   onlinePlayers.forEach((p) => {
     form.button(p.name);
@@ -393,8 +393,8 @@ function showAddMemberMenu(player: Player): Promise<void> {
       }
     })
     .catch((error: Error) => {
-      console.error(translate(player, 'FromError'), error);
-      player.sendMessage(translate(player, 'FromError') + error.message);
+      console.error(translate(player, 'ui.FromError'), error);
+      player.sendMessage(translate(player, 'ui.FromError') + error.message);
     });
 }
 
@@ -403,7 +403,7 @@ function showRemoveMemberMenu(player: Player): Promise<void> {
   const onlinePlayers = player.dimension.getPlayers();
   const form = new ActionFormData()
     .title('Remove Member')
-    .body(translate(player, 'RemoveMemberSelect'));
+    .body(translate(player, 'ui.RemoveMemberSelect'));
 
   onlinePlayers.forEach((p) => {
     form.button(p.name);
@@ -432,8 +432,8 @@ function showRemoveMemberMenu(player: Player): Promise<void> {
       }
     })
     .catch((error: Error) => {
-      console.error(translate(player, 'FromError'), error);
-      player.sendMessage(translate(player, 'FromError') + error.message);
+      console.error(translate(player, 'ui.FromError'), error);
+      player.sendMessage(translate(player, 'ui.FromError') + error.message);
     });
 }
 
@@ -441,9 +441,9 @@ function showLangMenu(player: Player): Promise<void> {
   player.playSound('mob.chicken.plop');
   const form = new ActionFormData()
     .title('lang Menu')
-    .body(translate(player, 'SelectLang'))
-    .button(translate(player, 'langList'))
-    .button(translate(player, 'langChange'))
+    .body(translate(player, 'ui.SelectLang'))
+    .button(translate(player, 'ui.langList'))
+    .button(translate(player, 'ui.langChange'))
     .button(translate(player, 'back'));
 
   //@ts-ignore
@@ -467,15 +467,15 @@ function showLangMenu(player: Player): Promise<void> {
       }
     })
     .catch((error: Error) => {
-      console.error(translate(player, 'FromError'), error);
-      player.sendMessage(translate(player, 'FromError') + error.message);
+      console.error(translate(player, 'ui.FromError'), error);
+      player.sendMessage(translate(player, 'ui.FromError') + error.message);
     });
 }
 
 function showChangeLangMenu(player: Player): Promise<void> {
   player.playSound('mob.chicken.plop');
   const availableLanguages = getAvailableLanguages();
-  const form = new ActionFormData().title('Change Language').body(translate(player, 'langChange1'));
+  const form = new ActionFormData().title('Change Language').body(translate(player, 'ui.langChange1'));
 
   availableLanguages.forEach((lang) => {
     form.button(lang);
@@ -504,8 +504,8 @@ function showChangeLangMenu(player: Player): Promise<void> {
       }
     })
     .catch((error: Error) => {
-      console.error(translate(player, 'FromError'), error);
-      player.sendMessage(translate(player, 'FromError') + error.message);
+      console.error(translate(player, 'ui.FromError'), error);
+      player.sendMessage(translate(player, 'ui.FromError') + error.message);
     });
 }
 
@@ -513,9 +513,9 @@ function showjpchMenu(player: Player): Promise<void> {
   player.playSound('mob.chicken.plop');
   const form = new ActionFormData()
     .title('Jpch Menu')
-    .body(translate(player, 'jpchCom'))
-    .button(translate(player, 'jpenable'))
-    .button(translate(player, 'jpdisable'))
+    .body(translate(player, 'ui.jpchCom'))
+    .button(translate(player, 'ui.jpenable'))
+    .button(translate(player, 'ui.jpdisable'))
     .button(translate(player, 'back'));
 
   return form
@@ -538,8 +538,8 @@ function showjpchMenu(player: Player): Promise<void> {
       }
     })
     .catch((error: Error) => {
-      console.error(translate(player, 'FromError'), error);
-      player.sendMessage(translate(player, 'FromError') + error.message);
+      console.error(translate(player, 'ui.FromError'), error);
+      player.sendMessage(translate(player, 'ui.FromError') + error.message);
     });
 }
 
@@ -550,9 +550,9 @@ function showTpaMenu(player: Player): Promise<void> {
 
   const form = new ActionFormData()
     .title('TPA Menu')
-    .body(translate(player, 'TpaRequesMenu', { requestList: `${requests.length}` }))
-    .button(translate(player, 'SendTpa'))
-    .button(translate(player, 'ShowTpaRequests'))
+    .body(translate(player, 'ui.TpaRequesMenu', { requestList: `${requests.length}` }))
+    .button(translate(player, 'ui.SendTpa'))
+    .button(translate(player, 'ui.ShowTpaRequests'))
     .button(translate(player, 'back'));
 
   return (
@@ -572,8 +572,8 @@ function showTpaMenu(player: Player): Promise<void> {
         }
       })
       .catch((error: Error) => {
-        console.error(translate(player, 'FromError'), error);
-        player.sendMessage(translate(player, 'FromError') + error.message);
+        console.error(translate(player, 'ui.FromError'), error);
+        player.sendMessage(translate(player, 'ui.FromError') + error.message);
       })
   );
 }
@@ -618,8 +618,8 @@ function showTpaRequestsMenu(player: Player, requests: string[]): Promise<void> 
         }
       })
       .catch((error: Error) => {
-        console.error(translate(player, 'FromError'), error);
-        player.sendMessage(translate(player, 'FromError') + error.message);
+        console.error(translate(player, 'ui.FromError'), error);
+        player.sendMessage(translate(player, 'ui.FromError') + error.message);
       })
   );
 }
@@ -660,8 +660,8 @@ function showSendTpaMenu(player: Player): Promise<void> {
         }
       })
       .catch((error: Error) => {
-        console.error(translate(player, 'FromError'), error);
-        player.sendMessage(translate(player, 'FromError') + error.message);
+        console.error(translate(player, 'ui.FromError'), error);
+        player.sendMessage(translate(player, 'ui.FromError') + error.message);
       })
   );
 }
@@ -674,10 +674,10 @@ function showloreMenu(player: Player): Promise<void> {
 
   const form = new ActionFormData()
     .title('Lore Menu')
-    .body(translate(player, 'command.loreDocs'))
-    .button(translate(player, 'command.Changelore'))
-    .button(translate(player, 'command.ChangeName'))
-    .button(translate(player, 'command.ClearLore'))
+    .body(translate(player, 'command.ui.loreDocs'))
+    .button(translate(player, 'command.ui.Changelore'))
+    .button(translate(player, 'command.ui.ChangeName'))
+    .button(translate(player, 'command.ui.ClearLore'))
     .button(translate(player, 'back'));
 
   return (
@@ -697,8 +697,8 @@ function showloreMenu(player: Player): Promise<void> {
         }
       })
       .catch((error: Error) => {
-        console.error(translate(player, 'FromError'), error);
-        player.sendMessage(translate(player, 'FromError') + error.message);
+        console.error(translate(player, 'ui.FromError'), error);
+        player.sendMessage(translate(player, 'ui.FromError') + error.message);
       })
   );
 }
@@ -706,7 +706,7 @@ function showloreMenu(player: Player): Promise<void> {
 function showChangelore(player: Player): void {
   const form = new ModalFormData()
     .title('Change Lore')
-    .textField(translate(player, "command.NewLore"), 'New lore');
+    .textField(translate(player, "command.ui.NewLore"), 'New lore');
   //@ts-ignore
   form.show(player).then((response) => {
     if (!response.canceled && response.formValues) {
@@ -719,7 +719,7 @@ function showChangelore(player: Player): void {
 function showChangeName(player: Player): void {
   const form = new ModalFormData()
     .title('Change Name')
-    .textField(translate(player, "command.NewName"), 'New name');
+    .textField(translate(player, "command.ui.NewName"), 'New name');
   //@ts-ignore
   form.show(player).then((response) => {
     if (!response.canceled && response.formValues) {
@@ -730,7 +730,7 @@ function showChangeName(player: Player): void {
 }
 
 function ClearLore(player: Player): void {
-  runCommand(player.name, 'lore', ['-slot', '0', '-clear','a']);
+  runCommand(player.name, 'lore', ['-slot', '0', '-clear', 'a']);
 }
 
 
@@ -764,7 +764,7 @@ function showReportMenu(player: Player): Promise<void> {
             const targetPlayerName = playerNames[response.selection];
             const modal = new ModalFormData()
               .title('Report Reason')
-              .textField(translate(player,"ui.EnterReport"), '');
+              .textField(translate(player, "ui.EnterReport"), '');
 
             //@ts-ignore
             modal.show(player).then((modalResponse) => {
@@ -780,8 +780,8 @@ function showReportMenu(player: Player): Promise<void> {
         }
       })
       .catch((error: Error) => {
-        console.error(translate(player, 'FromError'), error);
-        player.sendMessage(translate(player, 'FromError') + error.message);
+        console.error(translate(player, 'ui.FromError'), error);
+        player.sendMessage(translate(player, 'ui.FromError') + error.message);
       })
   );
 }

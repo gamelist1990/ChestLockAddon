@@ -38,7 +38,7 @@ function addItemToPlayerInventory(player: Player) {
   }
 
   if (container.emptySlotsCount === 0) {
-    return player.sendMessage(translate(player, 'FullInv'));
+    return player.sendMessage(translate(player, 'commnad.item.FullInv'));
   }
 
   const currentItem = container.getItem(player.selectedSlotIndex);
@@ -77,7 +77,7 @@ function addItemToPlayerInventory(player: Player) {
 
 registerCommand({
   name: 'item',
-  description: 'AccesItemUI',
+  description: 'item_docs',
   parent: false,
   maxArgs: 1,
   minArgs: 1,
