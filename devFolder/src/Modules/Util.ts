@@ -164,7 +164,7 @@ export function getAllPlayerNames(currentPlayer: Player): string[] {
   const playerNames: string[] = [];
   for (const player of world.getPlayers()) {
     if (player.name !== currentPlayer.name) {
-      playerNames.push(player.nameTag);
+      playerNames.push(player.name);
     }
   }
   return playerNames;

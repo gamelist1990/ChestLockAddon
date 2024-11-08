@@ -55,6 +55,10 @@
     "msgid": "Send a request and teleport.",
     "msgstr": ""
   },
+  "chest_docs": {
+    "msgid": "Chest Command",
+    "msgstr": ""
+  },
   "ui.ReportButton": {
     "msgid": "§0Report Menu",
     "msgstr": ""
@@ -291,7 +295,7 @@
     "msgid": "§0 Change Language",
     "msgstr": ""
   },
-  "langChange1": {
+  "ui.langChange1": {
     "msgid": "§2 Please select the language you want to change to:",
     "msgstr": ""
   },
@@ -400,6 +404,26 @@
   },
   "server.closeChat": {
     "msgid": "§a == Close The Chat Panel ==",
+    "msgstr": ""
+  },
+  "server.desabledCom": {
+    "msgid": "§c Unregistered or disabled command.",
+    "msgstr": ""
+  },
+  "server.desableComSuggest": {
+    "msgid": "§6 Invalid command. Did you mean: {possibleCommands}? If so, answer {prefix}yes",
+    "msgstr": ""
+  },
+  "server.AllowTagCom": {
+    "msgid": "§c Only players with an authorized tag can use this command.",
+    "msgstr": ""
+  },
+  "server.invalidCom": {
+    "msgid": "§6 Invalid command. Please make sure it is correct. Commands used: {commandName}",
+    "msgstr": ""
+  },
+  "server.unavailable": {
+    "msgid": "§c You do not have permission to do that.",
     "msgstr": ""
   },
   "command.lore.UsageLore": {
@@ -662,47 +686,23 @@
     "msgid": "§c Player not found: §6{tragetplayer}",
     "msgstr": ""
   },
-  "server.desabledCom": {
-    "msgid": "§c Unregistered or disabled command.",
+  "command.lang.lang_list": {
+    "msgid": "§a Available Languages:\n",
     "msgstr": ""
   },
-  "desableComSuggest": {
-    "msgid": "§6 Invalid command. Did you mean: {possibleCommands}? If so, answer {prefix}yes",
-    "msgstr": "§6无效的命令。可能是 {possibleCommands} 命令吗？如果是，请回答 {prefix}yes"
-  },
-  "AllowTagCom": {
-    "msgid": "§c Only players with an authorized tag can use this command.",
-    "msgstr": "§c只有拥有授权标签的玩家才能使用"
-  },
-  "invalidCom": {
-    "msgid": "§6 Invalid command. Please make sure it is correct. Commands used: {commandName}",
-    "msgstr": "§6无效的命令。请确保它是正确的。使用的命令：{commandName}"
-  },
-  "lang_list": {
-    "msgid": "§a Available Languages:\n",
-    "msgstr": "§a可用语言：\n"
-  },
-  "lang_change": {
+  "command.lang.lang_change": {
     "msgid": "§a Language changed to: {language}",
-    "msgstr": "§a语言已更改为"
+    "msgstr": ""
   },
-  "lang_failed": {
+  "command.lang.lang_failed": {
     "msgid": "§c Failed to change language to: {language}",
-    "msgstr": "§c无法更改语言为"
+    "msgstr": ""
   },
-  "lang_invalid": {
+  "command.lang.lang_invalid": {
     "msgid": "§c Invalid command usage. Use /lang list or /lang change <language_code>",
-    "msgstr": "§c无效的命令用法。请使用 lang list 或 lang change <语言代码>"
+    "msgstr": ""
   },
-  "chest_command": {
-    "msgid": "Chest Command",
-    "msgstr": "箱子命令"
-  },
-  "unavailable": {
-    "msgid": "§c You do not have permission to do that.",
-    "msgstr": "§c权限不足"
-  },
-  "chest_help": {
+  "command.chest.chest_help": {
     "msgid": [
       "§c Invalid command.",
       "§a Chest protection command usage:",
@@ -718,21 +718,7 @@
       "  §bAuthor: Koukun        - License AGPL-3.0",
       "  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
     ],
-    "msgstr": [
-      "§c无效的命令。",
-      "§a箱子保护命令使用方式：",
-      "  §bchest lock        - 锁定箱子",
-      "  §bchest info       - 显示最近的箱子信息",
-      "  §bchest unlock      - 解锁箱子",
-      "  §bchest protect <lock/unlock> - 切换箱子保护",
-      "  §bchest add <playername>   - 添加箱子的成员",
-      "  §bchest remove <playername>  - 移除箱子的成员",
-      "  §bchest all        - 显示箱子的成员列表",
-      "  §bchest list        - 显示箱子列表",
-      "  §b_______________________________________",
-      "  §b作者：Koukun        - 许可证 AGPL-3.0",
-      "  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
-    ]
+    "msgstr": ""
   },
   "command.chest.MaxChestLimitReached": {
     "msgid": "§c The installation limit of {limit} has been reached.",
@@ -746,9 +732,9 @@
     "msgid": "§a You have protected {playerChests} chests:",
     "msgstr": "§a你已保护了 {playerChests} 个箱子："
   },
-  "chestlocation": {
+  "command.chest.chestlocation": {
     "msgid": "§e - Location: {key}",
-    "msgstr": "§e- 位置：{key}"
+    "msgstr": ""
   },
   "command.chest.nearby_chest_info": {
     "msgid": "§a ---- Nearby Chest Info ----",
@@ -766,29 +752,29 @@
     "msgid": "§b Z: §e",
     "msgstr": "§bZ: §e"
   },
-  "protected": {
+  "command.chest.protected": {
     "msgid": "§a Protected",
-    "msgstr": "§a已保护"
+    "msgstr": ""
   },
-  "owner": {
+  "command.chest.owner": {
     "msgid": "§b Owner: §e",
-    "msgstr": "§b拥有者：§e"
+    "msgstr": ""
   },
-  "members": {
+  "command.chest.members": {
     "msgid": "§b Members: §e",
-    "msgstr": "§b成员：§e"
+    "msgstr": ""
   },
   "command.chest.large_chest": {
     "msgid": "§b Large Chest: §e",
     "msgstr": "§b大箱子：§e"
   },
-  "yes": {
+  "command.chest.yes": {
     "msgid": "Yes",
-    "msgstr": "是"
+    "msgstr": ""
   },
-  "no": {
+  "command.chest.no": {
     "msgid": "No",
-    "msgstr": "否"
+    "msgstr": ""
   },
   "command.chest.not_protected": {
     "msgid": "§c Not Protected",
@@ -798,14 +784,6 @@
     "msgid": "§c Cannot find chest.",
     "msgstr": "§c找不到箱子"
   },
-  "chestProtectRemove": {
-    "msgid": "§a Chest protection removed.",
-    "msgstr": "§a 箱子保护已移除"
-  },
-  "AlreadyProChest": {
-    "msgid": "§a This chest is already protected.",
-    "msgstr": "§a 此箱子已被保护"
-  },
   "command.chest.chest_lookstate": {
     "msgid": "§a Chest protection: {lcokstate}",
     "msgstr": "§a 箱子已保护"
@@ -814,13 +792,13 @@
     "msgid": "§a All chest protection data has been reset.",
     "msgstr": "§a所有箱子保护数据都已重置。"
   },
-  "command_chest_ContributedToChest": {
+  "command.chest.ContributedToChest": {
     "msgid": "§a Thanks for going out of your way to make it a large chest",
     "msgstr": ""
   },
-  "isLookChest": {
+  "command.chest.isLookChest": {
     "msgid": "§c This chest is locked by {owner}",
-    "msgstr": "§c此箱子已锁定"
+    "msgstr": ""
   },
   "command.chest.isProChest": {
     "msgid": "§c This chest is protected!",
@@ -838,44 +816,44 @@
     "msgid": "§c You are not authorized to access this chest.",
     "msgstr": "§c你没有权限操作此箱子。"
   },
-  "AddM": {
+  "command.chest.AddM": {
     "msgid": "§a {member} added as a member at location: {chestLocation}",
-    "msgstr": "§a 已添加为成员。"
+    "msgstr": ""
   },
-  "addYouM": {
+  "command.chest.addYouM": {
     "msgid": "§a {playerName} has added you to the following chests: {chestLocation}",
-    "msgstr": "§a{playerName} 已将您添加到以下箱子：{chestLocation}"
+    "msgstr": ""
   },
-  "RemoveYouM": {
+  "command.chest.RemoveYouM": {
     "msgid": "§a {playerName} has removed you from the following chests: {chestLocation}",
-    "msgstr": "§a{playerName} 已将您从以下箱子的成员中移除：{chestLocation}"
+    "msgstr": ""
   },
-  "MAlreday": {
+  "command.chest.MAlreday": {
     "msgid": "§c {member} is already a member.",
-    "msgstr": "§c已经是成员。"
+    "msgstr": ""
   },
-  "RemoveM": {
+  "command.chest.RemoveM": {
     "msgid": "§a {member} has been removed from members.",
-    "msgstr": "§a已从成员中移除"
+    "msgstr": ""
   },
-  "NotM": {
+  "command.chest.NotM": {
     "msgid": "§c Not a member.",
-    "msgstr": "§c不是成员"
+    "msgstr": ""
   },
-  "allM": {
+  "command.chest.allM": {
     "msgid": "§a Members: ",
-    "msgstr": "§a 成员："
+    "msgstr": ""
   },
-  "NotFoundM": {
+  "command.chest.NotFoundM": {
     "msgid": "§c No members.",
-    "msgstr": "§c 没有成员"
+    "msgstr": ""
   },
-  "ExplosionWarning": {
+  "command.chest.ExplosionWarning": {
     "msgid": "§c Please do not explode that.",
-    "msgstr": "§c 可以请你不要炸掉它吗？"
+    "msgstr": ""
   },
-  "cannotPlaceItem": {
+  "command.chest.cannotPlaceItem": {
     "msgid": "§c You are not allowed to place pistons in this area.",
-    "msgstr": "§c 禁止在此区域放置活塞"
+    "msgstr": ""
   }
 }

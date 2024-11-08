@@ -47,7 +47,7 @@ function addItemToPlayerInventory(player: Player) {
     currentItem?.typeId === customCommandsConfig.ui.ui_item &&
     currentItem?.nameTag === customCommandsConfig.ui.ui_item_name
   ) {
-    return player.sendMessage(translate(player, 'AlreadyInv'));
+    return player.sendMessage(translate(player, 'commnad.item.AlreadyInv'));
   }
 
   const item = new ItemStack(customCommandsConfig.ui.ui_item, 1);
@@ -72,7 +72,7 @@ function addItemToPlayerInventory(player: Player) {
     container.addItem(item);
   });
 
-  player.sendMessage(translate(player, 'AddInv'));
+  player.sendMessage(translate(player, 'commnad.item.AddInv'));
 }
 
 registerCommand({

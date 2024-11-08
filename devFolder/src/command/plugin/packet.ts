@@ -358,6 +358,11 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     return null;
   }
 
+  if (data.positionHistory.length < 2) {  // positionHistory の長さを確認
+    playerDataManager.update(player, { lastPosition: player.location }); // lastPosition を更新
+    return null;
+  }
+
   //新規 殴られて羽目技されている際は検知を除外する
   if (data && data.beingHit) {
     return null;
@@ -430,16 +435,16 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 
     // AirJump判定 (しきい値を調整)
     if (
-      jumpHeight > 2.5 || // 通常のジャンプよりも高い
-      horizontalAcceleration > 1.9 || // 水平方向に急激な加速
-      (verticalAcceleration > 0.9 && previousVerticalAcceleration > 0.7) || // 垂直方向に急激な加速
-      velocityChangeRate > 0.9 || // 短時間での速度変化が大きい
-      (player.isJumping && horizontalSpeed > 0.9) // ジャンプ中に水平方向に移動している
+      jumpHeight > 3.0 || // 通常のジャンプよりも高い (値を大きく)
+      horizontalAcceleration > 2.2 || // 水平方向に急激な加速 (値を大きく)
+      (verticalAcceleration > 1.1 && previousVerticalAcceleration > 0.9) || // 垂直方向に急激な加速 (値を大きく)
+      velocityChangeRate > 1.1 || // 短時間での速度変化が大きい (値を大きく)
+      (player.isJumping && horizontalSpeed > 1.2) // ジャンプ中に水平方向に移動している (値を大きく)
     ) {
       jumpCounter++;
 
 
-      if (jumpCounter >= 1) {
+      if (jumpCounter >= 2) {
         // AirJumpとして検知
         console.log(`[DEBUG AirJump] ${player.name} - AirJump Detected!`);
 
@@ -482,23 +487,7 @@ function calculateHorizontalSpeed(pos1: Vector3, pos2: Vector3) {
 function calculateVerticalVelocity(currentPos: Vector3, previousPos: Vector3): number {
   return (currentPos.y - previousPos.y) / 50;
 }
-//@ts-ignore
-function detectClickTpOutOfBoundary(player: Player): { cheatType: string } | null {
-  const data = playerDataManager.get(player);
-  if (!data || getGamemode(player.name) === 1 || getGamemode(player.name) === 3 ||
-    hasEffect(player, "speed", 3) ||
-    hasEffect(player, "jump_boost", 3)) return null;
 
-
-  const distanceToCenter = calculateDistance(player.location, data.boundaryCenter);
-  const isFalling = player.isFalling && player.getVelocity().y < -0.1;
-
-  if (distanceToCenter > data.boundaryRadius && distanceToCenter <= data.boundaryRadius + 5 && !isFalling) {
-    return { cheatType: 'ClickTP (実験中)' };
-  }
-
-  return null;
-}
 
 function getBlockFromReticle(player: Player, maxDistance: number): Block | null {
   const playerDimension = player.dimension;
@@ -796,6 +785,11 @@ function detectFlyHack(player: Player): { cheatType: string } | null {
   ) {
     return null;
   } if (data && data.beingHit) {
+    return null;
+  }
+
+  if (data.positionHistory.length < 2) {  // positionHistory の長さを確認
+    playerDataManager.update(player, { lastPosition: player.location }); // lastPosition を更新
     return null;
   }
 
@@ -1112,11 +1106,7 @@ function runTick(): void {
         playerDataManager.update(player, { boundaryCenter: player.location });
       }
 
-     //const clickTpOutOfBoundaryDetection = detectClickTpOutOfBoundary(player);
-     //if (clickTpOutOfBoundaryDetection) {
-     //  handleCheatDetection(player, clickTpOutOfBoundaryDetection);
-     //}
-
+   
       const airJumpDetection = detectAirJump(player);
       if (airJumpDetection) {
         handleCheatDetection(player, airJumpDetection);

@@ -55,6 +55,10 @@
     "msgid": "Send a request and teleport.",
     "msgstr": ""
   },
+  "chest_docs": {
+    "msgid": "Chest Command",
+    "msgstr": ""
+  },
   "ui.ReportButton": {
     "msgid": "§0Report Menu",
     "msgstr": ""
@@ -291,7 +295,7 @@
     "msgid": "§0 Change Language",
     "msgstr": ""
   },
-  "langChange1": {
+  "ui.langChange1": {
     "msgid": "§2 Please select the language you want to change to:",
     "msgstr": ""
   },
@@ -400,6 +404,26 @@
   },
   "server.closeChat": {
     "msgid": "§a == Close The Chat Panel ==",
+    "msgstr": ""
+  },
+  "server.desabledCom": {
+    "msgid": "§c Unregistered or disabled command.",
+    "msgstr": ""
+  },
+  "server.desableComSuggest": {
+    "msgid": "§6 Invalid command. Did you mean: {possibleCommands}? If so, answer {prefix}yes",
+    "msgstr": ""
+  },
+  "server.AllowTagCom": {
+    "msgid": "§c Only players with an authorized tag can use this command.",
+    "msgstr": ""
+  },
+  "server.invalidCom": {
+    "msgid": "§6 Invalid command. Please make sure it is correct. Commands used: {commandName}",
+    "msgstr": ""
+  },
+  "server.unavailable": {
+    "msgid": "§c You do not have permission to do that.",
     "msgstr": ""
   },
   "command.lore.UsageLore": {
@@ -662,47 +686,23 @@
     "msgid": "§c Player not found: §6{tragetplayer}",
     "msgstr": ""
   },
-  "server.desabledCom": {
-    "msgid": "§c Unregistered or disabled command.",
+  "command.lang.lang_list": {
+    "msgid": "§a Available Languages:\n",
     "msgstr": ""
   },
-  "desableComSuggest": {
-    "msgid": "§6 Invalid command. Did you mean: {possibleCommands}? If so, answer {prefix}yes",
-    "msgstr": "§6Неверная команда. Возможно, это команда {possibleCommands}? Если да, ответьте {prefix}да"
-  },
-  "AllowTagCom": {
-    "msgid": "§c Only players with an authorized tag can use this command.",
-    "msgstr": "§cТолько игроки с авторизованным тегом могут использовать это"
-  },
-  "invalidCom": {
-    "msgid": "§6 Invalid command. Please make sure it is correct. Commands used: {commandName}",
-    "msgstr": "§6Неверная команда. Пожалуйста, убедитесь, что она правильная. Использованные команды: {commandName}"
-  },
-  "lang_list": {
-    "msgid": "§a Available Languages:\n",
-    "msgstr": "§aДоступные языки:\n"
-  },
-  "lang_change": {
+  "command.lang.lang_change": {
     "msgid": "§a Language changed to: {language}",
-    "msgstr": "§aЯзык изменен на"
+    "msgstr": ""
   },
-  "lang_failed": {
+  "command.lang.lang_failed": {
     "msgid": "§c Failed to change language to: {language}",
-    "msgstr": "§cНе удалось изменить язык на"
+    "msgstr": ""
   },
-  "lang_invalid": {
+  "command.lang.lang_invalid": {
     "msgid": "§c Invalid command usage. Use /lang list or /lang change <language_code>",
-    "msgstr": "§cНеверное использование команды. Используйте lang list или lang change <языковой_код>"
+    "msgstr": ""
   },
-  "chest_command": {
-    "msgid": "Chest Command",
-    "msgstr": "Команда сундука"
-  },
-  "unavailable": {
-    "msgid": "§c You do not have permission to do that.",
-    "msgstr": "§cНедостаточно прав"
-  },
-  "chest_help": {
+  "command.chest.chest_help": {
     "msgid": [
       "§c Invalid command.",
       "§a Chest protection command usage:",
@@ -718,21 +718,7 @@
       "  §bAuthor: Koukun        - License AGPL-3.0",
       "  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
     ],
-    "msgstr": [
-      "§cНеверная команда.",
-      "§aИспользование команды защиты сундука:.",
-      "  §bchest lock        - заблокировать сундук",
-      "  §bchest info       - показать информацию о ближайшем сундуке",
-      "  §bchest unlock      - разблокировать сундук",
-      "  §bchest protect <lock/unlock> - переключить защиту сундука",
-      "  §bchest add <playername>   - добавить участника в сундук",
-      "  §bchest remove <playername>  - удалить участника из сундука",
-      "  §bchest all        - показать список участников сундука",
-      "  §bchest list        - показать список сундуков",
-      "  §b_______________________________________",
-      "  §bАвтор: Koukun        - Лицензия AGPL-3.0",
-      "  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
-    ]
+    "msgstr": ""
   },
   "command.chest.MaxChestLimitReached": {
     "msgid": "§c The installation limit of {limit} has been reached.",
@@ -746,9 +732,9 @@
     "msgid": "§a You have protected {playerChests} chests:",
     "msgstr": "§aВы защитили {playerChests} сундуков:"
   },
-  "chestlocation": {
+  "command.chest.chestlocation": {
     "msgid": "§e - Location: {key}",
-    "msgstr": "§e- Местоположение: {key}"
+    "msgstr": ""
   },
   "command.chest.nearby_chest_info": {
     "msgid": "§a ---- Nearby Chest Info ----",
@@ -766,29 +752,29 @@
     "msgid": "§b Z: §e",
     "msgstr": "§bZ: §e"
   },
-  "protected": {
+  "command.chest.protected": {
     "msgid": "§a Protected",
-    "msgstr": "§aЗащищено"
+    "msgstr": ""
   },
-  "owner": {
+  "command.chest.owner": {
     "msgid": "§b Owner: §e",
-    "msgstr": "§bВладелец: §e"
+    "msgstr": ""
   },
-  "members": {
+  "command.chest.members": {
     "msgid": "§b Members: §e",
-    "msgstr": "§bУчастники: §e"
+    "msgstr": ""
   },
   "command.chest.large_chest": {
     "msgid": "§b Large Chest: §e",
     "msgstr": "§bБольшой сундук: §e"
   },
-  "yes": {
+  "command.chest.yes": {
     "msgid": "Yes",
-    "msgstr": "Да"
+    "msgstr": ""
   },
-  "no": {
+  "command.chest.no": {
     "msgid": "No",
-    "msgstr": "Нет"
+    "msgstr": ""
   },
   "command.chest.not_protected": {
     "msgid": "§c Not Protected",
@@ -798,14 +784,6 @@
     "msgid": "§c Cannot find chest.",
     "msgstr": "§cНе удалось найти сундук"
   },
-  "chestProtectRemove": {
-    "msgid": "§a Chest protection removed.",
-    "msgstr": "§a Защита сундука снята"
-  },
-  "AlreadyProChest": {
-    "msgid": "§a This chest is already protected.",
-    "msgstr": "§a Этот сундук уже защищен"
-  },
   "command.chest.chest_lookstate": {
     "msgid": "§a Chest protection: {lcokstate}",
     "msgstr": "§a сундук защищен {lcokstate}"
@@ -814,13 +792,13 @@
     "msgid": "§a All chest protection data has been reset.",
     "msgstr": "§aВсе данные защиты сундука были сброшены."
   },
-  "command_chest_ContributedToChest": {
+  "command.chest.ContributedToChest": {
     "msgid": "§a Thanks for going out of your way to make it a large chest",
     "msgstr": ""
   },
-  "isLookChest": {
+  "command.chest.isLookChest": {
     "msgid": "§c This chest is locked by {owner}",
-    "msgstr": "§cЭтот сундук заблокирован"
+    "msgstr": ""
   },
   "command.chest.isProChest": {
     "msgid": "§c This chest is protected!",
@@ -838,44 +816,44 @@
     "msgid": "§c You are not authorized to access this chest.",
     "msgstr": "§cУ вас нет прав на использование этого сундука."
   },
-  "AddM": {
+  "command.chest.AddM": {
     "msgid": "§a {member} added as a member at location: {chestLocation}",
-    "msgstr": "§a Добавлен как участник."
+    "msgstr": ""
   },
-  "addYouM": {
+  "command.chest.addYouM": {
     "msgid": "§a {playerName} has added you to the following chests: {chestLocation}",
-    "msgstr": "§a{playerName} добавил вас к следующим сундукам {chestLocation}"
+    "msgstr": ""
   },
-  "RemoveYouM": {
+  "command.chest.RemoveYouM": {
     "msgid": "§a {playerName} has removed you from the following chests: {chestLocation}",
-    "msgstr": "§a{playerName} удалил вас из участников следующих сундуков {chestLocation}"
+    "msgstr": ""
   },
-  "MAlreday": {
+  "command.chest.MAlreday": {
     "msgid": "§c {member} is already a member.",
-    "msgstr": "§cуже является участником."
+    "msgstr": ""
   },
-  "RemoveM": {
+  "command.chest.RemoveM": {
     "msgid": "§a {member} has been removed from members.",
-    "msgstr": "§aУдален из участников"
+    "msgstr": ""
   },
-  "NotM": {
+  "command.chest.NotM": {
     "msgid": "§c Not a member.",
-    "msgstr": "§cне является участником"
+    "msgstr": ""
   },
-  "allM": {
+  "command.chest.allM": {
     "msgid": "§a Members: ",
-    "msgstr": "§a участник: "
+    "msgstr": ""
   },
-  "NotFoundM": {
+  "command.chest.NotFoundM": {
     "msgid": "§c No members.",
-    "msgstr": "§c Нет участников"
+    "msgstr": ""
   },
-  "ExplosionWarning": {
+  "command.chest.ExplosionWarning": {
     "msgid": "§c Please do not explode that.",
-    "msgstr": "§c Не могли бы вы не взрывать это?"
+    "msgstr": ""
   },
-  "cannotPlaceItem": {
+  "command.chest.cannotPlaceItem": {
     "msgid": "§c You are not allowed to place pistons in this area.",
-    "msgstr": "§c Запрещено размещать поршни в этой области"
+    "msgstr": ""
   }
 }

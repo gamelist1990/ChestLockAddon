@@ -26,7 +26,7 @@ let protectedChests: Record<string, ChestProtectionData> = {};
 // コマンド登録
 registerCommand({
   name: 'chest',
-  description: 'chest_command',
+  description: 'chest_docs',
   parent: false,
   maxArgs: 2,
   minArgs: 1,

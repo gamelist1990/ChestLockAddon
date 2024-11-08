@@ -631,7 +631,7 @@ function showSendTpaMenu(player: Player): Promise<void> {
 
   const form = new ActionFormData()
     .title('Send TPA Request')
-    .body(translate(player, 'SendTpaSelect'));
+    .body(translate(player, 'ui.SendTpaSelect'));
 
   playerNames.forEach((p) => {
     form.button(p.name);

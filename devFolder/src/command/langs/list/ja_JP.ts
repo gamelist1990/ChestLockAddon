@@ -1,83 +1,63 @@
 export const translations = {
-  "command.reportNotPlayer": {
-    msgid: "§f>>§4Reported player not found",
-    msgstr: "§f>>§4報告対象のプレイヤーが見つかりませんでした"
+  "Developer commands": {
+    msgid: "Dev command (This command allows developers and administrators to reset and verify dynamic properties)",
+    msgstr: "デベロッパー専用コマンド(tag OPが必要)"
   },
-  "command.NotEnchant": {
-    msgid: "§f>>§6Enchanted items §4cannot be equipped in the offhand",
-    msgstr: "§f>>§6エンチャント§4アイテムはオフハンドに設定出来ません！"
+  "help_docs": {
+    msgid: "Help command (This command displays help information)",
+    msgstr: "ヘルプコマンド(ヘルプ情報を表示します)"
   },
-  "command.alreadyOffhand": {
-    msgid: "§f>>§6Offhand item§4 already exists",
-    msgstr: "§f>>§6既にオフハンド§4にアイテムが設定されています"
+  "lang_docs": {
+    msgid: "Lang command (This command switches the language)",
+    msgstr: "Lang コマンド(言語を変更できます)"
   },
-  "command.OffhandItem": {
-    msgid: "§f>>§aOffhand item set.",
-    msgstr: "§f>>§aオフハンドにアイテムを設定しました"
-  },
-  "command.NoMainHand": {
-    msgid: "§f>>§6No item in mainhand.",
-    msgstr: "§f>>§6設定するアイテムを手に持って下さい"
-  },
-  "command.RemoveOffhand": {
-    msgid: "§f>>§aOffhand item Remove",
-    msgstr: "§f>>§aオフハンドのアイテムが削除されました"
-  },
-  "command.offhandUsage": {
-    msgid: "§f>>§b Invalid argument Use -set",
-    msgstr: "§f>>§b無効な引数です -set を使用して下さい"
-  },
-  "command.invalid_page_number": {
-    msgid: "§f>>§l§4Invalid page number",
-    msgstr: "§f>>§l§4無効なページ番号です"
-  },
-  "command.helpPage": {
-    msgid: "§2--- Showing help page {pageNumber} of {totalPages} ({PREFIX}help <page: int>) ---\n",
-    msgstr: "§2--- ヘルプページの {pageNumber}/{totalPages} ページを表示 ({PREFIX}help <ページ: 番号>) ---\n"
-  },
-  "command.echestInvalid": {
-    msgid: "§f>>§4Invalid usage. §fUse: echest -view <playername>",
-    msgstr: "§f>>§4無効な使い方 §f使用方法: echest -view <playername>"
-  },
-  "command.echestDocs": {
-    msgid: "View Ender Chest",
-    msgstr: "エンダーチェスト確認"
-  },
-  "command.echest": {
-    msgid: "§f>>§b${tragetplayer}§a's Ender Chest:§f",
-    msgstr: "§f>>§b${tragetplayer}§aのエンダーチェスト:§f"
-  },
-  "command.echestEmpty": {
-    msgid: "§f>>§b{tragetplayer}§a's ender chest is §gempty.",
-    msgstr: "§f>>§b{tragetplayer}§aのエンダーチェストは§g空§aでした"
-  },
-  "command.WarnTarget": {
-    msgid: "§f>>§4You have been warned. §eReason§f: {reason}. §6Total warnings§f: {warnings} §bIf you are warned more than 3 times, you will be KICKED!",
-    msgstr: "§f>>§4あなたはスタッフに警告されました §e理由§f: {reason}. §6警告件数§f: {warnings} |§b三回以上警告されるとKickされます"
-  },
-  "command.WarnPlayer": {
-    msgid: "§f>>§aYou have warned §b{target}. §eReason§f: {reason}. §6Total warnings§f: {warnings}",
-    msgstr: "§f>>§b{target}§aに対して警告を送りました. §e理由§f: {reason}. §6警告件数§f: {warnings}"
-  },
-  "command.WarnKickMes": {
-    msgid: "§f>>§c{target} §ahas been kicked for receiving §e{warnings} warnings.",
-    msgstr: "§f>>§c{target} §aに対して強制Kickを出しました §e{warnings} 警告件数."
-  },
-  "command.NoFreecam": {
-    msgid: "§f>>§cYou must use -exit before using another freecam option.",
-    msgstr: "§f>>§cこのオプションを使うには-exitでFreeCamを終了してから再度お試しください"
-  },
-  "staff_command_description": {
+  "staff_docs": {
     msgid: "Staff-only commands",
-    msgstr: "スタッフ専用のコマンド！"
+    msgstr: "スタッフ専用コマンド"
   },
-  "report_command_description": {
+  "report_docs": {
     msgid: "You can report players doing bad things.",
-    msgstr: "悪い事をしたプレイヤーを報告できます"
+    msgstr: "不正行為をしているプレイヤーを報告できます。"
   },
-  "command.reportSubmit": {
-    msgid: "§f>>§aReport submitted successfully",
-    msgstr: "§f>>§aスタッフにレポートを報告しました"
+  "about_docs": {
+    msgid: "View an overview of this add-on",
+    msgstr: "このアドオンの概要を表示します"
+  },
+  "item_docs": {
+    msgid: "Item UI Command (Accesses Chest Lock UI)",
+    msgstr: "アイテムUIコマンド (チェストロックUIにアクセスします)"
+  },
+  "jpch_docs": {
+    msgid: "JPCH command (Experimental feature)",
+    msgstr: "JPCHコマンド (実験的機能)"
+  },
+  "ui_docs": {
+    msgid: "UI command (This command displays a GUI with ActionForm)",
+    msgstr: "UIコマンド (ActionFormを使用してGUIを表示します)"
+  },
+  "edit_docs": {
+    msgid: "WorldEdit Commands",
+    msgstr: "WorldEditコマンド"
+  },
+  "lore_docs": {
+    msgid: "Change Item Lore",
+    msgstr: "アイテムの説明を変更する"
+  },
+  "warpgate_docs": {
+    msgid: "Set Warp Gate",
+    msgstr: "ワープゲートを設定する"
+  },
+  "join_docs": {
+    msgid: "Displays a message when joining a world.",
+    msgstr: "ワールド参加時にメッセージを表示します。"
+  },
+  "tp_docs": {
+    msgid: "Send a request and teleport.",
+    msgstr: "リクエストを送信してテレポートします。"
+  },
+  "chest_docs": {
+    msgid: "Chest Command",
+    msgstr: "チェストコマンド"
   },
   "ui.ReportButton": {
     msgid: "§0Report Menu",
@@ -87,17 +67,21 @@ export const translations = {
     msgid: "§bPlease enter the reason for the report",
     msgstr: "§bスタッフに報告する内容を記入してね"
   },
-  "command.newReport": {
+  "command.report.newReport": {
     msgid: "§f>>§a§lNew report from {reporter} about {reportedPlayer}",
-    msgstr: "§f>>§b§l[Server] §f: §a新しく§f {reporter} §aが§f {reportedPlayer} §aに対してレポートを提出しました"
+    msgstr: "§f>>§a§l{reporter} から {reportedPlayer} についての新しい報告があります"
   },
-  "command.NotReport": {
+  "command.report.NotReport": {
     msgid: "§f>>§4No reports found",
-    msgstr: "§f>>§4ユーザーからの報告がありません"
+    msgstr: "§f>>§4報告は見つかりませんでした"
+  },
+  "ui.MainLoreButton": {
+    msgid: "§0Custom Item Name/Lore",
+    msgstr: "§0カスタムアイテム名/説明"
   },
   "command.ui.reportTitle": {
     msgid: "§l§0{selectedReporter}§e has Report",
-    msgstr: "§l§0{selectedReporter}§eが提出したレポート"
+    msgstr: "§l§0{selectedReporter}§eからのレポート"
   },
   "command.ui.reportDetails": {
     msgid: "§l§0Report Details",
@@ -141,295 +125,59 @@ export const translations = {
   },
   "command.staff.UsageCom": {
     msgid: "§l§bUsage§a Staff Command §f| world <-send> Message | report <-check> | freecam -<p/s/v/exit> playerName only needs (p/v)",
-    msgstr: "§l§b使い方§a スタッフコマンド§f| world <-send> Message | report <-check> | freecam -<p/s/v/exit> playerNameはのみ (p/v)必須"
+    msgstr: "§l§b使い方§a スタッフコマンド§f| world <-send> Message | report <-check> | freecam -<p/s/v/exit> playerNameは(p/v)の場合のみ必要"
   },
   "command.ui.reportBody": {
     msgid: "§a== Report Menu ==\n\n§l§bReporter§f:{reporter}\n\n§l§6Reported Player§f: {reportedPlayer}\n\n§l§2Reason§f: {reason}\n\n§l§gTimestamp§f: {timestamp}\n\n§a================",
     msgstr: "§a== レポート メニュー ==\n\n§l§b報告者§f:{reporter}\n\n§l§6報告されたプレイヤー§f: {reportedPlayer}\n\n§l§2理由§f: {reason}\n\n§l§g報告日時§f: {timestamp}\n\n§a===================="
   },
-  "command.about": {
-    msgid: "§a== About ChestLockAddon ==\n\nChestLockAddon is a useful utility addon for Minecraft version 1.21.30 that provides chest protection and more.\n\n§b== Main Features ==\n• Chest Protection: Protect your chests from other players.\n• Multilingual Support: Change the language setting with the lang command.\n• Teleport Request: Send a teleport request to another player with the tpa command.\n• And more: More useful commands will be added in the future.\n\n§b== Links ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== Notes ==\nThis addon is under development and may contain unexpected bugs. If you find any bugs, please report them on GitHub or Discord.\n\n§a== Message from the Developer ==\nWe welcome your feedback to make ChestLockAddon a better addon.",
-    msgstr: "§a== ChestLockAddon について ==\n\nChestLockAddonは、Minecraftのバージョン1.21.30に対応した、チェスト保護機能などを提供する便利なユーティリティアドオンです。\n\n§b== 主な機能 ==\n• チェスト保護: あなたのチェストを他のプレイヤーから保護します。\n• 多言語対応: lang コマンドで言語設定を変更できます。\n• PS4/5向けUI: ui コマンドでPS4/5向けUIを開けます。\n• テレポートリクエスト: tpa コマンドで他のプレイヤーにテレポートリクエストを送れます。\n• その他: 今後も便利なコマンドが追加される予定です。\n\n§b== リンク ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== 注意点 ==\nアドオンは開発中のため、予期せぬバグが発生する可能性があります。バグを発見した場合は、GitHubやDiscordで報告してください。\n\n§a== 開発者からのメッセージ ==\nChestLockAddonをより良いアドオンにするために、皆様からのフィードバックをお待ちしております。"
-  },
-  "command.Undone": {
-    msgid: "§f>>§aReverted to one previous change",
-    msgstr: "§f>>§a一つ前の変更に戻しました！"
-  },
-  "aboutCom": {
-    msgid: "View an overview of this add-on",
-    msgstr: "このアドオンの概要を表示します"
-  },
-  "command.NothingToUndo": {
-    msgid: "§f>>§cThere were no changes that could be reverted.",
-    msgstr: "§f>>§c戻せる変更が見つかりませんでした"
-  },
-  "ServerVersion": {
-    msgid: "§bThis ChestLockAddon is running version {version}",
-    msgstr: "§b現時点のChestLockアドオンのバージョンは{version}です"
-  },
-  "command.loreDocs": {
+  "command.ui.loreDocs": {
     msgid: "§2Change the item's name/lore (Place the item in the first slot of your hotbar)",
-    msgstr: "§2アイテムの名前/説明を変更します。(ホットバーの一番左に変えたいアイテムを置いてください)"
+    msgstr: "§2アイテムの名前/説明を変更します (ホットバーの最初のスロットにアイテムを配置してください)"
   },
-  "command.Changelore": {
+  "command.ui.Changelore": {
     msgid: "§0Change Item Lore",
-    msgstr: "§0アイテムの説明変更"
+    msgstr: "§0アイテムの説明を変更"
   },
-  "command.ChangeName": {
+  "command.ui.ChangeName": {
     msgid: "§0Change Item Name",
-    msgstr: "§0アイテム名変更"
+    msgstr: "§0アイテム名を変更"
   },
-  "command.ClearLore": {
+  "command.ui.ClearLore": {
     msgid: "§0Clear Item Lore",
     msgstr: "§0アイテムの説明をクリア"
   },
-  "command.NewLore": {
+  "command.ui.NewLore": {
     msgid: "Enter new lore:",
     msgstr: "新しい説明を入力してください:"
   },
-  "command.NewName": {
+  "command.ui.NewName": {
     msgid: "Enter new name:",
     msgstr: "新しい名前を入力してください:"
   },
-  "command.UsageLore": {
-    msgid: "§3Usage: {prefix}lore -set \"<lore content>\" or {prefix}lore -remove \"<lore content>\" or {prefix}lore -rename \"<new name>\" or {prefix}lore -command.ClearLore",
-    msgstr: "§3使用方法: {prefix}lore -set <説明の内容> または {prefix}lore -remove <説明の内容> または {prefix}lore -rename <新しい名前> または {prefix}lore -command.ClearLore"
-  },
-  "command.AddLore": {
-    msgid: "§aLore added, please check.",
-    msgstr: "§a説明を追加しました。確認してください。"
-  },
-  "command.takeItem": {
-    msgid: "§cPlease hold the item.",
-    msgstr: "§cアイテムを手に持ってください。"
-  },
-  "command.NotFoundLore": {
-    msgid: "§cLore not found.",
-    msgstr: "§c説明が見つかりません"
-  },
-  "command.RemoveLore": {
-    msgid: "§aLore deleted. Please check.",
-    msgstr: "§a説明を削除しました。確認してください。"
-  },
-  "command.ChangeNames": {
-    msgid: "§aItem renamed.",
-    msgstr: "§aアイテムの名前を変更しました"
-  },
-  "ui.MainLoreButton": {
-    msgid: "§0Custom Item Name/Lore",
-    msgstr: "§0カスタムアイテム名/説明"
-  },
-  "command.FirstPointSet": {
-    msgid: "§f>>§a First point set.",
-    msgstr: "§7>>§a 最初の地点を設定しました。"
-  },
-  "editCom": {
-    msgid: "WorldEdit Commands",
-    msgstr: "ワールドエディットコマンド"
-  },
-  "loreCom": {
-    msgid: "Change Item Lore",
-    msgstr: "アイテムの説明を変更"
-  },
-  "command.SecondPointSet": {
-    msgid: "§f>>§6 Second point set.",
-    msgstr: "§f>>§6二回目の範囲を設定しました"
-  },
-  "command.SelectionCompleted": {
-    msgid: "§f>>§a Selection completed.",
-    msgstr: "§7>>§a 範囲選択が完了しました。"
-  },
-  "command.PointSet": {
-    msgid: "§f>> §aPoint set.",
-    msgstr: "§7>>§a 地点を設定しました。"
-  },
-  "command.WallsCreated": {
-    msgid: "§f>>§a Walls created.",
-    msgstr: "§7>>§a 壁を作成しました。"
-  },
-  "command.InvalidBlockId": {
-    msgid: "§f>>§c Invalid block ID.",
-    msgstr: "§7>>§c 無効なブロックIDです。"
-  },
-  "command.OutlineCreated": {
-    msgid: "§f>>§a Outline created.",
-    msgstr: "§7>>§a アウトラインを作成しました。"
-  },
-  "FilledCircleCreated": {
-    msgid: "§f>>§a Filled circle created.",
-    msgstr: "§7>>§a 中を埋めた円を作成しました。"
-  },
-  "RangeSet": {
-    msgid: "§f>>§a Range set with the specified block ({blockId}).",
-    msgstr: "§7>>§a 指定したブロック({blockId})で範囲内が設定されました。"
-  },
-  "RangeCleared": {
-    msgid: "§f>>§a Range cleared.",
-    msgstr: "§7>>§a 範囲内がクリアされました。"
-  },
-  "WallsToolSelected": {
-    msgid: "§f>>§a Walls tool selected. (Block ID: {blockId})",
-    msgstr: "§7>>§a walls ツールを選択しました。 (ブロックID: {blockId})"
-  },
-  "OutlineToolSelected": {
-    msgid: "§f>>§a Outline tool selected. (Radius: {radius}, Block ID: {blockId})",
-    msgstr: "§7>>§a outline ツールを選択しました。 (半径: {radius}, ブロックID: {blockId})"
-  },
-  "FilledCircleToolSelected": {
-    msgid: "§f>>§a Filled circle tool selected. (Radius: {radius}, Block ID: {blockId})",
-    msgstr: "§f>>§a filledCircle ツールを選択しました。 (半径: {radius}, ブロックID: {blockId})"
-  },
-  "ToolExited": {
-    msgid: "§f>>§a Tool exited.",
-    msgstr: "§f>>§a ツールを終了しました。"
-  },
-  "ToolOptions": {
-    msgid: "§f>> §3Tool options: -wall <blockID>, -outline <radius> <blockID>, -filledCircle <radius> <blockID>, -exit",
-    msgstr: "§f>>§3 ツールオプション: -wall <ブロックID>, -outline <半径> <ブロックID>, -filledCircle <半径> <ブロックID>, -exit"
-  },
-  "StartRangeSelection2": {
-    msgid: "§f>>§a Range selection started. Please break two blocks.",
-    msgstr: "§f>>§a 範囲選択を開始しました。ブロックを2つ破壊してください。"
-  },
-  "StartRangeSelection": {
-    msgid: "§f>>§a Range selection started. Hold a wooden hoe and break a block.",
-    msgstr: "§f>>§a 範囲選択を開始しました。木のクワを持ちブロックを破壊してください"
-  },
-  "InvalidCommandUsage": {
-    msgid: "§f>>§3 Invalid command usage: /{prefix}edit -set <blockID> | /{prefix}edit -clear | /{prefix}edit tool <options> | /{prefix}edit start",
-    msgstr: "§f>>§3 コマンドの使用方法: {prefix}edit -set <ブロックID> | {prefix}edit -clear | {prefix}edit tool <オプション> | {prefix}edit start"
-  },
-  "PlayerNotFound": {
-    msgid: "§cPlayer not found! Make sure you're in a valid location.",
-    msgstr: "§cこのプレイヤーが見つかりません！！"
-  },
-  "TheFirestBlock": {
-    msgid: "§a1. First block recorded. Destroy the block again.",
-    msgstr: "§a1 最初のブロックが記録されました。次のブロックを選択してください."
-  },
-  "TheSecond": {
-    msgid: "§a2. Second block recorded. Warp gate has been set.",
-    msgstr: "§a2二個目のブロックが記録に成功したため。ワープゲートの設定が完了しました"
-  },
-  "WarpUsage": {
-    msgid: "§c Usage: warpgate -create <gate name> <x> <y> <z>",
-    msgstr: "§c使用方法は: warpgate -create <gate name> <x> <y> <z>だよ"
-  },
-  "AlreadyWarp": {
-    msgid: "§c A warp gate with that name already exists.",
-    msgstr: "§cその名前のワープゲートは既に存在しています。"
-  },
-  "CreateGate": {
-    msgid: "§a Creating warp gate: {gatename} \n §a Next, destroy two blocks to define the gate's boundaries.",
-    msgstr: "§aワープゲートを{gatename}で作成します \n §次に、ゲートの範囲を指定するために2つのブロックを壊して下さい"
-  },
-  "NotWarp": {
-    msgid: "§c The specified warp gate does not exist.",
-    msgstr: "§c指定された名前のゲートは存在しません。"
-  },
-  "deleteWarp": {
-    msgid: "§a Gate removed: {gatename}",
-    msgstr: "§aゲートの削除に成功しました: {gatename}。"
-  },
-  "NotWarpSetting": {
-    msgid: "§c No warp gate is set.",
-    msgstr: "§cワープゲートが設定されていません"
-  },
-  "listGate": {
-    msgid: "§a List of warp gates:\n",
-    msgstr: "§aワープゲートのリスト:\n"
-  },
-  "warpgateCom": {
-    msgid: "Set Warp Gate",
-    msgstr: "ワープゲートを作る事ができます"
-  },
-  "UsageGate": {
-    msgid: "§c Invalid subcommand usage: {prefix}warpgate <-create/delete/list> [name] |\n§c Create command only: -create [name] [x,y,z]",
-    msgstr: "§c 無効なサブコマンドです使い方は {prefix}warpgate <-create/delete/list> [name] |\n§c ただ-create引数の時はこのようにしてください -create [name] [x,y,z]."
-  },
-  "TPGATE": {
-    msgid: "§a Teleported to warp gate: {gate}.",
-    msgstr: "§a ワープゲート{gate}にテレポートしました"
-  },
-  "Joincommand": {
-    msgid: "Displays a message when joining a world.",
-    msgstr: "プレイヤー参加時にメッセージを出します"
-  },
-  "Joinenabled": {
-    msgid: "§a Enabled join messages.",
-    msgstr: "§aワールドに参加メッセージを有効にしました"
-  },
-  "Joindisabled": {
-    msgid: "§c Disabled join messages.",
-    msgstr: "§cワールド参加メッセージを無効にしました."
-  },
-  "Invalid": {
-    msgid: "§c Invalid argument.",
-    msgstr: "§c不明な値です"
-  },
-  "UsageJoin": {
-    msgid: "§c Usage: join <-true/-false/-settings>",
-    msgstr: "§c使用法はjoin <-true/-false/-settings>　です"
-  },
-  "welcome": {
-    msgid: "§7 Welcome to My Server!",
-    msgstr: "§a==ようこそ！！ゆっくりしていってね=="
-  },
-  "Rulejoin": {
-    msgid: "§6 Server Rules!!",
-    msgstr: "このサーバーのルール！"
-  },
-  "RulesNumber": {
-    msgid: "§b Number of Rules:",
-    msgstr: "§bルールの数を入力(4ぐらいがオススメ)"
-  },
-  "RulesEnter": {
-    msgid: "§0 Enter the number of rules:",
-    msgstr: "§0ここに入力!!"
-  },
-  "RuleSettings": {
-    msgid: "§6 Rule Settings",
-    msgstr: "ルール設定"
-  },
-  "Rules": {
-    msgid: "§b Rule {i}:",
-    msgstr: "§bルール {i}"
-  },
-  "RuleEnter2": {
-    msgid: "§0 Enter rule {i}:",
-    msgstr: "§0ルールの内容を入力 {i}"
-  },
-  "RuleUpdate": {
-    msgid: "§a Rules updated!",
-    msgstr: "§aルールを更新しました"
-  },
-  "joinSettings": {
-    msgid: "§6 Join Log Settings",
-    msgstr: "参加ログ設定！"
-  },
-  "TpaRequesMenu": {
+  "ui.TpaRequesMenu": {
     msgid: "§2 Welcome to the TPA Menu! Current requests: {requestList} people",
-    msgstr: "§2tpaメニューへようこそ現在のリクエスト人数は:{requestList}人"
+    msgstr: "§2 TPAメニューへようこそ！現在のリクエスト：{requestList}人"
   },
-  "SendTpa": {
+  "ui.SendTpa": {
     msgid: "§0 Send a TPA Request",
-    msgstr: "§0TPリクエストを送る"
+    msgstr: "§0 TPAリクエストを送信"
   },
-  "ShowTpaRequests": {
+  "ui.ShowTpaRequests": {
     msgid: "§0 Confirm TP requests addressed to me",
-    msgstr: "§0自分宛のTPリクエストを確認"
+    msgstr: "§0 自分宛のTPリクエストを確認"
   },
-  "NoTpaRequests": {
+  "ui.NoTpaRequests": {
     msgid: "§c You have no TP requests.",
-    msgstr: "§c自分宛にTPリクエストは届いていませんでした"
+    msgstr: "§c TPリクエストはありません。"
   },
-  "SelectTpaRequest": {
+  "ui.SelectTpaRequest": {
     msgid: "§2 You have received a TPA request. Please select the player you want to accept.",
-    msgstr: "§2TPリクエストを受け取りました。受け入れるプレイヤーを選択してください"
+    msgstr: "§2 TPAリクエストを受信しました。承認するプレイヤーを選択してください。"
   },
-  "SendTpaSelect": {
+  "ui.SendTpaSelect": {
     msgid: "§2 Select the player you want to send a request to:",
-    msgstr: "§2TPリクエストを送信したいプレイヤーを選択してください"
+    msgstr: "§2 リクエストを送信するプレイヤーを選択してください:"
   },
   "uihelp": {
     msgid: "§0 Help Menu",
@@ -451,97 +199,449 @@ export const translations = {
     msgid: "§0 TPA Menu (BETA)",
     msgstr: "§0TPリクエストメニュー(BETA)"
   },
-  "closeChat": {
-    msgid: "§a == Close The Chat Panel ==",
-    msgstr: "§a==チャット欄を閉じて下さい=="
-  },
-  "Tpcommand": {
-    msgid: "Send a request and teleport.",
-    msgstr: "このコマンドではリクエストを送信してTPすることができます"
-  },
-  "tpaRequestSent": {
-    msgid: "§a TPA request sent to§b {playerName}.",
-    msgstr: "§b{playerName}§aにTPAリクエストを送信しました【受け入れの制限時間は一分間です】"
-  },
-  "tpaRequestAlreadySent": {
-    msgid: "§c You have already sent a TPA request to§6 {playerName}!",
-    msgstr: "§cTPA リクエストは既に{playerName}宛てに送信されています！"
-  },
-  "tpaRequestReceived": {
-    msgid: "§2 Received a TPA request from §b{playerName}.",
-    msgstr: "§b【{playerName}】§aからTPAリクエストを受け取りました"
-  },
-  "noPendingTpaRequests": {
-    msgid: "§3 You have no pending TPA requests.",
-    msgstr: "§3保留中の TPA リクエストはありません"
-  },
-  "invalidTpaRequest": {
-    msgid: "§c Invalid TPA request.",
-    msgstr: "§c無効な TPA リクエストです(期限切れ)"
-  },
-  "requesterNotFound": {
-    msgid: "§c Requester not found.",
-    msgstr: "§cリクエストした人が見つかりません"
-  },
-  "teleportedToPlayer": {
-    msgid: "§a Teleported to §b{playerName}.",
-    msgstr: "§b{playerName}§aにテレポートしました"
-  },
-  "tpaRequestAccepted": {
-    msgid: "§a §b{playerName} §ahas accepted your TPA request.",
-    msgstr: "§b{playerName}§aがあなたのTPAリクエストを受け入れました"
-  },
-  "tpaRequestAcceptes": {
-    msgid: "§a TPA request from §b{playerName}§a accepted!",
-    msgstr: "§b{playerName}§aからのTPAリクエストを受け入れました！"
-  },
-  "cannotTpaToSelf": {
-    msgid: "§c You cannot send a TPA request to yourself.",
-    msgstr: "§cTPA リクエストを自分自身に送信することはできません"
-  },
-  "invalidTpaCommandUsage": {
-    msgid: "§3 Invalid usage. Use {prefix}tpa -r <player> to send a request, or {prefix}tpa -a <player> to accept.",
-    msgstr: "§3無効な使用法です tpa -r <player> を使用してリクエストを送信するか、 tpa -a <player> を使用して受け入れる事ができます"
-  },
-  "tpaRequestTimedOut": {
-    msgid: "§3 TPA request from §6{playerName}§3 has timed out.",
-    msgstr: "§b{playerName}§6宛てのTPAリクエストがタイムアウトしました！"
-  },
-  "jpchCom": {
+  "ui.jpchCom": {
     msgid: "§2 Functions like LunaChat.",
-    msgstr: "§2LunaChatと似たようなやつ(実験機能)"
+    msgstr: "§2 LunaChatのような機能です。"
   },
-  "jpenable": {
+  "ui.jpenable": {
     msgid: "§a Function enabled.",
-    msgstr: "§a有効化"
+    msgstr: "§a 機能が有効になりました。"
   },
-  "jpdisable": {
+  "ui.jpdisable": {
     msgid: "§c Function disabled.",
-    msgstr: "§c無効化"
+    msgstr: "§c 機能が無効になりました。"
   },
-  "AccesItemUI": {
-    msgid: "Item UI Command (Accesses Chest Lock UI)",
-    msgstr: "itemUI コマンド (Chest Lock UI にアクセスします)"
+  "ui.ChooseCom": {
+    msgid: "§2 Select a command:",
+    msgstr: "§2 コマンドを選択してください:"
   },
-  "FullInv": {
+  "ui.ChestCom": {
+    msgid: "§2 Select a chest:",
+    msgstr: "§2 チェストを選択してください:"
+  },
+  "ui.Chestinfo": {
+    msgid: "§0 See nearby chests",
+    msgstr: "§0 近くのチェストを見る"
+  },
+  "ui.Chestlock": {
+    msgid: "§0 Lock System",
+    msgstr: "§0 ロックシステム"
+  },
+  "ui.ChestMember": {
+    msgid: "§0 Member System",
+    msgstr: "§0 メンバーシステム"
+  },
+  "ui.lockinfo": {
+    msgid: "§2 Select the lock type:",
+    msgstr: "§2 ロックタイプを選択してください:"
+  },
+  "ui.locking": {
+    msgid: "§a Locking!",
+    msgstr: "§a ロック中！"
+  },
+  "ui.unlocking": {
+    msgid: "§c Unlocking!",
+    msgstr: "§c ロック解除中！"
+  },
+  "ui.ProtectChest": {
+    msgid: "§0 Chest Protection Status",
+    msgstr: "§0 チェスト保護ステータス"
+  },
+  "ui.MemberChoose": {
+    msgid: "§2 Choose your members:",
+    msgstr: "§2 メンバーを選択してください:"
+  },
+  "ui.MemberAdd": {
+    msgid: "§0 Add Member",
+    msgstr: "§0 メンバーを追加"
+  },
+  "ui.MemberRemove": {
+    msgid: "§0 Remove Member",
+    msgstr: "§0 メンバーを削除"
+  },
+  "ui.Memberall": {
+    msgid: "§0 Member List",
+    msgstr: "§0 メンバーリスト"
+  },
+  "ui.AddMemberSelect": {
+    msgid: "§2 Select the member you want to add:",
+    msgstr: "§2 追加するメンバーを選択してください:"
+  },
+  "ui.RemoveMemberSelect": {
+    msgid: "§2 Select the member you want to remove:",
+    msgstr: "§2 削除するメンバーを選択してください:"
+  },
+  "ui.SelectLang": {
+    msgid: "§2 Select an operation from the language menu:",
+    msgstr: "§2 言語メニューから操作を選択してください:"
+  },
+  "ui.langList": {
+    msgid: "§0 Language List",
+    msgstr: "§0 言語リスト"
+  },
+  "ui.langChange": {
+    msgid: "§0 Change Language",
+    msgstr: "§0 言語を変更"
+  },
+  "ui.langChange1": {
+    msgid: "§2 Please select the language you want to change to:",
+    msgstr: "§2 変更したい言語を選択してください:"
+  },
+  "ui.FromError": {
+    msgid: "§c An error occurred while displaying the form:",
+    msgstr: "§cフォームの表示中にエラーが発生しました"
+  },
+  "back": {
+    msgid: "§2 Back",
+    msgstr: "§2戻る"
+  },
+  "command.report.reportNotPlayer": {
+    msgid: "§f>>§4Reported player not found",
+    msgstr: "§f>>§4報告されたプレイヤーが見つかりません"
+  },
+  "command.offhand.NotEnchant": {
+    msgid: "§f>>§6Enchanted items §4cannot be equipped in the offhand",
+    msgstr: "§f>>§6エンチャントされたアイテムは§4オフハンドに装備できません"
+  },
+  "command.offhand.alreadyOffhand": {
+    msgid: "§f>>§6Offhand item§4 already exists",
+    msgstr: "§f>>§6オフハンドアイテムは§4既に存在します"
+  },
+  "command.offhand.OffhandItem": {
+    msgid: "§f>>§aOffhand item set.",
+    msgstr: "§f>>§aオフハンドアイテムを設定しました。"
+  },
+  "command.offhand.NoMainHand": {
+    msgid: "§f>>§6No item in mainhand.",
+    msgstr: "§f>>§6メインハンドにアイテムがありません。"
+  },
+  "command.offhand.RemoveOffhand": {
+    msgid: "§f>>§aOffhand item Remove",
+    msgstr: "§f>>§aオフハンドアイテムを削除しました"
+  },
+  "command.offhand.offhandUsage": {
+    msgid: "§f>>§b Invalid argument Use -set",
+    msgstr: "§f>>§b 無効な引数です。-set を使用してください"
+  },
+  "command.help.invalid_page_number": {
+    msgid: "§f>>§l§4Invalid page number",
+    msgstr: "§f>>§l§4無効なページ番号です"
+  },
+  "command.help.helpPage": {
+    msgid: "§2--- Showing help page {pageNumber} of {totalPages} ({PREFIX}help <page: int>) ---\n",
+    msgstr: "§2--- ヘルプページ {pageNumber}/{totalPages} を表示しています ({PREFIX}help <page: int>) ---\n"
+  },
+  "command.warn.WarnTarget": {
+    msgid: "§f>>§4You have been warned. §eReason§f: {reason}. §6Total warnings§f: {warnings} §bIf you are warned more than 3 times, you will be KICKED!",
+    msgstr: "§f>>§4警告を受けました。§e理由§f: {reason}。§6警告回数§f: {warnings} §b警告が3回を超えるとキックされます！"
+  },
+  "command.warn.WarnPlayer": {
+    msgid: "§f>>§aYou have warned §b{target}. §eReason§f: {reason}. §6Total warnings§f: {warnings}",
+    msgstr: "§f>>§a{target} に警告を送信しました。§e理由§f: {reason}。§6警告回数§f: {warnings}"
+  },
+  "command.warn.WarnKickMes": {
+    msgid: "§f>>§c{target} §ahas been kicked for receiving §e{warnings} warnings.",
+    msgstr: "§f>>§c{target} §aは§e{warnings}回の警告を受け、キックされました。"
+  },
+  "command.staff.NoFreecam": {
+    msgid: "§f>>§cYou must use -exit before using another freecam option.",
+    msgstr: "§f>>§c他のフリーカメラオプションを使用する前に、-exit を使用する必要があります。"
+  },
+  "command.report.reportSubmit": {
+    msgid: "§f>>§aReport submitted successfully",
+    msgstr: "§f>>§a報告は正常に送信されました"
+  },
+  "command.about.about": {
+    msgid: "§a== About ChestLockAddon ==\n\nChestLockAddon is a useful utility addon for Minecraft version 1.21.40 that provides chest protection and more.\n\n§b== Main Features ==\n• Chest Protection: Protect your chests from other players.\n• Multilingual Support: Change the language setting with the lang command.\n• Teleport Request: Send a teleport request to another player with the tpa command.\n• And more: More useful commands will be added in the future.\n\n§b== Links ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== Notes ==\nThis addon is under development and may contain unexpected bugs. If you find any bugs, please report them on GitHub or Discord.\n\n§a== Message from the Developer ==\nWe welcome your feedback to make ChestLockAddon a better addon.",
+    msgstr: "§a== ChestLockAddonについて ==\n\nChestLockAddonは、Minecraftバージョン1.21.40用の便利なユーティリティアドオンで、チェスト保護などを提供します。\n\n§b== 主な機能 ==\n• チェスト保護：他のプレイヤーからチェストを保護します。\n• 多言語サポート：langコマンドで言語設定を変更できます。\n• テレポートリクエスト：tpaコマンドで他のプレイヤーにテレポートリクエストを送信します。\n• その他：今後、さらに便利なコマンドが追加される予定です。\n\n§b== リンク ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== 注意 ==\nこのアドオンは開発中であり、予期しないバグが含まれている可能性があります。バグを見つけた場合は、GitHubまたはDiscordでご報告ください。\n\n§a== 開発者からのメッセージ ==\nChestLockAddonをより良いアドオンにするために、皆様からのフィードバックをお待ちしております。"
+  },
+  "server.ServerVersion": {
+    msgid: "§bThis ChestLockAddon is running version {version}",
+    msgstr: "§bこのChestLockAddonはバージョン{version}で動作しています"
+  },
+  "server.Invalid": {
+    msgid: "§c Invalid argument.",
+    msgstr: "§c 無効な引数です。"
+  },
+  "server.PlayerNotFound": {
+    msgid: "§cPlayer not found! Make sure you're in a valid location.",
+    msgstr: "§cプレイヤーが見つかりません！有効な場所に居ることを確認してください。"
+  },
+  "server.closeChat": {
+    msgid: "§a == Close The Chat Panel ==",
+    msgstr: "§a == チャットパネルを閉じる =="
+  },
+  "server.desabledCom": {
+    msgid: "§c Unregistered or disabled command.",
+    msgstr: "§c 登録されていないか、無効化されたコマンドです。"
+  },
+  "server.desableComSuggest": {
+    msgid: "§6 Invalid command. Did you mean: {possibleCommands}? If so, answer {prefix}yes",
+    msgstr: "§6 無効なコマンドです。もしかして: {possibleCommands}？もしそうなら、{prefix}yesと答えてください"
+  },
+  "server.AllowTagCom": {
+    msgid: "§c Only players with an authorized tag can use this command.",
+    msgstr: "§c 許可されたタグを持つプレイヤーのみがこのコマンドを使用できます。"
+  },
+  "server.invalidCom": {
+    msgid: "§6 Invalid command. Please make sure it is correct. Commands used: {commandName}",
+    msgstr: "§6 無効なコマンドです。コマンドが正しいことを確認してください。使用されたコマンド: {commandName}"
+  },
+  "server.unavailable": {
+    msgid: "§c You do not have permission to do that.",
+    msgstr: "§c あなたにはそれを行う権限がありません。"
+  },
+  "command.lore.UsageLore": {
+    msgid: "§3Usage: {prefix}lore -set \"<lore content>\" or {prefix}lore -remove \"<lore content>\" or {prefix}lore -rename \"<new name>\" or {prefix}lore -command.ClearLore",
+    msgstr: "§3使用方法: {prefix}lore -set \"<説明の内容>\" または {prefix}lore -remove \"<説明の内容>\" または {prefix}lore -rename \"<新しい名前>\" または {prefix}lore -command.ClearLore"
+  },
+  "command.lore.AddLore": {
+    msgid: "§aLore added, please check.",
+    msgstr: "§a説明を追加しました。確認してください。"
+  },
+  "command.lore.takeItem": {
+    msgid: "§cPlease hold the item.",
+    msgstr: "§cアイテムを持ってください。"
+  },
+  "command.lore.NotFoundLore": {
+    msgid: "§cLore not found.",
+    msgstr: "§c説明が見つかりません。"
+  },
+  "command.lore.RemoveLore": {
+    msgid: "§aLore deleted. Please check.",
+    msgstr: "§a説明を削除しました。確認してください。"
+  },
+  "command.lore.ChangeNames": {
+    msgid: "§aItem renamed.",
+    msgstr: "§aアイテムの名前を変更しました。"
+  },
+  "command.edit.FirstPointSet": {
+    msgid: "§f>>§a First point set.",
+    msgstr: "§f>>§a最初のポイントを設定しました。"
+  },
+  "command.edit.SecondPointSet": {
+    msgid: "§f>>§6 Second point set.",
+    msgstr: "§f>>§62番目のポイントを設定しました。"
+  },
+  "command.edit.SelectionCompleted": {
+    msgid: "§f>>§a Selection completed.",
+    msgstr: "§f>>§a選択が完了しました。"
+  },
+  "command.edit.PointSet": {
+    msgid: "§f>> §aPoint set.",
+    msgstr: "§f>> §aポイントを設定しました。"
+  },
+  "command.edit.WallsCreated": {
+    msgid: "§f>>§a Walls created.",
+    msgstr: "§f>>§a壁を作成しました。"
+  },
+  "command.edit.InvalidBlockId": {
+    msgid: "§f>>§c Invalid block ID.",
+    msgstr: "§f>>§c無効なブロックIDです。"
+  },
+  "command.edit.OutlineCreated": {
+    msgid: "§f>>§a Outline created.",
+    msgstr: "§f>>§aアウトラインを作成しました。"
+  },
+  "command.edit.FilledCircleCreated": {
+    msgid: "§f>>§a Filled circle created.",
+    msgstr: "§f>>§a塗りつぶされた円を作成しました。"
+  },
+  "command.edit.RangeSet": {
+    msgid: "§f>>§a Range set with the specified block ({blockId}).",
+    msgstr: "§f>>§a指定されたブロック({blockId})で範囲を設定しました。"
+  },
+  "command.edit.RangeCleared": {
+    msgid: "§f>>§a Range cleared.",
+    msgstr: "§f>>§a範囲をクリアしました。"
+  },
+  "command.edit.WallsToolSelected": {
+    msgid: "§f>>§a Walls tool selected. (Block ID: {blockId})",
+    msgstr: "§f>>§a壁ツールを選択しました。(ブロックID: {blockId})"
+  },
+  "command.edit.OutlineToolSelected": {
+    msgid: "§f>>§a Outline tool selected. (Radius: {radius}, Block ID: {blockId})",
+    msgstr: "§f>>§aアウトラインツールを選択しました。(半径: {radius}, ブロックID: {blockId})"
+  },
+  "command.edit.FilledCircleToolSelected": {
+    msgid: "§f>>§a Filled circle tool selected. (Radius: {radius}, Block ID: {blockId})",
+    msgstr: "§f>>§a塗りつぶし円ツールを選択しました。(半径: {radius}, ブロックID: {blockId})"
+  },
+  "command.edit.ToolExited": {
+    msgid: "§f>>§a Tool exited.",
+    msgstr: "§f>>§aツールを終了しました。"
+  },
+  "command.edit.ToolOptions": {
+    msgid: "§f>> §3Tool options: -wall <blockID>, -outline <radius> <blockID>, -filledCircle <radius> <blockID>, -exit",
+    msgstr: "§f>> §3ツールオプション: -wall <blockID>, -outline <radius> <blockID>, -filledCircle <radius> <blockID>, -exit"
+  },
+  "command.edit.StartRangeSelection2": {
+    msgid: "§f>>§a Range selection started. Please break two blocks.",
+    msgstr: "§f>>§a範囲選択を開始しました。2つのブロックを破壊してください。"
+  },
+  "command.edit.StartRangeSelection": {
+    msgid: "§f>>§a Range selection started. Hold a wooden hoe and break a block.",
+    msgstr: "§f>>§a範囲選択を開始しました。木のクワを持ってブロックを破壊してください。"
+  },
+  "command.edit.InvalidCommandUsage": {
+    msgid: "§f>>§3 Invalid command usage: /{prefix}edit -set <blockID> | /{prefix}edit -clear | /{prefix}edit tool <options> | /{prefix}edit start",
+    msgstr: "§f>>§3 無効なコマンドの使い方です: /{prefix}edit -set <blockID> | /{prefix}edit -clear | /{prefix}edit tool <options> | /{prefix}edit start"
+  },
+  "command.edit.TheFirestBlock": {
+    msgid: "§a1. First block recorded. Destroy the block again.",
+    msgstr: "§a1. 最初のブロックを記録しました。もう一度ブロックを破壊してください。"
+  },
+  "command.edit.TheSecond": {
+    msgid: "§a2. Second block recorded. Warp gate has been set.",
+    msgstr: "§a2. 2番目のブロックを記録しました。ワープゲートが設定されました。"
+  },
+  "command.warp.WarpUsage": {
+    msgid: "§c Usage: warpgate -create <gate name> <x> <y> <z>",
+    msgstr: "§c 使用方法: warpgate -create <ゲート名> <x> <y> <z>"
+  },
+  "command.warp.AlreadyWarp": {
+    msgid: "§c A warp gate with that name already exists.",
+    msgstr: "§c その名前のワープゲートは既に存在します。"
+  },
+  "command.warp.CreateGate": {
+    msgid: "§a Creating warp gate: {gatename} \n §a Next, destroy two blocks to define the gate's boundaries.",
+    msgstr: "§a ワープゲートを作成中: {gatename} \n §a 次に、2つのブロックを破壊してゲートの境界を定義してください。"
+  },
+  "command.warp.NotWarp": {
+    msgid: "§c The specified warp gate does not exist.",
+    msgstr: "§c 指定されたワープゲートは存在しません。"
+  },
+  "command.warp.deleteWarp": {
+    msgid: "§a Gate removed: {gatename}",
+    msgstr: "§a ゲートを削除しました: {gatename}"
+  },
+  "command.warp.NotWarpSetting": {
+    msgid: "§c No warp gate is set.",
+    msgstr: "§c ワープゲートが設定されていません。"
+  },
+  "command.warp.listGate": {
+    msgid: "§a List of warp gates:\n",
+    msgstr: "§a ワープゲートのリスト:\n"
+  },
+  "command.warp.UsageGate": {
+    msgid: "§c Invalid subcommand usage: {prefix}warpgate <-create/delete/list> [name] |\n§c Create command only: -create [name] [x,y,z]",
+    msgstr: "§c サブコマンドの使用方法が無効です: {prefix}warpgate <-create/delete/list> [name] |\n§c 作成コマンドのみ: -create [name] [x,y,z]"
+  },
+  "command.warp.TPGATE": {
+    msgid: "§a Teleported to warp gate: {gate}.",
+    msgstr: "§a ワープゲートにテレポートしました: {gate}。"
+  },
+  "command.join.Joinenabled": {
+    msgid: "§a Enabled join messages.",
+    msgstr: "§a 参加メッセージを有効にしました。"
+  },
+  "command.join.Joindisabled": {
+    msgid: "§c Disabled join messages.",
+    msgstr: "§c 参加メッセージを無効にしました。"
+  },
+  "command.join.UsageJoin": {
+    msgid: "§c Usage: join <-true/-false/-settings>",
+    msgstr: "§c 使用方法: join <-true/-false/-settings>"
+  },
+  "command.join.welcome": {
+    msgid: "§7 Welcome to My Server!",
+    msgstr: "§7 サーバーへようこそ！"
+  },
+  "command.join.Rulejoin": {
+    msgid: "§6 Server Rules!!",
+    msgstr: "§6 サーバールール!!"
+  },
+  "command.join.RulesNumber": {
+    msgid: "§b Number of Rules:",
+    msgstr: "§b ルールの数:"
+  },
+  "command.join.RulesEnter": {
+    msgid: "§0 Enter the number of rules:",
+    msgstr: "§0 ルールの数を入力してください:"
+  },
+  "command.join.RuleSettings": {
+    msgid: "§6 Rule Settings",
+    msgstr: "§6 ルール設定"
+  },
+  "command.join.Rules": {
+    msgid: "§b Rule {i}:",
+    msgstr: "§b ルール {i}:"
+  },
+  "command.join.RuleEnter2": {
+    msgid: "§0 Enter rule {i}:",
+    msgstr: "§0 ルール {i} を入力してください:"
+  },
+  "command.join.RuleUpdate": {
+    msgid: "§a Rules updated!",
+    msgstr: "§a ルールを更新しました！"
+  },
+  "command.join.joinSettings": {
+    msgid: "§6 Join Log Settings",
+    msgstr: "§6 参加ログ設定"
+  },
+  "commnad.tpa.tpaRequestSent": {
+    msgid: "§a TPA request sent to§b {playerName}.",
+    msgstr: "§a §b{playerName} にTPAリクエストを送信しました。"
+  },
+  "commnad.tpa.tpaRequestAlreadySent": {
+    msgid: "§c You have already sent a TPA request to§6 {playerName}!",
+    msgstr: "§c §6{playerName} に既にTPAリクエストを送信しています！"
+  },
+  "commnad.tpa.tpaRequestReceived": {
+    msgid: "§2 Received a TPA request from §b{playerName}.",
+    msgstr: "§2 §b{playerName} からTPAリクエストを受信しました。"
+  },
+  "commnad.tpa.noPendingTpaRequests": {
+    msgid: "§3 You have no pending TPA requests.",
+    msgstr: "§3 保留中のTPAリクエストはありません。"
+  },
+  "commnad.tpa.invalidTpaRequest": {
+    msgid: "§c Invalid TPA request.",
+    msgstr: "§c 無効なTPAリクエストです。"
+  },
+  "commnad.tpa.requesterNotFound": {
+    msgid: "§c Requester not found.",
+    msgstr: "§c リクエストを送信したプレイヤーが見つかりません。"
+  },
+  "commnad.tpa.teleportedToPlayer": {
+    msgid: "§a Teleported to §b{playerName}.",
+    msgstr: "§a §b{playerName} にテレポートしました。"
+  },
+  "commnad.tpa.tpaRequestAccepted": {
+    msgid: "§a §b{playerName} §ahas accepted your TPA request.",
+    msgstr: "§a §b{playerName} §aがあなたのTPAリクエストを承認しました。"
+  },
+  "commnad.tpa.tpaRequestAcceptes": {
+    msgid: "§a TPA request from §b{playerName}§a accepted!",
+    msgstr: "§a §b{playerName}§aからのTPAリクエストを承認しました！"
+  },
+  "commnad.tpa.cannotTpaToSelf": {
+    msgid: "§c You cannot send a TPA request to yourself.",
+    msgstr: "§c 自分自身にTPAリクエストを送信することはできません。"
+  },
+  "commnad.tpa.invalidTpaCommandUsage": {
+    msgid: "§3 Invalid usage. Use {prefix}tpa -r <player> to send a request, or {prefix}tpa -a <player> to accept.",
+    msgstr: "§3 使用方法が無効です。リクエストを送信するには {prefix}tpa -r <player> を、承認するには {prefix}tpa -a <player> を使用してください。"
+  },
+  "commnad.tpa.tpaRequestTimedOut": {
+    msgid: "§3 TPA request from §6{playerName}§3 has timed out.",
+    msgstr: "§3 §6{playerName}§3からのTPAリクエストがタイムアウトしました。"
+  },
+  "commnad.item.FullInv": {
     msgid: "§c Your inventory is full. Items cannot be granted.",
-    msgstr: "§cインベントリがいっぱいのためアイテムを付与できません"
+    msgstr: "§c インベントリがいっぱいです。アイテムを付与できません。"
   },
-  "AlreadyInv": {
+  "commnad.item.AlreadyInv": {
     msgid: "§c That UI item already exists in your inventory.",
-    msgstr: "§cUIitem は既にインベントリに存在します"
+    msgstr: "§c そのUIアイテムは既にインベントリに存在します。"
   },
-  "AddInv": {
+  "commnad.item.AddInv": {
     msgid: "§a Item added to your inventory! (Please check)",
-    msgstr: "§aインベントリにアイテムが追加されました。 （チェックしてください）"
-  },
-  "Displayplayerinformation": {
-    msgid: "List command (Displays player information)",
-    msgstr: "Listコマンド（プレイヤー情報を表示）"
+    msgstr: "§a アイテムをインベントリに追加しました！(確認してください)"
   },
   "commands.list.usage": {
     msgid: "§a Usage: {prefix}list show <playerName> or {prefix}list all",
-    msgstr: "§a使用法: list show <playerName> または list all"
+    msgstr: "§a使用法: {prefix}list show <playerName> または {prefix}list all"
   },
   "commands.list.playerInfo": {
     msgid: "§6 ==== Player Info =====\n §2Name: §f{name},\n §2ID: §f{TargetID},\n §2dimension:§f{dimension}\n §2Location: §f({TargetX}, {TargetY}, {TargetZ}),\n §2Health: §f{health},\n §2Game Mode:§f {GameMode},\n §2Ping:§f {ping}\n §2Device: §f{device}\n §2Memory: §f{memory}\n §6 ===========",
@@ -551,300 +651,160 @@ export const translations = {
     msgid: "§c Player not found: §6{tragetplayer}",
     msgstr: "§cプレーヤーが見つかりません: {tragetplayer}"
   },
-  "jpch_command_description": {
-    msgid: "JPCH command (Experimental feature)",
-    msgstr: "LunaChat風のローマ字から日本語に変換する機能です（実験的)"
-  },
-  "ui_command_description": {
-    msgid: "UI command (This command displays a GUI with ActionForm)",
-    msgstr: "UIを表示します(Switch/PS4/5用)"
-  },
-  "ChooseCom": {
-    msgid: "§2 Select a command:",
-    msgstr: "§2使用したいコマンドを選択してね:"
-  },
-  "ChestCom": {
-    msgid: "§2 Select a chest:",
-    msgstr: "§2使用したい内容を選択:"
-  },
-  "Chestinfo": {
-    msgid: "§0 See nearby chests",
-    msgstr: "§0近くのチェストの情報を見る"
-  },
-  "Chestlock": {
-    msgid: "§0 Lock System",
-    msgstr: "§0ロック機能系"
-  },
-  "ChestMember": {
-    msgid: "§0 Member System",
-    msgstr: "§0メンバー操作系"
-  },
-  "back": {
-    msgid: "§2 Back",
-    msgstr: "§2戻る"
-  },
-  "lockinfo": {
-    msgid: "§2 Select the lock type:",
-    msgstr: "§2ロックの種類を選択してください:"
-  },
-  "locking": {
-    msgid: "§a Locking!",
-    msgstr: "§aロック!"
-  },
-  "unlocking": {
-    msgid: "§c Unlocking!",
-    msgstr: "§cロック解除!"
-  },
-  "ProtectChest": {
-    msgid: "§0 Chest Protection Status",
-    msgstr: "§0保護チェストのステータス"
-  },
-  "MemberChoose": {
-    msgid: "§2 Choose your members:",
-    msgstr: "§2操作するボタンを選択してください:"
-  },
-  "MemberAdd": {
-    msgid: "§0 Add Member",
-    msgstr: "§0メンバーを追加"
-  },
-  "MemberRemove": {
-    msgid: "§0 Remove Member",
-    msgstr: "§0メンバーを削除"
-  },
-  "Memberall": {
-    msgid: "§0 Member List",
-    msgstr: "§0メンバーリスト"
-  },
-  "AddMemberSelect": {
-    msgid: "§2 Select the member you want to add:",
-    msgstr: "§2追加したいメンバーを選択してください:"
-  },
-  "RemoveMemberSelect": {
-    msgid: "§2 Select the member you want to remove:",
-    msgstr: "§2削除したいメンバーを選択してください:"
-  },
-  "SelectLang": {
-    msgid: "§2 Select an operation from the language menu:",
-    msgstr: "§2言語メニューから操作を選択してください:"
-  },
-  "langList": {
-    msgid: "§0 Language List",
-    msgstr: "§0言語対応リスト"
-  },
-  "langChange": {
-    msgid: "§0 Change Language",
-    msgstr: "§0言語変更"
-  },
-  "langChange1": {
-    msgid: "§2 Please select the language you want to change to:",
-    msgstr: "§2変更したい言語を選択してください:"
-  },
-  "FromError": {
-    msgid: "§c An error occurred while displaying the form:",
-    msgstr: "§cフォームの表示中にエラーが発生しました"
-  },
-  "desabledCom": {
-    msgid: "§c Unregistered or disabled command.",
-    msgstr: "§c無効なコマンド"
-  },
-  "desableComSuggest": {
-    msgid: "§6 Invalid command. Did you mean: {possibleCommands}? If so, answer {prefix}yes",
-    msgstr: "§6無効なコマンドです。もしかして {possibleCommands} コマンドでしょうか?そうであれば、[{prefix}yes]と答えてください"
-  },
-  "AllowTagCom": {
-    msgid: "§c Only players with an authorized tag can use this command.",
-    msgstr: "§c許可されたタグを持つプレイヤーのみが使用できます"
-  },
-  "invalidCom": {
-    msgid: "§6 Invalid command. Please make sure it is correct. Commands used: {commandName}",
-    msgstr: "§6無効なコマンドです。正しいことを確認してください。使用されたコマンド:{commandName}"
-  },
-  "Developer commands": {
-    msgid: "Dev command (This command allows developers and administrators to reset and verify dynamic properties)",
-    msgstr: "デベロッパー専用コマンド(tag OPが必要)"
-  },
-  "help_command_description": {
-    msgid: "Help command (This command displays help information)",
-    msgstr: "helpコマンド(登録されたコマンドを表示します）"
-  },
-  "lang_removeData": {
-    msgid: "Language data deletion complete.",
-    msgstr: "言語データの削除が完了しました"
-  },
-  "lang_docs": {
-    msgid: "Lang command (This command switches the language)",
-    msgstr: "Lang コマンド(言語を変更できます)"
-  },
-  "lang_list": {
+  "command.lang.lang_list": {
     msgid: "§a Available Languages:\n",
-    msgstr: "§a使用可能な言語:\n"
+    msgstr: "§a 利用可能な言語:\n"
   },
-  "lang_change": {
+  "command.lang.lang_change": {
     msgid: "§a Language changed to: {language}",
-    msgstr: "§a言語が変更されました"
+    msgstr: "§a 言語を{language}に変更しました"
   },
-  "lang_failed": {
+  "command.lang.lang_failed": {
     msgid: "§c Failed to change language to: {language}",
-    msgstr: "§c言語を変更できませんでした"
+    msgstr: "§c 言語を{language}に変更できませんでした"
   },
-  "lang_invalid": {
+  "command.lang.lang_invalid": {
     msgid: "§c Invalid command usage. Use /lang list or /lang change <language_code>",
-    msgstr: "§c無効なコマンドの使用法です。\nlang list または lang change <language_code> を使用してね"
+    msgstr: "§c コマンドの使用方法が無効です。/lang list または /lang change <language_code> を使用してください"
   },
-  "chest_command": {
-    msgid: "Chest Command",
-    msgstr: "チェストを保護するコマンド(BETA版)"
-  },
-  "unavailable": {
-    msgid: "§c You do not have permission to do that.",
-    msgstr: "§cこのコマンドを使用する権限がありません"
-  },
-  "chest_help": {
+  "command.chest.chest_help": {
     msgid: "§c Invalid command.\n§a Chest protection command usage:\n  §bchest lock        - Locks the chest\n  §bchest info       - Displays information about the nearest chest\n  §bchest unlock      - Unlocks the chest\n  §bchest protect <lock/unlock> - Toggles chest protection\n  §bchest add <playername>   - Adds a member to the chest\n  §bchest remove <playername>  - Removes a member from the chest\n  §bchest all        - Displays a list of chest members\n  §bchest list        - Displays a list of chests\n  §b_______________________________________\n  §bAuthor: Koukun        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn",
-    msgstr: "§c無効なコマンドです。\n§aチェスト保護コマンドの使用方法:\n  §bchest lock        - チェストをロックします\n  §bchest info       - 近くのチェストの情報を表示します\n  §bchest unlock      - チェストのロックを解除します\n  §bchest protect <lock/unlock> - チェストの保護状態を切り替えます\n  §bchest add <playername>   - チェストのメンバーを追加します\n  §bchest remove <playername>  - チェストのメンバーを削除します\n  §bchest all        - チェストのメンバー一覧を表示します\n  §bchest list        - 現在保護しているチェストのリストを表示します\n  §b_______________________________________\n  §b作者: こう君        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
+    msgstr: "§c 無効なコマンドです。\n§a チェスト保護コマンドの使い方:\n  §bchest lock        - チェストをロックします\n  §bchest info       - 最寄りのチェストの情報を表示します\n  §bchest unlock      - チェストのロックを解除します\n  §bchest protect <lock/unlock> - チェストの保護を切り替えます\n  §bchest add <playername>   - チェストにメンバーを追加します\n  §bchest remove <playername>  - チェストからメンバーを削除します\n  §bchest all        - チェストメンバーのリストを表示します\n  §bchest list        - チェストのリストを表示します\n  §b_______________________________________\n  §b作者: Koukun        - ライセンス AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
   },
-  "MaxChestLimitReached": {
+  "command.chest.MaxChestLimitReached": {
     msgid: "§c The installation limit of {limit} has been reached.",
     msgstr: "§c既に設置上限である{limit}に達しています"
   },
-  "chestLocksCount": {
+  "command.chest.chestLocksCount": {
     msgid: "§a You are currently protecting {protectChest} chests.",
     msgstr: "§a現在{protectChest}個のチェストが保護されています。"
   },
-  "ChestlistCom": {
+  "command.chest.ChestlistCom": {
     msgid: "§a You have protected {playerChests} chests:",
     msgstr: "§aあなたは現在{playerChests}個のチェストを保護しています。"
   },
-  "chestlocation": {
+  "command.chest.chestlocation": {
     msgid: "§e - Location: {key}",
-    msgstr: "§e- 座標: {key}"
+    msgstr: "§e - 場所: {key}"
   },
-  "nearby_chest_info": {
+  "command.chest.nearby_chest_info": {
     msgid: "§a ---- Nearby Chest Info ----",
     msgstr: "§a---- 近くのチェスト情報 ----"
   },
-  "coordinate_x": {
+  "command.chest.coordinate_x": {
     msgid: "§b X: §e",
-    msgstr: ""
+    msgstr: "§b X: §e"
   },
-  "coordinate_y": {
+  "command.chest.coordinate_y": {
     msgid: "§b Y: §e",
-    msgstr: ""
+    msgstr: "§b Y: §e"
   },
-  "coordinate_z": {
+  "command.chest.coordinate_z": {
     msgid: "§b Z: §e",
-    msgstr: ""
+    msgstr: "§b Z: §e"
   },
-  "protected": {
+  "command.chest.protected": {
     msgid: "§a Protected",
     msgstr: "§a保護されています"
   },
-  "owner": {
+  "command.chest.owner": {
     msgid: "§b Owner: §e",
     msgstr: "§b所有者: §e"
   },
-  "members": {
+  "command.chest.members": {
     msgid: "§b Members: §e",
     msgstr: "§bメンバー: §e"
   },
-  "large_chest": {
+  "command.chest.large_chest": {
     msgid: "§b Large Chest: §e",
     msgstr: "§bラージチェスト: §e"
   },
-  "yes": {
+  "command.chest.yes": {
     msgid: "Yes",
-    msgstr: "§aはい"
+    msgstr: ""
   },
-  "no": {
+  "command.chest.no": {
     msgid: "No",
-    msgstr: "§cいいえ"
+    msgstr: ""
   },
-  "not_protected": {
+  "command.chest.not_protected": {
     msgid: "§c Not Protected",
     msgstr: "§c保護されていません"
   },
-  "notFound_chest": {
+  "command.chest.notFound_chest": {
     msgid: "§c Cannot find chest.",
     msgstr: "§cチェストが見つかりませんでした"
   },
-  "chestProtectRemove": {
-    msgid: "§a Chest protection removed.",
-    msgstr: "§aチェストの保護を解除しました"
-  },
-  "AlreadyProChest": {
-    msgid: "§a This chest is already protected.",
-    msgstr: "§a このチェストは既に保護されています。"
-  },
-  "chest_lookstate": {
+  "command.chest.chest_lookstate": {
     msgid: "§a Chest protection: {lcokstate}",
-    msgstr: "§aチェストを保護しました{lcokstate}"
+    msgstr: "§aチェスト保護: {lcokstate}"
   },
-  "chest_removeData": {
+  "command.chest.chest_removeData": {
     msgid: "§a All chest protection data has been reset.",
-    msgstr: "§a全てのチェスト保護データをリセットしました"
+    msgstr: "§a全てのチェスト保護データをリセットしました。"
   },
-  "command_chest_ContributedToChest": {
+  "command.chest.ContributedToChest": {
     msgid: "§a Thanks for going out of your way to make it a large chest",
-    msgstr: "§a わざわざラージチェストにしてくれてありがとう！！"
+    msgstr: "§aラージチェストにしてくれてありがとう"
   },
-  "isLookChest": {
+  "command.chest.isLookChest": {
     msgid: "§c This chest is locked by {owner}",
     msgstr: "§cこのチェストは{owner}によってロックされています"
   },
-  "isProChest": {
+  "command.chest.isProChest": {
     msgid: "§c This chest is protected!",
-    msgstr: "§cこのチェストは保護されています"
+    msgstr: "§cこのチェストは保護されています！"
   },
-  "ProChestBreak": {
+  "command.chest.ProChestBreak": {
     msgid: "§a Protected chest destroyed. Protection data also deleted.",
     msgstr: "§a保護されたチェストを破壊しました。保護データも削除されました。"
   },
-  "lockChange": {
+  "command.chest.lockChange": {
     msgid: "§a Chest protection state changed to: {lock}",
-    msgstr: "§aチェストの保護状態を変更しました"
+    msgstr: "§aチェストの保護状態が{lock}に変更されました。"
   },
-  "NotChest": {
+  "command.chest.NotChest": {
     msgid: "§c You are not authorized to access this chest.",
-    msgstr: "§cこのチェストを操作する権限がありません"
+    msgstr: "§cこのチェストにアクセスする権限がありません。"
   },
-  "AddM": {
+  "command.chest.AddM": {
     msgid: "§a {member} added as a member at location: {chestLocation}",
-    msgstr: "§a{member}をメンバーに追加しました。座標: {chestLocation}"
+    msgstr: "§a {member}をメンバーとして追加しました。場所: {chestLocation}"
   },
-  "addYouM": {
+  "command.chest.addYouM": {
     msgid: "§a {playerName} has added you to the following chests: {chestLocation}",
-    msgstr: "§a{playerName}があなたを以下のチェストのメンバーに追加しました:\n{chestLocation}のチェスト"
+    msgstr: "§a {playerName}があなたを次のチェストに追加しました: {chestLocation}"
   },
-  "RemoveYouM": {
+  "command.chest.RemoveYouM": {
     msgid: "§a {playerName} has removed you from the following chests: {chestLocation}",
-    msgstr: "§a{playerName}があなたを以下のチェストのメンバーから削除しました:\n{chestLocation}のチェスト"
+    msgstr: "§a {playerName}があなたを次のチェストから削除しました: {chestLocation}"
   },
-  "MAlreday": {
+  "command.chest.MAlreday": {
     msgid: "§c {member} is already a member.",
-    msgstr: "§cは既にメンバーです"
+    msgstr: "§c {member}は既にメンバーです。"
   },
-  "RemoveM": {
+  "command.chest.RemoveM": {
     msgid: "§a {member} has been removed from members.",
-    msgstr: "§aをメンバーから削除しました"
+    msgstr: "§a {member}をメンバーから削除しました。"
   },
-  "NotM": {
+  "command.chest.NotM": {
     msgid: "§c Not a member.",
-    msgstr: "§cはメンバーではありません"
+    msgstr: "§c メンバーではありません。"
   },
-  "allM": {
+  "command.chest.allM": {
     msgid: "§a Members: ",
-    msgstr: "§aメンバー: "
+    msgstr: "§a メンバー: "
   },
-  "NotFoundM": {
+  "command.chest.NotFoundM": {
     msgid: "§c No members.",
-    msgstr: "§c メンバーがいません"
+    msgstr: "§c メンバーはいません。"
   },
-  "ExplosionWarning": {
+  "command.chest.ExplosionWarning": {
     msgid: "§c Please do not explode that.",
-    msgstr: "§c このチェストは無敵です"
+    msgstr: "§c それを爆発させないでください。"
   },
-  "cannotPlaceItem": {
+  "command.chest.cannotPlaceItem": {
     msgid: "§c You are not allowed to place pistons in this area.",
-    msgstr: "§c このエリアにこのアイテムを置く事は禁止されています"
+    msgstr: "§c このエリアにピストンを設置することはできません。"
   },
 };

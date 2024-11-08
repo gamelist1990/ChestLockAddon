@@ -16,6 +16,7 @@ interface VoteData {
     voteText?: string;
     announceInterval: number;
     showLiveResults: boolean;
+    maxResultsToShow: number;
 }
 
 const VOTE_DATA_KEY = 'vote_data';
@@ -28,6 +29,7 @@ const defaultVoteData: VoteData = {
     editingScoreboard: false,
     announceInterval: 15,
     showLiveResults: false,
+    maxResultsToShow: 10,
 };
 
 let voteData: VoteData = defaultVoteData;
@@ -38,7 +40,7 @@ let lastAnnounceTime: number = 0;
 
 
 function saveVoteData(): void {
-    world.setDynamicProperty(VOTE_DATA_KEY, JSON.stringify(voteData)); 
+    world.setDynamicProperty(VOTE_DATA_KEY, JSON.stringify(voteData));
     console.log('投票データを保存しました:', voteData);
 }
 
@@ -46,7 +48,7 @@ function loadVoteData(): void {
     const savedData = world.getDynamicProperty(VOTE_DATA_KEY);
     if (savedData) {
         try {
-            if (typeof savedData === 'string') { 
+            if (typeof savedData === 'string') {
                 voteData = JSON.parse(savedData);
             } else {
                 console.warn('投票データが文字列型ではありません。デフォルト値を使用します:', savedData);
@@ -99,7 +101,7 @@ function getVoteItemsFromScoreboard(): VoteItem[] {
     return voteItems;
 }
 
-function getVoteItems(): VoteItem[] { 
+function getVoteItems(): VoteItem[] {
     const voteItems: VoteItem[] = [];
     for (const name in voteResults) {
         voteItems.push({ name, score: voteResults[name] });
@@ -124,7 +126,9 @@ function announceResults(voteItems: VoteItem[], customResultText: string): void 
         return;
     }
 
-    for (let i = 0; i < voteItems.length; i++) {
+    const itemsToShow = voteItems.slice(0, voteData.maxResultsToShow);
+
+    for (let i = 0; i < itemsToShow.length; i++) {
         const item = voteItems[i];
         const rankText = voteData.rankText || "位";
         const voteText = voteData.voteText || "票";
@@ -156,19 +160,19 @@ system.runInterval(() => {
         const voteItems = getVoteItems();
         announceResults(voteItems, voteData.resultText);
         voteEndTime = null;
-        playerVotes = {}; 
+        playerVotes = {};
         world.sendMessage("投票が終了しました。");
         resetVoteScoreboard();
     }
 });
 
 function resetAllVoteData() {
-    voteData = defaultVoteData; 
-    saveVoteData(); 
-    voteResults = {}; 
-    playerVotes = {}; 
-    voteEndTime = null; 
-    lastAnnounceTime = 0; 
+    voteData = defaultVoteData;
+    saveVoteData();
+    voteResults = {};
+    playerVotes = {};
+    voteEndTime = null;
+    lastAnnounceTime = 0;
     world.sendMessage("すべての投票データと設定がリセットされました。");
 }
 
@@ -216,7 +220,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
 
         voteResults[selectedItem.name] = (voteResults[selectedItem.name] || 0) + 1;
         playerVotes[player.name] = (playerVotes[player.name] || 0) + 1;
-        if (playerVotes[player.name] === 1) { 
+        if (playerVotes[player.name] === 1) {
             player.addTag("voted");
         }
 
@@ -253,8 +257,9 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             .textField("投票状況アナウンス間隔（秒）", "", voteData.announceInterval.toString())
             .toggle("投票中にリアルタイム結果を表示", voteData.showLiveResults)
             .toggle("スコアボード編集", voteData.editingScoreboard)
-            .textField("順位表示テキスト (例: 位、着)", "例: 位", voteData.rankText ?? "位") 
-            .textField("票数表示テキスト (例: 票、pt)", "例: 票", voteData.voteText ?? "票");
+            .textField("順位表示テキスト (例: 位、着)", "例: 位", voteData.rankText ?? "位")
+            .textField("票数表示テキスト (例: 票、pt)", "例: 票", voteData.voteText ?? "票")
+            .textField("表示する最大順位", "", voteData.maxResultsToShow.toString()); 
         //@ts-ignore
         form.show(player).then((response: ModalFormResponse) => {
             if (response.canceled || !response.formValues) return;
@@ -266,13 +271,16 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             const announceIntervalString = response.formValues[4] as string;
             voteData.showLiveResults = response.formValues[5] as boolean;
             voteData.editingScoreboard = response.formValues[6] as boolean;
-            voteData.rankText = String(response.formValues[7] ?? "位"); 
-            voteData.voteText = String(response.formValues[8] ?? "票"); 
+            voteData.rankText = String(response.formValues[7] ?? "位");
+            voteData.voteText = String(response.formValues[8] ?? "票");
+            const maxResultsToShowString = response.formValues[9] as string;
+
 
 
             const newDuration = parseInt(durationString, 10);
             const newMaxVotes = parseInt(maxVotesPerPlayerString, 10);
             const newAnnounceInterval = parseInt(announceIntervalString, 10);
+            const newMaxResults = parseInt(maxResultsToShowString, 10);
 
 
 
@@ -288,6 +296,12 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             if (!isNaN(newAnnounceInterval) && newAnnounceInterval > 0) {
                 voteData.announceInterval = newAnnounceInterval;
                 player.sendMessage(`アナウンス間隔を ${newAnnounceInterval} 秒に設定しました。`);
+            }
+            if(!isNaN(newMaxResults) && newMaxResults > 0) {
+                voteData.maxResultsToShow = newMaxResults;
+                player.sendMessage(`表示する最大順位を ${newMaxResults} 位に設定しました。`);
+            } else {
+                player.sendMessage("無効な最大順位です。");
             }
 
             voteData.duration = newDuration;

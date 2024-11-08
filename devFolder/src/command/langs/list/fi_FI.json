@@ -55,6 +55,10 @@
     "msgid": "Send a request and teleport.",
     "msgstr": ""
   },
+  "chest_docs": {
+    "msgid": "Chest Command",
+    "msgstr": ""
+  },
   "ui.ReportButton": {
     "msgid": "§0Report Menu",
     "msgstr": ""
@@ -291,7 +295,7 @@
     "msgid": "§0 Change Language",
     "msgstr": ""
   },
-  "langChange1": {
+  "ui.langChange1": {
     "msgid": "§2 Please select the language you want to change to:",
     "msgstr": ""
   },
@@ -400,6 +404,26 @@
   },
   "server.closeChat": {
     "msgid": "§a == Close The Chat Panel ==",
+    "msgstr": ""
+  },
+  "server.desabledCom": {
+    "msgid": "§c Unregistered or disabled command.",
+    "msgstr": ""
+  },
+  "server.desableComSuggest": {
+    "msgid": "§6 Invalid command. Did you mean: {possibleCommands}? If so, answer {prefix}yes",
+    "msgstr": ""
+  },
+  "server.AllowTagCom": {
+    "msgid": "§c Only players with an authorized tag can use this command.",
+    "msgstr": ""
+  },
+  "server.invalidCom": {
+    "msgid": "§6 Invalid command. Please make sure it is correct. Commands used: {commandName}",
+    "msgstr": ""
+  },
+  "server.unavailable": {
+    "msgid": "§c You do not have permission to do that.",
     "msgstr": ""
   },
   "command.lore.UsageLore": {
@@ -662,47 +686,23 @@
     "msgid": "§c Player not found: §6{tragetplayer}",
     "msgstr": ""
   },
-  "server.desabledCom": {
-    "msgid": "§c Unregistered or disabled command.",
+  "command.lang.lang_list": {
+    "msgid": "§a Available Languages:\n",
     "msgstr": ""
   },
-  "desableComSuggest": {
-    "msgid": "§6 Invalid command. Did you mean: {possibleCommands}? If so, answer {prefix}yes",
-    "msgstr": "§6Virheellinen komento. Onko se mahdollisesti {possibleCommands} komento? Jos on, vastaa {prefix}kyllä"
-  },
-  "AllowTagCom": {
-    "msgid": "§c Only players with an authorized tag can use this command.",
-    "msgstr": "§cVain pelaajat, joilla on valtuutettu tagi, voivat käyttää sitä"
-  },
-  "invalidCom": {
-    "msgid": "§6 Invalid command. Please make sure it is correct. Commands used: {commandName}",
-    "msgstr": "§6Virheellinen komento. Varmista, että se on oikein. Käytetyt komennot: {commandName}"
-  },
-  "lang_list": {
-    "msgid": "§a Available Languages:\n",
-    "msgstr": "§aKäytettävissä olevat kielet:\n"
-  },
-  "lang_change": {
+  "command.lang.lang_change": {
     "msgid": "§a Language changed to: {language}",
-    "msgstr": "§aKieli vaihdettu kieleen"
+    "msgstr": ""
   },
-  "lang_failed": {
+  "command.lang.lang_failed": {
     "msgid": "§c Failed to change language to: {language}",
-    "msgstr": "§cKielen vaihto kieleen epäonnistui"
+    "msgstr": ""
   },
-  "lang_invalid": {
+  "command.lang.lang_invalid": {
     "msgid": "§c Invalid command usage. Use /lang list or /lang change <language_code>",
-    "msgstr": "§cVirheellinen komennon käyttö. Käytä lang list tai lang change <kielikoodi>"
+    "msgstr": ""
   },
-  "chest_command": {
-    "msgid": "Chest Command",
-    "msgstr": "Arkku-komento"
-  },
-  "unavailable": {
-    "msgid": "§c You do not have permission to do that.",
-    "msgstr": "§cEi ole valtuuksia"
-  },
-  "chest_help": {
+  "command.chest.chest_help": {
     "msgid": [
       "§c Invalid command.",
       "§a Chest protection command usage:",
@@ -718,7 +718,7 @@
       "  §bAuthor: Koukun        - License AGPL-3.0",
       "  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
     ],
-    "msgstr": "§cVirheellinen komento.\n§aArkun suojauksen komennon käyttö:.\n §bchest lock - lukitsee arkun\n §bchest info - näyttää tiedot lähimmästä arkusta\n §bchest unlock - avaa arkun\n §bchest protect <lock/unlock> - kytkee arkun suojauksen päälle tai pois\n §bchest add <pelaajan nimi> - lisää jäsenen arkkuun\n §bchest remove <pelaajan nimi> - poistaa jäsenen arkusta\n §bchest all - näyttää listan arkun jäsenistä\n   §bchest list -näyttää listan arkuista\n   §b_______________________________________\n §bTekijä: Koukun - Lisenssi AGPL-3.0 \n §bYoutubeURL - https://www.youtube.com/@PEXkoukunn"
+    "msgstr": ""
   },
   "command.chest.MaxChestLimitReached": {
     "msgid": "§c The installation limit of {limit} has been reached.",
@@ -732,9 +732,9 @@
     "msgid": "§a You have protected {playerChests} chests:",
     "msgstr": "§aOlet suojannut {playerChests} arkkua:"
   },
-  "chestlocation": {
+  "command.chest.chestlocation": {
     "msgid": "§e - Location: {key}",
-    "msgstr": "§e- Sijainti: {key}"
+    "msgstr": ""
   },
   "command.chest.nearby_chest_info": {
     "msgid": "§a ---- Nearby Chest Info ----",
@@ -752,29 +752,29 @@
     "msgid": "§b Z: §e",
     "msgstr": "§bZ: §e"
   },
-  "protected": {
+  "command.chest.protected": {
     "msgid": "§a Protected",
-    "msgstr": "§aSuojattu"
+    "msgstr": ""
   },
-  "owner": {
+  "command.chest.owner": {
     "msgid": "§b Owner: §e",
-    "msgstr": "§bOmistaja: §e"
+    "msgstr": ""
   },
-  "members": {
+  "command.chest.members": {
     "msgid": "§b Members: §e",
-    "msgstr": "§bJäsenet: §e"
+    "msgstr": ""
   },
   "command.chest.large_chest": {
     "msgid": "§b Large Chest: §e",
     "msgstr": "§bIso arkku: §e"
   },
-  "yes": {
+  "command.chest.yes": {
     "msgid": "Yes",
-    "msgstr": "Kyllä"
+    "msgstr": ""
   },
-  "no": {
+  "command.chest.no": {
     "msgid": "No",
-    "msgstr": "Ei"
+    "msgstr": ""
   },
   "command.chest.not_protected": {
     "msgid": "§c Not Protected",
@@ -784,14 +784,6 @@
     "msgid": "§c Cannot find chest.",
     "msgstr": "§cArkkua ei löydy"
   },
-  "chestProtectRemove": {
-    "msgid": "§a Chest protection removed.",
-    "msgstr": "§a Arkun suojaus poistettu"
-  },
-  "AlreadyProChest": {
-    "msgid": "§a This chest is already protected.",
-    "msgstr": "§a Tämä arkku on jo suojattu"
-  },
   "command.chest.chest_lookstate": {
     "msgid": "§a Chest protection: {lcokstate}",
     "msgstr": "§a arkku suojattu {lcokstate}"
@@ -800,13 +792,13 @@
     "msgid": "§a All chest protection data has been reset.",
     "msgstr": "§aKaikki arkun suojaus tiedot on nollattu."
   },
-  "command_chest_ContributedToChest": {
+  "command.chest.ContributedToChest": {
     "msgid": "§a Thanks for going out of your way to make it a large chest",
     "msgstr": ""
   },
-  "isLookChest": {
+  "command.chest.isLookChest": {
     "msgid": "§c This chest is locked by {owner}",
-    "msgstr": "§cTämä arkku on lukittu"
+    "msgstr": ""
   },
   "command.chest.isProChest": {
     "msgid": "§c This chest is protected!",
@@ -824,44 +816,44 @@
     "msgid": "§c You are not authorized to access this chest.",
     "msgstr": "§cSinulla ei ole oikeuksia käyttää tätä arkkua."
   },
-  "AddM": {
+  "command.chest.AddM": {
     "msgid": "§a {member} added as a member at location: {chestLocation}",
-    "msgstr": "§a Lisätty jäseneksi."
+    "msgstr": ""
   },
-  "addYouM": {
+  "command.chest.addYouM": {
     "msgid": "§a {playerName} has added you to the following chests: {chestLocation}",
-    "msgstr": "§aTämä {playerName} on lisännyt sinut seuraaviin arkuihin {chestLocation}"
+    "msgstr": ""
   },
-  "RemoveYouM": {
+  "command.chest.RemoveYouM": {
     "msgid": "§a {playerName} has removed you from the following chests: {chestLocation}",
-    "msgstr": "§aTämä {playerName} on poistanut sinut jäsenistä seuraavista arkuista {chestLocation}"
+    "msgstr": ""
   },
-  "MAlreday": {
+  "command.chest.MAlreday": {
     "msgid": "§c {member} is already a member.",
-    "msgstr": "§con jo jäsen."
+    "msgstr": ""
   },
-  "RemoveM": {
+  "command.chest.RemoveM": {
     "msgid": "§a {member} has been removed from members.",
-    "msgstr": "§aPoistettu jäsenistä"
+    "msgstr": ""
   },
-  "NotM": {
+  "command.chest.NotM": {
     "msgid": "§c Not a member.",
-    "msgstr": "§cei ole jäsen"
+    "msgstr": ""
   },
-  "allM": {
+  "command.chest.allM": {
     "msgid": "§a Members: ",
-    "msgstr": "§a jäsen: "
+    "msgstr": ""
   },
-  "NotFoundM": {
+  "command.chest.NotFoundM": {
     "msgid": "§c No members.",
-    "msgstr": "§c Ei jäseniä"
+    "msgstr": ""
   },
-  "ExplosionWarning": {
+  "command.chest.ExplosionWarning": {
     "msgid": "§c Please do not explode that.",
-    "msgstr": "§c Voisitko olla räjäyttämättä sitä?"
+    "msgstr": ""
   },
-  "cannotPlaceItem": {
+  "command.chest.cannotPlaceItem": {
     "msgid": "§c You are not allowed to place pistons in this area.",
-    "msgstr": "§c Mäntäjen asettaminen tälle alueelle on kielletty"
+    "msgstr": ""
   }
 }

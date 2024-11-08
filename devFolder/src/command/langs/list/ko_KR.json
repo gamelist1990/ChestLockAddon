@@ -55,6 +55,10 @@
     "msgid": "Send a request and teleport.",
     "msgstr": ""
   },
+  "chest_docs": {
+    "msgid": "Chest Command",
+    "msgstr": ""
+  },
   "ui.ReportButton": {
     "msgid": "§0Report Menu",
     "msgstr": ""
@@ -291,7 +295,7 @@
     "msgid": "§0 Change Language",
     "msgstr": ""
   },
-  "langChange1": {
+  "ui.langChange1": {
     "msgid": "§2 Please select the language you want to change to:",
     "msgstr": ""
   },
@@ -400,6 +404,26 @@
   },
   "server.closeChat": {
     "msgid": "§a == Close The Chat Panel ==",
+    "msgstr": ""
+  },
+  "server.desabledCom": {
+    "msgid": "§c Unregistered or disabled command.",
+    "msgstr": ""
+  },
+  "server.desableComSuggest": {
+    "msgid": "§6 Invalid command. Did you mean: {possibleCommands}? If so, answer {prefix}yes",
+    "msgstr": ""
+  },
+  "server.AllowTagCom": {
+    "msgid": "§c Only players with an authorized tag can use this command.",
+    "msgstr": ""
+  },
+  "server.invalidCom": {
+    "msgid": "§6 Invalid command. Please make sure it is correct. Commands used: {commandName}",
+    "msgstr": ""
+  },
+  "server.unavailable": {
+    "msgid": "§c You do not have permission to do that.",
     "msgstr": ""
   },
   "command.lore.UsageLore": {
@@ -662,47 +686,23 @@
     "msgid": "§c Player not found: §6{tragetplayer}",
     "msgstr": ""
   },
-  "server.desabledCom": {
-    "msgid": "§c Unregistered or disabled command.",
+  "command.lang.lang_list": {
+    "msgid": "§a Available Languages:\n",
     "msgstr": ""
   },
-  "desableComSuggest": {
-    "msgid": "§6 Invalid command. Did you mean: {possibleCommands}? If so, answer {prefix}yes",
-    "msgstr": "§6잘못된 명령어입니다. {possibleCommands} 명령어가 맞나요? 맞다면 {prefix}yes 라고 답해주세요"
-  },
-  "AllowTagCom": {
-    "msgid": "§c Only players with an authorized tag can use this command.",
-    "msgstr": "§c권한이 있는 태그를 가진 플레이어만 사용할 수 있습니다"
-  },
-  "invalidCom": {
-    "msgid": "§6 Invalid command. Please make sure it is correct. Commands used: {commandName}",
-    "msgstr": "§6잘못된 명령어입니다. 명령어가 올바른지 확인해주세요. 사용된 명령어: {commandName}"
-  },
-  "lang_list": {
-    "msgid": "§a Available Languages:\n",
-    "msgstr": "§a사용 가능한 언어:\n"
-  },
-  "lang_change": {
+  "command.lang.lang_change": {
     "msgid": "§a Language changed to: {language}",
-    "msgstr": "§a언어가 다음으로 변경되었습니다"
+    "msgstr": ""
   },
-  "lang_failed": {
+  "command.lang.lang_failed": {
     "msgid": "§c Failed to change language to: {language}",
-    "msgstr": "§c언어 변경 실패"
+    "msgstr": ""
   },
-  "lang_invalid": {
+  "command.lang.lang_invalid": {
     "msgid": "§c Invalid command usage. Use /lang list or /lang change <language_code>",
-    "msgstr": "§c잘못된 명령어 사용법입니다. lang list 또는 lang change <언어 코드>를 사용하세요"
+    "msgstr": ""
   },
-  "chest_command": {
-    "msgid": "Chest Command",
-    "msgstr": "상자 명령어"
-  },
-  "unavailable": {
-    "msgid": "§c You do not have permission to do that.",
-    "msgstr": "§c권한 부족"
-  },
-  "chest_help": {
+  "command.chest.chest_help": {
     "msgid": [
       "§c Invalid command.",
       "§a Chest protection command usage:",
@@ -718,21 +718,7 @@
       "  §bAuthor: Koukun        - License AGPL-3.0",
       "  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
     ],
-    "msgstr": [
-      "§c잘못된 명령어입니다.",
-      "§a상자 보호 명령어 사용법:.",
-      "  §bchest lock        - 상자 잠금",
-      "  §bchest info       - 가장 가까운 상자 정보 표시",
-      "  §bchest unlock      - 상자 잠금 해제",
-      "  §bchest protect <lock/unlock> - 상자 보호 토글",
-      "  §bchest add <playername>   - 상자에 멤버 추가",
-      "  §bchest remove <playername>  - 상자의 멤버 제거",
-      "  §bchest all        - 상자 멤버 목록 표시",
-      "  §bchest list        - 상자 목록 표시",
-      "  §b_______________________________________",
-      "  §b제작자: Koukun        - 라이선스 AGPL-3.0",
-      "  §b유튜브 URL         - https://www.youtube.com/@PEXkoukunn"
-    ]
+    "msgstr": ""
   },
   "command.chest.MaxChestLimitReached": {
     "msgid": "§c The installation limit of {limit} has been reached.",
@@ -746,9 +732,9 @@
     "msgid": "§a You have protected {playerChests} chests:",
     "msgstr": "§a{playerChests}개의 상자를 보호하고 있습니다:"
   },
-  "chestlocation": {
+  "command.chest.chestlocation": {
     "msgid": "§e - Location: {key}",
-    "msgstr": "§e- 위치: {key}"
+    "msgstr": ""
   },
   "command.chest.nearby_chest_info": {
     "msgid": "§a ---- Nearby Chest Info ----",
@@ -766,29 +752,29 @@
     "msgid": "§b Z: §e",
     "msgstr": "§bZ: §e"
   },
-  "protected": {
+  "command.chest.protected": {
     "msgid": "§a Protected",
-    "msgstr": "§a보호됨"
+    "msgstr": ""
   },
-  "owner": {
+  "command.chest.owner": {
     "msgid": "§b Owner: §e",
-    "msgstr": "§b소유자: §e"
+    "msgstr": ""
   },
-  "members": {
+  "command.chest.members": {
     "msgid": "§b Members: §e",
-    "msgstr": "§b멤버: §e"
+    "msgstr": ""
   },
   "command.chest.large_chest": {
     "msgid": "§b Large Chest: §e",
     "msgstr": "§b대형 상자: §e"
   },
-  "yes": {
+  "command.chest.yes": {
     "msgid": "Yes",
-    "msgstr": "예"
+    "msgstr": ""
   },
-  "no": {
+  "command.chest.no": {
     "msgid": "No",
-    "msgstr": "아니오"
+    "msgstr": ""
   },
   "command.chest.not_protected": {
     "msgid": "§c Not Protected",
@@ -798,14 +784,6 @@
     "msgid": "§c Cannot find chest.",
     "msgstr": "§c상자를 찾을 수 없습니다"
   },
-  "chestProtectRemove": {
-    "msgid": "§a Chest protection removed.",
-    "msgstr": "§a 상자 보호가 제거되었습니다"
-  },
-  "AlreadyProChest": {
-    "msgid": "§a This chest is already protected.",
-    "msgstr": "§a 이 상자는 이미 보호되고 있습니다"
-  },
   "command.chest.chest_lookstate": {
     "msgid": "§a Chest protection: {lcokstate}",
     "msgstr": "§a 상자 보호됨 {lcokstate}"
@@ -814,13 +792,13 @@
     "msgid": "§a All chest protection data has been reset.",
     "msgstr": "§a모든 상자 보호 데이터가 초기화되었습니다."
   },
-  "command_chest_ContributedToChest": {
+  "command.chest.ContributedToChest": {
     "msgid": "§a Thanks for going out of your way to make it a large chest",
     "msgstr": ""
   },
-  "isLookChest": {
+  "command.chest.isLookChest": {
     "msgid": "§c This chest is locked by {owner}",
-    "msgstr": "§c이 상자는 잠겨 있습니다"
+    "msgstr": ""
   },
   "command.chest.isProChest": {
     "msgid": "§c This chest is protected!",
@@ -838,44 +816,44 @@
     "msgid": "§c You are not authorized to access this chest.",
     "msgstr": "§c이 상자를 조작할 권한이 없습니다."
   },
-  "AddM": {
+  "command.chest.AddM": {
     "msgid": "§a {member} added as a member at location: {chestLocation}",
-    "msgstr": "§a 멤버로 추가되었습니다."
+    "msgstr": ""
   },
-  "addYouM": {
+  "command.chest.addYouM": {
     "msgid": "§a {playerName} has added you to the following chests: {chestLocation}",
-    "msgstr": "§a{playerName}님이 당신을 다음 상자에 추가했습니다: {chestLocation}"
+    "msgstr": ""
   },
-  "RemoveYouM": {
+  "command.chest.RemoveYouM": {
     "msgid": "§a {playerName} has removed you from the following chests: {chestLocation}",
-    "msgstr": "§a{playerName}님이 당신을 다음 상자의 멤버에서 제거했습니다: {chestLocation}"
+    "msgstr": ""
   },
-  "MAlreday": {
+  "command.chest.MAlreday": {
     "msgid": "§c {member} is already a member.",
-    "msgstr": "§c이미 멤버입니다."
+    "msgstr": ""
   },
-  "RemoveM": {
+  "command.chest.RemoveM": {
     "msgid": "§a {member} has been removed from members.",
-    "msgstr": "§a멤버에서 제거됨"
+    "msgstr": ""
   },
-  "NotM": {
+  "command.chest.NotM": {
     "msgid": "§c Not a member.",
-    "msgstr": "§c멤버가 아닙니다"
+    "msgstr": ""
   },
-  "allM": {
+  "command.chest.allM": {
     "msgid": "§a Members: ",
-    "msgstr": "§a 멤버: "
+    "msgstr": ""
   },
-  "NotFoundM": {
+  "command.chest.NotFoundM": {
     "msgid": "§c No members.",
-    "msgstr": "§c 멤버 없음"
+    "msgstr": ""
   },
-  "ExplosionWarning": {
+  "command.chest.ExplosionWarning": {
     "msgid": "§c Please do not explode that.",
-    "msgstr": "§c 폭파하지 말아주세요"
+    "msgstr": ""
   },
-  "cannotPlaceItem": {
+  "command.chest.cannotPlaceItem": {
     "msgid": "§c You are not allowed to place pistons in this area.",
-    "msgstr": "§c 이 지역에 피스톤을 설치할 수 없습니다"
+    "msgstr": ""
   }
 }

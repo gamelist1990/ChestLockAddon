@@ -295,7 +295,7 @@
     "msgid": "§0 Change Language",
     "msgstr": ""
   },
-  "langChange1": {
+  "ui.langChange1": {
     "msgid": "§2 Please select the language you want to change to:",
     "msgstr": ""
   },
@@ -768,11 +768,11 @@
     "msgid": "§b Large Chest: §e",
     "msgstr": ""
   },
-  "yes": {
+  "command.chest.yes": {
     "msgid": "Yes",
     "msgstr": ""
   },
-  "no": {
+  "command.chest.no": {
     "msgid": "No",
     "msgstr": ""
   },
