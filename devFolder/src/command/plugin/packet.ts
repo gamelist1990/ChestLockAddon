@@ -356,11 +356,11 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     return null;
   }
 
-  if (hasEffect(player, "speed", 3) || hasEffect(player, "jump_boost", 3)) {
+  if (hasEffect(player, "speed", 5) || hasEffect(player, "jump_boost", 5)) {
     return null;
   }
 
-  if (data.positionHistory.length < 2) {  // positionHistory の長さを確認
+  if (data.positionHistory.length < 4) {  // positionHistory の長さを確認
     playerDataManager.update(player, { lastPosition: player.location }); // lastPosition を更新
     return null;
   }
