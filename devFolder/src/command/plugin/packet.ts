@@ -83,6 +83,7 @@ interface PlayerData {
   aimbotTicks: number;
   blinkCount: number;
   throughBlockHits: { [targetId: string]: number }; // ブロック越しヒット数の記録
+  flyHackCount: number;
 
 }
 
@@ -146,6 +147,7 @@ class PlayerDataManager {
       lastAttackedEntity: null,
       aimbotTicks: 0,
       throughBlockHits: {},
+      flyHackCount: 0,
     };
 
     if (config().module.debugMode.enabled === true) {
@@ -363,11 +365,6 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     return null;
   }
 
-  //新規 殴られて羽目技されている際は検知を除外する
-  if (data && data.beingHit) {
-    return null;
-  }
-
   const isJumping = player.isJumping; // ジャンプ中かどうか
   const isOnGround = player.isOnGround; // 地面にいるかどうか
   const currentPosition = player.location; // 現在の位置
@@ -435,8 +432,8 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 
     // AirJump判定 (しきい値を調整)
     if (
-      jumpHeight > 3.0 || // 通常のジャンプよりも高い (値を大きく)
-      horizontalAcceleration > 2.2 || // 水平方向に急激な加速 (値を大きく)
+      jumpHeight > 3.1 || // 通常のジャンプよりも高い (値を大きく)
+      horizontalAcceleration > 2.3 || // 水平方向に急激な加速 (値を大きく)
       (verticalAcceleration > 1.1 && previousVerticalAcceleration > 0.9) || // 垂直方向に急激な加速 (値を大きく)
       velocityChangeRate > 1.1 || // 短時間での速度変化が大きい (値を大きく)
       (player.isJumping && horizontalSpeed > 1.2) // ジャンプ中に水平方向に移動している (値を大きく)
@@ -444,7 +441,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
       jumpCounter++;
 
 
-      if (jumpCounter >= 2) {
+      if (jumpCounter >= 3) {
         // AirJumpとして検知
         console.log(`[DEBUG AirJump] ${player.name} - AirJump Detected!`);
 
@@ -667,6 +664,7 @@ function detectTimer(player: Player): { cheatType: string } | null {
   const config = configs.antiCheat;
   const data = playerDataManager.get(player)?.timerData;
   if (!data) return null;
+  
 
 
   const now = Date.now();
@@ -721,7 +719,7 @@ function detectTimer(player: Player): { cheatType: string } | null {
   // Timer検知時の処理
   if (timerData.timerLog >= config.antiTimer.minTimerLog) {
     playerDataManager.update(player, { timerData: timerData }); // 更新されたtimerDataを反映
-    return { cheatType: 'Timer' };
+    return { cheatType: 'Timer(ラグイ時検知率高)' };
   }
 
   playerDataManager.update(player, { timerData: timerData }); // 更新されたtimerDataを反映
@@ -770,7 +768,6 @@ function updateTimerData(player: Player, now: number) {
 function detectFlyHack(player: Player): { cheatType: string } | null {
   const data = playerDataManager.get(player);
 
-
   if (
     !data ||
     data.isTeleporting ||
@@ -781,71 +778,80 @@ function detectFlyHack(player: Player): { cheatType: string } | null {
     hasEffect(player, "speed", 3) ||
     player.isFlying ||
     getGamemode(player.name) === 1 ||
-    data.recentlyUsedEnderPearl
+    data.recentlyUsedEnderPearl 
   ) {
     return null;
-  } if (data && data.beingHit) {
+  }
+
+  if (data.positionHistory.length < 4) {
+    playerDataManager.update(player, { lastPosition: player.location });
     return null;
   }
 
-  if (data.positionHistory.length < 2) {  // positionHistory の長さを確認
-    playerDataManager.update(player, { lastPosition: player.location }); // lastPosition を更新
-    return null;
-  }
-
-
-  const isOnGround = player.isOnGround; // 地面にいるかどうか
-  const currentPosition = player.location; // 現在の位置
+  const isOnGround = player.isOnGround;
+  const currentPosition = player.location;
 
   let lastPosition = data.lastPosition;
 
-  // 直前の位置情報がない場合は処理をスキップ
   if (!lastPosition) {
-    lastPosition = currentPosition; // lastPositionを更新
-    playerDataManager.update(player, { lastPosition: lastPosition }); // lastPositionのみを更新
+    playerDataManager.update(player, { lastPosition: currentPosition });
     return null;
   }
 
-  // 垂直速度、垂直加速度を計算
   const currentVelocityY = player.getVelocity().y;
   const previousVelocityY = calculateVerticalVelocity(currentPosition, lastPosition);
   const verticalAcceleration = currentVelocityY - previousVelocityY;
 
-  // 速度変化率を計算 (2ティック間の変化)
   const twoTicksAgoVelocityY = calculateVerticalVelocity(lastPosition, data.positionHistory[data.positionHistory.length - 2]);
   const velocityChangeRate = (currentVelocityY - twoTicksAgoVelocityY) / (50 * 2);
 
-  // FlyHack判定 (地面にいない状態で異常な垂直移動)
-  if (!player.isOnGround && currentVelocityY > 0.5) {
-    // 異常な上昇速度
-    if (
-      currentVelocityY > 1.2 || // 高速上昇
-      verticalAcceleration > 0.4 || // 急激な加速
-      velocityChangeRate > 0.3 // 短時間での速度変化
-    ) {
+  const detectionThreshold = 2; 
+
+  const isSuspiciousAscent = !isOnGround && (
+    currentVelocityY > 1.8 || // 高速上昇のしきい値を上げる
+    (verticalAcceleration > 0.6 && currentVelocityY > 1.3) || // 急激な加速と上昇速度の組み合わせ
+    (velocityChangeRate > 0.7 && currentVelocityY > 1.3) // 短時間での速度変化と上昇速度の組み合わせ
+  );
+
+
+  // FlyHack 疑惑フラグを追加
+  if (!isOnGround && isSuspiciousAscent) {
+    if (data.flyHackCount === undefined) {
+      data.flyHackCount = 0;
+    }
+    data.flyHackCount++;
+
+    if (data.flyHackCount >= detectionThreshold) {
       console.log(`[DEBUG] ${player.name} FlyHack (上昇) Detected!`);
-
-      // 最後にlastPositionを更新
-      playerDataManager.update(player, { lastPosition: currentPosition });
-
+      playerDataManager.update(player, { lastPosition: currentPosition, flyHackCount: 0 });
       return { cheatType: 'FlyHack (上昇)' };
+    } else {
+      playerDataManager.update(player, { lastPosition: currentPosition, flyHackCount: data.flyHackCount });
+      return null;
     }
   } else if (!isOnGround && currentVelocityY < -0.1 && !player.isFalling) {
-    // 通常の落下速度よりも遅い (空中で停止/減速)
-    console.log(`[DEBUG] ${player.name} FlyHack (空中停止/減速) Detected!`);
+    if (data.flyHackCount === undefined) {
+      data.flyHackCount = 0;
+    }
+    data.flyHackCount++;
 
-    // 最後にlastPositionを更新
-    playerDataManager.update(player, { lastPosition: currentPosition });
+    if (data.flyHackCount >= detectionThreshold) {
+      console.log(`[DEBUG] ${player.name} FlyHack (空中停止/減速) Detected!`);
+      playerDataManager.update(player, { lastPosition: currentPosition, flyHackCount: 0 });
+      return { cheatType: 'FlyHack (空中停止/減速)' };
+    } else {
+      playerDataManager.update(player, { lastPosition: currentPosition, flyHackCount: data.flyHackCount });
+      return null;
+    }
 
-    return { cheatType: 'FlyHack (空中停止/減速)' };
+  } else {
+    // 疑惑が解消された場合はカウントをリセット
+    if (data.flyHackCount !== undefined && data.flyHackCount > 0) {
+      playerDataManager.update(player, { flyHackCount: 0 });
+    }
   }
 
-  // 現在の位置を直前の位置として保存
-  lastPosition = currentPosition; // lastPositionを更新
-
-  // 最後にlastPositionを更新
-  playerDataManager.update(player, { lastPosition: lastPosition });
-
+  playerDataManager.update(player, { lastPosition: currentPosition });
   return null;
 }
 
@@ -858,7 +864,7 @@ function detectSpeed(player: Player): { cheatType: string; value?: number } | nu
     data.isTeleporting ||
     getGamemode(player.name) === 1 ||
     player.isGliding ||
-    hasEffect(player, "speed", 3) ||
+    hasEffect(player, "speed", 5) ||
     player.isFlying ||
     data.recentlyUsedEnderPearl
   ) {
@@ -897,7 +903,7 @@ function detectSpeed(player: Player): { cheatType: string; value?: number } | nu
 
 
   // 許容速度 (ブロック/秒) - 適宜調整
-  const allowedSpeed = 1.5;
+  const allowedSpeed = 3;
 
 
   // SpeedHack判定
@@ -905,7 +911,7 @@ function detectSpeed(player: Player): { cheatType: string; value?: number } | nu
 
     if (player.isSprinting) {
       // スプリント中は許容速度を上げる
-      if (speed > allowedSpeed * 1.3) {  // 1.3倍
+      if (speed > allowedSpeed * 1.8) { 
         console.log(`[DEBUG] ${player.name} SpeedHack (Sprinting) Detected! Speed: ${speed}`);
         playerDataManager.update(player, { lastSpeedCheck: now, speedViolationCount: data.speedViolationCount + 1 });
         return { cheatType: 'Speed (Sprinting)', value: speed };
@@ -1062,14 +1068,8 @@ function detectKillAura(player: Player, event: EntityHurtAfterEvent): { cheatTyp
 
 world.afterEvents.entityHurt.subscribe((event: EntityHurtAfterEvent) => {
   if (!monitoring) return;
-  if (event.hurtEntity instanceof Player && event.damage > 0) { // ダメージを受けているプレイヤーのみ
-    playerDataManager.update(event.hurtEntity, { beingHit: true });
-    console.log(JSON.stringify(event.hurtEntity));
-    system.runTimeout(() => {
-      if (event.hurtEntity instanceof Player) {
-        playerDataManager.update(event.hurtEntity, { beingHit: false });
-      }
-    }, 20 * 4); // 4秒後にbeingHitをfalseに戻す
+  if (event.hurtEntity instanceof Player && event.damage > 0) { 
+    playerDataManager.update(event.hurtEntity, { recentlyUsedEnderPearl: true, enderPearlInterval: 3 });
   }
 
   const damageSource = event.damageSource;
