@@ -303,6 +303,17 @@ function calculateDistance(pos1: Vector3, pos2: Vector3): number {
   return Math.sqrt((pos2.x - pos1.x) ** 2 + (pos2.y - pos1.y) ** 2 + (pos2.z - pos1.z) ** 2);
 }
 
+function calculateAverage(arr: any[]) {
+  return arr.reduce((sum: any, val: any) => sum + val, 0) / arr.length;
+}
+
+// 分散計算関数
+function calculateVariance(arr: any[]) {
+  const avg = calculateAverage(arr);
+  return arr.reduce((sum: number, val: number) => sum + Math.pow(val - avg, 2), 0) / arr.length;
+}
+
+
 // エンダーパールとウィンドチャージの使用を記録
 world.afterEvents.itemUse.subscribe((event) => {
   const player = event.source;
@@ -350,25 +361,50 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     player.isGliding ||
     player.isInWater ||
     getGamemode(player.name) === 1 ||
+    getGamemode(player.name) === 3 ||
     player.isFlying ||
     data.recentlyUsedEnderPearl
   ) {
     return null;
   }
 
-  if (hasEffect(player, "speed", 5) || hasEffect(player, "jump_boost", 5)) {
+  const ticksToUse = 5; 
+
+
+  if (hasEffect(player, "speed", 5) || hasEffect(player, "jump_boost", 2)) { // jump_boost のレベルを下げる
     return null;
   }
 
-  if (data.positionHistory.length < 4) {  // positionHistory の長さを確認
-    playerDataManager.update(player, { lastPosition: player.location }); // lastPosition を更新
+  if (data.positionHistory.length < ticksToUse + 1) {
+    playerDataManager.update(player, { lastPosition: player.location });
     return null;
   }
 
-  const isJumping = player.isJumping; // ジャンプ中かどうか
-  const isOnGround = player.isOnGround; // 地面にいるかどうか
-  const currentPosition = player.location; // 現在の位置
+  const pastPositions = data.positionHistory.slice(-ticksToUse - 1);
+
+  const isJumping = player.isJumping;
+  const isOnGround = player.isOnGround;
+  const currentPosition = player.location;
   const currentVelocity = player.getVelocity();
+
+  // 各ティック間の水平/垂直加速度を計算し、平均値と分散を算出
+  let horizontalAccels = [];
+  let verticalAccels = [];
+
+  for (let i = 1; i < ticksToUse; i++) {
+    const speed1 = calculateHorizontalSpeed(pastPositions[i], pastPositions[i + 1]);
+    const speed2 = calculateHorizontalSpeed(pastPositions[i - 1], pastPositions[i]);
+    horizontalAccels.push((speed2 - speed1) / 50);
+
+    const vel1 = calculateVerticalVelocity(pastPositions[i], pastPositions[i + 1]);
+    const vel2 = calculateVerticalVelocity(pastPositions[i - 1], pastPositions[i]);
+    verticalAccels.push((vel2 - vel1) / 50);
+  }
+
+  const avgHorizontalAccel = calculateAverage(horizontalAccels);
+  const varHorizontalAccel = calculateVariance(horizontalAccels);
+  const varVerticalAccel = calculateVariance(verticalAccels);
+
 
 
   let lastPosition = data.lastPosition; // 直前の位置 (ローカル変数に変更)
@@ -399,16 +435,15 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 
   // 水平速度、水平加速度、垂直速度、垂直加速度、速度変化率を計算
   const horizontalSpeed = calculateHorizontalSpeed(currentPosition, lastPosition);
-  const horizontalAcceleration = horizontalSpeed - calculateHorizontalSpeed(lastPosition, previousPosition);
 
-  const currentVelocityY = currentVelocity.y;
-  const previousVelocityY = calculateVerticalVelocity(currentPosition, lastPosition);
-  const twoTicksAgoVelocityY = previousPosition ? calculateVerticalVelocity(lastPosition, previousPosition) : 0;
 
-  const verticalAcceleration = currentVelocityY - previousVelocityY;
-  const previousVerticalAcceleration = previousVelocityY - twoTicksAgoVelocityY;
+  const velocitiesY = pastPositions.slice(1).map((pos, i) => calculateVerticalVelocity(pos, pastPositions[i]));
+  const accelerationsY = velocitiesY.slice(1).map((vel, i) => (vel - velocitiesY[i]) / 50);
+  const maxVerticalSpeed = Math.max(...velocitiesY);
+  const maxVerticalAccel = Math.max(...accelerationsY);
+  const velocityChangeRate = (currentVelocity.y - velocitiesY[velocitiesY.length - 2]) / (50 * (velocitiesY.length - 1));
 
-  const velocityChangeRate = (currentVelocityY - twoTicksAgoVelocityY) / (50 * 2);
+  
 
   // ジャンプ状態の判定
   if (isOnGround) {
@@ -423,20 +458,24 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     jumpStartTime = currentTick;
   } else if (isJumpingData && !isOnGround) {
     // 空中にいる間
-    if (isJumping && currentTick - jumpStartTime > 1) {
-      // ジャンプボタンが押し続けられている場合はAirJumpの可能性あり
+    if (isJumping && currentTick - jumpStartTime > 2) {
       airJumpDetected = true;
     }
 
     const jumpHeight = currentPosition.y - Math.min(lastPosition.y, previousPosition.y);
 
+    
+
     // AirJump判定 (しきい値を調整)
     if (
-      jumpHeight > 3.1 || // 通常のジャンプよりも高い (値を大きく)
-      horizontalAcceleration > 2.3 || // 水平方向に急激な加速 (値を大きく)
-      (verticalAcceleration > 1.1 && previousVerticalAcceleration > 0.9) || // 垂直方向に急激な加速 (値を大きく)
-      velocityChangeRate > 1.1 || // 短時間での速度変化が大きい (値を大きく)
-      (player.isJumping && horizontalSpeed > 1.2) // ジャンプ中に水平方向に移動している (値を大きく)
+      jumpHeight > 2.2 ||
+      maxVerticalSpeed > 3.2 ||
+      maxVerticalAccel > 0.35 ||
+      velocityChangeRate > 2.8 ||
+      (player.isJumping && horizontalSpeed > 1.1) ||
+      (horizontalSpeed > 0.5 && Math.abs(avgHorizontalAccel) > 0.25) ||
+      varHorizontalAccel > 0.1 ||
+      varVerticalAccel > 0.08
     ) {
       jumpCounter++;
 
@@ -676,7 +715,7 @@ function detectTimer(player: Player): { cheatType: string } | null {
   const dBVD = Math.abs(timerData.xzLog - timerData.disLog);
   const dBVD2 = timerData.yDisLog - timerData.yLog;
 
-  const tps = 20;
+  const tps = 15;
 
   timerData.maxDBVD = 20 / tps!;
 
@@ -778,6 +817,7 @@ function detectFlyHack(player: Player): { cheatType: string } | null {
     hasEffect(player, "speed", 3) ||
     player.isFlying ||
     getGamemode(player.name) === 1 ||
+    getGamemode(player.name) === 3 ||
     data.recentlyUsedEnderPearl 
   ) {
     return null;
@@ -805,7 +845,7 @@ function detectFlyHack(player: Player): { cheatType: string } | null {
   const twoTicksAgoVelocityY = calculateVerticalVelocity(lastPosition, data.positionHistory[data.positionHistory.length - 2]);
   const velocityChangeRate = (currentVelocityY - twoTicksAgoVelocityY) / (50 * 2);
 
-  const detectionThreshold = 2; 
+  const detectionThreshold = 3; 
 
   const isSuspiciousAscent = !isOnGround && (
     currentVelocityY > 1.8 || // 高速上昇のしきい値を上げる
@@ -838,7 +878,9 @@ function detectFlyHack(player: Player): { cheatType: string } | null {
     if (data.flyHackCount >= detectionThreshold) {
       console.log(`[DEBUG] ${player.name} FlyHack (空中停止/減速) Detected!`);
       playerDataManager.update(player, { lastPosition: currentPosition, flyHackCount: 0 });
-      return { cheatType: 'FlyHack (空中停止/減速)' };
+      //return { cheatType: 'FlyHack (空中停止/減速)' };
+      console.log("FlyHack 空中/減速")
+      return null;
     } else {
       playerDataManager.update(player, { lastPosition: currentPosition, flyHackCount: data.flyHackCount });
       return null;
@@ -906,20 +948,9 @@ function detectSpeed(player: Player): { cheatType: string; value?: number } | nu
   const allowedSpeed = 3;
 
 
+
   // SpeedHack判定
   if (speed > allowedSpeed) {
-
-    if (player.isSprinting) {
-      // スプリント中は許容速度を上げる
-      if (speed > allowedSpeed * 1.8) { 
-        console.log(`[DEBUG] ${player.name} SpeedHack (Sprinting) Detected! Speed: ${speed}`);
-        playerDataManager.update(player, { lastSpeedCheck: now, speedViolationCount: data.speedViolationCount + 1 });
-        return { cheatType: 'Speed (Sprinting)', value: speed };
-      }
-
-      playerDataManager.update(player, { lastSpeedCheck: now, speedViolationCount: 0 });
-      return null
-    }
 
     // SpeedHack検出
     console.log(`[DEBUG] ${player.name} SpeedHack Detected! Speed: ${speed}`);
@@ -942,6 +973,7 @@ function detectBlink(player: Player): { cheatType: string; value?: number } | nu
     player.isFlying ||
     player.isInWater ||
     getGamemode(player.name) === 1 ||
+    getGamemode(player.name) === 3 ||
     hasEffect(player, "speed", 3) ||
     hasEffect(player, "jump_boost", 3) ||
     data.recentlyUsedEnderPearl
@@ -972,7 +1004,7 @@ function detectBlink(player: Player): { cheatType: string; value?: number } | nu
   const distance = calculateDistance(player.location, lastPosition);
 
   // Blinkのしきい値 (ブロック) - この値は調整が必要
-  const blinkThreshold = 3;
+  const blinkThreshold = 5;
 
   if (distance > blinkThreshold) {
     data.blinkCount = (data.blinkCount || 0) + 1; // カウンターをインクリメント
@@ -1068,8 +1100,9 @@ function detectKillAura(player: Player, event: EntityHurtAfterEvent): { cheatTyp
 
 world.afterEvents.entityHurt.subscribe((event: EntityHurtAfterEvent) => {
   if (!monitoring) return;
-  if (event.hurtEntity instanceof Player && event.damage > 0) { 
-    playerDataManager.update(event.hurtEntity, { recentlyUsedEnderPearl: true, enderPearlInterval: 3 });
+  if (event.damageSource.damagingEntity instanceof Player && event.damage > 0) { 
+    console.log(event.damageSource.damagingEntity);
+    playerDataManager.update(event.damageSource.damagingEntity, { recentlyUsedEnderPearl: true, enderPearlInterval: 3 });
   }
 
   const damageSource = event.damageSource;

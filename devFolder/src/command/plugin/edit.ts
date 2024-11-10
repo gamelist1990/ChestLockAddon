@@ -511,7 +511,7 @@ function executeCommandAfterSelection(player: Player) {
 
       if (isValidBlockId(blockId)) {
         fillBlocksWithUndo(data.pos1, data.pos2, blockId, player);
-        player.sendMessage(translate(player, "command.RangeSet", { blockId: blockId }));
+        player.sendMessage(translate(player, "command.edit.RangeSet", { blockId: blockId }));
       } else {
         player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
       }
@@ -550,7 +550,7 @@ function executeCommandAfterSelection(player: Player) {
         originalBlocks,
       });
 
-      player.sendMessage(translate(player, "RangeCleared"));
+      player.sendMessage(translate(player, "command.edit.RangeCleared"));
 
       // -clear を使用した場合はプレイヤーデータを削除
       delete playerData[player.name];

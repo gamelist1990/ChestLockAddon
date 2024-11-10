@@ -122,7 +122,7 @@ function openSettingsUI(player: Player) {
         .title(translate(player, "command.join.RuleSettings"));
 
       for (let i = 1; i <= ruleCount; i++) {
-        ruleForm.textField(translate(player, "command.join.Rules", { i: `${i}` }), translate(player, "command.join.RuleEnter", { i: `${i}` }));
+        ruleForm.textField(translate(player, "command.join.Rules", { i: `${i}` }), translate(player, "command.join.RulesEnter", { i: `${i}` }));
       }
 
       //@ts-ignore

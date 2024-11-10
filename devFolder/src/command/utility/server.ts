@@ -3,12 +3,20 @@ import { isPlayer, registerCommand, verifier } from '../../Modules/Handler';
 import { EntityInventoryComponent, Player, system, world } from '@minecraft/server';
 import { renameItem } from '../plugin/lore';
 import { banPlayers } from '../../Modules/globalBan';
+import { tickEvent } from '../../Modules/tick';
 
 let isServerPaused = false; // サーバーが一時停止されているかどうかを追跡する変数
 let isRealTimePingEnabled = false; // リアルタイムping検知が有効かどうか
 const playerPingData: Record<string, { lastPingRequestTime: number }> = {};
 
 let startTime = Date.now();
+
+
+let tps = 20;
+
+tickEvent.subscribe("serverInfoTick", (data: any) => {
+    tps = data.tps;
+});
 
 
 
@@ -158,7 +166,15 @@ function displayServerInfo(player: Player | undefined, type: string) {
             if (player) {
                 player.sendMessage(`サーバーの起動時間: ${uptime}`);
             } else {
-                world.sendMessage(`サーバーの起動時間: ${uptime}`); 
+                world.sendMessage(`サーバーの起動時間: ${uptime}`);
+            }
+            break;
+        case 'tps':
+            const message = `TPS: ${tps}`;
+            if (player) {
+                player.sendMessage(message);
+            } else {
+                world.sendMessage(message); 
             }
             break;
         default:
