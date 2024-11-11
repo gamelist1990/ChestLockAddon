@@ -16,6 +16,7 @@ registerCommand({
     const subCommand = args[0];
     const option = args[1];
 
+
     if (subCommand === 'chest') {
       if (option === '-reset') {
         resetProtectedChests(player);
@@ -35,7 +36,7 @@ registerCommand({
         logData();
       }
     } else if (subCommand === 'tempkick') {
-      if (option === args[2]) {
+      if (option === '-p') {
         const playerName = isPlayer(args[2]);
         if (playerName) {
           system.runTimeout(() => {
@@ -45,19 +46,8 @@ registerCommand({
       } else {
         player.sendMessage(translate(player, "server.PlayerNotFound"))
       } 
-    } else if(subCommand === 'admin') {
-      test(player);
-
     } else {
       player.sendMessage('Unknown subcommand');
     }
   },
 });
-
-function test(player:Player) {
-  system.runTimeout(()=>{
-    player.nameTag = `§2(§bAdmin§2)§f${player.name}`
-  })
-}
-
-

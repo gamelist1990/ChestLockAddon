@@ -1,6 +1,6 @@
 import { config } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
-import { Player, world, system } from '@minecraft/server';
+import { Player, world, system, EntityHealthComponent } from '@minecraft/server';
 
 let cpsCounting: { [playerName: string]: { lastHit: number; hits: number; cps: number; timeoutId?: number } } = {};
 
@@ -27,11 +27,15 @@ world.afterEvents.entityHitEntity.subscribe((event) => {
     }
 });
 
+
 // 1tick ごとに CPS を表示 & 3秒間クリックがなければ CPS を 0 にする
 system.runInterval(() => {
     // trueCps プレイヤーが存在するかチェック
     const isCPSTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueCps"));
+    const isHPTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueHP"));
+
     if (!isCPSTrackingEnabled) return;
+    if (!isHPTrackingEnabled) return;
 
     for (const player of world.getPlayers()) {
         if (player.hasTag("cps")) { // cpsタグを持つプレイヤー
@@ -59,54 +63,89 @@ system.runInterval(() => {
                     player.nameTag = player.nameTag.replace(/§a\[CPS: \d+\]/, `§a[CPS: ${playerData.cps || 0}]`);
                 }
             }
-        } else { // cpsタグを持たないプレイヤー
-            // CPS 表示を削除
+        } else {
             player.nameTag = player.nameTag.replace(/\n§a\[CPS: \d+\]/, "");
+
+        } if (player.hasTag("hp")) {
+
+            const health = player.getComponent('minecraft:health') as EntityHealthComponent;
+            const playerHealth = health ? health.currentValue.toFixed(2) : '';
+            if (!player.nameTag.includes(`\n§4HP:`)) {
+                player.nameTag += `\n§4[HP: ${playerHealth || 0}]`;
+            } else {
+                player.nameTag = player.nameTag.replace(/§4\[HP: \d+\]/, `§4[HP: ${playerHealth || 0}]`);
+            }
+        } else {
+            player.nameTag = player.nameTag.replace(/\n§4\[HP: \d+\]/, "");
+        } if (player.hasTag("team1") || player.hasTag("team2") || player.hasTag("team3") || player.hasTag("team4") || player.hasTag("team5")) {
+
+            let teamColor = "§f"; 
+
+            if (player.hasTag("team1")) {
+                teamColor = "§c";
+            } else if (player.hasTag("team2")) {
+                teamColor = "§9";
+            } else if (player.hasTag("team3")) {
+                teamColor = "§a";
+            } else if (player.hasTag("team4")) {
+                teamColor = "§e";
+            } else if (player.hasTag("team5")) {
+                teamColor = "§d";
+            }
+
+            function escapeRegExp(string: string) {
+                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+
+            const escapedName = escapeRegExp(player.name);
+            player.nameTag = player.nameTag.replace(new RegExp(`(^|\\s)${escapedName}(\\s|$)`), `$1${teamColor}${player.name}$2`);
+        } else {
+            player.nameTag = player.nameTag.replace(new RegExp(`(§c|§9|§a|§e|§d)${player.name}`), player.name);
         }
     }
 }, 1);
 
 
-    export function getPlayerCPS(playerName: string): number {
-        if (cpsCounting[playerName]) {
-            // 最後に記録されたヒットからの経過時間を取得
-            const now = Date.now();
-            const diff = now - cpsCounting[playerName].lastHit;
+export function getPlayerCPS(playerName: string): number {
+    if (cpsCounting[playerName]) {
+        // 最後に記録されたヒットからの経過時間を取得
+        const now = Date.now();
+        const diff = now - cpsCounting[playerName].lastHit;
 
-            // 1秒以上経過している場合は、最後に記録されたヒット数からCPSを計算
-            if (diff >= 1000) {
-                return Math.round(cpsCounting[playerName].hits / (diff / 1000));
-            } else {
-                // 1秒未満の場合は、そのままヒット数を返す
-                return cpsCounting[playerName].hits;
-            }
+        // 1秒以上経過している場合は、最後に記録されたヒット数からCPSを計算
+        if (diff >= 1000) {
+            return Math.round(cpsCounting[playerName].hits / (diff / 1000));
         } else {
-            // 対象プレイヤーのCPS計測が開始されていない場合は 0 を返す
-            return 0;
+            // 1秒未満の場合は、そのままヒット数を返す
+            return cpsCounting[playerName].hits;
         }
+    } else {
+        // 対象プレイヤーのCPS計測が開始されていない場合は 0 を返す
+        return 0;
     }
+}
 
-    registerCommand({
-        name: 'cps',
-        description: 'Toggles CPS tracking for players with the "cps" tag.',
-        parent: false,
-        maxArgs: 1,
-        minArgs: 0,
-        require: (player: Player) => verifier(player, config().commands['cps']),
-        executor: (player: Player, args: string[]) => {
-            const enable = args.length === 0 || args[0] !== '-false';
+registerCommand({
+    name: 'cps',
+    description: 'Toggles CPS tracking for players with the "cps" tag.',
+    parent: false,
+    maxArgs: 1,
+    minArgs: 0,
+    require: (player: Player) => verifier(player, config().commands['cps']),
+    executor: (player: Player, args: string[]) => {
+        const enable = args.length === 0 || args[0] !== '-false';
 
-            // trueCps タグの管理
-            if (enable) {
-                system.runTimeout(() => {
-                    player.addTag("trueCps");
-                }, 1)
-            } else {
-                system.runTimeout(() => {
-                    player.removeTag("trueCps");
-                }, 1)
-            }
+        // trueCps タグの管理
+        if (enable) {
+            system.runTimeout(() => {
+                player.addTag("trueCps");
+            }, 1)
+        } else {
+            system.runTimeout(() => {
+                player.removeTag("trueCps");
+            }, 1)
+        }
 
-            player.sendMessage(enable ? '§aCPS tracking enabled for players with the "cps" tag.' : '§cCPS tracking disabled.');
-        },
-    });
+        player.sendMessage(enable ? '§aCPS tracking enabled for players with the "cps" tag.' : '§cCPS tracking disabled.');
+    },
+});
