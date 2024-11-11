@@ -59,6 +59,10 @@ export const translations = {
     msgid: "Chest Command",
     msgstr: "チェストコマンド"
   },
+  "hub_docs": {
+    msgid: "Hub Command",
+    msgstr: ""
+  },
   "ui.ReportButton": {
     msgid: "§0Report Menu",
     msgstr: "§0報告メニュー"

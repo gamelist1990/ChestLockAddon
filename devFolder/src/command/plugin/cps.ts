@@ -67,22 +67,23 @@ system.runInterval(() => {
             player.nameTag = player.nameTag.replace(/\n§a\[CPS: \d+\]/, "");
 
         } if (player.hasTag("hp")) {
-
             const health = player.getComponent('minecraft:health') as EntityHealthComponent;
-            const playerHealth = health ? health.currentValue.toFixed(2) : '';
-            if (!player.nameTag.includes(`\n§4HP:`)) {
+            const playerHealth = health ? Math.floor(health.currentValue) : '';
+
+            // nameTagに[HP:]が含まれていない場合は追加
+            if (!player.nameTag.includes('[HP:')) {
                 player.nameTag += `\n§4[HP: ${playerHealth || 0}]`;
             } else {
-                player.nameTag = player.nameTag.replace(/§4\[HP: \d+\]/, `§4[HP: ${playerHealth || 0}]`);
+                player.nameTag = player.nameTag.replace(/\[HP: [\d.]+\]/g, `[HP: ${playerHealth || 0}]`);
             }
         } else {
-            player.nameTag = player.nameTag.replace(/\n§4\[HP: \d+\]/, "");
+            player.nameTag = player.nameTag.replace(/\[HP: [\d.]+\]/g, "");
         } if (player.hasTag("team1") || player.hasTag("team2") || player.hasTag("team3") || player.hasTag("team4") || player.hasTag("team5")) {
 
-            let teamColor = "§f"; 
+            let teamColor = "§f";
 
             if (player.hasTag("team1")) {
-                teamColor = "§c";
+                teamColor = "§m";
             } else if (player.hasTag("team2")) {
                 teamColor = "§9";
             } else if (player.hasTag("team3")) {

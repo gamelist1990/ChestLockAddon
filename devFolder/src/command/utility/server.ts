@@ -7,16 +7,26 @@ import { tickEvent } from '../../Modules/tick';
 
 let isServerPaused = false; // サーバーが一時停止されているかどうかを追跡する変数
 let isRealTimePingEnabled = false; // リアルタイムping検知が有効かどうか
-const playerPingData: Record<string, { lastPingRequestTime: number }> = {};
 
 let startTime = Date.now();
+const oldData: { name: string, id: string }[] = [];
+
+const TICKRUN = 20;
 
 
 let tps = 20;
 
+
 tickEvent.subscribe("serverInfoTick", (data: any) => {
     tps = data.tps;
 });
+
+const playerMovementData: Record<string, {
+    lastPosition: { x: number, y: number, z: number },
+    lastVelocity: { x: number, y: number, z: number },
+    lastCheckTime: number,
+    predictedPosition: { x: number, y: number, z: number }
+}> = {};
 
 
 
@@ -35,31 +45,71 @@ function getPingLevel(ping: number): string {
     }
 }
 
+function predictPosition(playerData: any) {
+    const timeDiff = (Date.now() - playerData.lastCheckTime) / 1000;
+    return {
+        x: playerData.lastPosition.x + playerData.lastVelocity.x * timeDiff,
+        y: playerData.lastPosition.y + playerData.lastVelocity.y * timeDiff,
+        z: playerData.lastPosition.z + playerData.lastVelocity.z * timeDiff
+    };
+}
 
-system.runInterval(async () => { // async 関数に変更
+function estimatePing(player: Player, playerData: any): number {
+    const positionDifference = calculateDistance(player.location, playerData.predictedPosition);
+    let ping = Math.min(Math.max(positionDifference * 50, 0), 500);
+    ping *= (20 / tps); // TPSが低いほどpingを高く補正
+    return ping;
+
+}
+
+function calculateDistance(pos1: { x: number, y: number, z: number }, pos2: { x: number, y: number, z: number }): number {
+    return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2) + Math.pow(pos1.z - pos2.z, 2));
+}
+
+
+system.runInterval(() => {
     if (isRealTimePingEnabled) {
-        const players = world.getPlayers();
-
-        for (const player of players) {
-            if (!playerPingData[player.name]) {
-                playerPingData[player.name] = {
-                    lastPingRequestTime: 0,
+        for (const player of world.getPlayers()) {
+            const now = Date.now();
+            if (!playerMovementData[player.name]) {
+                playerMovementData[player.name] = {
+                    lastPosition: player.location,
+                    lastVelocity: { x: 0, y: 0, z: 0 },
+                    lastCheckTime: now,
+                    predictedPosition: player.location
                 };
-            }
+            } else {
 
-            const playerData = playerPingData[player.name];
+                playerMovementData[player.name].predictedPosition = predictPosition(playerMovementData[player.name]);
 
-            if (Date.now() - playerData.lastPingRequestTime > 1000) {
-                playerData.lastPingRequestTime = Date.now();
+                const estimatedPing = estimatePing(player, playerMovementData[player.name]);
 
-                const { ping, level } = await getPing(player);
+                const level = getPingLevel(estimatedPing); // pingレベルを取得
+                player.onScreenDisplay.setActionBar(`Ping: ${Math.floor(estimatedPing)}ms | Level: ${level}`);
+                console.log(`Player ${player.name}: Estimated Ping = ${Math.floor(estimatedPing)}ms`);
 
-                player.onScreenDisplay.setActionBar(`Ping: ${ping}ms | Level: ${level}`);
-                console.log(`Player ${player.name}: Ping = ${ping}ms`);
+
+
+                // 速度を計算し、次の予測に使用
+                const timeDiff = (now - playerMovementData[player.name].lastCheckTime) / 1000;
+                const velocity = {
+                    x: (player.location.x - playerMovementData[player.name].lastPosition.x) / timeDiff,
+                    y: (player.location.y - playerMovementData[player.name].lastPosition.y) / timeDiff,
+                    z: (player.location.z - playerMovementData[player.name].lastPosition.z) / timeDiff,
+                };
+
+                // データ更新
+                playerMovementData[player.name] = {
+                    lastPosition: player.location,
+                    lastVelocity: velocity,
+                    lastCheckTime: now,
+                    predictedPosition: player.location
+                };
             }
         }
     }
-}, 20);
+}, TICKRUN);
+
 
 
 
@@ -121,6 +171,8 @@ export function outputPlayerData(player: Player) {
         const item = inventoryComponent.container.getItem(0); 
         if (item && item.typeId === 'minecraft:writable_book') { 
 
+            
+
             // 全プレイヤーの情報をJSON文字列に変換
             const allPlayerData = JSON.stringify(playerData);
 
@@ -128,10 +180,13 @@ export function outputPlayerData(player: Player) {
 
         } else {
             player.sendMessage('ホットバーの最初のスロットに書き込み可能な本を持ってください。');
-        }
+        }   
     }
+    const combinedData = [...oldData, ...playerData.filter(newData => !oldData.some(existing => existing.id === newData.id))];
 
-    console.warn(JSON.stringify(playerData));
+    console.warn(JSON.stringify(combinedData));
+    oldData.length = 0;
+    oldData.push(...combinedData);
     player.sendMessage("Check Book")
 }
 
