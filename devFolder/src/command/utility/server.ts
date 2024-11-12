@@ -1,6 +1,6 @@
 import { config } from '../../Modules/Util';
 import { isPlayer, registerCommand, verifier } from '../../Modules/Handler';
-import { EntityInventoryComponent, Player, system, world } from '@minecraft/server';
+import { EntityInventoryComponent, Player, system, Vector3, world } from '@minecraft/server';
 import { renameItem } from '../plugin/lore';
 import { banPlayers } from '../../Modules/globalBan';
 import { tickEvent } from '../../Modules/tick';
@@ -11,101 +11,157 @@ let isRealTimePingEnabled = false; // リアルタイムping検知が有効か�
 let startTime = Date.now();
 const oldData: { name: string, id: string }[] = [];
 
+
+
 const TICKRUN = 20;
-
-
 let tps = 20;
+let lastTickTime = Date.now();
+
 
 
 tickEvent.subscribe("serverInfoTick", (data: any) => {
     tps = data.tps;
 });
 
-const playerMovementData: Record<string, {
-    lastPosition: { x: number, y: number, z: number },
-    lastVelocity: { x: number, y: number, z: number },
-    lastCheckTime: number,
-    predictedPosition: { x: number, y: number, z: number }
-}> = {};
 
-
-
-
-function getPingLevel(ping: number): string {
-    if (ping < 40) {
-        return "§a通常";
-    } else if (ping < 120) {
-        return "§eちょいラグい";
-    } else if (ping < 300) {
-        return "§gかなりラグい";
-    } else if (ping < 800) {
-        return "§cめちゃラグい";
-    } else {
-        return "§dラグさ上限突破！！";
-    }
+interface PlayerMovementData {
+    lastPositions: Vector3[];
+    lastTimestamps: number[];
+    lastVelocities: Vector3[];
+    predictedPositions: Vector3[];
 }
 
-function predictPosition(playerData: any) {
-    const timeDiff = (Date.now() - playerData.lastCheckTime) / 1000;
+const playerMovementData: Record<string, PlayerMovementData> = {};
+const POSITION_HISTORY_LENGTH = 10; // 保存する位置情報の数を増やす
+const VELOCITY_SMOOTHING_FACTOR = 0.9; // 速度の平滑化係数
+const TICK_TIME = tps; // 20 ticks/second = 50ms/tick
+const OUTLIER_THRESHOLD = 10;  // 異常値の閾値
+
+
+// pingレベルを取得する関数を最適化
+function getPingLevel(ping: number): string {
+    if (ping < 65) return "§a通常";
+    if (ping < 100) return "§eちょいラグい";
+    if (ping < 150) return "§gかなりラグい";
+    if (ping < 300) return "§cめちゃラグい";
+    return "§dラグさ上限突破！！";
+}
+
+
+
+function calculateVelocity(pos1: Vector3, pos2: Vector3, dt: number): Vector3 {
     return {
-        x: playerData.lastPosition.x + playerData.lastVelocity.x * timeDiff,
-        y: playerData.lastPosition.y + playerData.lastVelocity.y * timeDiff,
-        z: playerData.lastPosition.z + playerData.lastVelocity.z * timeDiff
+        x: (pos2.x - pos1.x) / dt,
+        y: (pos2.y - pos1.y) / dt,
+        z: (pos2.z - pos1.z) / dt,
     };
 }
 
-function estimatePing(player: Player, playerData: any): number {
-    const positionDifference = calculateDistance(player.location, playerData.predictedPosition);
-    let ping = Math.min(Math.max(positionDifference * 50, 0), 500);
-    ping *= (20 / tps); // TPSが低いほどpingを高く補正
-    return ping;
 
-}
 
-function calculateDistance(pos1: { x: number, y: number, z: number }, pos2: { x: number, y: number, z: number }): number {
-    return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2) + Math.pow(pos1.z - pos2.z, 2));
+function estimatePing(player: Player, playerData: PlayerMovementData, dt: number): number {
+    const now = Date.now();
+    const currentPosition = player.location;
+
+    playerData.lastPositions.push(currentPosition);
+    playerData.lastTimestamps.push(now);
+
+    if (playerData.lastPositions.length < 2) {
+        playerData.predictedPositions.push(currentPosition);
+        return 0;
+    }
+
+    const lastPosition = playerData.lastPositions[playerData.lastPositions.length - 2];
+    const timeDiff = (now - playerData.lastTimestamps[playerData.lastTimestamps.length - 2]) / 1000;
+    const currentVelocity = calculateVelocity(lastPosition, currentPosition, timeDiff);
+
+    // 速度の平滑化
+    if (playerData.lastVelocities.length > 0) {
+        const lastVelocity = playerData.lastVelocities[playerData.lastVelocities.length - 1];
+        playerData.lastVelocities.push({
+            x: lastVelocity.x * VELOCITY_SMOOTHING_FACTOR + currentVelocity.x * (1 - VELOCITY_SMOOTHING_FACTOR),
+            y: lastVelocity.y * VELOCITY_SMOOTHING_FACTOR + currentVelocity.y * (1 - VELOCITY_SMOOTHING_FACTOR),
+            z: lastVelocity.z * VELOCITY_SMOOTHING_FACTOR + currentVelocity.z * (1 - VELOCITY_SMOOTHING_FACTOR),
+        });
+
+
+    } else {
+        playerData.lastVelocities.push(currentVelocity)
+    }
+
+
+
+    const smoothedVelocity = playerData.lastVelocities[playerData.lastVelocities.length - 1];
+
+
+    // 予測位置を計算 (等速直線運動ではなく、現在の速度を使用)
+    const predictedPosition = {
+        x: lastPosition.x + smoothedVelocity.x * timeDiff,
+        y: lastPosition.y + smoothedVelocity.y * timeDiff, // y座標も計算していますが、ずれの計算では使用しません
+        z: lastPosition.z + smoothedVelocity.z * timeDiff,
+    };
+    playerData.predictedPositions.push(predictedPosition);
+
+    if (playerData.lastPositions.length > POSITION_HISTORY_LENGTH) {
+        playerData.lastPositions.shift();
+        playerData.lastTimestamps.shift();
+        playerData.lastVelocities.shift();
+        playerData.predictedPositions.shift();
+    }
+
+    const deviations: number[] = [];
+
+    for (let i = 0; i < playerData.lastPositions.length - 1; i++) {
+        // x, zのみでずれを計算
+        const deviation = Math.sqrt(
+            Math.pow(playerData.lastPositions[i + 1].x - playerData.predictedPositions[i + 1].x, 2) +
+            Math.pow(playerData.lastPositions[i + 1].z - playerData.predictedPositions[i + 1].z, 2)
+        );
+
+
+        if (deviation < OUTLIER_THRESHOLD) {
+            deviations.push(deviation);
+        }
+
+    }
+
+    if (deviations.length == 0) return 0;
+
+    const totalDeviation = deviations.reduce((sum, d) => sum + d, 0);
+
+
+
+    // ずれに基づいてpingを計算 (調整可能な係数)
+    let ping = (totalDeviation / deviations.length) * 50;
+
+    ping *= (TICK_TIME / (dt * 1000));
+
+
+    return Math.min(Math.max(ping, 0), 999);
 }
 
 
 system.runInterval(() => {
     if (isRealTimePingEnabled) {
+        const now = Date.now();
+        const dt = (now - lastTickTime) / 1000;
+        lastTickTime = now;
+
         for (const player of world.getPlayers()) {
-            const now = Date.now();
-            if (!playerMovementData[player.name]) {
-                playerMovementData[player.name] = {
-                    lastPosition: player.location,
-                    lastVelocity: { x: 0, y: 0, z: 0 },
-                    lastCheckTime: now,
-                    predictedPosition: player.location
+            let playerData = playerMovementData[player.name];
+            if (!playerData) {
+                playerData = {
+                    lastPositions: [],
+                    lastTimestamps: [],
+                    lastVelocities: [], // 新しく追加
+                    predictedPositions: [], // 新しく追加
                 };
-            } else {
-
-                playerMovementData[player.name].predictedPosition = predictPosition(playerMovementData[player.name]);
-
-                const estimatedPing = estimatePing(player, playerMovementData[player.name]);
-
-                const level = getPingLevel(estimatedPing); // pingレベルを取得
-                player.onScreenDisplay.setActionBar(`Ping: ${Math.floor(estimatedPing)}ms | Level: ${level}`);
-                console.log(`Player ${player.name}: Estimated Ping = ${Math.floor(estimatedPing)}ms`);
-
-
-
-                // 速度を計算し、次の予測に使用
-                const timeDiff = (now - playerMovementData[player.name].lastCheckTime) / 1000;
-                const velocity = {
-                    x: (player.location.x - playerMovementData[player.name].lastPosition.x) / timeDiff,
-                    y: (player.location.y - playerMovementData[player.name].lastPosition.y) / timeDiff,
-                    z: (player.location.z - playerMovementData[player.name].lastPosition.z) / timeDiff,
-                };
-
-                // データ更新
-                playerMovementData[player.name] = {
-                    lastPosition: player.location,
-                    lastVelocity: velocity,
-                    lastCheckTime: now,
-                    predictedPosition: player.location
-                };
+                playerMovementData[player.name] = playerData;
             }
+            const estimatedPing = estimatePing(player, playerData, dt);
+            const level = getPingLevel(estimatedPing);
+            player.onScreenDisplay.setActionBar(`Ping: ${Math.floor(estimatedPing)}ms | Level: ${level}`);
+            console.log(`Player ${player.name}: Estimated Ping = ${Math.floor(estimatedPing)}ms`); // コンソールログのスパムを削減
         }
     }
 }, TICKRUN);
@@ -168,19 +224,19 @@ export function outputPlayerData(player: Player) {
     // プレイヤーの手持ちアイテムを取得
     const inventoryComponent = player.getComponent('minecraft:inventory') as EntityInventoryComponent;
     if (inventoryComponent && inventoryComponent.container) {
-        const item = inventoryComponent.container.getItem(0); 
-        if (item && item.typeId === 'minecraft:writable_book') { 
+        const item = inventoryComponent.container.getItem(0);
+        if (item && item.typeId === 'minecraft:writable_book') {
 
-            
+
 
             // 全プレイヤーの情報をJSON文字列に変換
             const allPlayerData = JSON.stringify(playerData);
 
-            renameItem(item, allPlayerData, player, 0); 
+            renameItem(item, allPlayerData, player, 0);
 
         } else {
             player.sendMessage('ホットバーの最初のスロットに書き込み可能な本を持ってください。');
-        }   
+        }
     }
     const combinedData = [...oldData, ...playerData.filter(newData => !oldData.some(existing => existing.id === newData.id))];
 
@@ -229,14 +285,14 @@ function displayServerInfo(player: Player | undefined, type: string) {
             if (player) {
                 player.sendMessage(message);
             } else {
-                world.sendMessage(message); 
+                world.sendMessage(message);
             }
             break;
         default:
             if (player) {
                 player.sendMessage('Invalid info type.');
             } else {
-                console.warn('Invalid info type.'); 
+                console.warn('Invalid info type.');
             }
 
 
@@ -256,8 +312,8 @@ function addNametag(player: Player | undefined, targetPlayer: Player | undefined
             if (player) {
                 player.sendMessage('[server] 既にネームタグ付いてまっせ.');
             }
-            return; 
-        } else { 
+            return;
+        } else {
             target.nameTag = prefixNametag;
             //target.sendMessage(`[server] ネームタグが追加されたよ！: ${nametag}`);
             if (player && player !== target) {
@@ -293,7 +349,7 @@ registerCommand({
     name: 'server',
     description: 'server_command_description',
     parent: false,
-    maxArgs: 4, 
+    maxArgs: 4,
     minArgs: 1,
     require: (player: Player) => verifier(player, config().commands['server']),
     executor: (player: Player, args: string[]) => {
@@ -326,7 +382,7 @@ registerCommand({
             }
         } else if (args[0] === '-nametag') {
             if (args[1] === 'add' && args[2]) {
-                addNametag(player, undefined, args[2]); 
+                addNametag(player, undefined, args[2]);
             } else if (args[1] === 'addTo' && args[2] && args[3]) {
                 const targetPlayer = world.getPlayers().find(p => p.name === args[2].replace('@', ''));
                 if (targetPlayer) {
@@ -339,7 +395,7 @@ registerCommand({
             } else if (args[1] === 'removeTo' && args[2]) {
                 const targetPlayer = world.getPlayers().find(p => p.name === args[2].replace('@', ''));
                 if (targetPlayer) {
-                    removeNametag(player, targetPlayer); 
+                    removeNametag(player, targetPlayer);
                 } else {
                     player.sendMessage(`Player ${args[2]} not found.`);
                 }
@@ -384,7 +440,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
             const tagMatch = targetPlayerName.match(/\[tag=(.*?)\]/);
 
             if (tagMatch) {
-                const tagName = tagMatch[1]; 
+                const tagName = tagMatch[1];
 
                 // tag に一致するプレイヤーを検索
                 targetPlayer = world.getPlayers().find(player =>

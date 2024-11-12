@@ -1044,7 +1044,7 @@ function detectKillAura(player: Player, event: EntityHurtAfterEvent): { cheatTyp
 
 
   // 攻撃速度の検知
-  const cps = getPlayerCPS(player.name);
+  const cps = getPlayerCPS(player);
 
   if (cps >= 20) {
     console.log(`[DEBUG] ${player.name} Kill Aura (Attack Speed) Detected! CPS: ${cps}`);
