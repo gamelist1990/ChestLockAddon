@@ -6,7 +6,7 @@ const trueSumoTag = "trueSumo"; // Sumo システム起動用のフラグ
 const maxSumoMatches = 5; // 最大同時試合数
 
 let sumoSystemEnabled = false; // Sumo システムの有効/無効状態
-let sumoTagsInUse: string[] = []; // 使用中の Sumo タグを格納する配列
+let sumoTagsInUse: string[] = []; 
 
 function calculateDistance(pos1: Vector3, pos2: Vector3): number {
     const dx = pos1.x - pos2.x;
@@ -57,7 +57,7 @@ function removeSumoTags(player1: Player, player2: Player, sumoTag: string) {
 
 // Sumo 開始処理
 world.afterEvents.entityHitEntity.subscribe((event) => {
-    if (!sumoSystemEnabled) return; // システムが無効なら何もしない
+    if (!sumoSystemEnabled) return; 
 
     const { damagingEntity, hitEntity } = event;
 
@@ -82,7 +82,7 @@ world.afterEvents.entityHitEntity.subscribe((event) => {
         }
 
         if (getSumoTag(attackingPlayer) || getSumoTag(hitPlayer)) {
-            return; // 既に Sumo 中なら何もしない
+            return; 
         }
 
 
@@ -113,16 +113,16 @@ function generateUniqueSumoTag(): string | null {
             return tag;
         }
     }
-    return null; // 全てのタグが使用中の場合
+    return null; 
 }
 
 
 
 // 勝敗判定と結果の処理
 function determineWinner(player: Player) {
-    const sumoTag = getSumoTag(player); // 勝者の Sumo タグを取得
+    const sumoTag = getSumoTag(player); 
     if (sumoTag) {
-        world.getPlayers().forEach(p => { // 全プレイヤーからタグを削除
+        world.getPlayers().forEach(p => {
             if (p.hasTag(sumoTag)) {
                 p.removeTag(sumoTag);
             }
@@ -147,12 +147,12 @@ function checkSystemStatus() {
 
 // 定期的に Sumo プレイヤーのタグをチェック
 system.runInterval(() => {
-    checkSystemStatus(); // 各ティックでシステム状態をチェック
-    if (!sumoSystemEnabled) return; // システムが無効なら何もしない
+    checkSystemStatus();
+    if (!sumoSystemEnabled) return;
 
-    checkSumoDistance(); // 距離監視
+    checkSumoDistance();
 
-    for (const sumoTag of sumoTagsInUse) {  // 使用中のタグのみをチェック
+    for (const sumoTag of sumoTagsInUse) {  
         const playersWithTag = world.getPlayers().filter(player => player.hasTag(sumoTag));
         if (playersWithTag.length === 1) {
             determineWinner(playersWithTag[0]);
