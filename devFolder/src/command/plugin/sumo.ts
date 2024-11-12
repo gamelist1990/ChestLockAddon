@@ -2,7 +2,11 @@ import { Player, system, Vector3, world } from "@minecraft/server";
 
 // Sumo タグのプレフィックス
 const sumoTagPrefix = "sumo";
-const trueSumoTag = "trueSumo"; // Sumo システム起動用のフラグ(これが無いと処理が開始しないように)
+const trueSumoTag = "trueSumo"; // Sumo システム起動用のフラグ
+const maxSumoMatches = 5; // 最大同時試合数
+
+let sumoSystemEnabled = false; // Sumo システムの有効/無効状態
+let sumoTagsInUse: string[] = []; // 使用中の Sumo タグを格納する配列
 
 function calculateDistance(pos1: Vector3, pos2: Vector3): number {
     const dx = pos1.x - pos2.x;
@@ -20,21 +24,18 @@ function checkSumoDistance() {
             if (opponent) {
                 const distance = calculateDistance(player.location, opponent.location);
                 if (distance > 15) {
-                    // 15 ブロック離れたらお知らせ
                     player.sendMessage(`§c対戦相手から15ブロック以上離れました！`);
                     opponent.sendMessage(`§c対戦相手から15ブロック以上離れました！`);
-                    player.removeTag(sumoTag);
-                    opponent.removeTag(sumoTag);
+                    removeSumoTags(player, opponent, sumoTag);
                 }
             }
         }
     });
 }
 
-
 // Sumo タグを取得する関数
 function getSumoTag(player: Player): string | null {
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= maxSumoMatches; i++) {
         const tag = `${sumoTagPrefix}${i}`;
         if (player.hasTag(tag)) {
             return tag;
@@ -43,70 +44,118 @@ function getSumoTag(player: Player): string | null {
     return null;
 }
 
+function removeSumoTags(player1: Player, player2: Player, sumoTag: string) {
+    player1.removeTag(sumoTag);
+    player2.removeTag(sumoTag);
+    const index = sumoTagsInUse.indexOf(sumoTag);
+    if (index > -1) {
+        sumoTagsInUse.splice(index, 1);
+    }
+    checkSystemStatus(); 
+}
+
+
 // Sumo 開始処理
 world.afterEvents.entityHitEntity.subscribe((event) => {
+    if (!sumoSystemEnabled) return; // システムが無効なら何もしない
+
     const { damagingEntity, hitEntity } = event;
-    world.getPlayers().forEach((player) => {
-        if (player.hasTag(trueSumoTag)) {
-            return
-        } else if (player.hasTag("sumo")) {
-            if (
-                damagingEntity &&
-                damagingEntity.typeId === "minecraft:player" &&
-                hitEntity &&
-                hitEntity.typeId === "minecraft:player"
-            ) {
-                const attackingPlayer = damagingEntity as Player;
-                const hitPlayer = hitEntity as Player;
 
+    if (
+        damagingEntity &&
+        damagingEntity.typeId === "minecraft:player" &&
+        hitEntity &&
+        hitEntity.typeId === "minecraft:player"
+    ) {
+        const attackingPlayer = damagingEntity as Player;
+        const hitPlayer = hitEntity as Player;
 
-                // 既に Sumo タグを持っている場合は何もしない
-                if (getSumoTag(attackingPlayer) || getSumoTag(hitPlayer)) {
-                    return;
-                }
+        const attackerTag = getSumoTag(attackingPlayer);
+        const hitPlayerTag = getSumoTag(hitPlayer);
 
-                // Sumo タグを付与 (1 から 5 までのランダムな番号)
-                const sumoNumber = Math.floor(Math.random() * 5) + 1;
-                const sumoTag = `${sumoTagPrefix}${sumoNumber}`;
-
-                attackingPlayer.addTag(sumoTag);
-                hitPlayer.addTag(sumoTag);
-
-
-                attackingPlayer.sendMessage(`§a${hitPlayer.name} と 対戦開始！`);
-                hitPlayer.sendMessage(`§a${attackingPlayer.name} と 対戦開始！`);
-
-                console.warn(`[SUMO START] ${attackingPlayer.name} vs ${hitPlayer.name} (Tag: ${sumoTag})`);
-            }
+        if (!attackerTag || !hitPlayerTag || attackerTag !== hitPlayerTag) {
+            event.damagingEntity.addEffect("weakness", 255, {
+                amplifier: 2,
+            });
+            attackingPlayer.sendMessage("§c異なるチームのプレイヤーを攻撃することは禁止されています");
+            return;
         }
-    })
 
+        if (getSumoTag(attackingPlayer) || getSumoTag(hitPlayer)) {
+            return; // 既に Sumo 中なら何もしない
+        }
+
+
+        const sumoTag = generateUniqueSumoTag();
+        if (!sumoTag) {
+            attackingPlayer.sendMessage("§c現在、すべての 枠 が使用中です。");
+            hitPlayer.sendMessage("§c現在、すべての 枠 が使用中です。");
+            return;
+        }
+
+
+        attackingPlayer.addTag(sumoTag);
+        hitPlayer.addTag(sumoTag);
+        sumoTagsInUse.push(sumoTag);
+
+
+        attackingPlayer.sendMessage(`§a${hitPlayer.name} と 対戦開始！`);
+        hitPlayer.sendMessage(`§a${attackingPlayer.name} と 対戦開始！`);
+
+        console.warn(`[SUMO START] ${attackingPlayer.name} vs ${hitPlayer.name} (Tag: ${sumoTag})`);
+    }
 });
+
+function generateUniqueSumoTag(): string | null {
+    for (let i = 1; i <= maxSumoMatches; i++) {
+        const tag = `${sumoTagPrefix}${i}`;
+        if (!sumoTagsInUse.includes(tag)) {
+            return tag;
+        }
+    }
+    return null; // 全てのタグが使用中の場合
+}
+
 
 
 // 勝敗判定と結果の処理
 function determineWinner(player: Player) {
-    player.addTag("sumoWin");
-    console.warn(`[SUMO WIN] ${player.name}`);
+    const sumoTag = getSumoTag(player); // 勝者の Sumo タグを取得
+    if (sumoTag) {
+        world.getPlayers().forEach(p => { // 全プレイヤーからタグを削除
+            if (p.hasTag(sumoTag)) {
+                p.removeTag(sumoTag);
+            }
+        });
+
+        const index = sumoTagsInUse.indexOf(sumoTag);
+        if (index > -1) {
+            sumoTagsInUse.splice(index, 1);
+        }
+
+        player.addTag("sumoWin"); // 勝利タグを追加
+        console.warn(`[SUMO WIN] ${player.name}`);
+        checkSystemStatus(); // システム状態をチェック
+    }
 }
 
 
+// システムの有効/無効状態をチェックする関数
+function checkSystemStatus() {
+    sumoSystemEnabled = world.getPlayers().some(player => player.hasTag(trueSumoTag));
+}
+
 // 定期的に Sumo プレイヤーのタグをチェック
 system.runInterval(() => {
-    world.getPlayers().forEach((player) => {
-        if (player.hasTag(trueSumoTag)) {
-            return
+    checkSystemStatus(); // 各ティックでシステム状態をチェック
+    if (!sumoSystemEnabled) return; // システムが無効なら何もしない
+
+    checkSumoDistance(); // 距離監視
+
+    for (const sumoTag of sumoTagsInUse) {  // 使用中のタグのみをチェック
+        const playersWithTag = world.getPlayers().filter(player => player.hasTag(sumoTag));
+        if (playersWithTag.length === 1) {
+            determineWinner(playersWithTag[0]);
         }
-
-        checkSumoDistance(); // 距離監視
-
-        for (let i = 1; i <= 5; i++) {
-            const sumoTag = `${sumoTagPrefix}${i}`;
-            const playersWithTag = world.getPlayers().filter(player => player.hasTag(sumoTag));
-            if (playersWithTag.length === 1) {
-                determineWinner(playersWithTag[0]);
-            }
-        }
-    })
-
+    }
 }, 20);
