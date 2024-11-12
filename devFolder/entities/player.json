@@ -287,7 +287,7 @@
                     {
                         "on_damage": {
                             "filters": {
-                                "all_of": [
+                                "any_of": [
                                     {
                                         "test": "has_tag",
                                         "subject": "self",
@@ -295,37 +295,9 @@
                                     },
                                     {
                                         "test": "has_tag",
-                                        "subject": "other",
-                                        "value": "sumo1"
-                                    }
-                                ]
-                            }
-                        },
-                        "deals_damage": true
-                    },
-                    {
-                        "on_damage": {
-                            "filters": {
-                                "all_of": [
-                                    {
-                                        "test": "has_tag",
                                         "subject": "self",
                                         "value": "sumo2"
                                     },
-                                    {
-                                        "test": "has_tag",
-                                        "subject": "other",
-                                        "value": "sumo2"
-                                    }
-                                ]
-                            }
-                        },
-                        "deals_damage": true
-                    },
-                    {
-                        "on_damage": {
-                            "filters": {
-                                "all_of": [
                                     {
                                         "test": "has_tag",
                                         "subject": "self",
@@ -333,51 +305,18 @@
                                     },
                                     {
                                         "test": "has_tag",
-                                        "subject": "other",
-                                        "value": "sumo3"
-                                    }
-                                ]
-                            }
-                        },
-                        "deals_damage": true
-                    },
-                    {
-                        "on_damage": {
-                            "filters": {
-                                "all_of": [
-                                    {
-                                        "test": "has_tag",
                                         "subject": "self",
                                         "value": "sumo4"
                                     },
                                     {
                                         "test": "has_tag",
-                                        "subject": "other",
-                                        "value": "sumo4"
-                                    }
-                                ]
-                            }
-                        },
-                        "deals_damage": true
-                    },
-                    {
-                        "on_damage": {
-                            "filters": {
-                                "all_of": [
-                                    {
-                                        "test": "has_tag",
                                         "subject": "self",
                                         "value": "sumo5"
-                                    },
-                                    {
-                                        "test": "has_tag",
-                                        "subject": "other",
-                                        "value": "sumo5"
                                     }
                                 ]
                             }
                         },
-                        "deals_damage": true
+                        "deals_damage": false
                     }
                 ]
             }

@@ -102,6 +102,19 @@ system.runInterval(() => {
                 const coloredNameRegex = new RegExp(`(§[m9aed])(${escapeRegExp(player.name)})`);
                 player.nameTag = player.nameTag.replace(coloredNameRegex, '$2'); 
             }
+        } if (player.hasTag("device")) {
+            const device = clientdevice(player);
+            const deviceName = ["Desktop", "Mobile", "Console"][device] || "Unknown";
+
+            const deviceTagRegex = /\[(?:\d+|\w+)\]/g; 
+            player.nameTag = player.nameTag.replace(deviceTagRegex, `[${deviceName}]`);
+
+            // nameTagにデバイスタグがない場合、末尾に追加
+            if (!deviceTagRegex.test(player.nameTag)) {
+                player.nameTag += `\n[${deviceName}]`;
+            } 
+        } else {
+            player.nameTag = player.nameTag.replace(/^.*\[(?:\d+|\w+)\].*$/gm, "");
         }
     }
 }, 1);
