@@ -1,4 +1,4 @@
-import { clientdevice, config } from '../../Modules/Util';
+import { clientdevice, config, getMemoryTier } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
 import { Player, world, system, EntityHealthComponent } from '@minecraft/server';
 
@@ -33,12 +33,7 @@ world.afterEvents.entityHitEntity.subscribe(({ damagingEntity }) => {
     clicks.set(damagingEntity, playerClicks);
 });
 
-
-
-
-// 1tick ごとに CPS を表示 & 3秒間クリックがなければ CPS を 0 にする
 system.runInterval(() => {
-    // trueCps プレイヤーが存在するかチェック
     const isCPSTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueCps"));
     const isHPTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueHP"));
     const isTeamTrackingEnable = world.getPlayers().some(p => p.hasTag("trueTeam"));
@@ -46,35 +41,45 @@ system.runInterval(() => {
     if (!isCPSTrackingEnabled && !isTeamTrackingEnable && !isHPTrackingEnabled) return;
 
     for (const player of world.getPlayers()) {
-        if (player.hasTag("cps")) { 
-            const cps = getPlayerCPS(player);
+        let nameTag = player.nameTag;
 
-            player.onScreenDisplay.setActionBar(`§aCPS: ${cps || 0}`);
-
-                // プレイヤーの頭の上に CPS を追加表示
-                if (!player.nameTag.includes(`\n§a[CPS:`)) { // 既に CPS 表示がない場合のみ追加
-                    player.nameTag += `\n§a[CPS: ${cps || 0}]`;
-                } else { // 既に CPS 表示がある場合は更新
-                    player.nameTag = player.nameTag.replace(/§a\[CPS: \d+\]/, `§a[CPS: ${cps || 0}]`);
-                }
-            
-        } else {
-            player.nameTag = player.nameTag.replace(/\n§a\[CPS: \d+\]/, "");
-
-        } if (player.hasTag("hp")) {
+        // HP
+        const heartIcon = '\u2764';
+        const hpRegex = / \d+ | \d+ §c\u2764§r/; // 正規表現を修正
+        if (player.hasTag("hp")) {
             const health = player.getComponent('minecraft:health') as EntityHealthComponent;
             const playerHealth = health ? Math.floor(health.currentValue) : '';
+            const newHPTag = ` ${playerHealth} §c${heartIcon}§r`;
 
-            // nameTagに[HP:]が含まれていない場合は追加
-            if (!player.nameTag.includes('[HP:')) {
-                player.nameTag += `\n§4[HP: ${playerHealth || 0}]`;
+            if (hpRegex.test(nameTag)) {
+                nameTag = nameTag.replace(hpRegex, newHPTag);
             } else {
-                player.nameTag = player.nameTag.replace(/\[HP: [\d.]+\]/g, `[HP: ${playerHealth || 0}]`);
+                nameTag += newHPTag;
             }
         } else {
-            player.nameTag = player.nameTag.replace(/\n§4\[HP: [\d.]+\]/g, "");
-        } if (isTeamTrackingEnable) {
+            nameTag = nameTag.replace(hpRegex, "");
+        }
 
+        // CPS
+        const cpsRegex = /§a\[CPS: \d+\]/;
+        if (player.hasTag("cps")) {
+            const cps = getPlayerCPS(player);
+            player.onScreenDisplay.setActionBar(`§aCPS: ${cps || 0}`);
+
+            const newCPSTag = `\n§a[CPS: ${cps || 0}]`;
+
+            if (cpsRegex.test(nameTag)) {
+                nameTag = nameTag.replace(cpsRegex, newCPSTag);
+            } else {
+                nameTag += newCPSTag;
+            }
+        } else {
+            nameTag = nameTag.replace(cpsRegex, "");
+        }
+
+
+        // Team
+        if (isTeamTrackingEnable) {
             let teamColor = "§f";
 
             if (player.hasTag("team1")) {
@@ -89,35 +94,50 @@ system.runInterval(() => {
                 teamColor = "§d";
             }
 
-            function escapeRegExp(string: string) {
-                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            }
+            const escapeRegExp = (string: string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-            if (teamColor) {
+
+            if (teamColor !== "§f") {
                 const escapedName = escapeRegExp(player.name);
-                player.nameTag = player.nameTag.replace(new RegExp(escapedName), teamColor + player.name);
-
-
-            } else {
-                const coloredNameRegex = new RegExp(`(§[m9aed])(${escapeRegExp(player.name)})`);
-                player.nameTag = player.nameTag.replace(coloredNameRegex, '$2'); 
+                const teamRegex = new RegExp(`§[0-9a-f]${escapedName}|${escapedName}`);
+                nameTag = nameTag.replace(teamRegex, teamColor + player.name);
             }
-        } if (player.hasTag("device")) {
-            const device = clientdevice(player);
-            const deviceName = ["Desktop", "Mobile", "Console"][device] || "Unknown";
-
-            const deviceTagRegex = /\[(?:\d+|\w+)\]/g; 
-            player.nameTag = player.nameTag.replace(deviceTagRegex, `[${deviceName}]`);
-
-            // nameTagにデバイスタグがない場合、末尾に追加
-            if (!deviceTagRegex.test(player.nameTag)) {
-                player.nameTag += `\n[${deviceName}]`;
-            } 
-        } else {
-            player.nameTag = player.nameTag.replace(/^.*\[(?:\d+|\w+)\].*$/gm, "");
         }
+
+        if (player.hasTag("device")) {
+            const device = clientdevice(player);
+            const memoryTier = getMemoryTier(player);
+            const deviceName = {
+                0: "PC",
+                1: "MB",
+                2: "CS",
+            }[device] || "??";
+            const memoryTierName = {
+                0: "m:?",
+                1: "m:1.5",
+                2: "m:2",
+                3: "m:4",
+                4: "m:8",
+                5: "m:8+",
+            }[memoryTier] || "m:?";
+
+
+            const deviceTag = ` \n§7[${deviceName}-${memoryTierName}]`;
+            const deviceRegex = / \n§7\[[A-Z]{2,3}-m:[?\d.+]+\]/;
+
+            if (!deviceRegex.test(nameTag)) {
+                nameTag += deviceTag;
+            } else {
+                nameTag = nameTag.replace(deviceRegex, deviceTag);
+            }
+        } else {
+            nameTag = nameTag.replace(/ \n§7\[[A-Z]{2,3}-M:[?\d.+]+\]/, "");
+        }
+
+
+        player.nameTag = nameTag;
     }
-}, 1);
+});
 
 
 export function getPlayerCPS(player: Player): number {

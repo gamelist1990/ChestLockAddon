@@ -33,7 +33,7 @@ export class Leaderboard {
       this.entity.nameTag = "Updating...";
       this.entity.setDynamicProperty("objective", this.objective);
       this.entity.setDynamicProperty("addLeaderboard", this.addLeaderboard.toString()); // ダイナミックプロパティに追加
-      this.saveDynamicProperties(); // ダイナミックプロパティを保存
+      this.saveDynamicProperties(); 
     } else {
       console.warn("Failed to create leaderboard: Entity is null.");
     }
