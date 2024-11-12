@@ -10,4 +10,6 @@ import './cps';
 import './scoreboard';
 import './hub';
 import './vote';
+import './sumo';
+
 

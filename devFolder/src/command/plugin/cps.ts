@@ -1,4 +1,4 @@
-import { config } from '../../Modules/Util';
+import { clientdevice, config } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
 import { Player, world, system, EntityHealthComponent } from '@minecraft/server';
 
