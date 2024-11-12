@@ -1,4 +1,4 @@
-import { config } from '../../Modules/Util';
+import { clientdevice, config } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
 import { Player, world, system, EntityHealthComponent } from '@minecraft/server';
 
@@ -33,8 +33,11 @@ system.runInterval(() => {
     // trueCps プレイヤーが存在するかチェック
     const isCPSTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueCps"));
     const isHPTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueHP"));
+    const isDeviceTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueDevice"));
+
 
     if (!isCPSTrackingEnabled) return;
+    if (!isDeviceTrackingEnabled) return;
     if (!isHPTrackingEnabled) return;
 
     for (const player of world.getPlayers()) {
@@ -102,6 +105,20 @@ system.runInterval(() => {
             player.nameTag = player.nameTag.replace(new RegExp(`(^|\\s)${escapedName}(\\s|$)`), `$1${teamColor}${player.name}$2`);
         } else {
             player.nameTag = player.nameTag.replace(new RegExp(`(§c|§9|§a|§e|§d)${player.name}`), player.name);
+        } 
+        if (player.hasTag("device")) {
+            const device = clientdevice(player);
+            const deviceName = ["Desktop", "Mobile", "Console"][device] || "Unknown";
+
+            const deviceTagRegex = /\[(?:\d+|\w+)\]/g; 
+            player.nameTag = player.nameTag.replace(deviceTagRegex, `[${deviceName}]`);
+
+            // nameTagにデバイスタグがない場合、末尾に追加
+            if (!deviceTagRegex.test(player.nameTag)) {
+                player.nameTag += `\n[${deviceName}]`;
+            } 
+        } else {
+            player.nameTag = player.nameTag.replace(/^.*\[(?:\d+|\w+)\].*$/gm, "");
         }
     }
 }, 1);
