@@ -96,20 +96,17 @@ world.afterEvents.entityHitEntity.subscribe((event) => {
         }
 
 
+
         // Sumo 中のプレイヤーが、同じ Sumo タグを持つプレイヤー以外を攻撃した場合
         if (attackerTag && (hitPlayerTag !== attackerTag || !hitPlayerTag)) {
-           // event.damagingEntity.addEffect("weakness", 20 * 1, {
-           //     amplifier: 255,
-           //     showParticles: false,
-           // });
-            attackingPlayer.sendMessage("§c対戦中のプレイヤー以外を攻撃することはできません。");
+            attackingPlayer.sendMessage("§c対戦中以外のプレイヤーを攻撃しないで下さい");
             return;
         }
 
 
         // Sumo 中でないプレイヤーが Sumo 中のプレイヤーを攻撃した場合
         if (!attackerTag && hitPlayerTag) {
-            event.damagingEntity.addEffect("weakness", 20 * 1, {
+            event.damagingEntity.addEffect("weakness", 20 * 3, {
                 amplifier: 255,
                 showParticles: false,
             });

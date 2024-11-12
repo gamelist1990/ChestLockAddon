@@ -283,41 +283,8 @@
                             }
                         },
                         "deals_damage": false
-                    },
-                    {
-                        "on_damage": {
-                            "filters": {
-                                "any_of": [
-                                    {
-                                        "test": "has_tag",
-                                        "subject": "self",
-                                        "value": "sumo1"
-                                    },
-                                    {
-                                        "test": "has_tag",
-                                        "subject": "self",
-                                        "value": "sumo2"
-                                    },
-                                    {
-                                        "test": "has_tag",
-                                        "subject": "self",
-                                        "value": "sumo3"
-                                    },
-                                    {
-                                        "test": "has_tag",
-                                        "subject": "self",
-                                        "value": "sumo4"
-                                    },
-                                    {
-                                        "test": "has_tag",
-                                        "subject": "self",
-                                        "value": "sumo5"
-                                    }
-                                ]
-                            }
-                        },
-                        "deals_damage": false
                     }
+                    
                 ]
             }
         },
