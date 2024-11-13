@@ -64,7 +64,6 @@ function loadVoteData(): void {
         voteData = defaultVoteData;
         saveVoteData();
     }
-    console.log('読み込んだ投票データ:', voteData);
 }
 
 

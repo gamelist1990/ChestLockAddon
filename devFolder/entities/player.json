@@ -170,21 +170,129 @@
             "minecraft:block_climber": {},
             "minecraft:environment_sensor": {
                 "triggers": {
-                    "filters": {
-                        "all_of": [
-                            {
-                                "test": "has_mob_effect",
-                                "subject": "self",
-                                "value": "bad_omen"
-                            },
-                            {
-                                "test": "is_in_village",
-                                "subject": "self",
-                                "value": true
-                            }
-                        ]
+                    "gain_raid_omen": {
+                        "filters": {
+                            "all_of": [
+                                {
+                                    "test": "has_mob_effect",
+                                    "subject": "self",
+                                    "value": "bad_omen"
+                                },
+                                {
+                                    "test": "is_in_village",
+                                    "subject": "self",
+                                    "value": true
+                                }
+                            ]
+                        },
+                        "event": "minecraft:gain_raid_omen"
                     },
-                    "event": "minecraft:gain_raid_omen"
+                    "deny_sumo1": {
+                        "filters": {
+                            "all_of": [
+                                {
+                                    "test": "has_tag",
+                                    "subject": "self",
+                                    "value": "sumo1"
+                                },
+                                {
+                                    "test": "not",
+                                    "value": {
+                                        "test": "has_tag",
+                                        "subject": "other",
+                                        "value": "sumo1"
+                                    }
+                                }
+                            ]
+                        },
+                        "event": "minecraft:deny_damage"
+                    },
+                    "deny_sumo2": {
+                        "filters": {
+                            "all_of": [
+                                {
+                                    "test": "has_tag",
+                                    "subject": "self",
+                                    "value": "sumo2"
+                                },
+                                {
+                                    "test": "not",
+                                    "value": {
+                                        "test": "has_tag",
+                                        "subject": "other",
+                                        "value": "sumo2"
+                                    }
+                                }
+                            ]
+                        },
+                        "event": "minecraft:deny_damage"
+                    },
+                    "deny_sumo3": {
+                        "filters": {
+                            "all_of": [
+                                {
+                                    "test": "has_tag",
+                                    "subject": "self",
+                                    "value": "sumo3"
+                                },
+                                {
+                                    "test": "not",
+                                    "value": {
+                                        "test": "has_tag",
+                                        "subject": "other",
+                                        "value": "sumo3"
+                                    }
+                                }
+                            ]
+                        },
+                        "event": "minecraft:deny_damage"
+                    },
+                    "deny_sumo4": {
+                        "filters": {
+                            "all_of": [
+                                {
+                                    "test": "has_tag",
+                                    "subject": "self",
+                                    "value": "sumo4"
+                                },
+                                {
+                                    "test": "not",
+                                    "value": {
+                                        "test": "has_tag",
+                                        "subject": "other",
+                                        "value": "sumo4"
+                                    }
+                                }
+                            ]
+                        },
+                        "event": "minecraft:deny_damage"
+                    },
+                    "deny_sumo5": {
+                        "filters": {
+                            "all_of": [
+                                {
+                                    "test": "has_tag",
+                                    "subject": "self",
+                                    "value": "sumo5"
+                                },
+                                {
+                                    "test": "not",
+                                    "value": {
+                                        "test": "has_tag",
+                                        "subject": "other",
+                                        "value": "sumo5"
+                                    }
+                                }
+                            ]
+                        },
+                        "event": "minecraft:deny_damage"
+                    }
+                }
+            },
+            "events": {
+                "minecraft:gain_raid_omen": {},
+                "minecraft:deny_damage": {
+                    "deals_damage": false
                 }
             },
             "minecraft:damage_sensor": {
@@ -284,7 +392,6 @@
                         },
                         "deals_damage": false
                     }
-                    
                 ]
             }
         },

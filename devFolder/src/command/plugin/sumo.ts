@@ -25,8 +25,8 @@ function checkSumoDistance() {
             if (opponent) {
                 const distance = calculateDistance(player.location, opponent.location);
                 if (distance > 15) {
-                    player.sendMessage(`§c対戦相手から15ブロック以上離れました！`);
-                    opponent.sendMessage(`§c対戦相手から15ブロック以上離れました！`);
+                    player.sendMessage(`§l§f>> §c対戦相手から15ブロック以上離れた為リセットされました`);
+                    opponent.sendMessage(`§l§f>> §c対戦相手から15ブロック以上離れた為リセットされました`);
                     removeSumoTags(player, opponent, sumoTag);
                 }
             }
@@ -79,8 +79,8 @@ world.afterEvents.entityHitEntity.subscribe((event) => {
         if (!attackerTag && !hitPlayerTag && attackingPlayer.hasTag(pvpSumoTag)) {
             const sumoTag = generateUniqueSumoTag();
             if (!sumoTag) {
-                attackingPlayer.sendMessage("§c現在、すべての 枠 が使用中です。");
-                hitPlayer.sendMessage("§c現在、すべての 枠 が使用中です。");
+                attackingPlayer.sendMessage("§l§f>> §c現在、すべての枠が使用中です§6(空きが出るまでお待ちください)");
+                hitPlayer.sendMessage("§l§f>> §c現在、すべての枠が使用中です§6(空きが出るまでお待ちください)");
                 return;
             }
 
@@ -88,11 +88,12 @@ world.afterEvents.entityHitEntity.subscribe((event) => {
             hitPlayer.addTag(sumoTag);
             sumoTagsInUse.push(sumoTag);
 
-            attackingPlayer.sendMessage(`§a${hitPlayer.name} と 対戦開始！`);
-            hitPlayer.sendMessage(`§a${attackingPlayer.name} と 対戦開始！`);
-
-            console.warn(`[SUMO START] ${attackingPlayer.name} vs ${hitPlayer.name} (Tag: ${sumoTag})`);
-            return; // Sumo 開始後は以降のチェックをスキップ
+            attackingPlayer.sendMessage(`§l§f>> §b${hitPlayer.name}§a と 対戦開始！`);
+            hitPlayer.sendMessage(`§l§f>> §b${attackingPlayer.name}§a と 対戦開始！`);
+            attackingPlayer.sendMessage(`§l§f>> §b${attackingPlayer.name} §6vs §b${hitPlayer.name} §a(Tag: ${sumoTag})§r`);
+            hitPlayer.sendMessage(`§l§f>> §b${attackingPlayer.name} §6vs §b${hitPlayer.name} §a(Tag: ${sumoTag})§r`);
+            //console.warn(`[SUMO START] ${attackingPlayer.name} vs ${hitPlayer.name} (Tag: ${sumoTag})`);
+            return;
         }
 
 
@@ -164,7 +165,7 @@ system.runInterval(() => {
 
     world.getPlayers().forEach(player => {
         if (player.hasTag(pvpSumoTag) && !getSumoTag(player)) {
-            player.addEffect("weakness", 20 * 1, { // 20tick * 1sec = 1sec duration
+            player.addEffect("weakness", 20, { 
                 amplifier: 255,
                 showParticles: false
             });

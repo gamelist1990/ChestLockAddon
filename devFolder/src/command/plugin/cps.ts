@@ -45,11 +45,11 @@ system.runInterval(() => {
 
         // HP
         const heartIcon = '\u2764';
-        const hpRegex = / \d+ | \d+ §c\u2764§r/; // 正規表現を修正
+        const hpRegex = / \d+ §c\u2764§r| \d+ /; 
         if (player.hasTag("hp")) {
             const health = player.getComponent('minecraft:health') as EntityHealthComponent;
             const playerHealth = health ? Math.floor(health.currentValue) : '';
-            const newHPTag = ` ${playerHealth} §c${heartIcon}§r`;
+            const newHPTag = ` §r${playerHealth} §c${heartIcon}§r`;
 
             if (hpRegex.test(nameTag)) {
                 nameTag = nameTag.replace(hpRegex, newHPTag);
@@ -59,6 +59,8 @@ system.runInterval(() => {
         } else {
             nameTag = nameTag.replace(hpRegex, "");
         }
+
+        
 
         // CPS
         const cpsRegex = /§a\[CPS: \d+\]/;

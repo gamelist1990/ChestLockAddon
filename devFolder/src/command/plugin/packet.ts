@@ -12,7 +12,7 @@ const configs = {
   debugMode: false,
   antiCheat: {
     detectionThreshold: 3,
-    rollbackTicks: 3 * 20,
+    rollbackTicks: 20 * 5,
     freezeDuration: 20 * 10,
     betasystem: true,
     xrayDetectionDistance: 10,
@@ -468,14 +468,14 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 
     // AirJump判定 (しきい値を調整)
     if (
-      jumpHeight > 2.2 ||
-      maxVerticalSpeed > 3.2 ||
-      maxVerticalAccel > 0.35 ||
-      velocityChangeRate > 2.8 ||
-      (player.isJumping && horizontalSpeed > 1.1) ||
-      (horizontalSpeed > 0.5 && Math.abs(avgHorizontalAccel) > 0.25) ||
-      varHorizontalAccel > 0.1 ||
-      varVerticalAccel > 0.08
+      jumpHeight > 1.6 ||
+      maxVerticalSpeed > 2.5 ||
+      maxVerticalAccel > 0.25 ||
+      velocityChangeRate > 2.2 ||
+      (player.isJumping && horizontalSpeed > 0.95) ||
+      (horizontalSpeed > 0.4 && Math.abs(avgHorizontalAccel) > 0.3) ||
+      varHorizontalAccel > 0.09 ||
+      varVerticalAccel > 0.07
     ) {
       jumpCounter++;
 
@@ -1129,6 +1129,10 @@ function runTick(): void {
     if (!player) continue;
     const data = playerDataManager.get(player);
     if (!data) continue;
+
+    if (player.hasTag("bypass")) {
+      return;
+    }
 
     if (data.isFrozen) {
       player.teleport({ x: player.location.x, y: player.location.y, z: player.location.z }, { dimension: player.dimension });
