@@ -37,8 +37,9 @@ system.runInterval(() => {
     const isCPSTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueCps"));
     const isHPTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueHP"));
     const isTeamTrackingEnable = world.getPlayers().some(p => p.hasTag("trueTeam"));
+    const isDeviceTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueDevice"));
 
-    if (!isCPSTrackingEnabled && !isTeamTrackingEnable && !isHPTrackingEnabled) return;
+    if (!isCPSTrackingEnabled && !isTeamTrackingEnable && !isHPTrackingEnabled && !isDeviceTrackingEnabled) return;
 
     for (const player of world.getPlayers()) {
         let nameTag = player.nameTag;

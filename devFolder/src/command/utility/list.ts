@@ -58,7 +58,7 @@ async function sendPlayerInfoToChat(player: Player, targetPlayer: Player): Promi
   const healthComponent = targetPlayerData.getComponent(
     'minecraft:health',
   ) as EntityHealthComponent;
-  const health = healthComponent ? healthComponent.currentValue.toFixed(2) : '';
+  const health = healthComponent ? Math.floor(healthComponent.currentValue) : '';
 
   const gameModeIndex = getGamemode(targetPlayerData.name);
   const gameMode = ['Survival', 'Creative', 'Adventure', 'Spectator'][gameModeIndex];
@@ -102,7 +102,7 @@ async function sendAllPlayersInfoToChat(player: Player): Promise<void> {
     const healthComponent = targetPlayerData.getComponent(
       'minecraft:health',
     ) as EntityHealthComponent;
-    const health = healthComponent ? healthComponent.currentValue.toFixed(2) : '';
+    const health = healthComponent ? Math.floor(healthComponent.currentValue) : '';
 
     const gameModeIndex = getGamemode(targetPlayerData.name);
     const gameMode = ['Survival', 'Creative', 'Adventure', 'Spectator'][gameModeIndex];
