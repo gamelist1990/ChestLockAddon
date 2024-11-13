@@ -2,11 +2,11 @@ import { Player, system, Vector3, world } from "@minecraft/server";
 
 // Sumo タグのプレフィックスと Sumo システム起動用のタグ
 const sumoTagPrefix = "sumo";
-const pvpSumoTag = "pvpSumo"; // Sumo に参加できるプレイヤーのタグ
-const trueSumoTag = "trueSumo"; // Sumo システム起動用のフラグ
-const maxSumoMatches = 5; // 最大同時試合数
+const pvpSumoTag = "pvpSumo"; 
+const trueSumoTag = "trueSumo"; 
+const maxSumoMatches = 5; 
 
-let sumoSystemEnabled = false; // Sumo システムの有効/無効状態
+let sumoSystemEnabled = false; 
 let sumoTagsInUse: string[] = [];
 
 function calculateDistance(pos1: Vector3, pos2: Vector3): number {

@@ -33,6 +33,10 @@ world.afterEvents.entityHitEntity.subscribe(({ damagingEntity }) => {
     clicks.set(damagingEntity, playerClicks);
 });
 
+const hpRegex = / \d+ §c❤§r| \d+ /;
+const cpsRegex = /\n§a\[CPS: \d+\]/; // Include the newline in the regex
+const deviceRegex = / \n§7\[[A-Z]{2,3}-m:[?\d.+]+\]/;
+
 system.runInterval(() => {
     const isCPSTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueCps"));
     const isHPTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueHP"));
@@ -43,43 +47,33 @@ system.runInterval(() => {
 
     for (const player of world.getPlayers()) {
         let nameTag = player.nameTag;
+        let baseName = player.name;
 
         // HP
-        const heartIcon = '\u2764';
-        const hpRegex = / \d+ §c\u2764§r| \d+ /; 
         if (player.hasTag("hp")) {
             const health = player.getComponent('minecraft:health') as EntityHealthComponent;
             const playerHealth = health ? Math.floor(health.currentValue) : '';
-            const newHPTag = ` §r${playerHealth} §c${heartIcon}§r`;
+            const newHPTag = ` ${playerHealth} §c❤§r`;
 
-            if (hpRegex.test(nameTag)) {
-                nameTag = nameTag.replace(hpRegex, newHPTag);
-            } else {
-                nameTag += newHPTag;
-            }
+            baseName = baseName.replace(hpRegex, "").replace(player.name, player.name + newHPTag);
+            nameTag = nameTag.replace(hpRegex, "");
         } else {
+            baseName = baseName.replace(hpRegex, "");
             nameTag = nameTag.replace(hpRegex, "");
         }
 
-        
+        nameTag = nameTag.replace(player.name, baseName);
 
-        // CPS
-        const cpsRegex = /§a\[CPS: \d+\]/;
+
+        // CPS (HPまたはプレイヤー名から改行)
         if (player.hasTag("cps")) {
             const cps = getPlayerCPS(player);
             player.onScreenDisplay.setActionBar(`§aCPS: ${cps || 0}`);
-
             const newCPSTag = `\n§a[CPS: ${cps || 0}]`;
-
-            if (cpsRegex.test(nameTag)) {
-                nameTag = nameTag.replace(cpsRegex, newCPSTag);
-            } else {
-                nameTag += newCPSTag;
-            }
+            nameTag = nameTag.replace(cpsRegex, "") + newCPSTag;
         } else {
             nameTag = nameTag.replace(cpsRegex, "");
         }
-
 
         // Team
         if (isTeamTrackingEnable) {
@@ -97,24 +91,19 @@ system.runInterval(() => {
                 teamColor = "§d";
             }
 
-            const escapeRegExp = (string: string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-
             if (teamColor !== "§f") {
+                const escapeRegExp = (string: string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const escapedName = escapeRegExp(player.name);
                 const teamRegex = new RegExp(`§[0-9a-f]${escapedName}|${escapedName}`);
                 nameTag = nameTag.replace(teamRegex, teamColor + player.name);
             }
         }
 
+        // Device
         if (player.hasTag("device")) {
             const device = clientdevice(player);
             const memoryTier = getMemoryTier(player);
-            const deviceName = {
-                0: "PC",
-                1: "MB",
-                2: "CS",
-            }[device] || "??";
+            const deviceName = { 0: "PC", 1: "MB", 2: "CS" }[device] || "??";
             const memoryTierName = {
                 0: "m:?",
                 1: "m:1.5",
@@ -124,23 +113,15 @@ system.runInterval(() => {
                 5: "m:8+",
             }[memoryTier] || "m:?";
 
-
             const deviceTag = ` \n§7[${deviceName}-${memoryTierName}]`;
-            const deviceRegex = / \n§7\[[A-Z]{2,3}-m:[?\d.+]+\]/;
-
-            if (!deviceRegex.test(nameTag)) {
-                nameTag += deviceTag;
-            } else {
-                nameTag = nameTag.replace(deviceRegex, deviceTag);
-            }
+            nameTag = nameTag.replace(deviceRegex, "") + deviceTag;
         } else {
-            nameTag = nameTag.replace(/ \n§7\[[A-Z]{2,3}-M:[?\d.+]+\]/, "");
+            nameTag = nameTag.replace(deviceRegex, "");
         }
-
 
         player.nameTag = nameTag;
     }
-});
+}, 1);
 
 
 export function getPlayerCPS(player: Player): number {

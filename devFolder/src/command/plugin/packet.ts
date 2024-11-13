@@ -1,6 +1,6 @@
 import { config, getGamemode } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
-import { Player, world, system, Vector3, Block, GameMode, EntityHurtAfterEvent, Entity } from '@minecraft/server';
+import { Player, world, system, Vector3, Block, GameMode, EntityHurtAfterEvent, Entity, BlockRaycastOptions, EntityRaycastOptions } from '@minecraft/server';
 import { ServerReport } from '../utility/report';
 import xy from './xy';
 import { getPlayerCPS } from './cps';
@@ -468,7 +468,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 
     // AirJump判定 (しきい値を調整)
     if (
-      jumpHeight > 1.6 ||
+      jumpHeight > 1.8 ||
       maxVerticalSpeed > 2.5 ||
       maxVerticalAccel > 0.25 ||
       velocityChangeRate > 2.2 ||
@@ -905,6 +905,7 @@ function detectSpeed(player: Player): { cheatType: string; value?: number } | nu
     !data ||
     data.isTeleporting ||
     getGamemode(player.name) === 1 ||
+    getGamemode(player.name) === 4 ||
     player.isGliding ||
     hasEffect(player, "speed", 5) ||
     player.isFlying ||
@@ -951,11 +952,16 @@ function detectSpeed(player: Player): { cheatType: string; value?: number } | nu
 
   // SpeedHack判定
   if (speed > allowedSpeed) {
-
-    // SpeedHack検出
-    console.log(`[DEBUG] ${player.name} SpeedHack Detected! Speed: ${speed}`);
     playerDataManager.update(player, { lastSpeedCheck: now, speedViolationCount: data.speedViolationCount + 1 });
-    return { cheatType: 'Speed', value: speed };
+
+    // 3回以上の違反で検知
+    if (data.speedViolationCount + 1 >= 3) {
+      console.log(`[DEBUG] ${player.name} SpeedHack Detected! Speed: ${speed} (Violation Count: ${data.speedViolationCount + 1})`);
+      return { cheatType: 'Speed', value: speed };
+    }
+  } else {
+    // 速度違反がない場合はカウントをリセット
+    playerDataManager.update(player, { lastSpeedCheck: now, speedViolationCount: 0 });
   }
 
   playerDataManager.update(player, { lastSpeedCheck: now, speedViolationCount: 0 });
@@ -1009,7 +1015,7 @@ function detectBlink(player: Player): { cheatType: string; value?: number } | nu
   if (distance > blinkThreshold) {
     data.blinkCount = (data.blinkCount || 0) + 1; // カウンターをインクリメント
 
-    if (data.blinkCount >= 3) { // 3回連続で検知した場合
+    if (data.blinkCount >= 2) { // 3回連続で検知した場合
       console.log(`[DEBUG] ${player.name} Blink Detected! Distance: ${distance}, Count: ${data.blinkCount}`);
       playerDataManager.update(player, { lastBlinkCheck: now, blinkCount: 0 }); // カウンターをリセット
       return { cheatType: 'Blink', value: distance };
@@ -1055,42 +1061,39 @@ function detectKillAura(player: Player, event: EntityHurtAfterEvent): { cheatTyp
 
   if (!(attackedEntity instanceof Player)) return null;
 
-  const blockHit = player.getBlockFromViewDirection({ maxDistance: 5 });
-  const entitiesHit = player.getEntitiesFromViewDirection({ maxDistance: 5 });
+  const blockRaycastOptions: BlockRaycastOptions = {
+    maxDistance: 6, // 必要に応じて最大距離を設定
+    includeLiquidBlocks: true,
+    includePassableBlocks: true,
+  };
 
-  // ブロックがあり、かつ固体ブロックの場合に計算開始！
-  if (blockHit && blockHit.block && blockHit.block.isSolid) {
-    const distanceToTarget = Math.sqrt(
-      Math.pow(blockHit.faceLocation.x - attackedEntity.location.x, 2) +
-      Math.pow(blockHit.faceLocation.y - attackedEntity.location.y, 2) +
-      Math.pow(blockHit.faceLocation.z - attackedEntity.location.z, 2)
-    );
-    const distanceToPlayer = Math.sqrt(
-      Math.pow(blockHit.faceLocation.x - player.location.x, 2) +
-      Math.pow(blockHit.faceLocation.y - player.location.y, 2) +
-      Math.pow(blockHit.faceLocation.z - player.location.z, 2)
-    );
-    const targetBehindBlock = distanceToTarget < distanceToPlayer;
-    if (targetBehindBlock && entitiesHit.some(entity => entity.entity.id === attackedEntity.id)) {
-      // カウンターを増加
-      if (!data.throughBlockHits[attackedEntity.id]) {
-        data.throughBlockHits[attackedEntity.id] = 0;
-      }
-      data.throughBlockHits[attackedEntity.id]++;
+  const entityRaycastOptions: EntityRaycastOptions = {
+    maxDistance: 6,
+  };
 
-      // 4回以上ブロック越しヒットした場合、Kill Aura (Through Block) と判定
-      if (data.throughBlockHits[attackedEntity.id] >= 4) {
-        console.log(`[DEBUG] ${player.name} Kill Aura (Through Block) Detected! Hits: ${data.throughBlockHits[attackedEntity.id]}`);
-        delete data.throughBlockHits[attackedEntity.id];
+  // プレイヤーの視線方向にブロックがあるかチェック
+  const raycastBlock = player.getBlockFromViewDirection(blockRaycastOptions);
+
+  //プレイヤーの視線方向にエンティティがいるかチェック
+  const raycastEntity = player.getEntitiesFromViewDirection(entityRaycastOptions);
+
+
+  if (raycastBlock) { //プレイヤーの視線方向にブロックがある場合
+    if (raycastEntity.length == 0) {  //プレイヤーの視線方向にエンティティがいない場合
+      // 攻撃対象との距離をチェック
+      const dx = attackedEntity.location.x - player.location.x; // ここで計算
+      const dy = attackedEntity.location.y - player.location.y;
+      const dz = attackedEntity.location.z - player.location.z;
+      const distanceToEntity = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+      if (distanceToEntity <= 6) { //攻撃対象が最大距離以内（ブロックの裏にいる可能性が高い）
+        console.log(`[DEBUG] ${player.name} Kill Aura (Through Block) Detected! Hit block: ${raycastBlock.block.typeId}`);
         playerDataManager.update(player, { lastAttackedEntity: attackedEntity, lastAttackTime: now });
-
-        return { cheatType: 'Kill Aura (Through Block)' };
+        return { cheatType: "Kill Aura (Through Block)" };
       }
     }
-  } else {
-    // ブロックがない場合はカウンターをリセット
-    delete data.throughBlockHits[attackedEntity.id];
   }
+
 
 
   playerDataManager.update(player, { lastAttackedEntity: attackedEntity, lastAttackTime: now });
@@ -1101,7 +1104,6 @@ function detectKillAura(player: Player, event: EntityHurtAfterEvent): { cheatTyp
 world.afterEvents.entityHurt.subscribe((event: EntityHurtAfterEvent) => {
   if (!monitoring) return;
   if (event.damageSource.damagingEntity instanceof Player && event.damage > 0) { 
-    console.log(event.damageSource.damagingEntity);
     playerDataManager.update(event.damageSource.damagingEntity, { recentlyUsedEnderPearl: true, enderPearlInterval: 3 });
   }
 
