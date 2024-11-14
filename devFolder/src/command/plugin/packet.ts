@@ -46,6 +46,7 @@ interface timerData {
   yDisLog: number;
   flagCounter: number;
   lastHighTeleport: number;
+  
 }
 
 interface PlayerData {
@@ -84,6 +85,10 @@ interface PlayerData {
   blinkCount: number;
   throughBlockHits: { [targetId: string]: number }; // ブロック越しヒット数の記録
   flyHackCount: number;
+  lastAttackedEntities: Entity[];
+  lastMessages: string[];
+  lastMessageTimes: number[];
+  mutedUntil?: number;
 
 }
 
@@ -148,6 +153,10 @@ class PlayerDataManager {
       aimbotTicks: 0,
       throughBlockHits: {},
       flyHackCount: 0,
+      lastAttackedEntities: [],
+      lastMessages: [],
+      lastMessageTimes: [],
+      mutedUntil: 0,
     };
 
     if (config().module.debugMode.enabled === true) {
@@ -368,7 +377,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     return null;
   }
 
-  const ticksToUse = 5; 
+  const ticksToUse = 5;
 
 
   if (hasEffect(player, "speed", 5) || hasEffect(player, "jump_boost", 2)) { // jump_boost のレベルを下げる
@@ -443,7 +452,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
   const maxVerticalAccel = Math.max(...accelerationsY);
   const velocityChangeRate = (currentVelocity.y - velocitiesY[velocitiesY.length - 2]) / (50 * (velocitiesY.length - 1));
 
-  
+
 
   // ジャンプ状態の判定
   if (isOnGround) {
@@ -464,7 +473,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
 
     const jumpHeight = currentPosition.y - Math.min(lastPosition.y, previousPosition.y);
 
-    
+
 
     // AirJump判定 (しきい値を調整)
     if (
@@ -703,7 +712,7 @@ function detectTimer(player: Player): { cheatType: string } | null {
   const config = configs.antiCheat;
   const data = playerDataManager.get(player)?.timerData;
   if (!data) return null;
-  
+
 
 
   const now = Date.now();
@@ -818,7 +827,7 @@ function detectFlyHack(player: Player): { cheatType: string } | null {
     player.isFlying ||
     getGamemode(player.name) === 1 ||
     getGamemode(player.name) === 3 ||
-    data.recentlyUsedEnderPearl 
+    data.recentlyUsedEnderPearl
   ) {
     return null;
   }
@@ -845,7 +854,7 @@ function detectFlyHack(player: Player): { cheatType: string } | null {
   const twoTicksAgoVelocityY = calculateVerticalVelocity(lastPosition, data.positionHistory[data.positionHistory.length - 2]);
   const velocityChangeRate = (currentVelocityY - twoTicksAgoVelocityY) / (50 * 2);
 
-  const detectionThreshold = 3; 
+  const detectionThreshold = 3;
 
   const isSuspiciousAscent = !isOnGround && (
     currentVelocityY > 1.8 || // 高速上昇のしきい値を上げる
@@ -1010,7 +1019,7 @@ function detectBlink(player: Player): { cheatType: string; value?: number } | nu
   const distance = calculateDistance(player.location, lastPosition);
 
   // Blinkのしきい値 (ブロック) - この値は調整が必要
-  const blinkThreshold = 5;
+  const blinkThreshold = 3;
 
   if (distance > blinkThreshold) {
     data.blinkCount = (data.blinkCount || 0) + 1; // カウンターをインクリメント
@@ -1040,7 +1049,7 @@ function detectKillAura(player: Player, event: EntityHurtAfterEvent): { cheatTyp
     damageSource.cause !== 'entityAttack' ||
     !(damageSource.damagingEntity instanceof Player)
   ) {
-    return null; 
+    return null;
   }
 
 
@@ -1094,17 +1103,85 @@ function detectKillAura(player: Player, event: EntityHurtAfterEvent): { cheatTyp
     }
   }
 
+  // マルチキルオーラの検知
+  const lastAttackedEntities = data.lastAttackedEntities || [];
+  const timeThreshold = 500;
+
+  if (lastAttackedEntities.length > 0 && now - data.lastAttackTime < timeThreshold) {
+    // 短時間内に複数のプレイヤーを攻撃しているかチェック
+    const uniqueAttackedEntities = new Set([...lastAttackedEntities, attackedEntity]);
+    if (uniqueAttackedEntities.size > 1) {
+      console.log(`[DEBUG] ${player.name} Kill Aura (Multi-Target) Detected! Hit ${uniqueAttackedEntities.size} players.`);
+      playerDataManager.update(player, { lastAttackTime: now, lastAttackedEntities: [attackedEntity] });
+      return { cheatType: "Kill Aura (Multi-Target)" };
+    }
+  }
 
 
-  playerDataManager.update(player, { lastAttackedEntity: attackedEntity, lastAttackTime: now });
+  // リーチチェック
+  const dx = attackedEntity.location.x - player.location.x;
+  const dy = attackedEntity.location.y - player.location.y;
+  const dz = attackedEntity.location.z - player.location.z;
+  const distanceToEntity = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+  const maxReach = 3.8; // 通常のリーチ (必要に応じて調整)
+  if (distanceToEntity > maxReach) {
+    const isCriticalHit = player.isSpawning && player.isOnGround && !player.isFalling && !player.isInWater && !player.isSwimming && !player.isGliding && !player.isSleeping;
+
+    if (!isCriticalHit && distanceToEntity > maxReach) {
+      const raycastOptions: EntityRaycastOptions = { maxDistance: 6 }
+      const raycastHitEntities = player.getEntitiesFromViewDirection(raycastOptions);
+
+      if (raycastHitEntities.length > 0) {
+        let hit = false;
+        raycastHitEntities.forEach(entity => {
+          if (entity instanceof Player && entity === attackedEntity) {
+            hit = true;
+          }
+        });
+
+        if (!hit) return null;
+      }
+
+      console.log(`[DEBUG] ${player.name} Kill Aura (Reach) Detected! Distance: ${distanceToEntity}`);
+      playerDataManager.update(player, { lastAttackTime: now, lastAttackedEntities: [attackedEntity] });
+      return { cheatType: "Kill Aura (Reach)" };
+
+
+    } else if (distanceToEntity > (maxReach + 1)) {
+      const raycastOptions: EntityRaycastOptions = { maxDistance: 6 }
+      const raycastHitEntities = player.getEntitiesFromViewDirection(raycastOptions);
+
+      if (raycastHitEntities.length > 0) {
+        let hit = false;
+        raycastHitEntities.forEach(entity => {
+          if (entity instanceof Player && entity === attackedEntity) {
+            hit = true;
+          }
+        });
+
+        if (!hit) return null;
+      }
+
+      console.log(`[DEBUG] ${player.name} Kill Aura (Reach) Detected! Distance: ${distanceToEntity}`);
+      playerDataManager.update(player, { lastAttackTime: now, lastAttackedEntities: [attackedEntity] });
+      return { cheatType: "Kill Aura (Reach)" };
+    }
+  }
+
+  // 通常の攻撃の場合、攻撃されたエンティティを記録
+  playerDataManager.update(player, { lastAttackTime: now, lastAttackedEntities: [attackedEntity] });
+
   return null;
 }
 
-
 world.afterEvents.entityHurt.subscribe((event: EntityHurtAfterEvent) => {
   if (!monitoring) return;
-  if (event.damageSource.damagingEntity instanceof Player && event.damage > 0) { 
-    playerDataManager.update(event.damageSource.damagingEntity, { recentlyUsedEnderPearl: true, enderPearlInterval: 3 });
+  if (event.damageSource.damagingEntity instanceof Player && event.damageSource.damagingEntity.hasTag("bypass")) {
+    return;
+  }
+  if (event.hurtEntity instanceof Player && event.damage > 0) {
+    playerDataManager.update(event.hurtEntity, { recentlyUsedEnderPearl: true, enderPearlInterval: 3 });
   }
 
   const damageSource = event.damageSource;
@@ -1114,6 +1191,63 @@ world.afterEvents.entityHurt.subscribe((event: EntityHurtAfterEvent) => {
     if (killAuraDetection) {
       handleCheatDetection(attackingPlayer, killAuraDetection);
     }
+  }
+});
+
+
+
+function detectSpam(player: Player, message: string): { cheatType: string; value?: string } | null {
+  const data = playerDataManager.get(player);
+  if (!data || data.mutedUntil && Date.now() < data.mutedUntil) return null; // ミュート中の場合はスキップ
+
+  const now = Date.now();
+  data.lastMessages.push(message);
+  data.lastMessageTimes.push(now);
+
+  const recentMessages = data.lastMessages.filter((_, index) => now - data.lastMessageTimes[index] <= 5000);
+  const recentMessageTimes = data.lastMessageTimes.filter((time) => now - time <= 5000);
+
+  if (recentMessages.length >= 5) {
+    for (let i = 0; i < recentMessages.length - 2; i++) {
+      if (recentMessages[i] === recentMessages[i + 1] && recentMessages[i] === recentMessages[i + 2]) {
+        console.warn(`[DEBUG] ${player.name} Spam Detected! Message: ${message}`);
+
+        // 5秒間ミュート
+        playerDataManager.update(player, { mutedUntil: Date.now() + 5000 });
+        player.sendMessage("§l§a[自作§3AntiCheat]§f スパム行為を検知したため、5秒間チャットを禁止しました"); 
+
+        data.lastMessages = [];
+        data.lastMessageTimes = [];
+
+        return { cheatType: "Spam", value: message };
+      }
+    }
+  }
+
+  data.lastMessages = recentMessages;
+  data.lastMessageTimes = recentMessageTimes;
+  return null;
+}
+
+
+world.beforeEvents.chatSend.subscribe(event => {
+  if (!monitoring) return;
+  const player = event.sender;
+  if (player.hasTag("bypass")) return;
+
+  const message = event.message;
+
+  const data = playerDataManager.get(player);
+  if (data && data.mutedUntil && Date.now() < data.mutedUntil) {
+    event.cancel = true; 
+    player.sendMessage("§l§a[自作§3AntiCheat]§f あなたは現在チャットの使用を禁止されています")
+    return;
+  }
+
+  const spamDetection = detectSpam(player, message);
+  if (spamDetection) {
+    handleCheatDetection(player, spamDetection);
+    event.cancel = true; // スパム検知時にもメッセージ送信をキャンセル
   }
 });
 
@@ -1145,7 +1279,7 @@ function runTick(): void {
         playerDataManager.update(player, { boundaryCenter: player.location });
       }
 
-   
+
       const airJumpDetection = detectAirJump(player);
       if (airJumpDetection) {
         handleCheatDetection(player, airJumpDetection);
@@ -1198,7 +1332,7 @@ function runTick(): void {
 }
 
 // チート検出時の処理
-function handleCheatDetection(player: Player, detection: { cheatType: string; value?: number }): void {
+function handleCheatDetection(player: Player, detection: { cheatType: string; value?: string | number }): void {
   const data = playerDataManager.get(player);
   if (!data) return;
 
