@@ -14,7 +14,6 @@ registerCommand({
         let countdown = 5; // カウントダウンの開始値
 
         const intervalId = system.runInterval(() => {
-            player.sendMessage(`§l§f>> §aHUB移動まで後§b${countdown}§a秒`);
             player.sendMessage(translate(player,"command.hub.move",{countdown:`${countdown}`}))
             countdown--;
 
@@ -23,6 +22,6 @@ registerCommand({
                 const Default = world.getDefaultSpawnLocation();
                 player.teleport(Default);
             }
-        }, 1000); 
+        }, 20); 
     },
 });
