@@ -159,6 +159,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
             const teamAssignments: { [playerName: string]: number } = {};
             const teamSizes: { [teamNumber: number]: number } = {};
 
+            // プレイヤーをシャッフル
             const shuffledPlayers = players.sort(() => Math.random() - 0.5);
 
             for (const player of shuffledPlayers) {
@@ -169,11 +170,11 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
                         objective.setScore(player, team);
                         teamSizes[team] = (teamSizes[team] || 0) + 1;
                         assigned = true;
-                        break; 
+                        break;
                     }
                 }
                 if (!assigned) {
-                  //  console.warn(`${player.name} のチーム割り当てに失敗しました。上限に達している可能性があります。`);
+                    console.warn(`${player.name} のチーム割り当てに失敗しました。上限に達している可能性があります。`);
                 }
             }
 

@@ -1,6 +1,6 @@
 import { config, getGamemode } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
-import { Player, world, system, Vector3, Block, GameMode, EntityHurtAfterEvent, Entity, BlockRaycastOptions, EntityRaycastOptions } from '@minecraft/server';
+import { Player, world, system, Vector3, Block, GameMode, EntityHurtAfterEvent, Entity } from '@minecraft/server';
 import { ServerReport } from '../utility/report';
 import xy from './xy';
 import { getPlayerCPS } from './cps';
@@ -11,10 +11,10 @@ import { getPlayerCPS } from './cps';
 const configs = {
   debugMode: false,
   antiCheat: {
-    detectionThreshold: 3,
-    rollbackTicks: 20 * 5,
+    detectionThreshold: 2,
+    rollbackTicks: 20 * 3,
     freezeDuration: 20 * 10,
-    betasystem: true,
+    betasystem: false,
     xrayDetectionDistance: 10,
     antiTimer: {
       maxTickMovment: 10,
@@ -46,7 +46,7 @@ interface timerData {
   yDisLog: number;
   flagCounter: number;
   lastHighTeleport: number;
-  
+
 }
 
 interface PlayerData {
@@ -377,7 +377,7 @@ function detectAirJump(player: Player): { cheatType: string } | null {
     return null;
   }
 
-  const ticksToUse = 5;
+  const ticksToUse = 20;
 
 
   if (hasEffect(player, "speed", 5) || hasEffect(player, "jump_boost", 2)) { // jump_boost のレベルを下げる
@@ -724,7 +724,7 @@ function detectTimer(player: Player): { cheatType: string } | null {
   const dBVD = Math.abs(timerData.xzLog - timerData.disLog);
   const dBVD2 = timerData.yDisLog - timerData.yLog;
 
-  const tps = 15;
+  const tps = 20;
 
   timerData.maxDBVD = 20 / tps!;
 
@@ -955,7 +955,7 @@ function detectSpeed(player: Player): { cheatType: string; value?: number } | nu
 
 
   // 許容速度 (ブロック/秒) - 適宜調整
-  const allowedSpeed = 3;
+  const allowedSpeed = 2;
 
 
 
@@ -963,8 +963,7 @@ function detectSpeed(player: Player): { cheatType: string; value?: number } | nu
   if (speed > allowedSpeed) {
     playerDataManager.update(player, { lastSpeedCheck: now, speedViolationCount: data.speedViolationCount + 1 });
 
-    // 3回以上の違反で検知
-    if (data.speedViolationCount + 1 >= 3) {
+    if (data.speedViolationCount + 1 >= 1) {
       console.log(`[DEBUG] ${player.name} SpeedHack Detected! Speed: ${speed} (Violation Count: ${data.speedViolationCount + 1})`);
       return { cheatType: 'Speed', value: speed };
     }
@@ -1019,7 +1018,7 @@ function detectBlink(player: Player): { cheatType: string; value?: number } | nu
   const distance = calculateDistance(player.location, lastPosition);
 
   // Blinkのしきい値 (ブロック) - この値は調整が必要
-  const blinkThreshold = 3;
+  const blinkThreshold = 2;
 
   if (distance > blinkThreshold) {
     data.blinkCount = (data.blinkCount || 0) + 1; // カウンターをインクリメント
@@ -1040,76 +1039,34 @@ function detectBlink(player: Player): { cheatType: string; value?: number } | nu
 
 
 function detectKillAura(player: Player, event: EntityHurtAfterEvent): { cheatType: string } | null {
-  const data = playerDataManager.get(player);
-  if (!data) return null;
-
-  const damageSource = event.damageSource;
-  if (
-    !damageSource ||
-    damageSource.cause !== 'entityAttack' ||
-    !(damageSource.damagingEntity instanceof Player)
-  ) {
-    return null;
-  }
-
+  const attackedEntity = event.hurtEntity as Player; // Assuming the hurt entity is a player
+  if (!attackedEntity || player === attackedEntity) return null; // Ignore self-attacks
 
   const now = Date.now();
-  const attackedEntity = event.damageSource.damagingEntity as Entity;
+  const data = playerDataManager.get(player) || { lastAttackTime: 0, lastAttackedEntities: [] };
 
-
-
-  // 攻撃速度の検知
+  // Attack Speed Detection
   const cps = getPlayerCPS(player);
-
   if (cps >= 20) {
     console.log(`[DEBUG] ${player.name} Kill Aura (Attack Speed) Detected! CPS: ${cps}`);
-    playerDataManager.update(player, { lastAttackTime: now });
+    playerDataManager.update(player, { lastAttackTime: now, lastAttackedEntities: [attackedEntity] });
     return { cheatType: 'Kill Aura (Attack Speed)' };
   }
 
+  // Reach Detection
+  const maxReach = 6.5; // Adjust as needed
+  const distanceToEntity = getDistance(player.location, attackedEntity.location);
 
-  if (!(attackedEntity instanceof Player)) return null;
-
-  const blockRaycastOptions: BlockRaycastOptions = {
-    maxDistance: 6, // 必要に応じて最大距離を設定
-    includeLiquidBlocks: true,
-    includePassableBlocks: true,
-  };
-
-  const entityRaycastOptions: EntityRaycastOptions = {
-    maxDistance: 6,
-  };
-
-  // プレイヤーの視線方向にブロックがあるかチェック
-  const raycastBlock = player.getBlockFromViewDirection(blockRaycastOptions);
-
-  //プレイヤーの視線方向にエンティティがいるかチェック
-  const raycastEntity = player.getEntitiesFromViewDirection(entityRaycastOptions);
-
-
-  if (raycastBlock) { //プレイヤーの視線方向にブロックがある場合
-    if (raycastEntity.length == 0) {  //プレイヤーの視線方向にエンティティがいない場合
-      // 攻撃対象との距離をチェック
-      const dx = attackedEntity.location.x - player.location.x; // ここで計算
-      const dy = attackedEntity.location.y - player.location.y;
-      const dz = attackedEntity.location.z - player.location.z;
-      const distanceToEntity = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-      if (distanceToEntity <= 6) { //攻撃対象が最大距離以内（ブロックの裏にいる可能性が高い）
-        console.log(`[DEBUG] ${player.name} Kill Aura (Through Block) Detected! Hit block: ${raycastBlock.block.typeId}`);
-        playerDataManager.update(player, { lastAttackedEntity: attackedEntity, lastAttackTime: now });
-        return { cheatType: "Kill Aura (Through Block)" };
-      }
-    }
+  if (distanceToEntity > maxReach) {
+    console.log(`[DEBUG] ${player.name} Kill Aura (Reach) Detected! Distance: ${distanceToEntity}`);
+    playerDataManager.update(player, { lastAttackTime: now, lastAttackedEntities: [attackedEntity] });
+    return { cheatType: "Kill Aura (Reach)" };
   }
 
-  // マルチキルオーラの検知
-  const lastAttackedEntities = data.lastAttackedEntities || [];
-  const timeThreshold = 500;
-
-  if (lastAttackedEntities.length > 0 && now - data.lastAttackTime < timeThreshold) {
-    // 短時間内に複数のプレイヤーを攻撃しているかチェック
-    const uniqueAttackedEntities = new Set([...lastAttackedEntities, attackedEntity]);
+  // Multi-Target Detection
+  const timeThreshold = 300;
+  if (data.lastAttackedEntities.length > 0 && now - data.lastAttackTime < timeThreshold) {
+    const uniqueAttackedEntities = new Set([...data.lastAttackedEntities, attackedEntity]);
     if (uniqueAttackedEntities.size > 1) {
       console.log(`[DEBUG] ${player.name} Kill Aura (Multi-Target) Detected! Hit ${uniqueAttackedEntities.size} players.`);
       playerDataManager.update(player, { lastAttackTime: now, lastAttackedEntities: [attackedEntity] });
@@ -1117,62 +1074,28 @@ function detectKillAura(player: Player, event: EntityHurtAfterEvent): { cheatTyp
     }
   }
 
-
-  // リーチチェック
-  const dx = attackedEntity.location.x - player.location.x;
-  const dy = attackedEntity.location.y - player.location.y;
-  const dz = attackedEntity.location.z - player.location.z;
-  const distanceToEntity = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-  const maxReach = 3.8; // 通常のリーチ (必要に応じて調整)
-  if (distanceToEntity > maxReach) {
-    const isCriticalHit = player.isSpawning && player.isOnGround && !player.isFalling && !player.isInWater && !player.isSwimming && !player.isGliding && !player.isSleeping;
-
-    if (!isCriticalHit && distanceToEntity > maxReach) {
-      const raycastOptions: EntityRaycastOptions = { maxDistance: 6 }
-      const raycastHitEntities = player.getEntitiesFromViewDirection(raycastOptions);
-
-      if (raycastHitEntities.length > 0) {
-        let hit = false;
-        raycastHitEntities.forEach(entity => {
-          if (entity instanceof Player && entity === attackedEntity) {
-            hit = true;
-          }
-        });
-
-        if (!hit) return null;
-      }
-
-      console.log(`[DEBUG] ${player.name} Kill Aura (Reach) Detected! Distance: ${distanceToEntity}`);
+  const raycastResult = player.getBlockFromViewDirection({ maxDistance: distanceToEntity });
+  if (raycastResult && raycastResult.block.location) {
+    const distanceToWall = getDistance(player.location, raycastResult.block.location);
+    if (distanceToEntity < distanceToWall) {
+      console.log(`[DEBUG] ${player.name} Wall Hack Detected!`);
       playerDataManager.update(player, { lastAttackTime: now, lastAttackedEntities: [attackedEntity] });
-      return { cheatType: "Kill Aura (Reach)" };
-
-
-    } else if (distanceToEntity > (maxReach + 1)) {
-      const raycastOptions: EntityRaycastOptions = { maxDistance: 6 }
-      const raycastHitEntities = player.getEntitiesFromViewDirection(raycastOptions);
-
-      if (raycastHitEntities.length > 0) {
-        let hit = false;
-        raycastHitEntities.forEach(entity => {
-          if (entity instanceof Player && entity === attackedEntity) {
-            hit = true;
-          }
-        });
-
-        if (!hit) return null;
-      }
-
-      console.log(`[DEBUG] ${player.name} Kill Aura (Reach) Detected! Distance: ${distanceToEntity}`);
-      playerDataManager.update(player, { lastAttackTime: now, lastAttackedEntities: [attackedEntity] });
-      return { cheatType: "Kill Aura (Reach)" };
+      return { cheatType: 'Wall Hack' };
     }
   }
 
-  // 通常の攻撃の場合、攻撃されたエンティティを記録
+  // Update last attack data
   playerDataManager.update(player, { lastAttackTime: now, lastAttackedEntities: [attackedEntity] });
 
   return null;
+}
+
+// Helper function for distance calculation
+function getDistance(pos1: any, pos2: any): number {
+  const dx = pos2.x - pos1.x;
+  const dy = pos2.y - pos1.y;
+  const dz = pos2.z - pos1.z;
+  return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
 world.afterEvents.entityHurt.subscribe((event: EntityHurtAfterEvent) => {
@@ -1184,9 +1107,8 @@ world.afterEvents.entityHurt.subscribe((event: EntityHurtAfterEvent) => {
     playerDataManager.update(event.hurtEntity, { recentlyUsedEnderPearl: true, enderPearlInterval: 3 });
   }
 
-  const damageSource = event.damageSource;
-  if (damageSource && damageSource.cause === 'entityAttack' && damageSource.damagingEntity instanceof Player) {
-    const attackingPlayer = damageSource.damagingEntity;
+  const attackingPlayer = event.damageSource.damagingEntity as Player;
+  if (attackingPlayer && event.hurtEntity instanceof Player) {
     const killAuraDetection = detectKillAura(attackingPlayer, event);
     if (killAuraDetection) {
       handleCheatDetection(attackingPlayer, killAuraDetection);
@@ -1214,7 +1136,7 @@ function detectSpam(player: Player, message: string): { cheatType: string; value
 
         // 5秒間ミュート
         playerDataManager.update(player, { mutedUntil: Date.now() + 5000 });
-        player.sendMessage("§l§a[自作§3AntiCheat]§f スパム行為を検知したため、5秒間チャットを禁止しました"); 
+        player.sendMessage("§l§a[自作§3AntiCheat]§f スパム行為を検知したため、5秒間チャットを禁止しました");
 
         data.lastMessages = [];
         data.lastMessageTimes = [];
@@ -1239,7 +1161,7 @@ world.beforeEvents.chatSend.subscribe(event => {
 
   const data = playerDataManager.get(player);
   if (data && data.mutedUntil && Date.now() < data.mutedUntil) {
-    event.cancel = true; 
+    event.cancel = true;
     player.sendMessage("§l§a[自作§3AntiCheat]§f あなたは現在チャットの使用を禁止されています")
     return;
   }
@@ -1280,23 +1202,25 @@ function runTick(): void {
       }
 
 
-      const airJumpDetection = detectAirJump(player);
-      if (airJumpDetection) {
-        handleCheatDetection(player, airJumpDetection);
-      }
 
-      const flyHackDetection = detectFlyHack(player);
-      if (flyHackDetection) {
-        handleCheatDetection(player, flyHackDetection);
-      }
-
-      const timerDetection = detectTimer(player);
-      if (timerDetection) {
-        handleCheatDetection(player, timerDetection);
-      }
 
       if (configs.antiCheat.betasystem) {
         detectXrayOnSight(player);
+
+        const airJumpDetection = detectAirJump(player);
+        if (airJumpDetection) {
+          handleCheatDetection(player, airJumpDetection);
+        }
+
+        const flyHackDetection = detectFlyHack(player);
+        if (flyHackDetection) {
+          handleCheatDetection(player, flyHackDetection);
+        }
+
+        const timerDetection = detectTimer(player);
+        if (timerDetection) {
+          handleCheatDetection(player, timerDetection);
+        }
 
         const blinkDetection = detectBlink(player);
         if (blinkDetection) {

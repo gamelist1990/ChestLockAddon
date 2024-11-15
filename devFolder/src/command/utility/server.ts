@@ -15,7 +15,6 @@ const oldData: { name: string, id: string }[] = [];
 
 const TICKRUN = 20;
 let tps = 20;
-let lastTickTime = Date.now();
 
 
 
@@ -25,17 +24,12 @@ tickEvent.subscribe("serverInfoTick", (data: any) => {
 
 
 interface PlayerMovementData {
-    lastPositions: Vector3[];
-    lastTimestamps: number[];
-    lastVelocities: Vector3[];
-    predictedPositions: Vector3[];
+    lastPosition: Vector3 | null;
+    lastTimestamp: number;
 }
 
 const playerMovementData: Record<string, PlayerMovementData> = {};
-const POSITION_HISTORY_LENGTH = 10; // 保存する位置情報の数を増やす
-const VELOCITY_SMOOTHING_FACTOR = 0.9; // 速度の平滑化係数
-const TICK_TIME = tps; // 20 ticks/second = 50ms/tick
-const OUTLIER_THRESHOLD = 10;  // 異常値の閾値
+
 
 
 // pingレベルを取得する関数を最適化
@@ -49,119 +43,46 @@ function getPingLevel(ping: number): string {
 
 
 
-function calculateVelocity(pos1: Vector3, pos2: Vector3, dt: number): Vector3 {
-    return {
-        x: (pos2.x - pos1.x) / dt,
-        y: (pos2.y - pos1.y) / dt,
-        z: (pos2.z - pos1.z) / dt,
-    };
-}
 
-
-
-function estimatePing(player: Player, playerData: PlayerMovementData, dt: number): number {
-    const now = Date.now();
-    const currentPosition = player.location;
-
-    playerData.lastPositions.push(currentPosition);
-    playerData.lastTimestamps.push(now);
-
-    if (playerData.lastPositions.length < 2) {
-        playerData.predictedPositions.push(currentPosition);
-        return 0;
-    }
-
-    const lastPosition = playerData.lastPositions[playerData.lastPositions.length - 2];
-    const timeDiff = (now - playerData.lastTimestamps[playerData.lastTimestamps.length - 2]) / 1000;
-    const currentVelocity = calculateVelocity(lastPosition, currentPosition, timeDiff);
-
-    // 速度の平滑化
-    if (playerData.lastVelocities.length > 0) {
-        const lastVelocity = playerData.lastVelocities[playerData.lastVelocities.length - 1];
-        playerData.lastVelocities.push({
-            x: lastVelocity.x * VELOCITY_SMOOTHING_FACTOR + currentVelocity.x * (1 - VELOCITY_SMOOTHING_FACTOR),
-            y: lastVelocity.y * VELOCITY_SMOOTHING_FACTOR + currentVelocity.y * (1 - VELOCITY_SMOOTHING_FACTOR),
-            z: lastVelocity.z * VELOCITY_SMOOTHING_FACTOR + currentVelocity.z * (1 - VELOCITY_SMOOTHING_FACTOR),
-        });
-
-
-    } else {
-        playerData.lastVelocities.push(currentVelocity)
-    }
-
-
-
-    const smoothedVelocity = playerData.lastVelocities[playerData.lastVelocities.length - 1];
-
-
-    // 予測位置を計算 (等速直線運動ではなく、現在の速度を使用)
-    const predictedPosition = {
-        x: lastPosition.x + smoothedVelocity.x * timeDiff,
-        y: lastPosition.y + smoothedVelocity.y * timeDiff, // y座標も計算していますが、ずれの計算では使用しません
-        z: lastPosition.z + smoothedVelocity.z * timeDiff,
-    };
-    playerData.predictedPositions.push(predictedPosition);
-
-    if (playerData.lastPositions.length > POSITION_HISTORY_LENGTH) {
-        playerData.lastPositions.shift();
-        playerData.lastTimestamps.shift();
-        playerData.lastVelocities.shift();
-        playerData.predictedPositions.shift();
-    }
-
-    const deviations: number[] = [];
-
-    for (let i = 0; i < playerData.lastPositions.length - 1; i++) {
-        // x, zのみでずれを計算
-        const deviation = Math.sqrt(
-            Math.pow(playerData.lastPositions[i + 1].x - playerData.predictedPositions[i + 1].x, 2) +
-            Math.pow(playerData.lastPositions[i + 1].z - playerData.predictedPositions[i + 1].z, 2)
-        );
-
-
-        if (deviation < OUTLIER_THRESHOLD) {
-            deviations.push(deviation);
-        }
-
-    }
-
-    if (deviations.length == 0) return 0;
-
-    const totalDeviation = deviations.reduce((sum, d) => sum + d, 0);
-
-
-
-    // ずれに基づいてpingを計算 (調整可能な係数)
-    let ping = (totalDeviation / deviations.length) * 50;
-
-    ping *= (TICK_TIME / (dt * 1000));
-
-
-    return Math.min(Math.max(ping, 0), 999);
-}
 
 
 system.runInterval(() => {
     if (isRealTimePingEnabled) {
-        const now = Date.now();
-        const dt = (now - lastTickTime) / 1000;
-        lastTickTime = now;
-
         for (const player of world.getPlayers()) {
+            const now = Date.now();
             let playerData = playerMovementData[player.name];
+
             if (!playerData) {
-                playerData = {
-                    lastPositions: [],
-                    lastTimestamps: [],
-                    lastVelocities: [], // 新しく追加
-                    predictedPositions: [], // 新しく追加
-                };
+                playerData = { lastPosition: null, lastTimestamp: now };
                 playerMovementData[player.name] = playerData;
+                continue; // 初回はping計算をスキップ
             }
-            const estimatedPing = estimatePing(player, playerData, dt);
-            const level = getPingLevel(estimatedPing);
-            player.onScreenDisplay.setActionBar(`Ping: ${Math.floor(estimatedPing)}ms | Level: ${level}`);
-            console.log(`Player ${player.name}: Estimated Ping = ${Math.floor(estimatedPing)}ms`); // コンソールログのスパムを削減
+
+            const currentPosition = player.location;
+
+            if (playerData.lastPosition) {
+                const distance = Math.sqrt(
+                    Math.pow(currentPosition.x - playerData.lastPosition.x, 2) +
+                    Math.pow(currentPosition.y - playerData.lastPosition.y, 2) +
+                    Math.pow(currentPosition.z - playerData.lastPosition.z, 2)
+                );
+                const timeDiff = (now - playerData.lastTimestamp) / 1000; // 秒に変換
+
+                if (timeDiff > 0) { // ゼロ除算回避
+                    const speed = distance / timeDiff;
+                    // 速度と移動距離に基づいてpingを推定（調整が必要）
+                    const estimatedPing = Math.min(Math.max(speed * 2 + (distance * 5), 0), 999); // 上限と下限を設定
+                   // const level = getPingLevel(estimatedPing);
+
+
+                    player.onScreenDisplay.setActionBar(`Ping = ${Math.floor(estimatedPing)}ms, Speed = ${speed.toFixed(2)}m/s, Distance = ${distance.toFixed(2)}`);
+                    console.log(`Player ${player.name}: Estimated Ping = ${Math.floor(estimatedPing)}ms, Speed = ${speed.toFixed(2)}m/s, Distance = ${distance.toFixed(2)}`); // デバッグ情報
+                }
+
+            }
+
+            playerData.lastPosition = currentPosition;
+            playerData.lastTimestamp = now;
         }
     }
 }, TICKRUN);
