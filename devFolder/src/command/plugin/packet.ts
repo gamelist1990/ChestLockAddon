@@ -85,6 +85,7 @@ interface PlayerData {
   blinkCount: number;
   throughBlockHits: { [targetId: string]: number }; // ブロック越しヒット数の記録
   flyHackCount: number;
+  lastVelocity: { vertical: number; horizontal: number } | null;
   lastAttackedEntities: Entity[];
   lastMessages: string[];
   lastMessageTimes: number[];
@@ -120,7 +121,6 @@ class PlayerDataManager {
       jumpCounter: 0,
       enderPearlInterval: null,
       recentlyUsedEnderPearl: false,
-      lastPosition: null,
       lastRotationY: 0,
       boundaryCenter: player.location,
       boundaryRadius: 10,
@@ -156,9 +156,14 @@ class PlayerDataManager {
       flyHackCount: 0,
       lastAttackedEntities: [],
       lastMessages: [],
+      lastVelocity: {
+        vertical: 0,
+        horizontal: 0,
+      },
       lastMessageTimes: [],
       mutedUntil: 0,
       lastOnGroundTime:0,
+      lastPosition: player.location,
     };
 
     if (config().module.debugMode.enabled === true) {
@@ -232,7 +237,9 @@ function addPositionHistory(player: Player): void {
     }, 3 * 20);
   } else {
     data.positionHistory.push(player.location);
+    data.lastPosition = player.location; // Update lastPosition every tick
   }
+
 
   // デバッグログ出力
   if (configs.debugMode) {
@@ -759,10 +766,26 @@ function updateTimerData(player: Player, now: number) {
   }
 }
 
+const calculateVelocity = (currentPosition: { x: number; y: number; z: number }, lastPosition: { x: number; y: number; z: number } | null, checkInterval: number): { horizontal: number, vertical: number } | null => {
+  if (!lastPosition) {
+    return null; // 以前の位置がない場合は速度を計算できない
+  }
 
+  // 1秒間の移動距離を計算
+  const horizontalDistance = Math.sqrt(
+    Math.pow(currentPosition.x - lastPosition.x, 2) +
+    Math.pow(currentPosition.z - lastPosition.z, 2)
+  );
+  const verticalDistance = currentPosition.y - lastPosition.y;
 
+  // 速度を計算（秒速）
+  return {
+    horizontal: horizontalDistance / checkInterval,
+    vertical: verticalDistance / checkInterval,
+  };
+};
 
-function detectFlyHack(player: Player): { cheatType: string } | null {
+function detectFlyHack(player: Player): { cheatType: string; value?: number } | null {
   const data = playerDataManager.get(player);
 
   // 既存の条件はそのまま残す
@@ -782,62 +805,72 @@ function detectFlyHack(player: Player): { cheatType: string } | null {
     return null;
   }
 
-  if (data.positionHistory.length < 4) {
-    playerDataManager.update(player, { lastPosition: player.location });
-    return null;
-  }
+  // 定数
+  const checkInterval = 0.1; // チェック間隔（秒）
 
-  const isOnGround = player.isOnGround;
+  // 地面からの高さ
   const currentPosition = player.location;
-  let lastPosition = data.lastPosition;
+  const groundHeight = currentPosition.y - 0.5; // プレイヤーの中心から地面までの高さ（仮定）
 
-  if (!lastPosition) {
-    playerDataManager.update(player, { lastPosition: currentPosition });
+  // 速度を計算
+  const velocity = calculateVelocity(currentPosition, data.lastPosition, checkInterval);
+
+  if (!velocity) {
     return null;
   }
 
-  const currentVelocityY = player.getVelocity().y;
-  const previousVelocityY = calculateVerticalVelocity(currentPosition, lastPosition);
-
-  // 新しい検知パターン: 水平方向の移動距離が大きい場合
-  const horizontalDistance = Math.sqrt(
-    Math.pow(currentPosition.x - lastPosition.x, 2) +
-    Math.pow(currentPosition.z - lastPosition.z, 2)
+  // 疑わしい上昇判定
+  const isSuspiciousAscent = (
+    groundHeight > 0.5 &&  // 地面から離れている
+    velocity && // velocity が null ではないことを確認
+    velocity.vertical > 0.3 && // 上方向に移動している
+    velocity.horizontal < 1.5 // 水平移動が小さい
   );
-  const suspiciousHorizontalMovement = horizontalDistance > 5; // 5ブロック以上移動した場合
 
-  // 既存の条件に加えて、新しい条件もチェック
-  const isSuspiciousAscent = !isOnGround && (
-    currentVelocityY > 1.8 ||
-    (previousVelocityY > 0.6 && currentVelocityY > 1.3) ||
-    (suspiciousHorizontalMovement && currentVelocityY > 0.5) // 水平移動が大きい場合、わずかな上昇でも疑わしい
+  // Motion Hack 検知のための追加条件
+  const isSuspiciousMotion = (
+    velocity.vertical > 1.0 || // 異常な上昇速度
+    Math.abs(velocity.horizontal) > 2.0 || // 異常な水平速度
+    // 速度の変化を検知する
+    Math.abs(velocity.vertical - (data.lastVelocity?.vertical || 0)) > 2.0 // 急激な速度変化, data.lastVelocityがnullの場合は0を使う
   );
+
+  if (isSuspiciousMotion || isSuspiciousAscent) {
+    data.lastVelocity = velocity;
+  } else {
+    // 疑惑が解消された場合、速度をnullではなく{ vertical: 0, horizontal: 0 }にする
+    data.lastVelocity = { vertical: 0, horizontal: 0 };
+  }
+
 
   // FlyHack 疑惑フラグを追加
-  if (!isOnGround && isSuspiciousAscent) {
+  if (isSuspiciousAscent || isSuspiciousMotion) {
     if (data.flyHackCount === undefined) {
       data.flyHackCount = 0;
     }
     data.flyHackCount++;
+    data.lastVelocity = velocity; // 速度を保存
+
 
     if (data.flyHackCount >= 3) { // 検知しきい値を調整
       console.log(`[DEBUG] ${player.name} FlyHack Detected!`);
-      playerDataManager.update(player, { lastPosition: currentPosition, flyHackCount: 0 });
-      return { cheatType: 'FlyHack (実験中)' };
+      playerDataManager.update(player, { lastPosition: currentPosition, flyHackCount: 0, lastVelocity: null });
+      return { cheatType: 'FlyHack (Motion)' };
     } else {
-      playerDataManager.update(player, { lastPosition: currentPosition, flyHackCount: data.flyHackCount });
+      playerDataManager.update(player, { lastPosition: currentPosition, flyHackCount: data.flyHackCount, lastVelocity: velocity });
       return null;
     }
   } else {
     // 疑惑が解消された場合はカウントをリセット
     if (data.flyHackCount !== undefined && data.flyHackCount > 0) {
-      playerDataManager.update(player, { flyHackCount: 0 });
+      playerDataManager.update(player, { flyHackCount: 0, lastVelocity: null });
+      console.log(`[DEBUG] ${player.name} FlyHack 疑惑カウントをリセット`);
     }
   }
 
   playerDataManager.update(player, { lastPosition: currentPosition });
   return null;
-}
+};
 
 function detectSpeed(player: Player): { cheatType: string; value?: number } | null {
   const data = playerDataManager.get(player);
@@ -884,11 +917,10 @@ function detectSpeed(player: Player): { cheatType: string; value?: number } | nu
   const distance = calculateHorizontalSpeed(player.location, lastPosition);
   // 速度を計算 (ブロック/秒)
   const speed = distance * (1000 / checkInterval);
-  //console.log(`[DEBUG] ${player.name} Distance: ${speed}`);
-
 
   // 許容速度 (ブロック/秒) - 適宜調整
-  const allowedSpeed = 3;
+  const allowedSpeed = 4;
+
 
 
 
@@ -988,7 +1020,7 @@ function detectKillAura(player: Player, event: EntityHurtAfterEvent): { cheatTyp
   }
 
   // Reach Detection
-  const maxReach = 6; // Adjust as needed
+  const maxReach = 7; // Adjust as needed
   const distanceToEntity = getDistance(player.location, attackedEntity.location);
 
   if (distanceToEntity > maxReach) {
@@ -1109,6 +1141,8 @@ world.beforeEvents.chatSend.subscribe(event => {
 
 
 
+
+
 // ティックごとの処理
 function runTick(): void {
   currentTick++;
@@ -1122,9 +1156,7 @@ function runTick(): void {
     const data = playerDataManager.get(player);
     if (!data) continue;
 
-    if (player.hasTag("bypass")) {
-      return;
-    }
+    if (player.hasTag("bypass")) return;
 
     if (data.isFrozen) {
       player.teleport({ x: player.location.x, y: player.location.y, z: player.location.z }, { dimension: player.dimension });
