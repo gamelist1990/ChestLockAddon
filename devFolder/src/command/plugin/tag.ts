@@ -38,6 +38,8 @@ const cpsRegex = /\n§a\[CPS: \d+\]/; // Include the newline in the regex
 const deviceRegex = / \n§7\[[A-Z]{2,3}-m:[?\d.+]+\]/;
 
 system.runInterval(() => {
+
+    if (config().commands.tag.enabled === false) return;
     const isCPSTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueCps"));
     const isHPTrackingEnabled = world.getPlayers().some(p => p.hasTag("trueHP"));
     const isTeamTrackingEnable = world.getPlayers().some(p => p.hasTag("trueTeam"));
@@ -133,26 +135,39 @@ export function getPlayerCPS(player: Player): number {
 }
 
 registerCommand({
-    name: 'cps',
-    description: 'Toggles CPS tracking for players with the "cps" tag.',
+    name: 'tag',
+    description: 'tag_docs',
     parent: false,
     maxArgs: 1,
     minArgs: 0,
-    require: (player: Player) => verifier(player, config().commands['cps']),
-    executor: (player: Player, args: string[]) => {
-        const enable = args.length === 0 || args[0] !== '-false';
+    require: (player: Player) => verifier(player, config().commands['tag']),
+    executor: (player: Player) => {
+        player.sendMessage(`
+§f>> §7使用方法:
+このコマンドは、プレイヤー名に様々な情報を表示するためのタグ機能を管理します。
+各タグを有効にするには、ホストプレイヤーが対応するグローバルタグを設定する必要があります。
 
-        // trueCps タグの管理
-        if (enable) {
-            system.runTimeout(() => {
-                player.addTag("trueCps");
-            }, 1)
-        } else {
-            system.runTimeout(() => {
-                player.removeTag("trueCps");
-            }, 1)
-        }
+§b● グローバルタグ (ホストが設定):
+  §7- trueCps:  CPS計測を有効にします。
+  §7- trueHP:   HP表示を有効にします。
+  §7- trueTeam: チーム表示を有効にします。
+  §7- trueDevice: デバイス表示を有効にします。
 
-        player.sendMessage(enable ? '§aCPS tracking enabled for players with the "cps" tag.' : '§cCPS tracking disabled.');
+§b● プレイヤータグ (各プレイヤーが設定):
+  §7- cps:     CPSを表示します (trueCps が必要)。
+  §7- hp:      HPを表示します (trueHP が必要)。
+  §7- team1～team5: チームカラーを設定します (trueTeam が必要)。
+  §7- device: デバイス情報を表示します (trueDevice が必要)。
+
+§b● 使用例:
+  §7- ホストがCPS表示を有効にする:  /tag @s add trueCps
+  §7- プレイヤーが自分のCPSを表示する: /tag @s add cps
+  §7- プレイヤーがチーム1に所属する: /tag @s add team1
+  §7- プレイヤーがデバイス情報を表示する: /tag @s add device
+
+§c注意:
+  §7- グローバルタグが設定されていない場合、プレイヤータグは機能しません。
+  §7- チームタグは team1 から team5 まで使用できます。
+`);
     },
 });

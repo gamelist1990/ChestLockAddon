@@ -61,7 +61,15 @@
   },
   "hub_docs": {
     "msgid": "Hub Command",
-    "msgstr": ""
+    "msgstr": "ハブに移動コマンド！(初期リス)"
+  },
+  "tag_docs": {
+    "msgid": "tag Command ",
+    "msgstr": "タグコマンド！！ (名前のところに色々付きます)"
+  },
+  "invsee_docs": {
+    "msgid": "Invsee Command ",
+    "msgstr": "指定したユーザーのインベントリを確認できるよ"
   },
   "ui.ReportButton": {
     "msgid": "§0Report Menu",
@@ -908,5 +916,45 @@
   "command.chest.cannotPlaceItem": {
     "msgid": "§c You are not allowed to place pistons in this area.",
     "msgstr": "§c このエリアにピストンを設置することはできません。"
+  },
+  "command.hub.move": {
+    "msgid": "§l§f>> §aHUB move in §b{countdown}§a seconds",
+    "msgstr": "§l§f>> §aHUBに移動まで後§b{countdown}§a秒"
+  },
+  "command.invsee.title": {
+    "msgid": "Inventory for player {targetPlayer}",
+    "msgstr": "プレーヤー {targetPlayer} のインベントリ"
+  },
+  "command.sumo.15block": {
+    "msgid": "§l§f>> §cReset due to being more than 15 blocks away from opponent",
+    "msgstr": "§l§f>> §c相手から15ブロック以上離れたためリセットされました"
+  },
+  "command.sumo.match": {
+    "msgid": "§l§f>> §cAll slots are currently in use§6(Please wait until a slot becomes available)",
+    "msgstr": "§l§f>> §cすべての対戦用スロットは現在使用中です§6(スロットが空くまでお待ちください)"
+  },
+  "command.sumo.play1": {
+    "msgid": "§l§f>> §aStart playing against §b{hitPlayer}§a!",
+    "msgstr": "§l§f>> §b{hitPlayer}§a と対戦を開始しました!"
+  },
+  "command.sumo.play2": {
+    "msgid": "§l§f>> §aStart playing against §b{attackingPlayer}§a!",
+    "msgstr": "§l§f>> §b{attackingPlayer}§a と対戦を開始しました!"
+  },
+  "command.sumo.start": {
+    "msgid": "§l§f>> §b{attackingPlayer} §6vs §b{hitPlayer} §a(Tag: {sumoTag})§r",
+    "msgstr": "§l§f>> §b{attackingPlayer} §6vs §b{hitPlayer} §a(対戦タグ: {sumoTag})§r"
+  },
+  "command.sumo.attackUser": {
+    "msgid": "§cDo not attack players other than the one you are playing against",
+    "msgstr": "§c対戦相手以外のプレイヤーを攻撃しないでください"
+  },
+  "command.sumo.attackOther": {
+    "msgid": "§cYou cannot attack players who are in a match",
+    "msgstr": "§c試合中のプレイヤーを攻撃することはできません"
+  },
+  "command.sumo.Win": {
+    "msgid": "§l§f>> §a You are Win ! §f<<",
+    "msgstr": "§l§f>> §a あなたの勝利 §f<<"
   }
 }

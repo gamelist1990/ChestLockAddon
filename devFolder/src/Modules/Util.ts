@@ -114,7 +114,7 @@ export const config = (): { commands: { [key: string]: CommandConfig }; admin: s
       adminOnly: true,
       requireTag: [],
     }, 
-    cps: {
+    tag: {
       enabled: true,
       adminOnly: true,
       requireTag: [],
@@ -130,7 +130,13 @@ export const config = (): { commands: { [key: string]: CommandConfig }; admin: s
 
   module: {
     debugMode: {
+      enabled:false,
+    },
+    sumoSystem:{
       enabled:true,
+    },
+    ScoreSystem: {
+      enabled: true,
     }
   },
 

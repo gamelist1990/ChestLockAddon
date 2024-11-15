@@ -3,6 +3,7 @@ import { registerCommand, verifier, isPlayer } from '../../Modules/Handler';
 import { EquipmentSlot, Player, system, ItemStack } from '@minecraft/server'; // ItemStack をインポート
 import { ActionFormData } from '@minecraft/server-ui';
 import { projectPlayerInventory } from '../../Modules/inv';
+import { translate } from '../langs/list/LanguageManager';
 
 const ITEMS_PER_PAGE = 9;
 
@@ -11,7 +12,7 @@ const ITEMS_PER_PAGE = 9;
 
 registerCommand({
     name: 'invsee',
-    description: 'プレイヤーのインベントリを見る',
+    description: 'invsee_docs',
     parent: false,
     maxArgs: 1,
     minArgs: 1,
@@ -25,17 +26,18 @@ registerCommand({
                 showArmorHotbarOptions(player, targetPlayer);
             }, 60)
         } else {
-            player.sendMessage(`プレイヤー ${targetPlayerName} は見つかりませんでした`);
+            player.sendMessage(translate(player, "commands.list.playerNotFound", { tragetplayer :`${targetPlayerName}`}))
         }
     },
 });
 
 function showArmorHotbarOptions(player: Player, targetPlayer: Player) {
     const form = new ActionFormData()
-        .title(`プレイヤー ${targetPlayer.name} のインベントリ`)
-        .button('ホットバー')
-        .button('アーマー')
-        .button('インベントリ')
+       // .title(`プレイヤー ${targetPlayer.name} のインベントリ`)
+        .title(translate(player, "command.invsee.title", { targetPlayer: `${targetPlayer.name}`}))
+        .button('HotBar')
+        .button('Armor')
+        .button('Inventory')
         .button('ChestUI');
     // @ts-ignore
     form.show(player).then((response) => {
