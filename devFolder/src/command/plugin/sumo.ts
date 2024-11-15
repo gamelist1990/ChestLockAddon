@@ -1,12 +1,14 @@
 import { Player, system, Vector3, world } from "@minecraft/server";
+import { config } from "../../Modules/Util";
+import { translate } from "../langs/list/LanguageManager";
 
 // Sumo タグのプレフィックスと Sumo システム起動用のタグ
 const sumoTagPrefix = "sumo";
-const pvpSumoTag = "pvpSumo"; 
-const trueSumoTag = "trueSumo"; 
-const maxSumoMatches = 5; 
+const pvpSumoTag = "pvpSumo";
+const trueSumoTag = "trueSumo";
+const maxSumoMatches = 5;
 
-let sumoSystemEnabled = false; 
+let sumoSystemEnabled = false;
 let sumoTagsInUse: string[] = [];
 
 function calculateDistance(pos1: Vector3, pos2: Vector3): number {
@@ -25,8 +27,8 @@ function checkSumoDistance() {
             if (opponent) {
                 const distance = calculateDistance(player.location, opponent.location);
                 if (distance > 15) {
-                    player.sendMessage(`§l§f>> §c対戦相手から15ブロック以上離れた為リセットされました`);
-                    opponent.sendMessage(`§l§f>> §c対戦相手から15ブロック以上離れた為リセットされました`);
+                    player.sendMessage(translate(player, "command.sumo.15block"));
+                    opponent.sendMessage(translate(opponent, "command.sumo.15block"))
                     removeSumoTags(player, opponent, sumoTag);
                 }
             }
@@ -58,6 +60,7 @@ function removeSumoTags(player1: Player, player2: Player, sumoTag: string) {
 
 // Sumo 開始処理
 world.afterEvents.entityHitEntity.subscribe((event) => {
+    if (config().module.sumoSystem.enabled === false) return;
     if (!sumoSystemEnabled) return;
 
     const { damagingEntity, hitEntity } = event;
@@ -73,14 +76,14 @@ world.afterEvents.entityHitEntity.subscribe((event) => {
 
         const attackerTag = getSumoTag(attackingPlayer);
         const hitPlayerTag = getSumoTag(hitPlayer);
-        
+
 
         // 攻撃側が Sumo 中でなく、攻撃された側も Sumo 中でない場合は、Sumo 開始処理
         if (!attackerTag && !hitPlayerTag && attackingPlayer.hasTag(pvpSumoTag)) {
             const sumoTag = generateUniqueSumoTag();
             if (!sumoTag) {
-                attackingPlayer.sendMessage("§l§f>> §c現在、すべての枠が使用中です§6(空きが出るまでお待ちください)");
-                hitPlayer.sendMessage("§l§f>> §c現在、すべての枠が使用中です§6(空きが出るまでお待ちください)");
+                attackingPlayer.sendMessage(translate(attackingPlayer, "command.sumo.match"));
+                hitPlayer.sendMessage(translate(attackingPlayer, "command.sumo.match"));
                 return;
             }
 
@@ -88,10 +91,20 @@ world.afterEvents.entityHitEntity.subscribe((event) => {
             hitPlayer.addTag(sumoTag);
             sumoTagsInUse.push(sumoTag);
 
-            attackingPlayer.sendMessage(`§l§f>> §b${hitPlayer.name}§a と 対戦開始！`);
-            hitPlayer.sendMessage(`§l§f>> §b${attackingPlayer.name}§a と 対戦開始！`);
-            attackingPlayer.sendMessage(`§l§f>> §b${attackingPlayer.name} §6vs §b${hitPlayer.name} §a(Tag: ${sumoTag})§r`);
-            hitPlayer.sendMessage(`§l§f>> §b${attackingPlayer.name} §6vs §b${hitPlayer.name} §a(Tag: ${sumoTag})§r`);
+            attackingPlayer.sendMessage(translate(attackingPlayer, "command.sumo.play1", { hitPlayer: `${hitPlayer.name}` }));
+            hitPlayer.sendMessage(translate(hitPlayer, "command.sumo.play2", { hitPlayer: `${attackingPlayer.name}` }));
+            attackingPlayer.sendMessage(translate(attackingPlayer, "command.sumo.start",
+                {
+                    attackingPlayer: `${attackingPlayer.name}`,
+                    hitPlayer: `${hitPlayer.name}`,
+                    sumoTag: `${sumoTag}`
+                }));
+            hitPlayer.sendMessage(translate(attackingPlayer, "command.sumo.start",
+                {
+                    attackingPlayer: `${attackingPlayer.name}`,
+                    hitPlayer: `${hitPlayer.name}`,
+                    sumoTag: `${sumoTag}`
+                }));
             //console.warn(`[SUMO START] ${attackingPlayer.name} vs ${hitPlayer.name} (Tag: ${sumoTag})`);
             return;
         }
@@ -100,7 +113,7 @@ world.afterEvents.entityHitEntity.subscribe((event) => {
 
         // Sumo 中のプレイヤーが、同じ Sumo タグを持つプレイヤー以外を攻撃した場合
         if (attackerTag && (hitPlayerTag !== attackerTag || !hitPlayerTag)) {
-            attackingPlayer.sendMessage("§c対戦中以外のプレイヤーを攻撃しないで下さい");
+            attackingPlayer.sendMessage(translate(attackingPlayer,"command.sumo.attackUser"));
             return;
         }
 
@@ -111,7 +124,7 @@ world.afterEvents.entityHitEntity.subscribe((event) => {
                 amplifier: 255,
                 showParticles: false,
             });
-            attackingPlayer.sendMessage("§c対戦中のプレイヤーを攻撃することはできません。");
+            attackingPlayer.sendMessage(translate(attackingPlayer, "command.sumo.attackOther"));
 
             return;
 
@@ -127,14 +140,14 @@ function generateUniqueSumoTag(): string | null {
             return tag;
         }
     }
-    return null; 
+    return null;
 }
 
 
 
 // 勝敗判定と結果の処理
 function determineWinner(player: Player) {
-    const sumoTag = getSumoTag(player); 
+    const sumoTag = getSumoTag(player);
     if (sumoTag) {
         world.getPlayers().forEach(p => {
             if (p.hasTag(sumoTag)) {
@@ -146,8 +159,8 @@ function determineWinner(player: Player) {
         if (index > -1) {
             sumoTagsInUse.splice(index, 1);
         }
-        player.addTag("sumoWin"); 
-        player.sendMessage(`§l§f>> §a You are Win ! §f<<`)
+        player.addTag("sumoWin");
+        player.sendMessage(translate(player,"command.sumo.Win"));
         console.warn(`[SUMO WIN] ${player.name}`);
         checkSystemStatus();
     }
@@ -161,12 +174,14 @@ function checkSystemStatus() {
 
 // 定期的に Sumo プレイヤーのタグをチェック
 system.runInterval(() => {
+    if (config().module.sumoSystem.enabled === false) return;
+
     checkSystemStatus();
     if (!sumoSystemEnabled) return;
 
     world.getPlayers().forEach(player => {
         if (player.hasTag(pvpSumoTag) && !getSumoTag(player)) {
-            player.addEffect("weakness", 20, { 
+            player.addEffect("weakness", 20, {
                 amplifier: 255,
                 showParticles: false
             });

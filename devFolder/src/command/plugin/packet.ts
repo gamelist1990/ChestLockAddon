@@ -3,7 +3,7 @@ import { registerCommand, verifier } from '../../Modules/Handler';
 import { Player, world, system, Vector3, Block, GameMode, EntityHurtAfterEvent, Entity, BlockRaycastOptions, EntityRaycastOptions } from '@minecraft/server';
 import { ServerReport } from '../utility/report';
 import xy from './xy';
-import { getPlayerCPS } from './cps';
+import { getPlayerCPS } from './tag';
 
 // ----------------------------------
 // --- 設定 ---
@@ -46,7 +46,7 @@ interface timerData {
   yDisLog: number;
   flagCounter: number;
   lastHighTeleport: number;
-  
+
 }
 
 interface PlayerData {
@@ -613,6 +613,7 @@ world.beforeEvents.playerBreakBlock.subscribe((event) => {
 
 function monitorItemUseOn(player: Player, itemId: string): void {
   if (!monitoring) return; // アンチチートが無効の場合は何もしない
+  if (!player.hasTag("bypassItem")) return;
 
   let lastUseTimes: number[] = []; // 最後にアイテムを使用した時刻を保存する配列
 
@@ -1144,7 +1145,7 @@ function detectSpam(player: Player, message: string): { cheatType: string; value
 
         // 5秒間ミュート
         playerDataManager.update(player, { mutedUntil: Date.now() + 5000 });
-        player.sendMessage("§l§a[自作§3AntiCheat]§f スパム行為を検知したため、5秒間チャットを禁止しました"); 
+        player.sendMessage("§l§a[自作§3AntiCheat]§f スパム行為を検知したため、5秒間チャットを禁止しました");
 
         data.lastMessages = [];
         data.lastMessageTimes = [];
@@ -1169,7 +1170,7 @@ world.beforeEvents.chatSend.subscribe(event => {
 
   const data = playerDataManager.get(player);
   if (data && data.mutedUntil && Date.now() < data.mutedUntil) {
-    event.cancel = true; 
+    event.cancel = true;
     player.sendMessage("§l§a[自作§3AntiCheat]§f あなたは現在チャットの使用を禁止されています")
     return;
   }

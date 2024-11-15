@@ -1,6 +1,7 @@
 import { config } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
 import { Player, system, world } from '@minecraft/server';
+import { translate } from '../langs/list/LanguageManager';
 
 registerCommand({
     name: 'hub',
@@ -14,6 +15,7 @@ registerCommand({
 
         const intervalId = system.runInterval(() => {
             player.sendMessage(`§l§f>> §aHUB移動まで後§b${countdown}§a秒`);
+            player.sendMessage(translate(player,"command.hub.move",{countdown:`${countdown}`}))
             countdown--;
 
             if (countdown < 0) {

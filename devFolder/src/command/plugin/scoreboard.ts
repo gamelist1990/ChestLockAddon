@@ -3,6 +3,7 @@ import { isPlayer } from "../../Modules/Handler";
 import { getServerUptime } from "../utility/server";
 import { ver } from "../../Modules/version";
 import { banPlayers } from "../../Modules/globalBan";
+import { config } from "../../Modules/Util";
 
 
 const simpleReplacements: { [key: string]: string | (() => string) } = {
@@ -71,6 +72,7 @@ function resolvePlayerName(key: string): string {
 
 
 system.afterEvents.scriptEventReceive.subscribe((event) => {
+    if (config().module.ScoreSystem.enabled === false) return;
     const { message, id } = event;
     if (id === "ch:score") {
         try {
@@ -119,6 +121,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
 
 
 system.afterEvents.scriptEventReceive.subscribe((event) => {
+    if (config().module.ScoreSystem.enabled === false) return;
     const args = event.message.replace(/^\/ch:team\s+/, "").split(/\s+/);
 
     if (event.id === "ch:team") {

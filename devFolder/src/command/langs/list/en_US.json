@@ -63,6 +63,14 @@
     "msgid":"Hub Command",
     "msgstr":""
   },
+  "tag_docs": {
+    "msgid": "tag Command ",
+    "msgstr": ""
+  },
+  "invsee_docs": {
+    "msgid": "Invsee Command ",
+    "msgstr": ""
+  },
   "ui.ReportButton": {
     "msgid": "§0Report Menu",
     "msgstr": ""
@@ -858,6 +866,46 @@
   },
   "command.chest.cannotPlaceItem": {
     "msgid": "§c You are not allowed to place pistons in this area.",
+    "msgstr": ""
+  },
+  "command.hub.move": {
+    "msgid": "§l§f>> §aHUB move in §b{countdown}§a seconds",
+    "msgstr": ""
+  },
+  "command.invsee.title": {
+    "msgid": "Inventory for player {targetPlayer}",
+    "msgstr": ""
+  },
+  "command.sumo.15block": {
+    "msgid": "§l§f>> §cReset due to being more than 15 blocks away from opponent",
+    "msgstr": ""
+  },
+  "command.sumo.match": {
+    "msgid": "§l§f>> §cAll slots are currently in use§6(Please wait until a slot becomes available)",
+    "msgstr": ""
+  },
+  "command.sumo.play1": {
+    "msgid": "§l§f>> §aStart playing against §b{hitPlayer}§a!",
+    "msgstr": ""
+  },
+  "command.sumo.play2": {
+    "msgid": "§l§f>> §aStart playing against §b{attackingPlayer}§a!",
+    "msgstr": ""
+  },
+  "command.sumo.start": {
+    "msgid": "§l§f>> §b{attackingPlayer} §6vs §b{hitPlayer} §a(Tag: {sumoTag})§r",
+    "msgstr": ""
+  },
+  "command.sumo.attackUser": {
+    "msgid": "§cDo not attack players other than the one you are playing against",
+    "msgstr": ""
+  },
+  "command.sumo.attackOther": {
+    "msgid": "§cYou cannot attack players who are in a match",
+    "msgstr": ""
+  },
+  "command.sumo.Win": {
+    "msgid": "§l§f>> §a You are Win ! §f<<",
     "msgstr": ""
   }
 }

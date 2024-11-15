@@ -6,7 +6,7 @@ import './lore';
 import './packet';
 import './invsee';
 import './offhand';
-import './cps';
+import './tag';
 import './scoreboard';
 import './hub';
 import './vote';
