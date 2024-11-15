@@ -147,6 +147,7 @@ function determineWinner(player: Player) {
             sumoTagsInUse.splice(index, 1);
         }
         player.addTag("sumoWin"); 
+        player.sendMessage(`§l§f>> §a You are Win ! §f<<`)
         console.warn(`[SUMO WIN] ${player.name}`);
         checkSystemStatus();
     }

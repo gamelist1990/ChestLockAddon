@@ -10,11 +10,17 @@ registerCommand({
     minArgs: 0,
     require: (player: Player) => verifier(player, config().commands['hub']),
     executor: (player: Player) => {
-       system.runTimeout(()=>{
-        const Default = world.getDefaultSpawnLocation();
-        //初期リスTP
-        player.teleport(Default);
+        let countdown = 5; // カウントダウンの開始値
 
-       },20 * 3)
+        const intervalId = system.runInterval(() => {
+            player.sendMessage(`§l§f>> §aHUB移動まで後§b${countdown}§a秒`);
+            countdown--;
+
+            if (countdown < 0) {
+                system.clearRun(intervalId);
+                const Default = world.getDefaultSpawnLocation();
+                player.teleport(Default);
+            }
+        }, 1000); 
     },
 });
