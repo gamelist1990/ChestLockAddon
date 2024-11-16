@@ -23,7 +23,7 @@ export function detectAirJump(player: Player, playerDataManager: PlayerDataManag
         return null;
     }
 
-    const ticksToUse = 5;
+    const ticksToUse = 20;
     if (data.positionHistory.length < ticksToUse + 1) return null;
 
     const pastPositions = data.positionHistory.slice(-ticksToUse - 1);
@@ -52,7 +52,7 @@ export function detectAirJump(player: Player, playerDataManager: PlayerDataManag
 
         if (invalidVerticalMovement || jumpHeight > 2.5) {
             data.jumpCounter++;
-            if (data.jumpCounter >= 3) {
+            if (data.jumpCounter >= 4) {
                 updatePlayerData(player, playerDataManager, { jumpCounter: 0 });
                 return { cheatType: 'AirJump' };
             }

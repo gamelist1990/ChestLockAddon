@@ -18,7 +18,7 @@ export function detectKillAura(attackingPlayer: Player, event: EntityHurtAfterEv
     }
 
     // Reach チェック
-    const maxReach = 6; // 通常のリーチ + 1 として設定 (調整可能)
+    const maxReach = 6.7; // 通常のリーチ + 1 として設定 (調整可能)
     const distanceToEntity = calculateDistance(attackingPlayer.location, attackedEntity.location);
     if (distanceToEntity > maxReach) {
         return { cheatType: 'Kill Aura (Reach)' };

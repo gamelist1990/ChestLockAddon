@@ -10,7 +10,7 @@ import { loadData } from './Modules/DataBase';
 import { banPlayers } from './Modules/globalBan';
 import { loadReport } from './command/utility/report';
 import { ver } from './Modules/version';
-//import { RunAntiCheat } from './command/plugin/packet';
+import { AddNewPlayers, initializeAntiCheat } from './command/plugin/AntiCheat';
 
 const startTime = Date.now();
 
@@ -30,7 +30,10 @@ world.afterEvents.worldInitialize.subscribe(async () => {
     loadPlayerLanguages();
     loadData();
     loadReport();
-    //RunAntiCheat();
+    //AntiCheat    //
+    initializeAntiCheat();
+    AddNewPlayers();
+    //_____________//
     loadGate();
     loadjoinModules();
     loadProtectedChests();

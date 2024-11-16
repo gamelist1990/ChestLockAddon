@@ -19,15 +19,17 @@
 ## Update
 
 **Version 1.3**  新機能を追加しました
-[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.2...1.3)
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.3...1.4)
 
 **更新点**
 詳細な変更点は☝のChangeLogを見てね
 
 ここでは簡潔に変更点をまとめます
 
-- Version1.3に更新
+- Version1.4に更新
 - その他バグ修正
+- ファイル整理及び翻訳キーの変更
+- またPEX鯖作成時に使用したモジュールを追加
 
 
 ![alt text](image/image.png)

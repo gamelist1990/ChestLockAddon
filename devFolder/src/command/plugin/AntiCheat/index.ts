@@ -25,10 +25,10 @@ const configs = {
         freezeDuration: 20 * 10,
         xrayDetectionDistance: 10,
         modules: { // 各モジュールの有効/無効
-            airJump: true,
-            speed: true,
-            killAura: true,
-            xray: true,
+            airJump: false,
+            speed: false,
+            killAura: false,
+            xray: false,
             spam: true
         }
     },
@@ -135,7 +135,7 @@ world.beforeEvents.chatSend.subscribe((event: ChatSendBeforeEvent) => {
 
 
 
-function AddNewPlayers(): void {
+export function AddNewPlayers(): void {
     if (monitoring) {
         world.getPlayers().forEach((p) => {
             if (!playerDataManager.get(p)) {
