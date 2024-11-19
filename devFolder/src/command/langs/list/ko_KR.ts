@@ -684,15 +684,15 @@ export const translations = {
     msgstr: ""
   },
   "command.chest.MaxChestLimitReached": {
-    msgid: "§c The installation limit of {limit} has been reached.",
+    msgid: "§c The installation limit of §d{limit}§c has been reached.",
     msgstr: "§c{protectChest} 설치 제한에 도달했습니다"
   },
   "command.chest.chestLocksCount": {
-    msgid: "§a You are currently protecting {protectChest} chests.",
+    msgid: "§a You are currently protecting §6{protectChest}§a chests.",
     msgstr: "§a현재 {protectChest}개의 상자를 보호하고 있습니다"
   },
   "command.chest.ChestlistCom": {
-    msgid: "§a You have protected {playerChests} chests:",
+    msgid: "§a You have protected §6{playerChests}§a chests:",
     msgstr: "§a{playerChests}개의 상자를 보호하고 있습니다:"
   },
   "command.chest.chestlocation": {
@@ -760,7 +760,7 @@ export const translations = {
     msgstr: ""
   },
   "command.chest.isLookChest": {
-    msgid: "§c This chest is locked by {owner}",
+    msgid: "§c This chest is locked by §b{owner}",
     msgstr: ""
   },
   "command.chest.isProChest": {
@@ -780,23 +780,23 @@ export const translations = {
     msgstr: "§c이 상자를 조작할 권한이 없습니다."
   },
   "command.chest.AddM": {
-    msgid: "§a {member} added as a member at location: {chestLocation}",
+    msgid: "§b{member} §aadded as a member at location: §6{chestLocation}",
     msgstr: ""
   },
   "command.chest.addYouM": {
-    msgid: "§a {playerName} has added you to the following chests: {chestLocation}",
+    msgid: "§b{playerName} §ahas added you to the following chests: §6{chestLocation}",
     msgstr: ""
   },
   "command.chest.RemoveYouM": {
-    msgid: "§a {playerName} has removed you from the following chests: {chestLocation}",
+    msgid: "§b{playerName} §ahas removed you from the following chests: §6{chestLocation}",
     msgstr: ""
   },
   "command.chest.MAlreday": {
-    msgid: "§c {member} is already a member.",
+    msgid: "§b{member}§c is already a member.",
     msgstr: ""
   },
   "command.chest.RemoveM": {
-    msgid: "§a {member} has been removed from members.",
+    msgid: "§b{member} §ahas been removed from members.",
     msgstr: ""
   },
   "command.chest.NotM": {

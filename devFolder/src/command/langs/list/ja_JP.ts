@@ -13,7 +13,7 @@ export const translations = {
   },
   "staff_docs": {
     msgid: "Staff-only commands",
-    msgstr: "スタッフ専用コマンド"
+    msgstr: "スタッフ専用コマンド(freeCam等が使えます)"
   },
   "report_docs": {
     msgid: "You can report players doing bad things.",
@@ -29,7 +29,7 @@ export const translations = {
   },
   "jpch_docs": {
     msgid: "JPCH command (Experimental feature)",
-    msgstr: "JPCHコマンド (実験的機能)"
+    msgstr: "JPCHコマンド (LunaChat:実験的)"
   },
   "ui_docs": {
     msgid: "UI command (This command displays a GUI with ActionForm)",
@@ -37,15 +37,15 @@ export const translations = {
   },
   "edit_docs": {
     msgid: "WorldEdit Commands",
-    msgstr: "WorldEditコマンド"
+    msgstr: "WorldEditコマンド(あくまで補助用のWorldEditです)"
   },
   "lore_docs": {
     msgid: "Change Item Lore",
-    msgstr: "アイテムの説明を変更する"
+    msgstr: "アイテムの説明を変更する(コマンドの場合は手持ちのアイテムが変更されます)"
   },
   "warpgate_docs": {
     msgid: "Set Warp Gate",
-    msgstr: "ワープゲートを設定する"
+    msgstr: "ワープゲートを設定する(意外と便利)"
   },
   "join_docs": {
     msgid: "Displays a message when joining a world.",
@@ -53,11 +53,11 @@ export const translations = {
   },
   "tp_docs": {
     msgid: "Send a request and teleport.",
-    msgstr: "リクエストを送信してテレポートします。"
+    msgstr: "リクエストを送信してテレポートします。(相手に承諾されるとTPされます)"
   },
   "chest_docs": {
     msgid: "Chest Command",
-    msgstr: "チェストコマンド"
+    msgstr: "チェストロックコマンド(チェストを保護できます)"
   },
   "hub_docs": {
     msgid: "Hub Command",
@@ -169,7 +169,7 @@ export const translations = {
   },
   "ui.TpaRequesMenu": {
     msgid: "§2 Welcome to the TPA Menu! Current requests: {requestList} people",
-    msgstr: "§2 TPAメニューへようこそ！現在のリクエスト：{requestList}人"
+    msgstr: "§2 TPAメニューへようこそ！現在のリクエスト：§6{requestList}§2人"
   },
   "ui.SendTpa": {
     msgid: "§0 Send a TPA Request",
@@ -217,11 +217,11 @@ export const translations = {
   },
   "ui.jpenable": {
     msgid: "§a Function enabled.",
-    msgstr: "§a 機能が有効になりました。"
+    msgstr: "§a 機能を有効"
   },
   "ui.jpdisable": {
     msgid: "§c Function disabled.",
-    msgstr: "§c 機能が無効になりました。"
+    msgstr: "§c 機能を無効"
   },
   "ui.ChooseCom": {
     msgid: "§2 Select a command:",
@@ -249,11 +249,11 @@ export const translations = {
   },
   "ui.locking": {
     msgid: "§a Locking!",
-    msgstr: "§a ロック中！"
+    msgstr: "§a ロックする！"
   },
   "ui.unlocking": {
     msgid: "§c Unlocking!",
-    msgstr: "§c ロック解除中！"
+    msgstr: "§c ロックを解除！"
   },
   "ui.ProtectChest": {
     msgid: "§0 Chest Protection Status",
@@ -593,15 +593,15 @@ export const translations = {
   },
   "commnad.tpa.tpaRequestSent": {
     msgid: "§a TPA request sent to§b {playerName}.",
-    msgstr: "§a §b{playerName} にTPAリクエストを送信しました。"
+    msgstr: "§a §b{playerName} §aにTPAリクエストを送信しました。"
   },
   "commnad.tpa.tpaRequestAlreadySent": {
     msgid: "§c You have already sent a TPA request to§6 {playerName}!",
-    msgstr: "§c §6{playerName} に既にTPAリクエストを送信しています！"
+    msgstr: "§c §b{playerName}§c に既にTPAリクエストを送信しています！"
   },
   "commnad.tpa.tpaRequestReceived": {
     msgid: "§2 Received a TPA request from §b{playerName}.",
-    msgstr: "§2 §b{playerName} からTPAリクエストを受信しました。"
+    msgstr: "§2 §b{playerName}§2 からTPAリクエストを受信しました。"
   },
   "commnad.tpa.noPendingTpaRequests": {
     msgid: "§3 You have no pending TPA requests.",
@@ -617,7 +617,7 @@ export const translations = {
   },
   "commnad.tpa.teleportedToPlayer": {
     msgid: "§a Teleported to §b{playerName}.",
-    msgstr: "§a §b{playerName} にテレポートしました。"
+    msgstr: "§a §b{playerName} §aにテレポートしました。"
   },
   "commnad.tpa.tpaRequestAccepted": {
     msgid: "§a §b{playerName} §ahas accepted your TPA request.",
@@ -684,16 +684,16 @@ export const translations = {
     msgstr: "§c 無効なコマンドです。\n§a チェスト保護コマンドの使い方:\n  §bchest lock        - チェストをロックします\n  §bchest info       - 最寄りのチェストの情報を表示します\n  §bchest unlock      - チェストのロックを解除します\n  §bchest protect <lock/unlock> - チェストの保護を切り替えます\n  §bchest add <playername>   - チェストにメンバーを追加します\n  §bchest remove <playername>  - チェストからメンバーを削除します\n  §bchest all        - チェストメンバーのリストを表示します\n  §bchest list        - チェストのリストを表示します\n  §b_______________________________________\n  §b作者: Koukun        - ライセンス AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
   },
   "command.chest.MaxChestLimitReached": {
-    msgid: "§c The installation limit of {limit} has been reached.",
-    msgstr: "§c既に設置上限である{limit}に達しています"
+    msgid: "§c The installation limit of §d{limit}§c has been reached.",
+    msgstr: "§c既に設置上限である§d{limit}§cに達しています"
   },
   "command.chest.chestLocksCount": {
-    msgid: "§a You are currently protecting {protectChest} chests.",
-    msgstr: "§a現在{protectChest}個のチェストが保護されています。"
+    msgid: "§a You are currently protecting §6{protectChest}§a chests.",
+    msgstr: "§a現在§6{protectChest}§a個のチェストが保護されています。"
   },
   "command.chest.ChestlistCom": {
-    msgid: "§a You have protected {playerChests} chests:",
-    msgstr: "§aあなたは現在{playerChests}個のチェストを保護しています。"
+    msgid: "§a You have protected §6{playerChests}§a chests:",
+    msgstr: "§aあなたは現在§6{playerChests}§a個のチェストを保護しています。"
   },
   "command.chest.chestlocation": {
     msgid: "§e - Location: {key}",
@@ -749,7 +749,7 @@ export const translations = {
   },
   "command.chest.chest_lookstate": {
     msgid: "§a Chest protection: {lcokstate}",
-    msgstr: "§aチェスト保護: {lcokstate}"
+    msgstr: "§aチェスト保護: §6{lcokstate}"
   },
   "command.chest.chest_removeData": {
     msgid: "§a All chest protection data has been reset.",
@@ -760,8 +760,8 @@ export const translations = {
     msgstr: "§aラージチェストにしてくれてありがとう"
   },
   "command.chest.isLookChest": {
-    msgid: "§c This chest is locked by {owner}",
-    msgstr: "§cこのチェストは{owner}によってロックされています"
+    msgid: "§c This chest is locked by §b{owner}",
+    msgstr: "§cこのチェストは§b{owner}§cによってロックされています"
   },
   "command.chest.isProChest": {
     msgid: "§c This chest is protected!",
@@ -780,24 +780,24 @@ export const translations = {
     msgstr: "§cこのチェストにアクセスする権限がありません。"
   },
   "command.chest.AddM": {
-    msgid: "§a {member} added as a member at location: {chestLocation}",
-    msgstr: "§a {member}をメンバーとして追加しました。場所: {chestLocation}"
+    msgid: "§b{member} §aadded as a member at location: §6{chestLocation}",
+    msgstr: "§b{member}§aをメンバーとして追加しました。場所: §6{chestLocation}"
   },
   "command.chest.addYouM": {
-    msgid: "§a {playerName} has added you to the following chests: {chestLocation}",
-    msgstr: "§a {playerName}があなたを次のチェストに追加しました: {chestLocation}"
+    msgid: "§b{playerName} §ahas added you to the following chests: §6{chestLocation}",
+    msgstr: "§b{playerName}§aがあなたを次のチェストに追加しました 場所: §6{chestLocation}"
   },
   "command.chest.RemoveYouM": {
-    msgid: "§a {playerName} has removed you from the following chests: {chestLocation}",
-    msgstr: "§a {playerName}があなたを次のチェストから削除しました: {chestLocation}"
+    msgid: "§b{playerName} §ahas removed you from the following chests: §6{chestLocation}",
+    msgstr: "§b{playerName}§aがあなたを次のチェストから削除しました 場所: §6{chestLocation}"
   },
   "command.chest.MAlreday": {
-    msgid: "§c {member} is already a member.",
-    msgstr: "§c {member}は既にメンバーです。"
+    msgid: "§b{member}§c is already a member.",
+    msgstr: "§b{member}§cは既にメンバーです。"
   },
   "command.chest.RemoveM": {
-    msgid: "§a {member} has been removed from members.",
-    msgstr: "§a {member}をメンバーから削除しました。"
+    msgid: "§b{member} §ahas been removed from members.",
+    msgstr: "§b{member}§aをメンバーから削除しました。"
   },
   "command.chest.NotM": {
     msgid: "§c Not a member.",

@@ -733,15 +733,15 @@
     "msgstr": ""
   },
   "command.chest.MaxChestLimitReached": {
-    "msgid": "§c The installation limit of {limit} has been reached.",
+    "msgid": "§c The installation limit of §d{limit}§c has been reached.",
     "msgstr": "§c{protectChest} asennusraja on jo saavutettu"
   },
   "command.chest.chestLocksCount": {
-    "msgid": "§a You are currently protecting {protectChest} chests.",
+    "msgid": "§a You are currently protecting §6{protectChest}§a chests.",
     "msgstr": "§aSuojaat tällä hetkellä {protectChest} arkkua"
   },
   "command.chest.ChestlistCom": {
-    "msgid": "§a You have protected {playerChests} chests:",
+    "msgid": "§a You have protected §6{playerChests}§a chests:",
     "msgstr": "§aOlet suojannut {playerChests} arkkua:"
   },
   "command.chest.chestlocation": {
@@ -809,7 +809,7 @@
     "msgstr": ""
   },
   "command.chest.isLookChest": {
-    "msgid": "§c This chest is locked by {owner}",
+    "msgid": "§c This chest is locked by §b{owner}",
     "msgstr": ""
   },
   "command.chest.isProChest": {
@@ -829,23 +829,23 @@
     "msgstr": "§cSinulla ei ole oikeuksia käyttää tätä arkkua."
   },
   "command.chest.AddM": {
-    "msgid": "§a {member} added as a member at location: {chestLocation}",
+    "msgid": "§b{member} §aadded as a member at location: §6{chestLocation}",
     "msgstr": ""
   },
   "command.chest.addYouM": {
-    "msgid": "§a {playerName} has added you to the following chests: {chestLocation}",
+    "msgid": "§b{playerName} §ahas added you to the following chests: §6{chestLocation}",
     "msgstr": ""
   },
   "command.chest.RemoveYouM": {
-    "msgid": "§a {playerName} has removed you from the following chests: {chestLocation}",
+    "msgid": "§b{playerName} §ahas removed you from the following chests: §6{chestLocation}",
     "msgstr": ""
   },
   "command.chest.MAlreday": {
-    "msgid": "§c {member} is already a member.",
+    "msgid": "§b{member}§c is already a member.",
     "msgstr": ""
   },
   "command.chest.RemoveM": {
-    "msgid": "§a {member} has been removed from members.",
+    "msgid": "§b{member} §ahas been removed from members.",
     "msgstr": ""
   },
   "command.chest.NotM": {

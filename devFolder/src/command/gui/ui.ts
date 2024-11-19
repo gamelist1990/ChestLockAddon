@@ -584,10 +584,10 @@ function showTpaRequestsMenu(player: Player, requests: string[]): Promise<void> 
   const form = new ActionFormData().title('TPA Requests');
 
   if (requests.length === 0) {
-    form.body(translate(player, 'NoTpaRequests'));
+    form.body(translate(player, 'ui.NoTpaRequests'));
   } else {
     // リクエストがある場合
-    form.body(translate(player, 'SelectTpaRequest')); // リクエストを選択するよう促すメッセージを表示
+    form.body(translate(player, 'ui.SelectTpaRequest')); // リクエストを選択するよう促すメッセージを表示
     requests.forEach((requester) => {
       form.button(requester); // 各リクエスト元プレイヤーの名前がボタンになる
     });
