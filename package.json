@@ -11,10 +11,12 @@
         "gettext-parser": "^8.0.0",
         "npm": "^10.8.3",
         "path": "^0.12.7",
+        "tiny-segmenter": "^0.2.0",
         "tsc": "^2.0.4",
         "typescript": "^5.3.3"
     },
     "devDependencies": {
+        "@types/tiny-segmenter": "^0.2.0",
         "prettier": "3.2.5"
     }
 }

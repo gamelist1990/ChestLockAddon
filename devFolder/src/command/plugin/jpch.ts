@@ -241,6 +241,8 @@ const dictionaryData: DictionaryEntry[] = [
   { kanji: '石炭', hiragana: 'せきたん' },
   { kanji: 'ネザゲ', hiragana: 'ねざげ' },
   { kanji: '方仮名', hiragana: 'かたがな' },
+  { kanji: 'コマンド', hiragana: 'こまんど' },
+  { kanji: 'チェスト', hiragana: 'ちぇすと' },
 
   //色々~
   { kanji: '大体', hiragana: 'だいたい' },
@@ -355,6 +357,16 @@ const dictionaryData: DictionaryEntry[] = [
   { kanji: '方が', hiragana: 'ほうが' },
   { kanji: '一応', hiragana: 'いちおう' },
   { kanji: '座標', hiragana: 'ざひょう' },
+  { kanji: 'スターダスト', hiragana: 'すたーだすと' },
+  { kanji: '意味が', hiragana: 'いみが' },
+  { kanji: '分からん', hiragana: 'わからん' },
+  { kanji: '知らん', hiragana: 'しらん' },
+  { kanji: '耐久値', hiragana: 'たいきゅうち' },
+  { kanji: '効率強化', hiragana: 'こうりつきょうか' },
+  { kanji: '司書', hiragana: 'ししょ' },
+  { kanji: '無料', hiragana: 'むりょう' },
+  { kanji: '安', hiragana: 'やす' },
+  
 ];
 
 const dictionary: { [key: string]: string[] } = {};
