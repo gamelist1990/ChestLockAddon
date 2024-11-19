@@ -1,12 +1,14 @@
 import { minecraftData } from "./minecraftData.js";
 
+interface MarkovChain {
+    [key: string]: string[];
+}
 
+// n-gramの次数 (2以上)
+const N_GRAM = 10;
 
 function preprocessKeyword(text: string): string {
-    // 正規表現で句読点、記号、空白などを除去
     const cleanedText = text.replace(/[\s,.!?;:()\[\]{}"'\-—\/\\|~`@#$%^&*+=_<>]/g, "");
-
-    // ひらがなをカタカナに変換 & 長音を除去
     return cleanedText.toLowerCase().replace(/[ぁ-ゔ]/g, (s) => String.fromCharCode(s.charCodeAt(0) + 0x60)).replace(/ー/g, "");
 }
 
@@ -14,8 +16,52 @@ function keywordMatching(prompt: string, keywords: string[]): boolean {
     const processedPrompt = preprocessKeyword(prompt);
     return keywords.some(keyword => {
         const processedKeyword = preprocessKeyword(keyword);
-        return processedKeyword.includes(processedPrompt) || processedPrompt.includes(processedKeyword); // 部分一致を両方向でチェック
+        return processedKeyword.includes(processedPrompt) || processedPrompt.includes(processedKeyword);
     });
+}
+
+function buildMarkovChain(data: { description: string }[], n: number): MarkovChain {
+    const chain: MarkovChain = {};
+    for (const entry of data) {
+        const words = entry.description.split(/\s+/);
+        for (let i = 0; i < words.length - n + 1; i++) {
+            const currentNGram = words.slice(i, i + n).join(" ");
+            const nextWord = words[i + n];
+
+            if (!chain[currentNGram]) {
+                chain[currentNGram] = [];
+            }
+            if (nextWord) {
+                chain[currentNGram].push(nextWord);
+            }
+        }
+    }
+    return chain;
+}
+
+const markovChain = buildMarkovChain(minecraftData, N_GRAM);
+
+function generateTextFromMarkov(startWords: string, chain: MarkovChain, maxLength: number = 50): string {
+    let text = startWords;
+    let currentNGram = startWords;
+
+    for (let i = 0; i < maxLength; i++) {
+        const possibleNextWords = chain[currentNGram];
+        if (!possibleNextWords || possibleNextWords.length === 0) {
+            break;
+        }
+        const nextWord = possibleNextWords[Math.floor(Math.random() * possibleNextWords.length)];
+        text += " " + nextWord;
+        const textWords = text.split(/\s+/);
+        currentNGram = textWords.slice(-N_GRAM).join(" ");
+
+        if (textWords.length > maxLength) {
+            text = textWords.slice(0, maxLength).join(" ");
+            break;
+        }
+    }
+
+    return text;
 }
 
 function minecraftChatbot(prompt: string): string {
@@ -24,25 +70,29 @@ function minecraftChatbot(prompt: string): string {
 
     for (const entry of minecraftData) {
         if (keywordMatching(prompt, entry.keywords)) {
-            response += entry.description + "\n";
+            const words = entry.description.split(/\s+/);
+            const startWords = words.slice(0, N_GRAM).join(" ");
+            response = generateTextFromMarkov(startWords, markovChain);
 
             if (entry.related.length > 0) {
                 const randomRelated = entry.related[Math.floor(Math.random() * entry.related.length)];
                 const relatedEntry = minecraftData.find(e => e.keywords.includes(randomRelated));
                 if (relatedEntry) {
-                    response += `関連情報: ${relatedEntry.description}\n`;
+                    const relatedWords = relatedEntry.description.split(/\s+/);
+                    const relatedStartWords = relatedWords.slice(0, N_GRAM).join(" ");
+                    response += "\n関連情報: " + generateTextFromMarkov(relatedStartWords, markovChain);
                 }
             }
             foundMatch = true;
-            break; // マッチしたらループを抜ける
+            break;
         }
     }
 
     if (!foundMatch) {
         const greetings = [
-            "こんにちは！Minecraftについて質問してください。",
-            "やあ！Minecraftの世界へようこそ！",
-            "はじめまして！Minecraftについて何か知りたいことはありますか？"
+            "学習データが少ない為 (理解できませんでした)",
+            "すみません理解できません",
+            "他の質問をお願いできますか？"
         ];
         response = greetings[Math.floor(Math.random() * greetings.length)];
     }
@@ -51,9 +101,8 @@ function minecraftChatbot(prompt: string): string {
 }
 
 
-console.log(minecraftChatbot("ゾンビって？"));
-console.log(minecraftChatbot("サバイバルで重要なこと"));
-
-
-
 export { minecraftChatbot };
+
+//const prompt = "何のゲームが好き？";
+//const response = minecraftChatbot(prompt);
+//console.log(response);

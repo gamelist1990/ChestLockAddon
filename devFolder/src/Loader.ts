@@ -10,7 +10,7 @@ import { loadData } from './Modules/DataBase';
 import { banPlayers } from './Modules/globalBan';
 import { loadReport } from './command/utility/report';
 import { ver } from './Modules/version';
-import { AddNewPlayers, initializeAntiCheat } from './command/plugin/AntiCheat';
+import { AddNewPlayers, initializeAntiCheat } from './command/plugin/AntiCheat/index';
 
 const startTime = Date.now();
 
