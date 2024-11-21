@@ -24,7 +24,7 @@ export function detectSpam(event: ChatSendBeforeEvent, playerDataManager: Player
     const recentMessages = data.lastMessages.filter((_, index) => now - data.lastMessageTimes[index] <= 5000);
     const recentMessageTimes = data.lastMessageTimes.filter(time => now - time <= 5000);
 
-    if (recentMessages.length >= 3) {
+    if (recentMessages.length >= 4) {
         for (let i = 0; i < recentMessages.length - 2; i++) {
             if (recentMessages[i] === recentMessages[i + 1] && recentMessages[i] === recentMessages[i + 2]) {
                 data.mutedUntil = Date.now() + 5000;

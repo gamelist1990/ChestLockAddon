@@ -6,4 +6,6 @@ import './join';
 import './report';
 import './staff';
 import './server';
+import './ping';
+
 
