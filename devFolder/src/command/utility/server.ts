@@ -1,5 +1,5 @@
 import { config } from '../../Modules/Util';
-import { isPlayer, registerCommand, verifier } from '../../Modules/Handler';
+import { isPlayer, registerCommand, runCommand, verifier } from '../../Modules/Handler';
 import { EntityInventoryComponent, Player, system, Vector3, world } from '@minecraft/server';
 import { renameItem } from '../plugin/lore';
 import { banPlayers } from '../../Modules/globalBan';
@@ -90,10 +90,13 @@ system.runInterval(() => {
 
 
 
-export function getPing(player: Player): Promise<{ ping: number; level: string }> {
+export function getPing(player?:Player): Promise<{ ping: number; level: string }> {
     const startTime = Date.now();
     return new Promise<{ ping: number; level: string }>(resolve => {
-        player.runCommandAsync('testfor @s').then(() => {
+        if (player) {
+            runCommand(player.name,'ping');
+        }
+        system.run(() => {
             const endTime = Date.now();
             const ping = Math.abs(endTime - startTime - 50);
             const level = getPingLevel(ping);
