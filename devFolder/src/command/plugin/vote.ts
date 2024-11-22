@@ -17,6 +17,7 @@ interface VoteData {
     announceInterval: number;
     showLiveResults: boolean;
     maxResultsToShow: number;
+    handleTies: boolean; // 同率順位を処理するかどうか
 }
 
 const VOTE_DATA_KEY = 'vote_data';
@@ -30,6 +31,7 @@ const defaultVoteData: VoteData = {
     announceInterval: 15,
     showLiveResults: false,
     maxResultsToShow: 10,
+    handleTies: false, // デフォルトでは同率順位を処理しない
 };
 
 let voteData: VoteData = defaultVoteData;
@@ -126,18 +128,40 @@ function announceResults(voteItems: VoteItem[], customResultText: string): void 
         return;
     }
 
+
+    let currentRank = 1;
+    let skipRank = false;
     const itemsToShow = voteItems.slice(0, voteData.maxResultsToShow);
+    let previousScore = -1;
+
 
     for (let i = 0; i < itemsToShow.length; i++) {
         const item = voteItems[i];
-        const rankText = voteData.rankText || "位";
-        const voteText = voteData.voteText || "票";
-        results += `${i + 1}${rankText}: ${item.name} - ${item.score}${voteText}\n`;
-        scoreboard.setScore(item.name, i + 1);
+
+
+        if (voteData.handleTies) {
+            if (item.score !== previousScore) {
+                skipRank = false;
+            }
+
+            if (i + 1 < itemsToShow.length && voteItems[i + 1].score === item.score) {
+                skipRank = true;
+            }
+        }
+
+        if (!skipRank) {
+            const rankText = voteData.rankText || "位";
+            const voteText = voteData.voteText || "票";
+            results += `${currentRank}${rankText}: ${item.name} - ${item.score}${voteText}\n`;
+            scoreboard.setScore(item.name, currentRank);
+            currentRank++;
+        }
+        previousScore = item.score;
     }
 
     sendMessageToTarget(results);
 }
+
 
 function startVote(duration: number): void {
     voteResults = {};
@@ -289,7 +313,8 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             .textField("順位表示テキスト (例: 位、着)", "例: 位", voteData.rankText ?? "位")
             .textField("票数表示テキスト (例: 票、pt)", "例: 票", voteData.voteText ?? "票")
             .textField("表示する最大順位", "", voteData.maxResultsToShow.toString())
-            .textField("対象プレイヤーのタグ (空欄は全員)", "例: voter", targetTag ?? "");
+            .textField("対象プレイヤーのタグ (空欄は全員)", "例: voter", targetTag ?? "")
+            .toggle("同率順位を処理", voteData.handleTies);
         //@ts-ignore
         form.show(player).then((response: ModalFormResponse) => {
             if (response.canceled || !response.formValues) return;
@@ -305,6 +330,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             voteData.voteText = String(response.formValues[8] ?? "票");
             const maxResultsToShowString = response.formValues[9] as string;
             targetTag = response.formValues[10] as string;
+            voteData.handleTies = response.formValues[11] as boolean;
 
 
 
@@ -337,6 +363,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             } else {
                 player.sendMessage("無効な最大順位です。");
             }
+            
 
             voteData.duration = newDuration;
             voteData.resultText = resultText;
@@ -347,6 +374,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             player.sendMessage(`順位表示テキストを "${voteData.rankText}" に設定しました。`);
             player.sendMessage(`票数表示テキストを "${voteData.voteText}" に設定しました。`);
             player.sendMessage(`対象プレイヤーのタグを "${targetTag ?? "全員"}" に設定しました。`);
+            player.sendMessage(`同率順位処理を${voteData.handleTies ? '有効' : '無効'}にしました。`);
 
             saveVoteData();
 
@@ -421,6 +449,12 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
                 targetTag = messageData.targetTag.trim() === "" ? null : messageData.targetTag;
                 saveVoteData();
                 player.sendMessage(`対象プレイヤータグを "${targetTag || "全員"}" に設定しました。`);
+            }
+
+            if (typeof messageData.handleTies === 'boolean') {
+                voteData.handleTies = messageData.handleTies;
+                saveVoteData();
+                player.sendMessage(`同率順位処理を ${voteData.handleTies ? '有効' : '無効'} に設定しました。`);
             }
 
 
