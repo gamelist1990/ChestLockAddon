@@ -18,7 +18,7 @@
 
 ## Update
 
-**Version 1.3**  新機能を追加しました
+**Version 1.4**  新機能を追加しました
 [ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.3...1.4)
 
 **更新点**
@@ -30,9 +30,10 @@
 - その他バグ修正
 - ファイル整理及び翻訳キーの変更
 - またPEX鯖作成時に使用したモジュールを追加
+- 追記:もう少しで1.5-Betaを配布します**あくまでもBETA版です**
 
 
-![alt text](image/image.png)
+![alt text](image/image.png)*
 
 ## 概要
 
@@ -59,6 +60,7 @@
 * **`!about`**:このアドオンの概要を表示してくれます
 * **`!staff`**:こスタッフ専用のコマンドです(タグ:staff必要)
 * **`!report`**:悪い事をしているプレイヤーを報告できます
+**1.1の際から更新されていません(1.5時点で更新します)**
 
 
 
