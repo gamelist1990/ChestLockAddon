@@ -162,7 +162,7 @@ system.runInterval(() => {
         announceResults(voteItems, voteData.resultText);
         voteEndTime = null;
         playerVotes = {};
-        sendMessageToTarget("投票が終了しました。");        
+        sendMessageToTarget("投票が終了しました。");
         resetVoteScoreboard();
         world.getPlayers().forEach(player => {
             if (targetTag === null || player.hasTag(targetTag)) {
@@ -331,7 +331,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
                 voteData.announceInterval = newAnnounceInterval;
                 player.sendMessage(`アナウンス間隔を ${newAnnounceInterval} 秒に設定しました。`);
             }
-            if(!isNaN(newMaxResults) && newMaxResults > 0) {
+            if (!isNaN(newMaxResults) && newMaxResults > 0) {
                 voteData.maxResultsToShow = newMaxResults;
                 player.sendMessage(`表示する最大順位を ${newMaxResults} 位に設定しました。`);
             } else {
@@ -354,6 +354,80 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
                 openScoreboardEditModal(player);
             }
         });
+    } else if (id === "ch:Vsetting" && player.hasTag("op")) {
+        try {
+            const messageData = JSON.parse(event.message);
+            if (typeof messageData.duration === 'number' && messageData.duration > 0) {
+                voteData.duration = messageData.duration;
+                saveVoteData();
+                player.sendMessage(`投票時間を ${voteData.duration} 秒に設定しました。`);
+            } else if (messageData.duration) {
+                player.sendMessage('無効な投票時間です。正の数字を指定してください。');
+            }
+
+            if (typeof messageData.maxResultsToShow === 'number' && messageData.maxResultsToShow > 0) {
+                voteData.maxResultsToShow = messageData.maxResultsToShow;
+                saveVoteData();
+                player.sendMessage(`最大表示順位を ${voteData.maxResultsToShow} 位に設定しました。`);
+            } else if (messageData.maxResultsToShow) {
+                player.sendMessage('無効な最大表示順位です。正の数字を指定してください。');
+            }
+
+            if (typeof messageData.resultText === 'string') {
+                voteData.resultText = messageData.resultText;
+                saveVoteData();
+                player.sendMessage(`結果テキストを "${voteData.resultText}" に設定しました。`);
+            }
+
+
+            if (typeof messageData.allowMultipleVotes === 'boolean') {
+                voteData.allowMultipleVotes = messageData.allowMultipleVotes;
+                saveVoteData();
+                player.sendMessage(`複数投票を ${voteData.allowMultipleVotes ? '許可' : '禁止'} しました。`);
+            }
+
+            if (typeof messageData.maxVotesPerPlayer === 'number' && messageData.maxVotesPerPlayer > 0) {
+                voteData.maxVotesPerPlayer = messageData.maxVotesPerPlayer;
+                saveVoteData();
+                player.sendMessage(`最大投票数を ${voteData.maxVotesPerPlayer} に設定しました。`);
+            } else if (messageData.maxVotesPerPlayer) {
+                player.sendMessage('無効な最大投票数です。正の数字を指定してください。');
+            }
+            if (typeof messageData.announceInterval === 'number' && messageData.announceInterval > 0) {
+                voteData.announceInterval = messageData.announceInterval;
+                saveVoteData();
+                player.sendMessage(`アナウンス間隔を ${voteData.announceInterval} 秒に設定しました。`);
+            } else if (messageData.announceInterval) {
+                player.sendMessage('無効なアナウンス間隔です。正の数字を指定してください。');
+            }
+            if (typeof messageData.showLiveResults === 'boolean') {
+                voteData.showLiveResults = messageData.showLiveResults;
+                saveVoteData();
+                player.sendMessage(`ライブ結果表示を ${voteData.showLiveResults ? '有効' : '無効'} に設定しました。`);
+            }
+            if (typeof messageData.rankText === 'string') {
+                voteData.rankText = messageData.rankText;
+                saveVoteData();
+                player.sendMessage(`順位表示テキストを "${voteData.rankText}" に設定しました。`);
+            }
+
+            if (typeof messageData.voteText === 'string') {
+                voteData.voteText = messageData.voteText;
+                saveVoteData();
+                player.sendMessage(`票数表示テキストを "${voteData.voteText}" に設定しました。`);
+            }
+
+            if (typeof messageData.targetTag === 'string') {
+                targetTag = messageData.targetTag.trim() === "" ? null : messageData.targetTag;
+                saveVoteData();
+                player.sendMessage(`対象プレイヤータグを "${targetTag || "全員"}" に設定しました。`);
+            }
+
+
+        } catch (error) {
+            player.sendMessage('無効なJSONデータです。');
+            console.error(error);
+        }
     } else if (id === "ch:Vstart" && player.hasTag("op")) {
         startVote(voteData.duration);
     } else if (id === "ch:Vhelp") {
@@ -426,7 +500,7 @@ function openScoreboardEditModal(player: Player): void {
                     .title("新しい項目名を入力")
                     .textField("新しい項目名", "", selectedItem.name);
 
-                    //@ts-ignore
+                //@ts-ignore
                 newNameForm.show(player).then((newNameResponse) => {
                     if (newNameResponse.canceled || !newNameResponse.formValues) return;
 
