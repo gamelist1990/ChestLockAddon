@@ -161,9 +161,9 @@ system.runInterval(() => {
         const voteItems = getVoteItems();
         announceResults(voteItems, voteData.resultText);
         voteEndTime = null;
-        playerVotes = {};
-        sendMessageToTarget("投票が終了しました。");
+        playerVotes = {}; 
         resetVoteScoreboard();
+        sendMessageToTarget("投票が終了しました。");
         world.getPlayers().forEach(player => {
             if (targetTag === null || player.hasTag(targetTag)) {
                 uiManager.closeAllForms(player as any);
@@ -234,20 +234,12 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
 
     } else if (id === "ch:Vcheck" && player.hasTag("op")) {
         if (checkVoteStatus()) {
+            let results = voteData.resultText + '\n';
+            const sortedVotes = Object.entries(voteResults).sort(([, a], [, b]) => b - a);
             player.sendMessage("投票はまだ終了していません。");
             const timeLeft = Math.floor((voteEndTime! - system.currentTick) / 20);
             player.sendMessage(`残り時間: ${timeLeft}秒`);
-
-        } else if (voteEndTime !== null || Object.keys(playerVotes).length > 0) {
-            let results = voteData.resultText + '\n';
-            const sortedVotes = Object.entries(voteResults).sort(([, a], [, b]) => b - a);
-
-            if (sortedVotes.length === 0) {
-                player.sendMessage("投票はありませんでした。");
-                return;
-            }
-
-
+            player.sendMessage(`________________________`);
             for (const [itemName, votes] of sortedVotes) {
                 results += `${itemName}: ${votes}票\n`;
 
@@ -265,6 +257,14 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             }
 
             player.sendMessage(results);
+
+        } else if (voteEndTime !== null || Object.keys(playerVotes).length > 0) {
+            const sortedVotes = Object.entries(voteResults).sort(([, a], [, b]) => b - a);
+            
+            if (sortedVotes.length === 0) {
+                player.sendMessage("投票はありませんでした。");
+                return;
+            }
             voteEndTime = null;
 
 
