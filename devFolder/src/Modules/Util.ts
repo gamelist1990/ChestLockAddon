@@ -1,4 +1,5 @@
 import { Player, GameMode, world, system, PlatformType, MemoryTier,  } from '@minecraft/server';
+import { uiManager } from '@minecraft/server-ui';
 
 interface CommandConfig {
   enabled: boolean;
@@ -11,7 +12,7 @@ interface moduleConfig   {
   
 }
 
-//コマンド登録 関数C
+//コマンド登録(ここから機能有効/無効切り替えてね)
 export const config = (): { commands: { [key: string]: CommandConfig }; admin: string, module: {[key: string]: moduleConfig}; } => ({
   commands: {
     chest: {
@@ -255,4 +256,8 @@ export function tempkick(player: Player) {
   },1)
 }
 
+
+export function closeForm(player: Player) {
+  uiManager.closeAllForms(player as any);
+}
 

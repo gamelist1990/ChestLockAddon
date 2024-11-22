@@ -1,4 +1,4 @@
-// Modules/AntiCheat/detections/Speed.ts
+//AntiCheat/detections/Speed.ts
 import { Player } from '@minecraft/server';
 import { PlayerDataManager } from '../PlayerData';
 import { calculateHorizontalSpeed, hasEffect } from '../utils';

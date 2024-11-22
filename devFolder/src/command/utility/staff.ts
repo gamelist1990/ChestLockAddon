@@ -1,4 +1,4 @@
-import { config, kick, tempkick } from '../../Modules/Util';
+import { closeForm, config, kick, tempkick } from '../../Modules/Util';
 import { isPlayer, registerCommand, verifier } from '../../Modules/Handler';
 import { GameMode, Player, system, world, Vector3, Dimension, TeleportOptions, Vector2 } from '@minecraft/server';
 import { checkReports, notifyStaff, resetReports } from './report';
@@ -168,8 +168,9 @@ registerCommand({
             if (option === '-check') {
                 player.sendMessage(translate(player, "server.closeChat"));
                 system.runTimeout(() => {
+                    closeForm(player);
                     checkReports(player);
-                }, 60);
+                }, 0);
             } else if (option === '-reset') {
                 resetReports();
             }

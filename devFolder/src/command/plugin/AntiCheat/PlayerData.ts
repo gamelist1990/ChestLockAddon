@@ -1,4 +1,4 @@
-// Modules/AntiCheat/PlayerData.ts
+//AntiCheat/PlayerData.ts
 import { Player, Vector3, GameMode } from '@minecraft/server';
 
 interface XrayData {

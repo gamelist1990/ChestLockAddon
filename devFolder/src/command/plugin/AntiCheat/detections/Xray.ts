@@ -1,4 +1,4 @@
-// Modules/AntiCheat/detections/Xray.ts
+///AntiCheat/detections/Xray.ts
 import { Player, Block } from '@minecraft/server';
 import { PlayerDataManager } from '../PlayerData';
 import { calculateDistance } from '../utils';

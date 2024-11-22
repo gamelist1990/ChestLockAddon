@@ -1,5 +1,5 @@
 import { world, system, Entity, Player } from '@minecraft/server';
-import { ActionFormData, ModalFormData, ModalFormResponse } from '@minecraft/server-ui';
+import { ActionFormData, ModalFormData, ModalFormResponse, uiManager } from '@minecraft/server-ui';
 
 interface VoteItem {
     name: string;
@@ -37,6 +37,7 @@ let voteResults: { [name: string]: number } = {};
 let playerVotes: { [name: string]: number } = {};
 let voteEndTime: number | null = null;
 let lastAnnounceTime: number = 0;
+let targetTag: string | null = null;
 
 
 function saveVoteData(): void {
@@ -121,7 +122,7 @@ function announceResults(voteItems: VoteItem[], customResultText: string): void 
     voteItems.sort((a, b) => b.score - a.score);
 
     if (voteItems.length === 0) {
-        world.sendMessage(results);
+        sendMessageToTarget(results);
         return;
     }
 
@@ -135,13 +136,14 @@ function announceResults(voteItems: VoteItem[], customResultText: string): void 
         scoreboard.setScore(item.name, i + 1);
     }
 
-    world.sendMessage(results);
+    sendMessageToTarget(results);
 }
 
 function startVote(duration: number): void {
     voteResults = {};
+    playerVotes = {};
     voteEndTime = system.currentTick + duration * 20;
-    world.sendMessage(`投票開始！${duration}秒後に終了します。`);
+    sendMessageToTarget(`投票開始！${duration}秒後に終了します。`);
 }
 
 function checkVoteStatus(): boolean {
@@ -160,8 +162,13 @@ system.runInterval(() => {
         announceResults(voteItems, voteData.resultText);
         voteEndTime = null;
         playerVotes = {};
-        world.sendMessage("投票が終了しました。");
+        sendMessageToTarget("投票が終了しました。");        
         resetVoteScoreboard();
+        world.getPlayers().forEach(player => {
+            if (targetTag === null || player.hasTag(targetTag)) {
+                uiManager.closeAllForms(player as any);
+            }
+        });
     }
 });
 
@@ -172,7 +179,7 @@ function resetAllVoteData() {
     playerVotes = {};
     voteEndTime = null;
     lastAnnounceTime = 0;
-    world.sendMessage("すべての投票データと設定がリセットされました。");
+    sendMessageToTarget("すべての投票データと設定がリセットされました。");
 }
 
 system.afterEvents.scriptEventReceive.subscribe(async (event) => {
@@ -231,15 +238,38 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             const timeLeft = Math.floor((voteEndTime! - system.currentTick) / 20);
             player.sendMessage(`残り時間: ${timeLeft}秒`);
 
-        } else if (voteEndTime !== null) {
-            const voteItems = getVoteItems();
-            announceResults(voteItems, voteData.resultText);
+        } else if (voteEndTime !== null || Object.keys(playerVotes).length > 0) {
+            let results = voteData.resultText + '\n';
+            const sortedVotes = Object.entries(voteResults).sort(([, a], [, b]) => b - a);
+
+            if (sortedVotes.length === 0) {
+                player.sendMessage("投票はありませんでした。");
+                return;
+            }
+
+
+            for (const [itemName, votes] of sortedVotes) {
+                results += `${itemName}: ${votes}票\n`;
+
+                const voters = [];
+                for (const playerName in playerVotes) {
+                    // playerVotes[playerName] は、各プレイヤーがitemNameに投票した回数
+                    if (playerVotes[playerName] > 0) {
+                        voters.push(playerName);
+                    }
+                }
+
+                if (voters.length > 0) {
+                    results += `  投票者: ${voters.join(', ')}\n`;
+                }
+            }
+
+            player.sendMessage(results);
             voteEndTime = null;
-            player.sendMessage("投票結果を確認するには、`/scoreboard の vote_channel` を実行してください。");
+
 
         } else {
             player.sendMessage("投票が開始されていません。");
-
         }
     } else if (id === "ch:Vallreset" && player.hasTag("op")) {
         resetAllVoteData();
@@ -258,7 +288,8 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             .toggle("スコアボード編集", voteData.editingScoreboard)
             .textField("順位表示テキスト (例: 位、着)", "例: 位", voteData.rankText ?? "位")
             .textField("票数表示テキスト (例: 票、pt)", "例: 票", voteData.voteText ?? "票")
-            .textField("表示する最大順位", "", voteData.maxResultsToShow.toString()); 
+            .textField("表示する最大順位", "", voteData.maxResultsToShow.toString())
+            .textField("対象プレイヤーのタグ (空欄は全員)", "例: voter", targetTag ?? "");
         //@ts-ignore
         form.show(player).then((response: ModalFormResponse) => {
             if (response.canceled || !response.formValues) return;
@@ -273,6 +304,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             voteData.rankText = String(response.formValues[7] ?? "位");
             voteData.voteText = String(response.formValues[8] ?? "票");
             const maxResultsToShowString = response.formValues[9] as string;
+            targetTag = response.formValues[10] as string;
 
 
 
@@ -283,6 +315,9 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
 
 
 
+            if (targetTag.trim() === "") {
+                targetTag = null;
+            }
             if (isNaN(newDuration) || newDuration <= 0) {
                 player.sendMessage("無効な投票時間です。");
                 return;
@@ -311,6 +346,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             player.sendMessage(`複数投票を${allowMultipleVotes ? '許可' : '禁止'}しました。`);
             player.sendMessage(`順位表示テキストを "${voteData.rankText}" に設定しました。`);
             player.sendMessage(`票数表示テキストを "${voteData.voteText}" に設定しました。`);
+            player.sendMessage(`対象プレイヤーのタグを "${targetTag ?? "全員"}" に設定しました。`);
 
             saveVoteData();
 
@@ -321,60 +357,91 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
     } else if (id === "ch:Vstart" && player.hasTag("op")) {
         startVote(voteData.duration);
     } else if (id === "ch:Vhelp") {
-        player.sendMessage("投票コマンド一覧:\nvote:start で投票開始\nvote:check で投票結果確認\nvote:reset で投票リセット\n vote:settings で投票時間設定");
+        player.sendMessage("投票コマンド一覧:\nch:Vstart で投票開始\nch:Vcheck で投票結果確認\nch:Vallreset で投票設定のデータをリセット\n ch:Vreset でスコアボードをリセット \nch:Vsettings で設定\nch:vote で　投票する");
     }
 });
 
-function openScoreboardEditModal(player: Player): void {
-    const voteItems = getVoteItemsFromScoreboard();
 
+function sendMessageToTarget(message: string): void {
+    if (targetTag) {
+        const targetPlayers = world.getPlayers().filter(player => player.hasTag(targetTag as string));
+        targetPlayers.forEach(player => player.sendMessage(message));
+    } else {
+        world.sendMessage(message);
+    }
+}
+
+
+function openScoreboardEditModal(player: Player): void {
     const form = new ActionFormData()
         .title("スコアボード編集")
-        .button("追加")
-        .button("削除");
+        .button("項目を追加")
+        .button("項目を削除")
+        .button("項目名を変更");
     //@ts-ignore
     form.show(player).then(async (response) => {
         if (response.canceled) return;
 
+        const voteItems = getVoteItemsFromScoreboard();
         const scoreboard = world.scoreboard.getObjective('vote_scoreboard');
         if (!scoreboard) return;
 
-        if (response.selection === 0) {
+        if (response.selection === 0) { // 追加
             const addForm = new ModalFormData()
-                .title("追加する項目")
-                .textField("項目名", "", "");
+                .title("追加する項目名")
+                .textField("項目名", "");
             //@ts-ignore
-            addForm.show(player).then((addResponse: ModalFormResponse) => {
+            addForm.show(player).then((addResponse) => {
                 if (addResponse.canceled || !addResponse.formValues) return;
-                const newItem = addResponse.formValues[0] as string;
-                if (newItem.trim() !== "" && !voteItems.some(item => item.name === newItem)) {
-                    scoreboard.setScore(newItem, 0);
-                    player.sendMessage(`投票項目に "${newItem}" を追加しました。`);
-                } else {
-                    player.sendMessage(`投票項目 "${newItem}" は既に存在するか、無効です。`);
+                const newItemName = addResponse.formValues[0] as string;
+                if (newItemName.trim() !== "") {
+                    scoreboard.setScore(newItemName, 0);
+                    player.sendMessage(`項目 "${newItemName}" を追加しました。`);
                 }
                 voteData.editingScoreboard = false;
-            });
 
-        } else if (response.selection === 1) {
+            });
+        } else if (response.selection === 1) { // 削除
             const deleteForm = new ActionFormData().title("削除する項目を選択");
             voteItems.forEach(item => deleteForm.button(item.name));
             //@ts-ignore
             deleteForm.show(player).then((deleteResponse) => {
                 if (deleteResponse.canceled || deleteResponse.selection === undefined) return;
                 const selectedItem = voteItems[deleteResponse.selection];
-                if (scoreboard.removeParticipant(selectedItem.name)) {
-                    player.sendMessage(`投票項目 "${selectedItem.name}" を削除しました。`);
-                } else {
-                    player.sendMessage(`投票項目 "${selectedItem.name}" の削除に失敗しました。`);
-                }
+                scoreboard.removeParticipant(selectedItem.name);
+                player.sendMessage(`項目 "${selectedItem.name}" を削除しました。`);
                 voteData.editingScoreboard = false;
 
+            });
+        } else if (response.selection === 2) { // 名前変更
+            const changeNameForm = new ActionFormData().title("変更する項目を選択");
+            voteItems.forEach(item => changeNameForm.button(item.name));
+            //@ts-ignore
+            changeNameForm.show(player).then(async (changeNameResponse) => {
+                if (changeNameResponse.canceled || changeNameResponse.selection === undefined) return;
+
+                const selectedItem = voteItems[changeNameResponse.selection];
+
+                const newNameForm = new ModalFormData()
+                    .title("新しい項目名を入力")
+                    .textField("新しい項目名", "", selectedItem.name);
+
+                    //@ts-ignore
+                newNameForm.show(player).then((newNameResponse) => {
+                    if (newNameResponse.canceled || !newNameResponse.formValues) return;
+
+                    const newName = newNameResponse.formValues[0] as string;
+                    if (newName.trim() !== "") {
+                        scoreboard.removeParticipant(selectedItem.name);
+                        scoreboard.setScore(newName, 0);
+                        player.sendMessage(`項目名を "${selectedItem.name}" から "${newName}" に変更しました。`);
+                    }
+                    voteData.editingScoreboard = false;
+                });
             });
         }
     });
 }
-
 
 system.run(() => {
     loadVoteData();

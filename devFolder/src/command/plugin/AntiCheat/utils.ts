@@ -1,4 +1,4 @@
-// Modules/AntiCheat/utils.ts
+//AntiCheat/utils.ts
 import { Player, system } from "@minecraft/server";
 import { PlayerDataManager } from "./PlayerData";
 

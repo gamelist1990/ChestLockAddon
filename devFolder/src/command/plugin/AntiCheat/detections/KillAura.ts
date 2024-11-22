@@ -1,4 +1,4 @@
-// Modules/AntiCheat/detections/KillAura.ts
+//AntiCheat/detections/KillAura.ts
 import { EntityHurtAfterEvent, Player } from '@minecraft/server';
 import { PlayerDataManager } from '../PlayerData';
 import { calculateDistance } from '../utils';
@@ -14,14 +14,14 @@ export function detectKillAura(attackingPlayer: Player, event: EntityHurtAfterEv
     // CPS チェック
     const cps = getPlayerCPS(attackingPlayer);
     if (cps >= 20) {
-        return { cheatType: 'Kill Aura (Attack Speed)' };
+        return { cheatType: 'Kill Aura (CPS20+)' };
     }
 
     // Reach チェック
     const maxReach = 6.7; // 通常のリーチ + 1 として設定 (調整可能)
     const distanceToEntity = calculateDistance(attackingPlayer.location, attackedEntity.location);
     if (distanceToEntity > maxReach) {
-        return { cheatType: 'Kill Aura (Reach)' };
+        return { cheatType: 'Kill Aura (Reach|6.7)' };
     }
 
 

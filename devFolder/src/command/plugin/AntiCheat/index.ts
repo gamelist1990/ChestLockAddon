@@ -1,4 +1,4 @@
-// Modules/AntiCheat/index.ts
+//AntiCheat/index.ts
 import { world, system, Player, EntityHurtAfterEvent, GameMode, ChatSendBeforeEvent } from '@minecraft/server';
 import { config } from '../../../Modules/Util';
 import { verifier } from '../../../Modules/Handler';
@@ -19,12 +19,12 @@ import { getPlayerCPS } from '../tag';
 const configs = {
     debugMode: false,
     antiCheat: {
-        enabled: true, // AntiCheat 全体の有効/無効
+        enabled: true, 
         detectionThreshold: 2,
         rollbackTicks: 20 * 3,
         freezeDuration: 20 * 10,
         xrayDetectionDistance: 10,
-        modules: { // 各モジュールの有効/無効
+        modules: { 
             airJump: false,
             speed: false,
             killAura: false,

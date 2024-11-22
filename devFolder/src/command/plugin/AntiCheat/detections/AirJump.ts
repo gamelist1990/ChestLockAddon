@@ -1,4 +1,4 @@
-// Modules/AntiCheat/detections/AirJump.ts
+//AntiCheat/detections/AirJump.ts
 import { Player } from '@minecraft/server';
 import { PlayerDataManager } from '../PlayerData';
 import { calculateVerticalVelocity } from '../utils';

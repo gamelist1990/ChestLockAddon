@@ -1,4 +1,4 @@
-// Modules/AntiCheat/actions.ts
+//AntiCheat/actions.ts
 import { Player, GameMode, world, system } from "@minecraft/server";
 import { ServerReport } from "../../utility/report";
 import { PlayerDataManager } from "./PlayerData";

@@ -7,12 +7,12 @@ registerCommand({
     name: 'ping',
     description: 'Pingdocs',
     parent: false,
-    maxArgs: 1, // Allow for one argument (-my)
+    maxArgs: 1,
     minArgs: 0,
     require: (player: Player) => verifier(player, config().commands['ping']),
     executor: async (player, args) => {
         const { ping } = await getPing();
-        if (args[0] === '-my' || args[0] === '-m') { // Check for -my or -m flag
+        if (args[0] === '-my' || args[0] === '-m') {
             player.sendMessage(`Your Ping: ${ping}`);
         } else {
         }
