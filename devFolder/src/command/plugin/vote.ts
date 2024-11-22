@@ -245,7 +245,6 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
 
                 const voters = [];
                 for (const playerName in playerVotes) {
-                    // playerVotes[playerName] は、各プレイヤーがitemNameに投票した回数
                     if (playerVotes[playerName] > 0) {
                         voters.push(playerName);
                     }
@@ -257,6 +256,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             }
 
             player.sendMessage(results);
+            player.sendMessage(`________________________`);
 
         } else if (voteEndTime !== null || Object.keys(playerVotes).length > 0) {
             const sortedVotes = Object.entries(voteResults).sort(([, a], [, b]) => b - a);

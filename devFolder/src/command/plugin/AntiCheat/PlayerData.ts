@@ -47,6 +47,7 @@ interface PlayerData {
     lastMessageTimes: number[];
     mutedUntil?: number;
     lastOnGroundTime: number;
+    badWordCount: Number;
 }
 
 export class PlayerDataManager {
@@ -100,6 +101,7 @@ export class PlayerDataManager {
             mutedUntil: 0,
             lastOnGroundTime: 0,
             lastPosition: player.location,
+            badWordCount: 0,
         };
     }
 

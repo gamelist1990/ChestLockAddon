@@ -107,7 +107,7 @@ export function detectSpam(event: ChatSendBeforeEvent, playerDataManager: Player
     if (message.startsWith("!")) return;
 
 
-    if (message.length > 20) {
+    if (message.length > 40) {
         event.cancel = true;
         handleLongMessage(player, data, playerDataManager, message, configs);
         return;
