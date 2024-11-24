@@ -17,7 +17,7 @@ interface VoteData {
     announceInterval: number;
     showLiveResults: boolean;
     maxResultsToShow: number;
-    handleTies: boolean; // 同率順位を処理するかどうか
+    handleTies: boolean; 
 }
 
 const VOTE_DATA_KEY = 'vote_data';

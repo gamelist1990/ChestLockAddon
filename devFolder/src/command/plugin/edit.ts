@@ -20,7 +20,7 @@ world.beforeEvents.playerBreakBlock.subscribe(event => {
 
     if (playerDataTool[player.name]) {
       if (heldItem && heldItem.typeId === 'minecraft:wooden_hoe') {
-        if (playerDataTool[player.name].tool === 'outline' || playerDataTool[player.name].tool === 'filledCircle' || playerDataTool[player.name].tool === 'smooth') {
+        if (playerDataTool[player.name].tool === 'outline' || playerDataTool[player.name].tool === 'smooth') {
           handleBlockBreakForSingleSelection(player, event.block.location);
         } else {
           handleBlockBreakForSelection(player, event.block.location);
@@ -233,50 +233,6 @@ function fillBlocksWithUndo(pos1: any, pos2: any, blockId: string, player: Playe
 }
 
 
-function createWallsWithUndo(pos1: any, pos2: any, blockId: string, player: Player) {
-  const originalBlocks: BlockData[] = [];
-
-  const minX = Math.min(pos1.x, pos2.x);
-  const maxX = Math.max(pos1.x, pos2.x);
-  const minY = Math.min(pos1.y, pos2.y);
-  const maxY = Math.max(pos1.y, pos2.y);
-  const minZ = Math.min(pos1.z, pos2.z);
-  const maxZ = Math.max(pos1.z, pos2.z);
-
-  for (let x = minX; x <= maxX; x++) {
-    for (let y = minY + 1; y <= maxY; y++) {
-      originalBlocks.push(getBlockData({ x, y, z: minZ }));
-      originalBlocks.push(getBlockData({ x, y, z: maxZ }));
-      if (x === minX || x === maxX) {
-        for (let z = minZ + 1; z <= maxZ - 1; z++) {
-          originalBlocks.push(getBlockData({ x, y, z }));
-        }
-      }
-    }
-  }
-
-  // createWalls の元のループ処理
-  for (let x = minX; x <= maxX; x++) {
-    for (let y = minY + 1; y <= maxY; y++) {
-      fillBlocks({ x, y, z: minZ }, { x, y, z: minZ }, blockId); // 前面
-      fillBlocks({ x, y, z: maxZ }, { x, y, z: maxZ }, blockId); // 後面
-      if (x === minX || x === maxX) {
-        fillBlocks({ x, y, z: minZ + 1 }, { x, y, z: maxZ - 1 }, blockId); // 左右側面
-      }
-    }
-  }
-
-  if (!undoStack[player.name]) {
-    undoStack[player.name] = [];
-  }
-  undoStack[player.name].push({
-    type: 'walls',
-    pos1,
-    pos2,
-    blockId,
-    originalBlocks,
-  });
-}
 
 
 function createOutlineWithUndo(center: any, radius: number, blockId: string, player: Player) {
@@ -337,63 +293,6 @@ function createOutlineWithUndo(center: any, radius: number, blockId: string, pla
 }
 
 
-function createFilledCircleWithUndo(center: any, radius: number, blockId: string, player: Player) {
-  const originalBlocks: BlockData[] = [];
-
-  const minX = center.x - radius;
-  const maxX = center.x + radius;
-  const minY = center.y - radius;
-  const maxY = center.y + radius;
-  const minZ = center.z - radius;
-  const maxZ = center.z + radius;
-
-  // createFilledCircle のループ処理の前に originalBlocks に変更前のブロックデータを保存
-  for (let x = minX; x <= maxX; x++) {
-    for (let z = minZ; z <= maxZ; z++) {
-      for (let y = minY; y <= maxY; y++) {
-        const distance = Math.sqrt(
-          Math.pow(x - center.x, 2) +
-          Math.pow(y - center.y, 2) +
-          Math.pow(z - center.z, 2)
-        );
-
-        if (distance <= radius) {
-          originalBlocks.push(getBlockData({ x, y, z }));
-        }
-      }
-    }
-  }
-
-  // createFilledCircle の元のループ処理
-  for (let x = minX; x <= maxX; x++) {
-    for (let z = minZ; z <= maxZ; z++) {
-      for (let y = minY; y <= maxY; y++) {
-        const distance = Math.sqrt(
-          Math.pow(x - center.x, 2) +
-          Math.pow(y - center.y, 2) +
-          Math.pow(z - center.z, 2)
-        );
-
-        if (distance <= radius) {
-          fillBlocks({ x, y, z }, { x, y, z }, blockId);
-        }
-      }
-    }
-  }
-
-  // undoStack にアクションを追加
-  if (!undoStack[player.name]) {
-    undoStack[player.name] = [];
-  }
-  undoStack[player.name].push({
-    type: 'filledCircle',
-    pos1: center, // pos1 を center に設定
-    pos2: null, // pos2 は使用しないので null に設定
-    blockId,
-    radius,
-    originalBlocks,
-  });
-}
 
 
 function smoothAreaWithUndo(center: any, radius: number, blockId: string, player: Player): void {
@@ -458,34 +357,14 @@ function executeCommandAfterSelection(player: Player) {
       const tool = toolData.tool;
       const blockId = toolData.blockId;
 
-      if (tool === 'walls') {
-        if (isValidBlockId(blockId)) {
-          createWallsWithUndo(data.pos1, data.pos2, blockId, player);
-          player.sendMessage(translate(player, "command.edit.WallsCreated"));
-          system.runTimeout(() => {
-            runCommand(player.name, 'edit', ['-start']);
-          }, 20);
-        } else {
-          player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
-        }
-      } else if (tool === 'outline') {
+      if (tool === 'outline') {
         if (isValidBlockId(blockId)) {
           const radius = toolData.outlineRadius || 5;
           createOutlineWithUndo(data.pos1, radius, blockId, player);
-          player.sendMessage(translate(player, "command.OutlineCreated"));
+          player.sendMessage(translate(player, "command.edit.OutlineCreated"));
           system.runTimeout(() => {
             runCommand(player.name, 'edit', ['-start']);
           }, 20);
-        } else {
-          player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
-        }
-      } else if (tool === 'filledCircle') {
-        if (isValidBlockId(blockId)) {
-          // filledCircleRadius が設定されている場合はそれを使用、そうでなければデフォルト値 5 を使用
-          const radius = toolData.filledCircleRadius || 5; // playerDataTool から半径を取得
-          createFilledCircleWithUndo(data.pos1, radius, blockId, player);
-          player.sendMessage(translate(player, "command.edit.FilledCircleCreated"));
-          runCommand(player.name, 'edit', ['-start']);
         } else {
           player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
         }
@@ -555,31 +434,11 @@ function executeCommandAfterSelection(player: Player) {
       // -clear を使用した場合はプレイヤーデータを削除
       delete playerData[player.name];
 
-    } else if (args[0] === '-walls' && args.length === 2) { // walls コマンドを追加
-      const blockId = args[1];
-      if (isValidBlockId(blockId)) {
-        data.commandArgs = args;
-        data.selecting = true;
-        player.sendMessage(translate(player, "command.edit.StartRangeSelection2"));
-      } else {
-        player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
-      }
-    } else if (args[0] === '-outline' && args.length === 3 && !isNaN(parseInt(args[1]))) { // outline コマンドを追加
+    } if (args[0] === '-outline' && args.length === 3 && !isNaN(parseInt(args[1]))) { // outline コマンドを追加
       const radius = parseInt(args[1]);
       const blockId = args[2];
       if (isValidBlockId(blockId)) {
         playerDataTool[player.name] = { tool: 'outline', blockId, outlineRadius: radius };
-        data.commandArgs = args;
-        data.selecting = true;
-        player.sendMessage(translate(player, "command.edit.StartRangeSelection"));
-      } else {
-        player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
-      }
-    } else if (args[0] === '-filledCircle' && args.length === 3 && !isNaN(parseInt(args[1]))) { // filledCircle コマンドを追加
-      const radius = parseInt(args[1]);
-      const blockId = args[2];
-      if (isValidBlockId(blockId)) {
-        playerDataTool[player.name] = { tool: 'filledCircle', blockId, filledCircleRadius: radius };
         data.commandArgs = args;
         data.selecting = true;
         player.sendMessage(translate(player, "command.edit.StartRangeSelection"));
@@ -625,31 +484,13 @@ registerCommand({
 
     if (args[0] === 'tool') {
       // tool サブコマンド
-      if (args[1] === '-wall' && args.length === 3) {
-        const blockId = args[2];
-        if (isValidBlockId(blockId)) {
-          playerDataTool[player.name] = { tool: 'walls', blockId };
-          player.sendMessage(translate(player, "WallsToolSelected", { blockId: `${blockId}` }));
-        } else {
-          player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
-        }
-      } else if (args[1] === '-outline' && args.length === 4 && !isNaN(parseInt(args[2]))) {
+      if (args[1] === '-outline' && args.length === 4 && !isNaN(parseInt(args[2]))) {
         // outline ツールで半径とブロックIDを指定
         const radius = parseInt(args[2]);
         const blockId = args[3];
         if (isValidBlockId(blockId)) {
           playerDataTool[player.name] = { tool: 'outline', blockId, outlineRadius: radius }; // playerDataTool に半径を保存
-          player.sendMessage(translate(player, "OutlineToolSelected", { radius: `${radius}`, blockId: `${blockId}` }));
-        } else {
-          player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
-        }
-      } else if (args[1] === '-filledCircle' && args.length === 4 && !isNaN(parseInt(args[2]))) {
-        // filledCircle ツールで半径とブロックIDを指定
-        const radius = parseInt(args[2]);
-        const blockId = args[3];
-        if (isValidBlockId(blockId)) {
-          playerDataTool[player.name] = { tool: 'filledCircle', blockId, filledCircleRadius: radius }; // playerDataTool に半径を保存
-          player.sendMessage(translate(player, "FilledCircleToolSelected", { radius: `${radius}`, blockId: `${blockId}` }));
+          player.sendMessage(translate(player, "command.edit.OutlineToolSelected", { radius: `${radius}`, blockId: `${blockId}` }));
         } else {
           player.sendMessage(translate(player, "command.edit.InvalidBlockId"));
         }
@@ -668,7 +509,7 @@ registerCommand({
         delete playerDataTool[player.name];
         player.sendMessage(translate(player, "command.edit.ToolExited"));
       } else {
-        player.sendMessage(translate(player, "command.edit.toolOptions"));
+        player.sendMessage(translate(player, "command.edit.ToolOptions"));
       }
 
     } else if (args[0] === '-set' && args.length === 2) {
@@ -685,10 +526,12 @@ registerCommand({
       data.selecting = true;
       player.sendMessage(translate(player, "command.edit.StartRangeSelection2"));
 
-    } else if (args[0] === '-start') { // !edit -start コマンドの処理を追加
+    } else if (args[0] === '-start') {
       data.selecting = true;
-      player.sendMessage(translate(player, "command.edit.StartRangeSelection"));
-
+      const currentTool = playerDataTool[player.name]; // 現在のツール情報を取得
+      if (currentTool) {
+        player.sendMessage(translate(player, "command.edit.StartRangeSelection", { tool: currentTool.tool })); //ツール名を表示するように変更
+      }
     } else if (args[0] === '-undo') {
       // -undo コマンドの処理
       if (undoStack[player.name] && undoStack[player.name].length > 0) {

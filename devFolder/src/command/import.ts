@@ -9,3 +9,5 @@ import './plugin/import';
 //OtherCommand
 import './itemUI';
 import './about';
+//import './test';
+
