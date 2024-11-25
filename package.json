@@ -5,7 +5,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "copy": "tool/copy.js",
+        "copy": "node tool/copy.js",
         "build": "AutoTool.bat"
     },
     "dependencies": {
