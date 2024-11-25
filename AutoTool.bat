@@ -9,7 +9,7 @@ if %errorlevel% neq 0 (
 )
 
 echo node index.js を実行中...
-node index.js
+node tool/index.js
 
 if %errorlevel% neq 0 (
   echo node index.js に失敗しました
@@ -17,7 +17,7 @@ if %errorlevel% neq 0 (
 )
 
 echo node index2.js を実行中...
-node index2.js
+node tool/index2.js
 
 if %errorlevel% neq 0 (
   echo node index2.js に失敗しました

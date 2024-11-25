@@ -4,6 +4,10 @@
     "description": "The best chestlock",
     "private": true,
     "type": "module",
+    "scripts": {
+        "copy": "tool/copy.js",
+        "build": "AutoTool.bat"
+    },
     "dependencies": {
         "@minecraft/server": "^1.16.0-beta.1.21.44-stable",
         "@minecraft/server-ui": "^1.3.0",
@@ -12,12 +16,12 @@
         "npm": "^10.8.3",
         "path": "^0.12.7",
         "tiny-segmenter": "^0.2.0",
-        "tsc": "^2.0.4",
-        "typescript": "^5.3.3"
+        "tsc": "^2.0.4"
     },
     "devDependencies": {
         "@types/node": "^22.9.1",
         "@types/tiny-segmenter": "^0.2.0",
-        "prettier": "3.2.5"
+        "prettier": "3.2.5",
+        "typescript": "^5.7.2"
     }
 }
