@@ -11,8 +11,7 @@ registerCommand({
     minArgs: 0,
     require: (player: Player) => verifier(player, config().commands['hub']),
     executor: (player: Player) => {
-        let countdown = 5; // カウントダウンの開始値
-
+        let countdown = 5; 
         const intervalId = system.runInterval(() => {
             player.sendMessage(translate(player, "command.hub.move", { countdown: `${countdown}` }));
             countdown--;

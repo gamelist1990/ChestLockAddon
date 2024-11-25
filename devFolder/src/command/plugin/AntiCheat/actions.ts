@@ -28,6 +28,11 @@ export function executeFreeze(player: Player, configs: any, playerDataManager: P
     playerDataManager.update(player, { isFrozen: true, freezeStartTime: Date.now(), originalGamemode: player.getGameMode() });
     player.setGameMode(GameMode.adventure); // フリーズ中はアドベンチャーモードに設定
     player.teleport(player.location, { dimension: player.dimension });
+    player.inputPermissions.movementEnabled = false;
+    player.inputPermissions.cameraEnabled = false;
+    player.addEffect("weakness", 50, { amplifier: 255, showParticles: false });
+
+
 
     console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をフリーズしました`);
     player.sendMessage('異常な行動を検出したため、フリーズしました。');
@@ -42,6 +47,9 @@ export function unfreezePlayer(player: Player, playerDataManager: PlayerDataMana
     if (data && data.isFrozen) {
         playerDataManager.update(player, { isFrozen: false });
         player.setGameMode(data.originalGamemode); // 元のゲームモードに戻す
+        player.inputPermissions.movementEnabled = true;
+        player.inputPermissions.cameraEnabled = true;
+        player.removeEffect("weakness");
         console.warn(`プレイヤー ${player.name} (ID: ${player.id}) のフリーズを解除しました`);
         player.sendMessage('フリーズを解除しました。');
         playerDataManager.reset(player);

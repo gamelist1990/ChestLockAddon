@@ -10,9 +10,7 @@ export default class {
         month: 2592000000,
         year: 31536000000,
     };
-    /**
-     * @description Calculate the angle with rotation Y of pos1 (horiozontal) between two points
-     */
+
     public static caulateAngle(pos1: VectorXZ, pos2: VectorXZ, rotationY: number): number {
         const commonAngle = (Math.atan2(pos2.z - pos1.z, pos2.x - pos1.x) * 180) / Math.PI;
         const rotatedAngle = commonAngle - rotationY - 90;

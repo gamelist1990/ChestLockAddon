@@ -48,6 +48,7 @@ interface PlayerData {
     mutedUntil?: number;
     lastOnGroundTime: number;
     badWordCount: Number;
+    throughBlockCount: number;
 }
 
 export class PlayerDataManager {
@@ -102,6 +103,7 @@ export class PlayerDataManager {
             lastOnGroundTime: 0,
             lastPosition: player.location,
             badWordCount: 0,
+            throughBlockCount: 0,
         };
     }
 

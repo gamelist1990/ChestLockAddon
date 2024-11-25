@@ -13,7 +13,7 @@ export function saveData(key: string, value: any): void {
   world.setDynamicProperty('ChestLockAddonData', data);
 }
 
-// データの読み込み関数
+
 export function loadData(): void {
   const data = world.getDynamicProperty('ChestLockAddonData');
   if (data && typeof data === 'string') {

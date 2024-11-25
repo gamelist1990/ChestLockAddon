@@ -18,10 +18,10 @@ export function detectKillAura(attackingPlayer: Player, event: EntityHurtAfterEv
     }
 
     // Reach チェック
-    const maxReach = 6.7; // 通常のリーチ + 1 として設定 (調整可能)
+    const maxReach = 6.7; 
     const distanceToEntity = calculateDistance(attackingPlayer.location, attackedEntity.location);
     if (distanceToEntity > maxReach) {
-        return { cheatType: 'Kill Aura (Reach|6.7)' };
+        return { cheatType: `Kill Aura (Reach|${maxReach})` };
     }
 
 
@@ -44,11 +44,18 @@ export function detectKillAura(attackingPlayer: Player, event: EntityHurtAfterEv
 
 
 
-    // Through-Block チェック (ブロック貫通攻撃)
     const raycastResult = attackingPlayer.getBlockFromViewDirection({ maxDistance: distanceToEntity });
     if (raycastResult && raycastResult.block && raycastResult.block.location && distanceToEntity > calculateDistance(attackingPlayer.location, raycastResult.block.location)) {
-        return { cheatType: 'Kill Aura (Through-Block)' };
+        data.throughBlockCount++;
+        if (data.throughBlockCount > 1) { // 2回目以降（3回目以上）で検知
+            data.throughBlockCount = 0; // カウンターをリセット
+            playerDataManager.update(attackingPlayer, { throughBlockCount: data.throughBlockCount }); // データを更新
+            return { cheatType: 'Kill Aura (Through-Block)' };
+        }
+    } else {
+        data.throughBlockCount = 0; // ブロック貫通が検知されなかった場合はリセット
     }
+    playerDataManager.update(attackingPlayer, { throughBlockCount: data.throughBlockCount }); 
 
 
 
