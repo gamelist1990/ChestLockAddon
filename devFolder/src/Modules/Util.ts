@@ -1,4 +1,4 @@
-import { Player, GameMode, world, system, PlatformType, MemoryTier,  } from '@minecraft/server';
+import { Player, GameMode, world, system, PlatformType, MemoryTier, } from '@minecraft/server';
 import { uiManager } from '@minecraft/server-ui';
 
 interface CommandConfig {
@@ -7,13 +7,13 @@ interface CommandConfig {
   requireTag: string[];
 }
 
-interface moduleConfig   {
-  enabled:boolean;
-  
+interface moduleConfig {
+  enabled: boolean;
+
 }
 
 //コマンド登録(ここから機能有効/無効切り替えてね)
-export const config = (): { commands: { [key: string]: CommandConfig }; admin: string, module: {[key: string]: moduleConfig}; } => ({
+export const config = (): { commands: { [key: string]: CommandConfig }; admin: string, module: { [key: string]: moduleConfig }; } => ({
   commands: {
     chest: {
       enabled: true,
@@ -98,59 +98,59 @@ export const config = (): { commands: { [key: string]: CommandConfig }; admin: s
     staff: {
       enabled: true,
       adminOnly: false,
-      requireTag: ["staff","op"],
+      requireTag: ["staff", "op"],
     },
     invsee: {
       enabled: true,
       adminOnly: true,
       requireTag: [],
-    }, 
+    },
     offhand: {
       enabled: true,
       adminOnly: false,
       requireTag: [],
-    }, 
+    },
     server: {
       enabled: true,
       adminOnly: true,
       requireTag: [],
-    }, 
+    },
     tag: {
       enabled: true,
       adminOnly: true,
       requireTag: [],
-    }, 
+    },
     hub: {
       enabled: true,
       adminOnly: false,
       requireTag: [],
-    }, 
+    },
     prompt: {
       enabled: true,
       adminOnly: false,
       requireTag: [],
-    }, 
+    },
     ping: {
       enabled: true,
       adminOnly: false,
       requireTag: [],
-    }, 
+    },
   },
   admin: 'op',
 
   module: {
     debugMode: {
-      enabled:false,
+      enabled: false,
     },
-    sumoSystem:{
-      enabled:true,
+    sumoSystem: {
+      enabled: true,
     },
     ScoreSystem: {
       enabled: true,
     }
   },
 
-  
+
 });
 
 //その他 
@@ -186,6 +186,16 @@ export function getAllPlayerNames(currentPlayer: Player): string[] {
   return playerNames;
 }
 
+export function getPlayersByName(playerNames: string[]): Player[] {
+  const players: Player[] = [];
+  for (const player of world.getPlayers()) {
+    if (playerNames.includes(player.name)) {
+      players.push(player);
+    }
+  }
+  return players;
+}
+
 
 export function kick(player: Player, reason: string, by: string) {
   const textReason = `§c§lYou have been kicked\n§r§7Reason: §c${reason ?? "--"}\n§7By: §c${by ?? "--"}`;
@@ -210,7 +220,7 @@ export function clientdevice(player: Player): number {
 
 
 
- export function getMemoryTier(player: Player): number {
+export function getMemoryTier(player: Player): number {
   const systemInfo = player.clientSystemInfo;
   switch (systemInfo.memoryTier) {
     case MemoryTier.Undetermined:
@@ -246,14 +256,14 @@ export function getDimension(player: Player): string {
     case "the_end":
       return "The End";
     default:
-      return dimensionId; 
+      return dimensionId;
   }
 }
 
 export function tempkick(player: Player) {
-  system.runTimeout(()=>{
+  system.runTimeout(() => {
     player.triggerEvent('chestlock:tempkick')
-  },1)
+  }, 1)
 }
 
 
