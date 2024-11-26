@@ -154,7 +154,7 @@ world.afterEvents.itemUse.subscribe((eventData: any) => {
 
                 if (response.canceled || response.selection === undefined) return;
                 const selectedPlayer = playerNames[response.selection];
-                const target = getPlayerByName(selectedPlayer)
+                const target = getPlayerByName(selectedPlayer);
                 if (target) {
                     player.sendMessage(target.hasTag("oni") ? "やつは鬼だった" : "やつは鬼ではない");
                 }
