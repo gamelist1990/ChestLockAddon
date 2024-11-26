@@ -25,7 +25,7 @@
         "experimentalDecorators": true,
         "strict": true,
         "allowJs": true,
-        "checkJs": false,
+        "checkJs": true,
         "outDir": "./devFolder/scripts",
         "typeRoots": [
             "./node_modules/@minecraft"
@@ -42,7 +42,7 @@
         "noImplicitThis": true,
         "noUnusedParameters": true,
         "sourceMap": false,
-        "removeComments": false,
+        "removeComments": true,
         "allowSyntheticDefaultImports": false
     }
 }

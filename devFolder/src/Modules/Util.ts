@@ -186,14 +186,13 @@ export function getAllPlayerNames(currentPlayer: Player): string[] {
   return playerNames;
 }
 
-export function getPlayersByName(playerNames: string[]): Player[] {
-  const players: Player[] = [];
+export function getPlayerByName(playerName: string): Player | null {
   for (const player of world.getPlayers()) {
-    if (playerNames.includes(player.name)) {
-      players.push(player);
+    if (player.name === playerName) {
+      return player; 
     }
   }
-  return players;
+  return null; 
 }
 
 
