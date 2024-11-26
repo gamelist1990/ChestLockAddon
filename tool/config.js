@@ -14,7 +14,7 @@ const minecraftDataPath = path.join(
 
 const config = {
     path: "./devFolder/scripts/devFolder/src",
-    copyToPath: `${minecraftDataPath}/minecraftWorlds/dfKxVMbKNUo=/behavior_packs/createAddon/scripts`
+    copyToPath: `${minecraftDataPath}/minecraftWorlds/q8TN2gMlvaE=/behavior_packs/createAddon/scripts`
 
 };
 

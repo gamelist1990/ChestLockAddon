@@ -153,7 +153,13 @@ function announceResults(voteItems: VoteItem[], customResultText: string): void 
             const rankText = voteData.rankText || "位";
             const voteText = voteData.voteText || "票";
             results += `${currentRank}${rankText}: ${item.name} - ${item.score}${voteText}\n`;
-            scoreboard.setScore(item.name, currentRank);
+            const player = world.getPlayers().find(p => p.name === item.name);
+            if (player) {
+                scoreboard.setScore(player, currentRank);
+            }
+            if (!player) {
+                scoreboard.setScore(item.name, currentRank);
+            }
             currentRank++;
         }
         previousScore = item.score;

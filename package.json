@@ -5,8 +5,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "copy": "node tool/copy.js",
-        "build": "AutoTool.bat"
+        "copy": "node tool/copy.js"
     },
     "dependencies": {
         "@minecraft/server": "^1.16.0-beta.1.21.44-stable",
