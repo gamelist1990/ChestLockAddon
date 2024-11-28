@@ -248,6 +248,7 @@ discordClient.on('messageCreate', async (message) => {
 
     const world = server.getWorlds()[0];
     if (world) {
+        if (!(message.content.length <= 45)) return
         for (const uuid in minecraftPlayerDiscordIds) {
             if (minecraftPlayerDiscordIds[uuid].discordId === message.author.id) {
                 try {
@@ -362,11 +363,11 @@ server.events.on('serverOpen', async () => {
 async function handleToggle(sender, world, args) {
     const data = await getData(sender);
     const discordId = minecraftPlayerDiscordIds[data.uuid]?.discordId;
-   
+
 
 
     if (!discordId || !adminDiscordIds.includes(discordId)) {
-        return; 
+        return;
     }
 
     const [feature, value] = args.split(' ');
@@ -406,11 +407,26 @@ async function updatePlayers() {
 
         allPlayerData.forEach(playerData => {
             const existingData = userData[playerData.name] || {};
+
+            const pingHistory = existingData.pingHistory || [];
+            if (isFinite(playerData.ping) && playerData.ping !== null) {
+                pingHistory.push(playerData.ping);
+            }
+            if (pingHistory.length > 5) {
+                pingHistory.shift();
+            }
+            const avgping = pingHistory.reduce((sum, p) => sum + p, 0) / pingHistory.length || 0;
+
             const newData = {
                 name: playerData.name,
                 entityId: playerData.id,
                 uuid: playerData.uuid,
-                lastJoin: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) // 現在日時を追加
+                ping: playerData.ping,
+                PacketLoss: playerData.packetloss,
+                Avgping: avgping,
+                Avgpacketloss: isFinite(playerData.avgpacketloss) && playerData.avgpacketloss !== null ? playerData.avgpacketloss : 0,
+                lastJoin: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) ,
+                pingHistory: pingHistory,
             };
 
             if (!deepEqual(existingData, newData)) {
@@ -440,28 +456,10 @@ server.events.on('playerChat', async (event) => {
     const { sender, world, message, type } = event;
     if (sender === 'External') return;
 
-    if (message === 'main') {
+    if (message === 'main.') {
         await world.sendMessage('main関数を発火');
         main();
     }
-
-    if (message.startsWith('command -r ')) {
-        try {
-            const command = message.slice('command -r '.length);
-
-            const commandResult = await world.runCommand(command);
-            let formattedResult;
-
-            formattedResult = JSON.stringify(commandResult, null, 2);
-
-            await world.sendMessage(`Command Result:\n${formattedResult}\n`, sender);
-
-        } catch (error) {
-            console.error("Error executing command:", error);
-            await world.sendMessage(`An error occurred: ${error.message}`);
-        }
-    }
-
 
     if (message === 'ping') {
         try {
