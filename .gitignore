@@ -5,4 +5,7 @@ devFolder/src/node_modules/
 AllAddon
 addon
 createAddon
+.env
 devFolder/src/command/langs/list/*.ts
+User.json
+wsData.json
