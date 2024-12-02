@@ -17,7 +17,7 @@ server.events.on('serverOpen', async () => {
 server.events.on('worldAdd', async(event) => {
     console.log('worldと接続完了!');
     const {world} = event;
-    world.subscribeEvent('PlayerJoin');
+    world.subscribeEvent('PlayerBounced');
 })
 
 
