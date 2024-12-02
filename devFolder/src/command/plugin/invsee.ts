@@ -1,4 +1,4 @@
-import { closeForm, config } from '../../Modules/Util';
+import { config } from '../../Modules/Util';
 import { registerCommand, verifier, isPlayer } from '../../Modules/Handler';
 import { EquipmentSlot, Player, system, ItemStack } from '@minecraft/server'; // ItemStack をインポート
 import { ActionFormData } from '@minecraft/server-ui';
@@ -23,9 +23,8 @@ registerCommand({
 
         if (targetPlayer) {
             system.runTimeout(() => {
-                closeForm(player),
                 showArmorHotbarOptions(player, targetPlayer);
-            }, 0)
+            }, 20 * 5)
         } else {
             player.sendMessage(translate(player, "commands.list.playerNotFound", { tragetplayer :`${targetPlayerName}`}))
         }
