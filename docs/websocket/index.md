@@ -7,10 +7,10 @@
 **動作未確認**
 
 #### プレイヤー関連イベント
-- MultiplayerRoundEnd
-- MultiplayerRoundStart
-- PlayerSaved
-- PlayerDied
+- MultiplayerRoundEnd[不明]
+- MultiplayerRoundStart[不明]
+- PlayerSaved[機能せず(多分リスポーンの事だと思う)]
+- [PlayerDied](./event/playerEvent/PlayerDied.md)
 - PlayerJoin
 - PlayerLeave
 - PlayerMessage
@@ -50,27 +50,27 @@
 - AdditionalContentLoaded
 
 #### アイテム関連イベント
-- ItemUsed
-- ItemNamed
-- ItemCrafted
-- ItemDropped
-- ItemSmelted
-- ItemAcquired
-- ItemEquipped
-- ItemInteracted
-- ItemDestroyed
-- ItemEnchanted
+- [ItemUsed](./event/ItemEvent/ItemUsed.md)
+- ItemNamed[不明]
+- [ItemCrafted](./event/ItemEvent/ItemCrafted.md)
+- ItemDropped[機能せず]
+- [ItemSmelted](./event/ItemEvent/ItemSmelted.md)
+- [ItemAcquired](./event/ItemEvent/ItemAcquired.md)
+- [ItemEquipped](./event/ItemEvent/ItemEquipped.md)
+- [ItemInteracted](./event/ItemEvent/ItemInteracted.md)
+- ItemDestroyed[機能せず]
+- ItemEnchanted[機能せず]
 
 #### ブロック関連イベント
-- BlockPlaced
-- [BlockBroken](./event/blockEvent/blockBreak.md)
-- BlockFound
-- BlockPlacedByCommand
-- BlockChanged
-- BlockRemoved
-- ChunkChanged
-- ChunkLoaded
-- ChunkUnloaded
+- [BlockPlaced](./event/blockEvent/BlockPlaced.md)
+- [BlockBroken](./event/blockEvent/BlockBroken.md)
+- BlockFound[不明]
+- BlockPlacedByCommand[不明]
+- BlockChanged[不明]
+- BlockRemoved[不明]
+- ChunkChanged[1.0.2以降機能せず]
+- ChunkLoaded[1.0.2以降機能せず]
+- ChunkUnloaded[1.0.2以降機能せず]
 
 #### 実績関連イベント
 - AwardAchievement
