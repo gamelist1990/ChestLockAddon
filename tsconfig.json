@@ -25,7 +25,7 @@
         "experimentalDecorators": true,
         "strict": true,
         "allowJs": true,
-        "checkJs": false,
+        "checkJs": true,
         "outDir": "./devFolder/scripts",
         "typeRoots": [
             "./node_modules/@minecraft"
