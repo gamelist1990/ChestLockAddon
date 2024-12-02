@@ -30,6 +30,9 @@ let userData = {};
 let guild;
 export let updateVoiceChannelsTimeout;
 let updatePlayersInterval;
+const McommandPrefix = '#';
+const MCommands = {};
+const McommandsPerPage = 5;
 
 
 
@@ -282,16 +285,27 @@ export const server = new Server({
 
 
 // コマンド登録関数
-function registerCommand(command, handler) {
-    server.events.on('playerChat', async (event) => {
-        const { sender, world, message } = event;
-        if (message.startsWith(command)) {
-            console.log(message.slice(command.length).trim());
-            await handler(sender, world, message.slice(command.length).trim());
-        }
-    });
+function registerCommand(name, usage, description, adminOnly, execute) {
+    MCommands[name] = { name, usage, description, adminOnly, execute }; 
 }
 
+
+const isAdmin = async (playerName) => {
+    try {
+        const playerData = await getData(playerName);
+        if (!playerData) return false;
+        // 特定のUUIDまたは名前のリストと照合
+        const adminUUIDs = ["your-admin-uuid-1", "your-admin-uuid-2"]; // 管理者UUIDのリスト
+        const adminNames = ["adminPlayer1", "adminPlayer2"]; // 管理者プレイヤー名のリスト
+
+        return adminUUIDs.includes(playerData.uuid) || adminNames.includes(playerData.name);
+
+
+    } catch (error) {
+        console.error("権限検証エラー:", error);
+        return false;
+    }
+};
 
 
 async function loadWsData() {
@@ -351,7 +365,6 @@ server.events.on('serverOpen', async () => {
     console.log('Minecraft server is connected via websocket!');
     await loadWsData();
     await loadUserData();
-    registerCommand('?toggle', handleToggle);
 
 
 
@@ -359,42 +372,7 @@ server.events.on('serverOpen', async () => {
 
 });
 
-// toggleコマンドのハンドラ
-async function handleToggle(sender, world, args) {
-    const data = await getData(sender);
-    const discordId = minecraftPlayerDiscordIds[data.uuid]?.discordId;
 
-
-
-    if (!discordId || !adminDiscordIds.includes(discordId)) {
-        return;
-    }
-
-    const [feature, value] = args.split(' ');
-    if (!feature || !['discord', 'vc'].includes(feature)) {
-        await world.sendMessage(`使用方法: *toggle <discord|vc> <true|false>`);
-        return;
-    }
-
-    if (value === 'true') {
-        featureToggles[feature] = true;
-    } else if (value === 'false') {
-        featureToggles[feature] = false;
-    } else {
-        await world.sendMessage(`使用方法: *toggle <discord|vc> <true|false>`);
-        return;
-    }
-    if (feature === 'vc' && featureToggles.vc) {
-        initVcFunctions(guild, categoryId, lobbyVcId);
-        updateVoiceChannelsTimeout = setTimeout(updateVoiceChannelWrapper, 2000);
-    } else if (feature === 'vc' && !featureToggles.vc) {
-        clearTimeout(updateVoiceChannelsTimeout); // VCの更新を停止
-    }
-
-
-    await world.sendMessage(`${feature} を ${featureToggles[feature] ? '有効化' : '無効化'} しました。`);
-
-}
 
 
 
@@ -425,7 +403,7 @@ async function updatePlayers() {
                 PacketLoss: playerData.packetloss,
                 Avgping: avgping,
                 Avgpacketloss: isFinite(playerData.avgpacketloss) && playerData.avgpacketloss !== null ? playerData.avgpacketloss : 0,
-                lastJoin: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) ,
+                lastJoin: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
                 pingHistory: pingHistory,
             };
 
@@ -456,24 +434,10 @@ server.events.on('playerChat', async (event) => {
     const { sender, world, message, type } = event;
     if (sender === 'External') return;
 
-    if (message === 'main.') {
-        await world.sendMessage('main関数を発火');
-        main();
-    }
 
-    if (message === 'ping') {
-        try {
-            const data = await getData(sender);
-            if (data !== undefined) {
-                await world.sendMessage(`${sender} has ping ${data.ping}`, sender);
-            } else {
-                await world.sendMessage(`Could not get ping for ${sender}`);
-            }
-        } catch (error) {
-            console.error("[Server] Error getting player ping:", error);
-            await world.sendMessage(`[Server] An error occurred while getting ping for ${sender}: ${message}`);
-        }
-    }
+
+
+
 
     const channel = guild.channels.cache.get(TARGET_DISCORD_CHANNEL_ID);
     if (featureToggles.discord) {
@@ -483,6 +447,82 @@ server.events.on('playerChat', async (event) => {
             }
         }
     }
+
+
+    if (message.startsWith(McommandPrefix)) {
+        const args = message.slice(McommandPrefix.length).trim().split(/\s+/);
+        const commandName = args.shift().toLowerCase();
+
+        const command = MCommands[commandName];
+
+        if (command) {
+
+            // isAdmin 関数を使用して権限を確認
+            if (command.adminOnly && !(await isAdmin(sender))) {
+                world.sendMessage('このコマンドを実行する権限がありません。', sender);
+                return;
+            }
+
+            try {
+                await command.execute(sender, world, args);
+            } catch (error) {
+                console.error(`Error executing command ${commandName}:`, error);
+                world.sendMessage(`コマンドの実行中にエラーが発生しました。`, sender);
+            }
+        } else {
+            world.sendMessage(`不明なコマンドです: ${commandName}`, sender);
+        }
+    }
+});
+
+
+//Minecraft コマンドシステム
+
+registerCommand('ping', `${McommandPrefix}ping`, '自分のping値を確認します', false, async (sender, world, _args) => {
+    try {
+        const data = await getData(sender);
+        if (data !== undefined) {
+            await world.sendMessage(`${sender} has ping ${data.ping}`, sender);
+            console.log(JSON.stringify(data,null,2))
+        } else {
+            await world.sendMessage(`Could not get ping for ${sender}`, sender); // senderを追加
+        }
+    } catch (error) {
+        console.error("[Server] Error getting player ping:", error);
+        await world.sendMessage(`[Server] Ping取得エラー`, sender); // エラーメッセージを簡略化
+    }
+});
+
+registerCommand('help', `${McommandPrefix}help [ページ番号]`, 'コマンド一覧を表示します。', false, async (sender, world, args) => {
+    let page = 1;
+    if (args.length > 0) {
+        page = parseInt(args[0]);
+        if (isNaN(page) || page < 1) {
+            page = 1;
+        }
+    }
+
+    const commandList = Object.values(MCommands) 
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .slice((page - 1) * McommandsPerPage, page * McommandsPerPage);
+
+
+    if (commandList.length === 0) {
+        await world.sendMessage(`ページ ${page} は存在しません。`, sender);
+        return;
+    }
+
+    let helpMessage = `=== ヘルプ (ページ ${page}) ===\n`;
+    for (const command of commandList) {
+        helpMessage += `\n${command.usage}: ${command.description} (${command.adminOnly ? '管理者専用' : '全員'})`;
+    }
+
+    const totalPages = Math.ceil(Object.keys(commands).length / McommandsPerPage);
+    if (totalPages > 1) {
+        helpMessage += `\n全 ${totalPages} ページ: #help [ページ番号] で他のページを表示`;
+    }
+
+    await world.sendMessage(helpMessage, sender);
 
 });
 

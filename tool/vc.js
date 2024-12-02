@@ -6,7 +6,6 @@ let guild;
 let categoryId;
 let lobbyVcId;
 let groupChannels = new Map();
-const membersToMove = [];
 
 
 export function initVcFunctions(discordGuild, categoryIdParam, lobbyVcIdParam) { // 初期化関数
@@ -102,7 +101,7 @@ async function fetchPlayerData() {
 
 function createProximityGroups(playersByDiscordId) {
     const proximityGroups = new Map();
-    const DISTANCE_THRESHOLD = 7;
+    const DISTANCE_THRESHOLD = 10;
     let groupNumber = 1;
 
     for (const discordId in playersByDiscordId) {

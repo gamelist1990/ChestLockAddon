@@ -5,11 +5,14 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "copy": "node tool/copy.js"
+        "copy": "node tool/copy.js",
+        "start": "cd tool/WebSocket && bun index.ts",
+        "build": "cd tool/WebSocket && bun build index.ts --compile --outfile WebSocket"
     },
     "dependencies": {
         "@minecraft/server": "^1.16.0-beta.1.21.44-stable",
         "@minecraft/server-ui": "^1.3.0",
+        "bun": "^1.1.38",
         "discord.js": "^14.16.3",
         "dotenv": "^16.4.5",
         "fs": "^0.0.1-security",
@@ -22,6 +25,7 @@
     },
     "devDependencies": {
         "@types/node": "^22.9.1",
+        "@types/node-fetch": "^2.6.12",
         "@types/tiny-segmenter": "^0.2.0",
         "@types/uuid": "^10.0.0",
         "prettier": "3.2.5",

@@ -6,6 +6,7 @@ AllAddon
 addon
 createAddon
 .env
+tool/WebSocket/.env
 devFolder/src/command/langs/list/*.ts
 User.json
 wsData.json
