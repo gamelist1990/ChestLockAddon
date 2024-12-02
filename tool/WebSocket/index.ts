@@ -15,6 +15,7 @@ import * as fs from 'fs/promises';
 import { config } from 'dotenv';
 import { updateVoiceChannels, initVcFunctions } from './vc';
 import path from 'path';
+import { serve } from 'bun';
 
 
 const defaultEnvContent = `# 自動的に.envファイルを作成しました\n
@@ -338,15 +339,15 @@ export async function getData(playerName?: string): Promise<PlayerData | undefin
                     return details[0];
                 }
             } else {
-                console.warn("Invalid 'listd stats' output format:", parsed);
+             //   console.warn("Invalid 'listd stats' output format:", parsed);
                 return undefined;
             }
         } catch (parseError) {
-            console.error("Error parsing player details:", parseError, res.details);
+           // console.error("Error parsing player details:", parseError, res.details);
             return undefined;
         }
     } catch (outerError) {
-        console.error("Outer error getting player:", outerError);
+      //  console.error("Outer error getting player:", outerError);
         return undefined;
     }
 }
@@ -358,7 +359,6 @@ export async function WorldPlayer(player?: string): Promise<any[] | undefined> {
         const world = server.getWorlds()[0];
 
         if (!world) {
-            console.error("No world found.");
             return undefined;
         }
 
@@ -366,7 +366,7 @@ export async function WorldPlayer(player?: string): Promise<any[] | undefined> {
         const res = await world.runCommand(command);
 
         if (res.statusCode !== 0) {
-            console.error(`querytarget failed: ${res.statusMessage}`);
+        //    console.error(`querytarget failed: ${res.statusMessage}`);
             return undefined;
         }
 
@@ -376,16 +376,16 @@ export async function WorldPlayer(player?: string): Promise<any[] | undefined> {
             if (Array.isArray(data)) {
                 return data;
             } else {
-                console.warn("Invalid 'querytarget' output format:", data);
+//console.warn("Invalid 'querytarget' output format:", data);
                 return undefined;
             }
         } catch (parseError) {
-            console.error("Error parsing 'querytarget' details:", parseError, res.details);
+           // console.error("Error parsing 'querytarget' details:", parseError, res.details);
             return undefined;
         }
 
     } catch (error) {
-        console.error("Error in WorldPlayer function:", error);
+       // console.error("Error in WorldPlayer function:", error);
         return undefined;
     }
 }
@@ -396,14 +396,13 @@ export async function playerList(): Promise<{ name: string, uuid: string }[] | n
     try {
         const world = server.getWorlds()[0];
         if (!world) {
-            console.error("World not found in playerList function.");
             return null;
         }
 
         const testforResult = await world.runCommand(`testfor @a`);
 
         if (testforResult.statusCode !== 0 || !testforResult.victim || testforResult.victim.length === 0) {
-            console.warn("No players found or testfor command failed.", testforResult);
+         //   console.warn("No players found or testfor command failed.", testforResult);
             return null;
         }
 
@@ -417,11 +416,11 @@ export async function playerList(): Promise<{ name: string, uuid: string }[] | n
                 if (playerData && playerData.length > 0) {
                     playerList.push({ name: playerName, uuid: playerData[0].uniqueId });
                 } else {
-                    console.warn(`querytarget returned empty data for ${playerName}:`, queryResult)
+                 //   console.warn(`querytarget returned empty data for ${playerName}:`, queryResult)
                 }
 
             } else {
-                console.error(`querytarget failed for ${playerName}:`, queryResult);
+               // console.error(`querytarget failed for ${playerName}:`, queryResult);
 
             }
         }
@@ -429,7 +428,7 @@ export async function playerList(): Promise<{ name: string, uuid: string }[] | n
 
 
     } catch (error) {
-        console.error("Error in playerList function:", error);
+       // console.error("Error in playerList function:", error);
         return null;
     }
 }
@@ -545,6 +544,11 @@ server.events.on('serverOpen', async () => {
     updatePlayersInterval = setInterval(updatePlayers, 500) as NodeJS.Timeout;
 });
 
+server.events.on('worldAdd', async (event) => {
+    const { world } = event;
+    world.subscribeEvent("PlayerTravelled")
+});
+
 server.events.on('playerChat', async (event) => {
     const { sender, world, message, type } = event;
     if (sender === 'External') return;
@@ -587,7 +591,43 @@ server.events.on('playerChat', async (event) => {
     }
 });
 
+interface PlayerTravelled {
+    isUnderwater: boolean;       // 水中にいるかどうか
+    metersTravelled: number;     // 移動距離（メートル）
+    newBiome: number;            // 新しいバイオームのID
+    player: {
+        color: string;             // プレイヤーの色
+        dimension: number;         // 次元
+        id: number;                // プレイヤーのID
+        name: string;              // プレイヤーの名前
+        position: {
+            x: number;               // X座標
+            y: number;               // Y座標
+            z: number;               // Z座標
+        };
+        type: string;              // エンティティの種類
+        variant: number;           // バリアント
+        yRot: number;              // Y軸の回転
+    };
+    travelMethod: number;        // 移動方法 0 =歩き 2=ジャンプ 8=走り 飛行=5 えりとら=通常時2 ダッシュ後使用で8
+}
 
+//@ts-ignore
+server.events.on('PlayerTravelled', async (event: PlayerTravelled) => {
+    const { isUnderwater, metersTravelled, player } = event;
+
+    const flag = false;
+    //if (player.name !== 'PEXkurann') return; 
+
+    
+    if (flag) {
+        console.log(`Player: ${player.name}`);
+        console.log(`Underwater: ${isUnderwater}`);
+        console.log(`Distance: ${metersTravelled} meters`);
+        console.log(`Position: x=${player.position.x}, y=${player.position.y}, z=${player.position.z}`);
+    } 
+
+});
 
 
 
