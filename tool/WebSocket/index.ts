@@ -15,7 +15,6 @@ import * as fs from 'fs/promises';
 import { config } from 'dotenv';
 import { updateVoiceChannels, initVcFunctions } from './vc';
 import path from 'path';
-import { serve } from 'bun';
 
 
 const defaultEnvContent = `# 自動的に.envファイルを作成しました\n
@@ -151,17 +150,17 @@ interface MinecraftCommand {
 
 interface PlayerData {
     activeSessionId: string;
-    avgpacketloss: number;
-    avgping: number;
+    avgpacketloss?: number;
+    avgping?: number;
     clientId: string;
     color: string;
     deviceSessionId: string;
     globalMultiplayerCorrelationId: string;
-    id: number;
+    id?: number;
     maxbps: number;
     name: string;
-    packetloss: number;
-    ping: number;
+    packetloss?: number;
+    ping?: number;
     randomId: number;
     uuid: string;
 }
@@ -173,6 +172,11 @@ export interface BanData {
     bannedBy: string;
     bannedAt: number;
     expiresAt: number | null;
+}
+
+interface PartialPlayerData {
+    name: string;
+    uuid: string;
 }
 
 export const minecraftCommands: { [commandName: string]: MinecraftCommand } = {};
@@ -339,15 +343,15 @@ export async function getData(playerName?: string): Promise<PlayerData | undefin
                     return details[0];
                 }
             } else {
-             //   console.warn("Invalid 'listd stats' output format:", parsed);
+                //   console.warn("Invalid 'listd stats' output format:", parsed);
                 return undefined;
             }
         } catch (parseError) {
-           // console.error("Error parsing player details:", parseError, res.details);
+            // console.error("Error parsing player details:", parseError, res.details);
             return undefined;
         }
     } catch (outerError) {
-      //  console.error("Outer error getting player:", outerError);
+        //  console.error("Outer error getting player:", outerError);
         return undefined;
     }
 }
@@ -366,7 +370,7 @@ export async function WorldPlayer(player?: string): Promise<any[] | undefined> {
         const res = await world.runCommand(command);
 
         if (res.statusCode !== 0) {
-        //    console.error(`querytarget failed: ${res.statusMessage}`);
+            //    console.error(`querytarget failed: ${res.statusMessage}`);
             return undefined;
         }
 
@@ -376,16 +380,16 @@ export async function WorldPlayer(player?: string): Promise<any[] | undefined> {
             if (Array.isArray(data)) {
                 return data;
             } else {
-//console.warn("Invalid 'querytarget' output format:", data);
+                //console.warn("Invalid 'querytarget' output format:", data);
                 return undefined;
             }
         } catch (parseError) {
-           // console.error("Error parsing 'querytarget' details:", parseError, res.details);
+            // console.error("Error parsing 'querytarget' details:", parseError, res.details);
             return undefined;
         }
 
     } catch (error) {
-       // console.error("Error in WorldPlayer function:", error);
+        // console.error("Error in WorldPlayer function:", error);
         return undefined;
     }
 }
@@ -402,7 +406,7 @@ export async function playerList(): Promise<{ name: string, uuid: string }[] | n
         const testforResult = await world.runCommand(`testfor @a`);
 
         if (testforResult.statusCode !== 0 || !testforResult.victim || testforResult.victim.length === 0) {
-         //   console.warn("No players found or testfor command failed.", testforResult);
+            //   console.warn("No players found or testfor command failed.", testforResult);
             return null;
         }
 
@@ -416,11 +420,11 @@ export async function playerList(): Promise<{ name: string, uuid: string }[] | n
                 if (playerData && playerData.length > 0) {
                     playerList.push({ name: playerName, uuid: playerData[0].uniqueId });
                 } else {
-                 //   console.warn(`querytarget returned empty data for ${playerName}:`, queryResult)
+                    //   console.warn(`querytarget returned empty data for ${playerName}:`, queryResult)
                 }
 
             } else {
-               // console.error(`querytarget failed for ${playerName}:`, queryResult);
+                // console.error(`querytarget failed for ${playerName}:`, queryResult);
 
             }
         }
@@ -428,7 +432,7 @@ export async function playerList(): Promise<{ name: string, uuid: string }[] | n
 
 
     } catch (error) {
-       // console.error("Error in playerList function:", error);
+        // console.error("Error in playerList function:", error);
         return null;
     }
 }
@@ -437,52 +441,67 @@ export async function playerList(): Promise<{ name: string, uuid: string }[] | n
 // updatePlayers関数
 async function updatePlayers(): Promise<void> {
     try {
-        const allPlayerData = await getData();
-        if (!allPlayerData) return;
+        let playerDataList: (PlayerData | PartialPlayerData)[] = []; // PlayerDataまたはPartialPlayerDataの配列
+        const dataFromGetData = await getData();
 
-        let hasChanges = false;
-        const playerDataArray: PlayerData[] = Array.isArray(allPlayerData) ? allPlayerData : [allPlayerData];
-
-        playerDataArray.forEach((playerData) => {
-            const existingData = userData[playerData.name] || {};
-
-            const pingHistory = existingData.pingHistory || [];
-            if (Number.isFinite(playerData.ping) && playerData.ping !== null) {
-                pingHistory.push(playerData.ping);
+        if (dataFromGetData) {
+            playerDataList = Array.isArray(dataFromGetData) ? dataFromGetData : [dataFromGetData];
+        } else {
+            const dataFromPlayerList = await playerList();
+            if (dataFromPlayerList) {
+                playerDataList = dataFromPlayerList; // playerListはPartialPlayerData[]を返す
+            } else {
+                return;
             }
-            if (pingHistory.length > 5) {
-                pingHistory.shift();
-            }
-            const avgping = pingHistory.reduce((sum, p) => sum + p, 0) / pingHistory.length || 0;
-
-
-            const newData = {
-                ...existingData,
-                name: playerData.name,
-                entityId: playerData.id,
-                uuid: playerData.uuid,
-                ping: playerData.ping,
-                PacketLoss: playerData.packetloss,
-                Avgping: avgping,
-                Avgpacketloss: Number.isFinite(playerData.avgpacketloss) && playerData.avgpacketloss !== null ? playerData.avgpacketloss : 0,
-                pingHistory: pingHistory,
-            };
-
-            if (!deepEqual(existingData, newData)) {
-                userData[playerData.name] = newData;
-                hasChanges = true;
-            }
-        });
-
-        if (hasChanges) {
-            saveUserData();
         }
 
+        let hasChanges = false;
+
+        for (const playerData of playerDataList) {  // for...of ループに変更
+            userData[playerData.name] = userData[playerData.name] || {}; // userDataにプレイヤーが存在しない場合の初期化
+
+            userData[playerData.name].name = playerData.name;
+            userData[playerData.name].uuid = playerData.uuid;
+
+            if ('ping' in playerData && playerData.ping !== undefined) { // pingプロパティが存在する場合のみ更新
+                const pingHistory = [...(userData[playerData.name].pingHistory || []), playerData.ping];
+
+                if (pingHistory.length > 5) {
+                    pingHistory.shift();
+                }
+
+                userData[playerData.name].ping = playerData.ping;
+                userData[playerData.name].pingHistory = pingHistory;
+                userData[playerData.name].Avgping =
+                    pingHistory.reduce((sum, p) => sum + p, 0) / pingHistory.length || 0;
+            }
+            // packetloss, avgpacketlossなども同様に処理
+
+            if ('activeSessionId' in playerData) {
+                userData[playerData.name] = {
+                    ...userData[playerData.name],
+                    ...playerData,
+                };
+            }
+
+
+            // 変更を検知
+            if (!deepEqual(userData[playerData.name], playerData)) {
+
+                hasChanges = true;
+            }
+
+        }
+
+
+
+        if (hasChanges) {
+            await saveUserData(); // awaitを追加
+        }
     } catch (error) {
         console.error("Error updating player data:", error);
     }
 }
-
 
 
 
@@ -592,16 +611,16 @@ server.events.on('playerChat', async (event) => {
 });
 
 interface PlayerTravelled {
-    isUnderwater: boolean;       // 水中にいるかどうか
-    metersTravelled: number;     // 移動距離（メートル）
-    newBiome: number;            // 新しいバイオームのID
+    isUnderwater: boolean;
+    metersTravelled: number;
+    newBiome: number;
     player: {
-        color: string;             // プレイヤーの色
-        dimension: number;         // 次元
-        id: number;                // プレイヤーのID
-        name: string;              // プレイヤーの名前
+        color: string;
+        dimension: number;
+        id: number;
+        name: string;
         position: {
-            x: number;               // X座標
+            x: number;
             y: number;               // Y座標
             z: number;               // Z座標
         };
@@ -617,15 +636,15 @@ server.events.on('PlayerTravelled', async (event: PlayerTravelled) => {
     const { isUnderwater, metersTravelled, player } = event;
 
     const flag = false;
-    //if (player.name !== 'PEXkurann') return; 
+    //if (player.name !== 'PEXkoukunn') return; 
 
-    
+
     if (flag) {
         console.log(`Player: ${player.name}`);
         console.log(`Underwater: ${isUnderwater}`);
         console.log(`Distance: ${metersTravelled} meters`);
         console.log(`Position: x=${player.position.x}, y=${player.position.y}, z=${player.position.z}`);
-    } 
+    }
 
 });
 
@@ -673,47 +692,65 @@ server.events.on('playerJoin', async (event) => {
     const world = server.getWorlds()[0];
     if (!world) return;
 
-    for (const playerWithTag of event.players) {
+    for (const playerNames of event.players) {
         try {
-            const playerListResult = await playerList();
+            let playerInfo: { name: string; uuid: string } | undefined;
+            let attempts = 0;
+            const maxAttempts = 10; // 最大試行回数
 
-            if (playerListResult) {
-                const playerInfo = playerListResult.find(player => playerWithTag.includes(player.name));
+            while (!playerInfo && attempts < maxAttempts) {
+                const playerListResult = await playerList();
 
-                if (playerInfo) {
-                    const playerName = playerInfo.name;
-                    const uuid = playerInfo.uuid;
-
-                    userData[playerInfo.name].lastJoin = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
-                    await saveUserData();
-
-                    const ban = banList.find(ban => ban.uuid === uuid);
-
-                    if (ban) {
-                        if (ban.expiresAt && ban.expiresAt < Date.now()) {
-                            banList = banList.filter(b => b.uuid !== uuid);
-                            await saveBanList();
-                            console.log(`Expired ban for ${playerName} removed.`);
-                            continue;
-                        }
-
-                        if (!world) continue;
-
-                        const kickMessage = `§4[§cBAN通知§4]\n§fあなたはBANされました。\n§f理由: §e${ban.reason}\n§fBANした管理者: §b${ban.bannedBy}\n§f期限: §e${ban.expiresAt ? new Date(ban.expiresAt).toLocaleString() : '永久'}`;
-                        await world.runCommand(`kick "${playerName}" ${kickMessage}`);
-                        console.log(`Banned player ${playerName} tried to join.`);
-                        return;
-                    }
+                if (playerListResult) {
+                    // player.name を直接使用
+                    playerInfo = playerListResult.find(p => p.name === playerNames);
+                } else {
+                    console.error("Failed to get player list.");
                 }
+
+                if (!playerInfo) {
+                    attempts++;
+                    await new Promise(resolve => setTimeout(resolve, 500)); // 500ms待機
+                }
+            }
+
+            if (!playerInfo) {
+                console.warn(`Player ${playerNames} not found in player list after ${maxAttempts} attempts.`);
+                continue; // 次のプレイヤーの処理へ
+            }
+
+
+            const playerName = playerInfo.name;
+            const uuid = playerInfo.uuid;
+
+            // userDataの初期化処理を追加 (userDataが未定義の場合のエラーを回避)
+            if (!userData[playerName]) {
+                userData[playerName] = { lastJoin: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) };
             } else {
-                console.error("Failed to get player list.");
+                userData[playerName].lastJoin = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+            }
+            await saveUserData();
+
+            const ban = banList.find(ban => ban.uuid === uuid);
+
+            if (ban) {
+                if (ban.expiresAt && ban.expiresAt < Date.now()) {
+                    banList = banList.filter(b => b.uuid !== uuid);
+                    await saveBanList();
+                    console.log(`Expired ban for ${playerName} removed.`);
+                    continue;
+                }
+
+                const kickMessage = `§4[§cBAN通知§4]\n§fあなたはBANされました。\n§f理由: §e${ban.reason}\n§fBANした管理者: §b${ban.bannedBy}\n§f期限: §e${ban.expiresAt ? new Date(ban.expiresAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) : '永久'}`;
+                await world.runCommand(`kick "${playerName}" ${kickMessage}`);
+                console.log(`Banned player ${playerName} tried to join.`);
+                continue; // BAN処理後は次のプレイヤーへ
             }
         } catch (error) {
-            console.error(`Error processing player ${playerWithTag}:`, error);
+            console.error(`Error processing player ${playerNames}:`, error);
         }
     }
 });
-
 
 server.events.on('playerLeave', async (event) => {
     const players = event.players;
@@ -721,11 +758,11 @@ server.events.on('playerLeave', async (event) => {
     if (Array.isArray(players)) {
         for (const player of players) {
             for (const playerName in userData) {
-                if (player && player.includes(playerName)) { 
+                if (player && player.includes(playerName)) {
                     try {
                         userData[playerName].lastLeave = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
                         await saveUserData();
-                        break; 
+                        break;
                     } catch (error) {
                         console.error(`Error recording lastLeave for ${playerName}:`, error);
                     }

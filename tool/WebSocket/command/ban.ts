@@ -104,7 +104,11 @@ registerCommand('unban', `${MINECRAFT_COMMAND_PREFIX}unban <player>`, 'プレイ
     }
 
     
-    banList = banList.filter(ban => ban.name !== playerName);
+    const targetBanIndex = banList.findIndex(ban => ban.name === playerName);
+
+    if (targetBanIndex !== -1) {
+        banList.splice(targetBanIndex, 1); 
+    }
     await saveBanList();
 
     world.sendMessage(`プレイヤー ${playerName} のBANを解除しました。`, sender);
