@@ -15,7 +15,6 @@ import * as fs from 'fs/promises';
 import { config } from 'dotenv';
 import { updateVoiceChannels, initVcFunctions } from './vc';
 import path from 'path';
-import { serve } from 'bun';
 
 
 const defaultEnvContent = `# 自動的に.envファイルを作成しました\n
