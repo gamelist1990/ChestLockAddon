@@ -1,8 +1,8 @@
 {
     "name": "chestlock",
+    "version": "1.5.0",
     "productName": "chestLock",
     "description": "The best chestlock",
-    "private": true,
     "type": "module",
     "scripts": {
         "copy": "node tool/copy.js",

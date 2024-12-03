@@ -18,6 +18,7 @@ import { updateVoiceChannels, initVcFunctions } from './vc';
 import path from 'path';
 
 
+
 const defaultEnvContent = `# 自動的に.envファイルを作成しました\n
 # ここに設定値を書き込んで下さい
 

@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "uuid": "1d4252ab-2a2c-3dd8-9cae-c7ab0c3d6d90",
+    "name": "PEXkoukunn",
+    "reason": "実験の為BAN",
+    "bannedBy": "koukun_",
+    "bannedAt": 1733220569395,
+    "expiresAt": 1733224169363
+  }
+]
