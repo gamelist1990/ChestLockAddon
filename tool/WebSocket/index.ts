@@ -10,6 +10,7 @@ import {
     EmbedBuilder,
     PermissionsBitField,
     GuildMember,
+
 } from 'discord.js';
 import * as fs from 'fs/promises';
 import { config } from 'dotenv';
@@ -20,14 +21,14 @@ import path from 'path';
 const defaultEnvContent = `# 自動的に.envファイルを作成しました\n
 # ここに設定値を書き込んで下さい
 
-DISCORD_TOKEN="xxxxxxxx"
-TARGET_DISCORD_CHANNEL_ID="xxxxxxxx"
-GUILD_ID="xxxxxxxx"
-CATEGORY_ID="xxxxxxxx"
-LOBBY_VC_ID="xxxxxxxx"
-ADMIN_ROLE_ID="xxxxxxxx"
-ADMINUUID=['xxxxxxxx']
-ADMINNAME=['xxxxxxxx']
+DISCORD_TOKEN="これは必須"
+TARGET_DISCORD_CHANNEL_ID="これはDiscordのチャットをマイクラに送信する際に使うチャンネル"
+GUILD_ID="鯖のID"
+CATEGORY_ID="vcのチャンネルを作るカテゴリID"
+LOBBY_VC_ID="ロビーvcのiD"
+ADMIN_ROLE_ID="管理者権限を持つロールのID"
+ADMINUUID=['マイクラでの管理者のID']
+ADMINNAME=['マイクラでの管理者のname']
 `;
 
 const createDefaultEnvFile = async (filePath) => {
@@ -113,6 +114,7 @@ export let userData: { [username: string]: any } = {};
 let updateVoiceChannelsTimeout: NodeJS.Timeout;
 let updatePlayersInterval: NodeJS.Timeout;
 export let banList: BanData[] = [];
+let isWorldLoaded = false; //defaultではワールドにつないでないためoff
 
 
 // Discordクライアント
@@ -125,17 +127,6 @@ const discordClient = new Client({
     ],
 });
 
-// Discordスラッシュコマンド
-const commands = [
-    new SlashCommandBuilder().setName('mc').setDescription('Minecraft サーバーにコマンドを送信します').addStringOption((option) => option.setName('command').setDescription('実行するコマンド').setRequired(true)),
-    new SlashCommandBuilder().setName('link').setDescription('Minecraft のユーザー名と Discord アカウントを紐付けします').addStringOption((option) => option.setName('minecraft_username').setDescription('Minecraft のユーザー名').setRequired(true)),
-    new SlashCommandBuilder()
-        .setName('toggle')
-        .setDescription('機能の有効/無効を切り替えます。管理者権限が必要です。')
-        .addStringOption((option) =>
-            option.setName('feature').setDescription('切り替える機能 (discord, vc)').setRequired(true).addChoices({ name: 'Discord Integration', value: 'discord' }, { name: 'Voice Channel Sync', value: 'vc' })
-        ),
-].map((command) => command.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN as string);
 
@@ -565,6 +556,7 @@ server.events.on('serverOpen', async () => {
 
 server.events.on('worldAdd', async (event) => {
     const { world } = event;
+    isWorldLoaded = true;
     world.subscribeEvent("PlayerTravelled")
 });
 
@@ -780,6 +772,36 @@ server.events.on('playerLeave', async (event) => {
 // Discord bot起動時の処理
 discordClient.login(DISCORD_TOKEN);
 
+
+
+const commands = [
+    new SlashCommandBuilder().setName('mc').setDescription('Minecraft サーバーにコマンドを送信します').addStringOption((option) => option.setName('command').setDescription('実行するコマンド').setRequired(true)),
+    new SlashCommandBuilder().setName('link').setDescription('Minecraft のユーザー名と Discord アカウントを紐付けします').addStringOption((option) => option.setName('minecraft_username').setDescription('Minecraft のユーザー名').setRequired(true)),
+    new SlashCommandBuilder()
+        .setName('toggle')
+        .setDescription('機能の有効/無効を切り替えます。管理者権限が必要です。')
+        .addStringOption((option) =>
+            option.setName('feature').setDescription('切り替える機能 (discord, vc)').setRequired(true).addChoices({ name: 'Discord Integration', value: 'discord' }, { name: 'Voice Channel Sync', value: 'vc' })
+        ),
+    new SlashCommandBuilder().setName('list').setDescription('オンラインプレイヤーのリストを表示します。'),
+    new SlashCommandBuilder().setName('ban').setDescription('プレイヤーをBANします。').addStringOption(option => option.setName('player').setDescription('プレイヤー名').setRequired(true)).addStringOption(option => option.setName('reason').setDescription('理由').setRequired(true)).addStringOption(option => option.setName('duration').setDescription('期間 (例: 1d, 2h, 30m)')),
+    new SlashCommandBuilder().setName('unban').setDescription('プレイヤーのBANを解除します。').addStringOption(option => option.setName('player').setDescription('プレイヤー名').setRequired(true)),
+    new SlashCommandBuilder()
+        .setName('check')
+        .setDescription('プレイヤー情報を確認します。管理者権限が必要です。')
+        .addSubcommand(subcommand =>
+            subcommand.setName('time').setDescription('オフラインプレイヤーの情報を確認します。').addIntegerOption(option => option.setName('page').setDescription('ページ番号'))
+        )
+        .addSubcommand(subcommand =>
+            subcommand.setName('banlist').setDescription('BANリストを確認します。').addIntegerOption(option => option.setName('page').setDescription('ページ番号'))
+        )
+        .addSubcommand(subcommand =>
+            subcommand.setName('data').setDescription('特定のプレイヤーのデータを確認します。').addStringOption(option => option.setName('player').setDescription('プレイヤー名').setRequired(true))
+        ),
+
+].map(command => command.toJSON());
+
+
 discordClient.on('ready', async () => {
     console.log('Discord bot is ready!');
 
@@ -935,6 +957,232 @@ discordClient.on('interactionCreate', async (interaction) => {
 
                 await interaction.reply({ content: `VC同期を${featureToggles.vc ? '有効化' : '無効化'}しました。`, ephemeral: true });
                 break;
+        }
+    }
+    else if (interaction.commandName === 'list') {
+        const playerListResult = await playerList();
+        if (playerListResult && playerListResult.length > 0) {
+            const embed = new EmbedBuilder()
+                .setColor('#0099ff')
+                .setTitle(`(${playerListResult.length}) Online Players`)
+                .setDescription(
+                    playerListResult
+                        .map(player => `• ${player.name}  (${player.uuid})`)
+                        .join('\n')
+                );
+            await interaction.reply({ embeds: [embed] });
+        } else {
+            await interaction.reply(
+                'プレイヤーがいないもしくはServerがtestforコマンドに対応しておらず(取得できませんでした).'
+            );
+        }
+    } else if (interaction.commandName === 'ban' || interaction.commandName === 'unban') {
+        if (!interaction.memberPermissions || !interaction.memberPermissions.has(PermissionsBitField.Flags.Administrator)) {
+            return interaction.reply({ content: 'このコマンドを実行するには管理者権限が必要です。', ephemeral: true });
+        }
+
+        const playerName = interaction.options.getString('player', true);
+
+        if (interaction.commandName === 'ban') {
+            const reason = interaction.options.getString('reason', true);
+            const duration = interaction.options.getString('duration');
+
+            let expiresAt: number | null = null;
+            if (duration) {
+                const durationParts = duration.split(',');
+                let totalMilliseconds = 0;
+                for (const part of durationParts) {
+                    const durationMatch = part.trim().match(/(\d+)([dhm])/);
+                    if (durationMatch) {
+                        const durationValue = parseInt(durationMatch[1]);
+                        const unit = durationMatch[2];
+                        let multiplier = 1000; // milliseconds
+                        switch (unit) {
+                            case 'm': multiplier *= 60; break; // minutes
+                            case 'h': multiplier *= 60 * 60; break; // hours
+                            case 'd': multiplier *= 60 * 60 * 24; break; // days
+                        }
+                        totalMilliseconds += durationValue * multiplier;
+                    } else {
+                        return interaction.reply({ content: `期間の指定が正しくありません: ${part}`, ephemeral: true });
+                    }
+                }
+                expiresAt = Date.now() + totalMilliseconds;
+            }
+
+
+
+            let banList = await getBanList();
+
+            const playerData = await WorldPlayer(playerName);
+            if (!playerData || playerData.length === 0) {
+                return interaction.reply({ content: `プレイヤー ${playerName} は見つかりませんでした。`, ephemeral: true });
+            }
+
+            const playerInfo = playerData[0];
+            const uuid = playerInfo.uniqueId;
+
+            const existingBan = banList.find(ban => ban.uuid === uuid);
+            if (existingBan) {
+                return interaction.reply({ content: `プレイヤー ${playerName} はすでにBANされています。`, ephemeral: true });
+            }
+
+            const newBan: BanData = {
+                uuid: uuid,
+                name: playerName,
+                reason: reason,
+                bannedBy: interaction.user.username,
+                bannedAt: Date.now(),
+                expiresAt: expiresAt,
+            };
+
+            banList.push(newBan);
+            await saveBanList();
+
+
+            const world = server.getWorlds()[0];
+            if (world) {
+                try {
+                    const kickMessage = `§4[§cBAN通知§4]\n§fあなたはBANされました。\n§f理由: §e${reason}\n§fBANした管理者: §b${interaction.user.username}\n§f期限: §e${newBan.expiresAt ? new Date(newBan.expiresAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) : '永久'}`;
+                    await world.runCommand(`kick "${playerName}" ${kickMessage}`);
+                    const broadcastMessage = `§6===============================\n§a[BAN通知] §e${playerName}§a ユーザーがBANされました！\n§f理由: §e${reason}\n§fBANした管理者: §b${interaction.user.username}\n§6===============================`;
+                    world.sendMessage(broadcastMessage);
+                } catch (error) {
+                    console.error("キックコマンドの実行エラー:", error);
+                    // interaction.followUp()でエラーメッセージを送信
+                    interaction.followUp({ content: 'プレイヤーのキック中にエラーが発生しました。', ephemeral: true }).catch(console.error); // followUpのエラー処理も追加
+                }
+            }
+
+
+            await interaction.reply({ content: `プレイヤー ${playerName} をBANしました。`, ephemeral: true });
+
+        } else if (interaction.commandName === 'unban') {
+            let banList = await getBanList();
+            const targetBan = banList.find(ban => ban.name === playerName);
+
+            if (!targetBan) {
+                return interaction.reply({ content: `プレイヤー ${playerName} はBANされていません。`, ephemeral: true });
+            }
+
+
+            banList = banList.filter(ban => ban.name !== playerName);
+            await saveBanList();
+
+            return interaction.reply({ content: `プレイヤー ${playerName} のBANを解除しました。`, ephemeral: true });
+        }
+    } else if (interaction.commandName === 'check') {
+        if (!interaction.memberPermissions || !interaction.memberPermissions.has(PermissionsBitField.Flags.Administrator)) {
+            return interaction.reply({ content: 'このコマンドを実行するには管理者権限が必要です。', ephemeral: true });
+        }
+
+        const subcommand = interaction.options.getSubcommand();
+        const page = interaction.options.getInteger('page') || 1;
+
+        switch (subcommand) {
+            case 'time': {
+                if (!isWorldLoaded) {
+                    return interaction.reply('Minecraftサーバーに接続されていません。');
+                }
+
+
+                const onlinePlayers = await playerList();
+                const onlinePlayerNames = onlinePlayers?.map(p => p.name) || [];
+
+                let playersToShow = Object.values(userData).filter(player => !onlinePlayerNames.includes(player.name));
+
+                playersToShow.sort((a, b) => new Date(b.lastLeave ?? 0).getTime() - new Date(a.lastLeave ?? 0).getTime());
+
+
+                const totalPages = Math.ceil(playersToShow.length / 5);
+                if (page > totalPages) {
+                    return interaction.reply({ content: `ページ ${page} は存在しません。`, ephemeral: true });
+                }
+
+                const startIndex = (page - 1) * 5;
+                const endIndex = startIndex + 5;
+                const paginatedPlayers = playersToShow.slice(startIndex, endIndex);
+
+
+                const embed = new EmbedBuilder()
+                    .setTitle(`オフラインプレイヤー情報 (ページ ${page}/${totalPages})`)
+                    .setColor('#0099ff');
+
+                for (const player of paginatedPlayers) {
+                    const lastJoin = player.lastJoin || "データなし";
+                    const lastLeave = player.lastLeave || "データなし";
+                    const fields = [
+                        { name: '名前', value: player.name, inline: true },
+                        { name: 'UUID', value: player.uuid, inline: true },
+                        { name: 'Ping', value: player.ping || "データなし", inline: true },
+                        { name: '平均Ping', value: player.Avgping || "データなし", inline: true },
+                        { name: 'パケットロス', value: player.packetloss || "データなし", inline: true },
+                        { name: '平均パケットロス', value: player.Avgpacketloss || "データなし", inline: true },
+                        { name: '最終参加', value: lastJoin, inline: true },
+                        { name: '最終退出', value: lastLeave, inline: true },
+                    ];
+                    embed.addFields(fields);
+                }
+
+                return interaction.reply({ embeds: [embed], ephemeral: true });
+            }
+            case 'banlist': {
+                const banList = await getBanList();
+                const totalPages = Math.ceil(banList.length / 5);
+
+                if (page > totalPages) {
+                    return interaction.reply({ content: banList.length === 0 && page === 1 ? "BANされているプレイヤーはいません。" : `ページ ${page} は存在しません。`, ephemeral: true });
+                }
+
+                const startIndex = (page - 1) * 5;
+                const endIndex = startIndex + 5;
+                const paginatedBans = banList.slice(startIndex, endIndex);
+
+                const embed = new EmbedBuilder()
+                    .setTitle(`BANリスト (ページ ${page}/${totalPages})`)
+                    .setColor('#ff0000');
+
+
+                for (const ban of paginatedBans) {
+                    const banDate = new Date(ban.bannedAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+                    const expiryDate = ban.expiresAt ? new Date(ban.expiresAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) : "永久";
+                    embed.addFields({
+                        name: `${ban.name} (UUID: ${ban.uuid})`,
+                        value: `BAN日: ${banDate}\n期限: ${expiryDate}\n理由: ${ban.reason}\nBANした人: ${ban.bannedBy}`,
+                        inline: false
+                    });
+
+                }
+
+                return interaction.reply({ embeds: [embed], ephemeral: false });
+            }
+            case 'data': {
+                const playerName = interaction.options.getString('player', true);
+
+                const playerData = userData[playerName];
+
+                if (!playerData) {
+                    return interaction.reply({ content: `プレイヤー ${playerName} のデータが見つかりません。`, ephemeral: true });
+                }
+
+                const embed = new EmbedBuilder()
+                    .setTitle(`${playerName} のデータ`)
+                    .setColor('#00ff00')
+                    .addFields(
+                        { name: 'Name', value: playerData.name, inline: true },
+                        { name: 'UUID', value: playerData.uuid, inline: true },
+                        { name: 'Avgping', value: playerData.Avgping !== undefined ? playerData.Avgping.toString() : "データなし", inline: true },
+                        { name: 'ID', value: playerData.id !== undefined ? playerData.id.toString() : "データなし", inline: true },
+                        { name: '最終参加', value: playerData.lastJoin || "データなし", inline: true },
+                        { name: '最終退出', value: playerData.lastLeave || "データなし", inline: true },
+                    );
+
+
+                return interaction.reply({ embeds: [embed], ephemeral: true });
+            }
+
+            default:
+                return interaction.reply({ content: '無効なサブコマンドです。', ephemeral: true });
         }
     }
 });

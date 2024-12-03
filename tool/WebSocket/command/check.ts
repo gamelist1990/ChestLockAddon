@@ -2,12 +2,13 @@ import {
     registerCommand,
     MINECRAFT_COMMAND_PREFIX,
     playerList,
-    userData
+    userData,
+    getBanList
 } from '../index';
 
-registerCommand('check', `${MINECRAFT_COMMAND_PREFIX}check <info|list> [time]`, 'プレイヤー情報をチェックします。', true, async (sender, world, args) => {
+registerCommand('check', `${MINECRAFT_COMMAND_PREFIX}check <info|list|banlist|data> [time|page]`, 'プレイヤー情報をチェックします。', true, async (sender, world, args) => {
     if (args.length === 0) {
-        world.sendMessage(`使用方法: ${MINECRAFT_COMMAND_PREFIX}check <info|list> [time]`, sender);
+        world.sendMessage(`使用方法: ${MINECRAFT_COMMAND_PREFIX}check <info|list|banlist|data> [time|page]`, sender);
         return;
     }
 
@@ -65,6 +66,77 @@ registerCommand('check', `${MINECRAFT_COMMAND_PREFIX}check <info|list> [time]`, 
         } else {
             world.sendMessage("オンラインプレイヤーの取得に失敗しました。", sender);
         }
+    } else if (subcommand === 'banlist') {
+        let page = 1;
+        if (args[1] !== undefined) {
+            page = parseInt(args[1]);
+            if (isNaN(page) || page < 1) {
+                page = 1;
+            }
+        }
+
+        const banList = await getBanList();
+        const startIndex = (page - 1) * 5;
+        const endIndex = startIndex + 5;
+        const paginatedBans = banList.slice(startIndex, endIndex);
+
+
+
+        if (paginatedBans.length === 0) {
+
+            if (banList.length === 0 && page === 1) {
+                world.sendMessage("BANされているプレイヤーはいません。", sender);
+                return;
+            }
+
+
+            world.sendMessage(`ページ ${page} は存在しません。`, sender);
+            return;
+
+        }
+
+
+
+        let message = `=== BANリスト (ページ ${page}/${Math.ceil(banList.length / 5)}) ===\n`;
+        for (const ban of paginatedBans) {
+            const banDate = new Date(ban.bannedAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+            const expiryDate = ban.expiresAt ? new Date(ban.expiresAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) : "永久";
+
+            message += `\n§e${ban.name} §7(UUID: ${ban.uuid})\n`;
+            message += `§7  BAN日: §a${banDate}\n`;
+            message += `§7  期限: §c${expiryDate}\n`;
+            message += `§7  理由: §d${ban.reason}\n`;
+            message += `§7  BANした人: §b${ban.bannedBy}\n`;
+
+        }
+        world.sendMessage(message, sender);
+
+
+    } else if (subcommand === 'data') {
+        const playerName = args[1];
+
+        if (!playerName) {
+            world.sendMessage(`プレイヤー名を指定してください: ${MINECRAFT_COMMAND_PREFIX}check data <プレイヤー名>`, sender);
+            return;
+        }
+
+        const playerData = userData[playerName];
+
+        if (!playerData) {
+            world.sendMessage(`プレイヤー ${playerName} のデータが見つかりません。`, sender);
+            return;
+        }
+
+        let message = `=== ${playerName} のデータ ===\n`;
+        message += `Name: ${playerData.name}\n`;
+        message += `UUID: ${playerData.uuid}\n`;
+        message += `Avgping: ${playerData.Avgping || "データなし"}\n`;
+        message += `ID: ${playerData.id || "データなし"}\n`;
+        message += `最終参加: ${playerData.lastJoin || "データなし"}\n`;
+        message += `最終退出: ${playerData.lastLeave || "データなし"}`;
+
+        world.sendMessage(message, sender);
+
     } else {
         world.sendMessage(`不明なサブコマンドです: ${subcommand}`, sender);
     }

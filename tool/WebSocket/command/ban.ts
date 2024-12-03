@@ -85,6 +85,7 @@ registerCommand('ban', `${MINECRAFT_COMMAND_PREFIX}ban <player> <reason> [durati
 
 
 
+
 registerCommand('unban', `${MINECRAFT_COMMAND_PREFIX}unban <player>`, 'プレイヤーのBANを解除します。', true, async (sender, world, args) => {
     if (args.length < 1) {
         world.sendMessage(`使用方法: ${MINECRAFT_COMMAND_PREFIX}unban <player>`, sender);

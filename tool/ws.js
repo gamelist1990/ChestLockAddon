@@ -1,5 +1,4 @@
-import pkg from 'discord.js';
-const { Client, GatewayIntentBits, Partials, EmbedBuilder } = pkg;
+import { Client, GatewayIntentBits, Partials, EmbedBuilder } from 'discord.js';
 
 const client = new Client({
     intents: [
@@ -10,25 +9,43 @@ const client = new Client({
     partials: [Partials.Channel]
 });
 
-client.login("fd196cd4cb9f45feb2b6d02827738d2acde1e99c3d1c33fef2a67e4b13751ba8");
+client.login("aaaaaaaaaaaaaaaaaaaaaaaaaaaa"); 
 
 client.on('ready', () => {
-    console.log(`login!! (${client.user.tag})`);
+    console.log(`ログインしました！ (${client.user.tag})`);
 });
 
-client.on("interactionCreate", interaction => {
-    if (interaction.isCommand() || interaction.isContextMenu()) {
+client.on("interactionCreate", async interaction => {
+    if (interaction.isChatInputCommand() || interaction.isUserContextMenuCommand() || interaction.isMessageContextMenuCommand()) {
+        const commandName = interaction.commandName;
+        const commandId = interaction.commandId;
+        const guildId = '890315487962095637'; // Verify this Guild ID
+
         const embed = new EmbedBuilder()
             .setColor('ffa500')
             .setTitle('コマンド削除完了')
-            .setDescription(`コマンド名: ${interaction.commandName}\nコマンドID: ${interaction.commandId}`);
-        interaction.reply({ embeds: [embed] }); 
-        console.log(`コマンド名: ${interaction.commandName}\nコマンドID: ${interaction.commandId}\nコマンドを削除しました`); 
+            .setDescription(`コマンド名: ${commandName}\nコマンドID: ${commandId}`);
 
-        client.application.commands.delete(interaction.commandId).catch(error => {
-            if (error) {
-                client.guilds.cache.get(interaction.guildId).commands.delete(interaction.commandId);
+        try {
+            const guild = client.guilds.cache.get(guildId);
+            if (guild) {
+                const commands = await guild.commands.fetch();
+                const command = commands.get(commandId);
+                if (command) {
+                    await command.delete();
+                    console.log(`Deleted guild command: ${commandName} (${commandId}) in guild ${guildId}`);
+                    return interaction.reply({ embeds: [embed] });
+                }
             }
-        });
+
+            await client.application.commands.delete(commandId);
+            console.log(`Deleted global command: ${commandName} (${commandId})`);
+            return interaction.reply({ embeds: [embed] });
+
+
+        } catch (error) {
+            console.error("Command deletion failed:", error);
+            return interaction.reply({ content: "コマンドの削除に失敗しました。", ephemeral: true });
+        }
     }
 });
