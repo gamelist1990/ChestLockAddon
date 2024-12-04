@@ -28,9 +28,6 @@
         "allowJs": true,
         "checkJs": true,
         "outDir": "./devFolder/scripts",
-        "typeRoots": [
-            "./node_modules/@minecraft"
-        ],
         "strictNullChecks": true,
         "strictFunctionTypes": true,
         "strictPropertyInitialization": true,
