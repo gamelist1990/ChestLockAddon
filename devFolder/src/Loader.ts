@@ -27,10 +27,11 @@ async function loadAllImports() {
   }
 }
 
-main();
 
 
-
+world.afterEvents.worldInitialize.subscribe(()=>{
+  main();
+})
 
 //ワールドの初期化処理
 

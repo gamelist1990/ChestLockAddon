@@ -35,8 +35,8 @@ registerCommand('check', `${MINECRAFT_COMMAND_PREFIX}check <info|list|banlist|da
             playersToShow = playersToShow.sort((a, b) => new Date(b.lastLeave).getTime() - new Date(a.lastLeave).getTime());
         }
 
-        const startIndex = (page - 1) * 5;
-        const endIndex = startIndex + 5;
+        const startIndex = (page - 1) * 3;
+        const endIndex = startIndex + 3;
         const paginatedPlayers = playersToShow.slice(startIndex, endIndex);
         if (paginatedPlayers.length === 0) {
             world.sendMessage(`ページ ${page} は存在しません。`, sender);
@@ -47,11 +47,9 @@ registerCommand('check', `${MINECRAFT_COMMAND_PREFIX}check <info|list|banlist|da
             message += `\n${player.name}:`;
             if (timeFilter) {
                 message += ` 最後に参加した時間: ${player.lastLeave}`;
-            } else {
-                message += ` UUID: ${player.uuid}, Ping: ${player.ping}, パケットロス: ${player.PacketLoss}, 平均Ping: ${player.Avgping}, 平均パケットロス: ${player.Avgpacketloss}, 最終ログイン: ${player.lastLeave}`;
             }
         }
-        const totalPages = Math.ceil(playersToShow.length / 5);
+        const totalPages = Math.ceil(playersToShow.length / 3);
         if (totalPages > 1) {
             message += `\n\n全 ${totalPages} ページ: #check info time [ページ番号] で他のページを表示`;
         }

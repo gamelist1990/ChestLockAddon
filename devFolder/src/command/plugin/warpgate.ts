@@ -47,13 +47,13 @@ function handleBlockBreak(event: any) {
       // 1つ目のブロック破壊処理
       if (!gate.gateArea.firstPos) {
         gate.gateArea.firstPos = { x: event.block.location.x, y: event.block.location.y, z: event.block.location.z };
-        player.sendMessage(translate(player, "command.warp.TheFirestBlock"));
+        player.sendMessage(translate(player, "command.edit.TheFirestBlock"));
         event.cancel = true;
         return;
       } else {
         // 2つ目のブロック破壊処理
         gate.gateArea.secondPos = { x: event.block.location.x, y: event.block.location.y, z: event.block.location.z };
-        player.sendMessage(translate(player, "command.warp.TheSecond"));
+        player.sendMessage(translate(player, "command.edit.TheSecond"));
         gate.creatingPlayer = undefined;
         event.cancel = true;
         saveGate();

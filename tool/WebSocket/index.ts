@@ -143,7 +143,6 @@ interface MinecraftCommand {
 interface PlayerData {
     activeSessionId: string;
     avgpacketloss?: number;
-    avgping?: number;
     clientId: string;
     color: string;
     deviceSessionId: string;
@@ -1114,15 +1113,10 @@ discordClient.on('interactionCreate', async (interaction) => {
                     const lastLeave = player.lastLeave || "データなし";
                     const fields = [
                         { name: '名前', value: player.name, inline: true },
-                        { name: 'UUID', value: player.uuid, inline: true },
-                        { name: 'Ping', value: player.ping || "データなし", inline: true },
-                        { name: '平均Ping', value: player.Avgping || "データなし", inline: true },
-                        { name: 'パケットロス', value: player.packetloss || "データなし", inline: true },
-                        { name: '平均パケットロス', value: player.Avgpacketloss || "データなし", inline: true },
                         { name: '最終参加', value: lastJoin, inline: true },
                         { name: '最終退出', value: lastLeave, inline: true },
                     ];
-                    embed.addFields(fields);
+                    embed.addFields(...fields);
                 }
 
                 return interaction.reply({ embeds: [embed], ephemeral: true });
