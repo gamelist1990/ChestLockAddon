@@ -1,4 +1,4 @@
-import { checkJsFile } from './errorChecker';
+import { checkJsFile, checkZipFile } from './errorChecker';
 import fs from 'fs/promises';
 import path from 'path';
 import express, { Request, Response, RequestHandler } from 'express';
@@ -7,14 +7,13 @@ import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
 
-// Multerの設定 (オリジナルのファイル名を使用し、UUIDで重複を回避)
 const storage = multer.diskStorage({
     destination: 'uploads/',
     filename: (req, file, cb) => {
         const originalname = file.originalname;
         const ext = path.extname(originalname);
         const baseName = path.basename(originalname, ext);
-        const filename = `${baseName}-${uuidv4().substring(0,3)}${ext}`;
+        const filename = `${baseName}-${uuidv4().substring(0, 3)}${ext}`;
         cb(null, filename);
     },
 });
@@ -28,8 +27,8 @@ interface MulterRequest extends Request {
     file?: Express.Multer.File;
 }
 
-const checkRouteHandler: RequestHandler = async (req: MulterRequest, res: Response) => {
-    return new Promise<void>(async (resolve, reject) => {
+const checkRouteHandler: RequestHandler = (req: MulterRequest, res: Response) => {
+    return new Promise<void>((resolve, reject) => {
         try {
             if (!req.file) {
                 res.status(400).json({ error: 'No file uploaded.' });
@@ -37,26 +36,27 @@ const checkRouteHandler: RequestHandler = async (req: MulterRequest, res: Respon
                 return;
             }
 
-            console.log("Original filename:", req.file.originalname);
-            console.log("Saved filename:", req.file.filename);
-            console.log("File path:", req.file.path);
+            let fileCheckPromise: Promise<{ filePath: string; line: number; character: number; message: string; basename: string; }[]>;
 
-            const errors = await checkJsFile(req.file.path);
+            if (req.file.originalname.endsWith('.zip')) {
+                fileCheckPromise = checkZipFile(req.file.path);
+            } else if (req.file.originalname.endsWith('.js') || req.file.originalname.endsWith('.ts')) {
+                fileCheckPromise = checkJsFile(req.file.path).then(errors =>
+                    errors.map(error => ({ ...error, basename: path.basename(error.filePath) }))
+                );
+            } else {
+                res.status(400).json({ error: '対応していないファイル形式です。zipかjsまたはtsファイルをアップロードしてください。' });
+                resolve();
+                return;
+            }
 
-            // basenameを追加
-            const errorsWithBasename = errors.map(error => ({
-                ...error,
-                basename: path.basename(error.filePath)
-            }));
-
-
-            await fs.unlink(req.file.path);
-
-
-            res.json({ errors: errorsWithBasename }); // errorsWithBasename を送信
-
-
-            resolve();
+            fileCheckPromise
+                .then(errors => {
+                    res.json({ errors });
+                    resolve();
+                })
+                .catch(reject)
+                .finally(() => { if (req.file) fs.unlink(req.file.path).catch(console.error) });
 
         } catch (error) {
             console.error(error);

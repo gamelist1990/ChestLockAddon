@@ -3,6 +3,11 @@
 
 <head>
   <title>TypeScript Error Checker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="このツールは(こう君)によって開発されています主な機能としてはjs及びtsのエラーチェックを行います(Minecraft ScriptAPIを想定)">
+  <link rel="icon" type="image/png" href="../WebSocket/assets/icon.png">
   <style>
     body {
       font-family: sans-serif;
@@ -91,13 +96,17 @@
 <body>
   <div id="container">
     <h1>TypeScript & JavaScript Error Checker</h1>
-
-    <input type="file" id="fileInput" accept=".js,.ts">
-    <label id="uploadLabel" for="fileInput">Choose File</label>
-
-
-    <button id="checkButton" disabled>Check</button>
-    <pre id="output"></pre>
+    <p>
+      このツールは、TypeScript (.ts) 及び JavaScript (.js) ファイル、またはこれらのファイルを圧縮したzipファイルの構文エラーをチェックします。<br>
+      zipファイルを選択した場合、内部のすべての .ts / .js ファイルがチェックされます。<br>
+      本ソフトウェアはMITライセンスです (GitHubでソースコードを確認できるyo)。
+    </p>
+  
+    <input type="file" id="fileInput" accept=".js,.ts,.zip">
+    <label id="uploadLabel" for="fileInput">ファイルを選択</label>
+    <button id="checkButton" disabled>チェック</button>
+  
+    <div id="output"></div>
   </div>
 
   <script>
@@ -127,7 +136,7 @@
         return;
       }
 
-      output.textContent = 'Checking...(只今チェック中です)';
+      output.textContent = 'Checking...(只今チェック中です(内容によっては時間が掛かります))';
       checkButton.disabled = true;
 
       const formData = new FormData();
@@ -142,18 +151,24 @@
 
         const result = await response.json();
 
-        if (result.errors.length === 0) {
+        console.log(result);
+
+        if (result && result.errors && result.errors.length === 0) {
           output.textContent = 'No errors found.(エラーは見つかりませんでした)';
-        } else {
+        } else if (result && result.errors) {
           output.innerHTML = result.errors.map(error =>
             `<p>File: ${error.basename}, Line: ${error.line}, Character: ${error.character}: <span class="error-message">${error.message}</span></p>`
           ).join('');
+        } else if (result && result.error) { 
+          output.innerHTML = `<p><span class="error-message">${result.error}</span></p>`;
+        } else {
+          output.textContent = '予期しないエラーが発生しました。';
         }
-
       } catch (error) {
         output.textContent = 'An error occurred: ' + error;
+        console.error("Client-side Error:", error); 
       } finally {
-        checkButton.disabled = false; 
+        checkButton.disabled = false;
       }
     });
   </script>
