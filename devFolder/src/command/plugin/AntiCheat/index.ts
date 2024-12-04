@@ -1,5 +1,5 @@
 //AntiCheat/index.ts
-import { world, system, Player, EntityHurtAfterEvent, GameMode, ChatSendBeforeEvent } from '@minecraft/server';
+import { world, system, Player, EntityHurtAfterEvent, GameMode } from '@minecraft/server';
 import { config } from '../../../Modules/Util';
 import { verifier } from '../../../Modules/Handler';
 import { registerCommand } from '../../../Modules/Handler';
@@ -128,10 +128,11 @@ world.beforeEvents.playerBreakBlock.subscribe((event: any) => {
     Xray.handleBlockBreak(event, playerDataManager, configs);
 });
 
-world.beforeEvents.chatSend.subscribe((event: ChatSendBeforeEvent) => {
+world.beforeEvents.chatSend.subscribe((event: any) => {
     if (!monitoring || !configs.antiCheat.enabled || !configs.antiCheat.modules.spam) return;
     Spam.detectSpam(event, playerDataManager, configs);
 });
+
 
 
 

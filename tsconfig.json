@@ -21,6 +21,9 @@
             "ESNext",
             "DOM"
         ],
+        "typeRoots": [
+            "./node_modules/@minecraft"
+        ],
         "noEmit": false,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
@@ -41,6 +44,6 @@
         "noUnusedParameters": true,
         "sourceMap": false,
         "removeComments": true,
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": false
     }
 }

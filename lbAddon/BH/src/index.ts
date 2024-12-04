@@ -1,6 +1,5 @@
-import { Entity, world, system } from "@minecraft/server";
+import { Entity, world, system, } from "@minecraft/server";
 import "./modules/commands";
-import "./modules/vote";
 import { loadLeaderboards } from "./modules/Leaderboard";
 
 export const db_leaderboards: { [objective: string]: any } = {};
@@ -13,15 +12,23 @@ function updateLeaderboard(entity: Entity) {
   const leaderboard = db_leaderboards[objective];
 
   if (leaderboard) {
-    leaderboard.update();
+    system.runTimeout(() => {
+      leaderboard.update();
+    }, 1)
   }
 }
 
 
+let scoreboard: any;
+let xpObjective: any;
 
 // スコアボード "xp" を作成 (まだ存在しない場合)
-const scoreboard = world.scoreboard;
-let xpObjective = scoreboard.getObjective("xp");
+system.runTimeout(() => {
+  scoreboard = world.scoreboard;
+  xpObjective = scoreboard.getObjective("xp");
+})
+
+
 if (!xpObjective) {
   xpObjective = scoreboard.addObjective("xp", "XP Level");
   if (!xpObjective) {

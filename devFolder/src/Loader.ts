@@ -1,4 +1,4 @@
-import { system, world } from '@minecraft/server';
+import { system, world, } from '@minecraft/server';
 import { loadPlayerLanguages } from './command/langs/list/LanguageManager';
 import { loadProtectedChests } from './command/plugin/chest';
 import { loadGate } from './command/plugin/warpgate';
@@ -16,6 +16,8 @@ const startTime = Date.now();
 
 
 
+
+
 async function loadAllImports() {
   try {
     await import('./command/import');
@@ -25,30 +27,44 @@ async function loadAllImports() {
   }
 }
 
-world.afterEvents.worldInitialize.subscribe(async () => {
-  try {
-    loadPlayerLanguages();
-    loadData();
-    loadReport();
-    //AntiCheat    //
-    initializeAntiCheat();
-    AddNewPlayers();
-    //_____________//
-    loadGate();
-    loadjoinModules();
-    loadProtectedChests();
-    await loadAllImports();
-  } catch (error) {
-    console.warn(`Error loading data: ${(error as Error).message}`);
-  }
+main();
 
-  const endTime = Date.now();
-  const loadTime = endTime - startTime;
-  if (config().module.debugMode.enabled === true) {
-    console.warn(`Plugin has been loaded in ${loadTime} ms`);
-  }
-  world.sendMessage(`§f[§bServer§f]§l§aChestLockAddonのデータの更新が ${loadTime} msで完了しました`)
-});
+
+
+
+//ワールドの初期化処理
+
+async function main() {
+  system.runTimeout(async () => {
+    try {
+      loadPlayerLanguages();
+      loadData();
+      loadReport();
+      //AntiCheat    //
+      initializeAntiCheat();
+      AddNewPlayers();
+      //_____________//
+      loadGate();
+      loadjoinModules();
+      loadProtectedChests();
+      await loadAllImports();
+    } catch (error) {
+      console.warn(`Error loading data: ${(error as Error).message}`);
+    }
+
+    const endTime = Date.now();
+    const loadTime = endTime - startTime;
+    if (config().module.debugMode.enabled === true) {
+      console.warn(`Plugin has been loaded in ${loadTime} ms`);
+    }
+
+    world.sendMessage(`§f[§bServer§f]§l§aChestLockAddonのデータの更新が ${loadTime} msで完了しました`)
+
+
+  }, 1)
+}
+
+
 
 //Custom Item
 world.afterEvents.itemUse.subscribe(({ itemStack: item, source: player }) => {
@@ -71,12 +87,12 @@ world.afterEvents.itemUse.subscribe(({ itemStack: item, source: player }) => {
 world.afterEvents.playerSpawn.subscribe((event: any) => {
   const { player } = event;
 
-  
+
 
 
   system.runTimeout(() => {
     if (player) {
-      const playerXuid = player.id; 
+      const playerXuid = player.id;
       const isBanned = banPlayers.some((bannedPlayer) => bannedPlayer.id === playerXuid);
       if (isBanned) {
         tempkick(player);

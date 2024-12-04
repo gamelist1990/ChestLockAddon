@@ -1,4 +1,4 @@
-import { Dimension, Entity, world } from "@minecraft/server";
+import { Dimension, Entity, system, world } from "@minecraft/server";
 import { db_leaderboards } from "../index";
 
 export class Leaderboard {
@@ -147,6 +147,7 @@ export function loadLeaderboards() {
 
 let checkedLeaderboards: { [entityId: string]: string } = {};
 
-world.afterEvents.worldInitialize.subscribe(() => {
+
+system.runTimeout(()=>{
   checkedLeaderboards = {};
-});
+},1)

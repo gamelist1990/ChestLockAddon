@@ -1,4 +1,4 @@
-import { ChatSendBeforeEvent, Player } from '@minecraft/server';
+import { Player } from '@minecraft/server';
 import { PlayerDataManager } from '../PlayerData';
 import { handleCheatDetection } from '../actions';
 import { updatePlayerData } from '../DataUpdate';
@@ -85,7 +85,7 @@ function handleBadWord(player: Player, data: any, playerDataManager: PlayerDataM
 }
 
 
-export function detectSpam(event: ChatSendBeforeEvent, playerDataManager: PlayerDataManager, configs: any): void {
+export function detectSpam(event: any, playerDataManager: PlayerDataManager, configs: any): void {
     const player = event.sender;
     const message = event.message;
     const data = playerDataManager.get(player);
