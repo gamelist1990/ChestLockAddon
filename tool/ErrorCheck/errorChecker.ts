@@ -1,3 +1,4 @@
+import { EntityIsHiddenWhenInvisibleComponent } from './../../node_modules/@minecraft/server-ui/node_modules/@minecraft/server/index.d';
 import typescript from 'typescript';
 import fs from 'fs/promises';
 import path from 'path';
@@ -21,12 +22,14 @@ export async function checkJsFile(filePath: string): Promise<{ filePath: string;
                 configFileName
             ).options;
         } else {
-            console.warn('tsconfig.json not found, using default options.');
+            console.warn('tsconfig.json not found, using default options.(この場合はMinecraftのデータのモジュールが使用できません)');
             compilerOptions = {
-                "target": typescript.ScriptTarget.ES2015,
-                "module": typescript.ModuleKind.CommonJS,
+                "target": typescript.ScriptTarget.ESNext,
+                "module": typescript.ModuleKind.ESNext,
                 "strict": true,
-                "noEmit": true
+                "noEmit": true,
+                "allowJs": true,
+                "checkJs": true
             };
             // or throw new Error('tsconfig.json not found.');
         }

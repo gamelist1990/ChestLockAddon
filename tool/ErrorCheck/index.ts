@@ -29,7 +29,9 @@ interface MulterRequest extends Request {
 }
 
 const checkRouteHandler: RequestHandler = async (req: MulterRequest, res: Response) => {
-    console.log('Request received:', 'Method',req.method,'Path', req.path);
+    console.log('Request received:', 'Method',req.method,'Path', req.path
+        
+    );
 
     try {
         if (!req.file) {
