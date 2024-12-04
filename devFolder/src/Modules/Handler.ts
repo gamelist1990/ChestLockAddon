@@ -105,7 +105,7 @@ export function suggestCommand(player: Player, commandName: string) {
 }
 
 function levenshteinDistance(a: string, b: string): number {
-  const helpsCom = [];
+  const helpsCom: number[][] = [];
 
   for (let i = 0; i <= b.length; i++) {
     helpsCom[i] = [i];

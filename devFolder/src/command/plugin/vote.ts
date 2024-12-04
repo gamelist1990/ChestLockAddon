@@ -273,12 +273,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             for (const [itemName, votes] of sortedVotes) {
                 results += `${itemName}: ${votes}票\n`;
 
-                const voters = [];
-                for (const playerName in playerVotes) {
-                    if (playerVotes[playerName] > 0) {
-                        voters.push(playerName);
-                    }
-                }
+                const voters = Object.keys(playerVotes).filter(playerName => playerVotes[playerName] > 0);
 
                 if (voters.length > 0) {
                     results += `  投票者: ${voters.join(', ')}\n`;

@@ -656,8 +656,8 @@ export const translations = {
     msgstr: "§a使用法: {prefix}list show <playerName> または {prefix}list all"
   },
   "commands.list.playerInfo": {
-    msgid: "§6 ==== Player Info =====\n §2Name: §f{name},\n §2ID: §f{TargetID},\n §2dimension:§f{dimension}\n §2Location: §f({TargetX}, {TargetY}, {TargetZ}),\n §2Health: §f{health},\n §2Game Mode:§f {GameMode},\n §2Ping:§f {ping}\n §2Device: §f{device}\n §2Memory: §f{memory}\n §6 ===========",
-    msgstr: "§6==== プレイヤー情報 =====\n §2名前: §f{name},\n §2ID: §f{TargetID},\n §2世界:§f{dimension}\n §2場所: §f({TargetX}, {TargetY} 、{TargetZ})、\n §2ヘルス: §f{health}、\n §2ゲームモード:§f {GameMode}、\n §2Ping:§f {ping}\n §2デバイス: §f{device}\n §2Memory: §f{memory}\n §6============"
+    msgid: "§6 ==== Player Info =====\n §2Name: §f{name},\n §2ID: §f{TargetID},\n §2dimension:§f{dimension}\n §2Location: §f({TargetX}, {TargetY}, {TargetZ}),\n §2Health: §f{health},\n §2Game Mode:§f {GameMode},\n §2Ping:§f {ping}\n §2Device: §f{device}\n §2Memory: §f{memory}\n §2Input Type: §f{inputType}\n §6 ===========",
+    msgstr: "§6==== プレイヤー情報 =====\n §2名前: §f{name},\n §2ID: §f{TargetID},\n §2世界:§f{dimension}\n §2場所: §f({TargetX}, {TargetY}, {TargetZ}),\n §2ヘルス: §f{health},\n §2ゲームモード:§f {GameMode},\n §2Ping:§f {ping}\n §2デバイス: §f{device}\n §2Memory: §f{memory}\n §2入力タイプ: §f{inputType}\n §6 ==========="
   },
   "commands.list.playerNotFound": {
     msgid: "§c Player not found: §6{tragetplayer}",

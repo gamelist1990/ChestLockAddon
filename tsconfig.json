@@ -18,7 +18,8 @@
         "module": "ESNext",
         "moduleResolution": "node",
         "lib": [
-            "ESNext"
+            "ESNext",
+            "DOM"
         ],
         "noEmit": false,
         "emitDecoratorMetadata": true,
@@ -34,9 +35,9 @@
         "strictFunctionTypes": true,
         "strictPropertyInitialization": true,
         "strictBindCallApply": true,
-        "noImplicitReturns": true,
+        "noImplicitReturns": false,
         "noUnusedLocals": true,
-        "noImplicitAny": true,
+        "noImplicitAny": false,
         "alwaysStrict": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitThis": true,

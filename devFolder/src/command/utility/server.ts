@@ -137,11 +137,12 @@ export function toggleServerPause() {
 }
 
 export function outputPlayerData(player: Player) {
-    const playerData = [];
+    // Explicitly type playerData
+    const playerData: { name: string; id: string }[] = [];
     for (const p of world.getPlayers()) {
         playerData.push({
             name: p.name,
-            id: p.id
+            id: p.id.toString() 
         });
     }
 
@@ -162,13 +163,14 @@ export function outputPlayerData(player: Player) {
             player.sendMessage('ホットバーの最初のスロットに書き込み可能な本を持ってください。');
         }
     }
-    const combinedData = [...oldData, ...playerData.filter(newData => !oldData.some(existing => existing.id === newData.id))];
+    const combinedData: { name: string; id: string }[] = [...oldData, ...playerData.filter(newData => !oldData.some(existing => existing.id === newData.id))];
 
     console.warn(JSON.stringify(combinedData));
     oldData.length = 0;
     oldData.push(...combinedData);
-    player.sendMessage("Check Book")
+    player.sendMessage("Check Book");
 }
+
 
 export function checkBanList(player: Player) {
     // banPlayers 配列の情報を文字列に変換

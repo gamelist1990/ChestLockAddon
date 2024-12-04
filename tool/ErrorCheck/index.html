@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>TypeScript Error Checker</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+
+    #container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      width: 90%;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    #uploadLabel {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #uploadLabel:hover {
+      background-color: #45a049;
+    }
+
+    #checkButton {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #checkButton:hover {
+      background-color: #0069d9;
+    }
+
+
+    #checkButton:disabled {
+      background-color: #6c757d;
+      cursor: default;
+    }
+
+
+    #output {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      white-space: pre-wrap;
+      overflow: auto;
+      min-height: 100px;
+    }
+
+    .error-message {
+      color: #dc3545;
+      /* Bootstrapのdangerカラーを使用 */
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container">
+    <h1>TypeScript & JavaScript Error Checker</h1>
+
+    <input type="file" id="fileInput" accept=".js,.ts">
+    <label id="uploadLabel" for="fileInput">Choose File</label>
+
+
+    <button id="checkButton" disabled>Check</button>
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const checkButton = document.getElementById('checkButton');
+    const uploadLabel = document.getElementById('uploadLabel');
+    const output = document.getElementById('output');
+
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (file) {
+        uploadLabel.textContent = file.name;
+        checkButton.disabled = false;
+      } else {
+        uploadLabel.textContent = 'Choose File(ファイルを選択)';
+        checkButton.disabled = true;
+      }
+    });
+
+
+    checkButton.addEventListener('click', async () => {
+
+      const file = fileInput.files[0];
+      if (!file) {
+        output.textContent = 'No file selected.(ファイルが選択されていませんJS or Ts を入れてください)';
+        return;
+      }
+
+      output.textContent = 'Checking...(只今チェック中です)';
+      checkButton.disabled = true;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+
+      try {
+        const response = await fetch('/check', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (result.errors.length === 0) {
+          output.textContent = 'No errors found.(エラーは見つかりませんでした)';
+        } else {
+          output.innerHTML = result.errors.map(error =>
+            `<p>File: ${error.basename}, Line: ${error.line}, Character: ${error.character}: <span class="error-message">${error.message}</span></p>`
+          ).join('');
+        }
+
+      } catch (error) {
+        output.textContent = 'An error occurred: ' + error;
+      } finally {
+        checkButton.disabled = false; 
+      }
+    });
+  </script>
+</body>
+
+</html>

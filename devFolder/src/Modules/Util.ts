@@ -1,4 +1,4 @@
-import { Player, GameMode, world, system, PlatformType, MemoryTier, } from '@minecraft/server';
+import { Player, GameMode, world, system, PlatformType, MemoryTier, InputMode, } from '@minecraft/server';
 import { uiManager } from '@minecraft/server-ui';
 
 interface CommandConfig {
@@ -217,25 +217,39 @@ export function clientdevice(player: Player): number {
 }
 
 
+export function InputType(player:Player): number {
+  const inputMode = player.inputInfo;
+  switch (inputMode.lastInputModeUsed) {
+    case InputMode.KeyboardAndMouse:
+      return 0;
+    case InputMode.Gamepad:
+      return 1;
+    case InputMode.MotionController:
+      return 2;
+    case InputMode.Touch:
+      return 3;
+    default:
+      return -1;
+  }
+}
+
 
 
 export function getMemoryTier(player: Player): number {
   const systemInfo = player.clientSystemInfo;
   switch (systemInfo.memoryTier) {
-    case MemoryTier.Undetermined:
-      return 0;
     case MemoryTier.SuperLow:
-      return 1;
+      return 0;
     case MemoryTier.Low:
-      return 2;
+      return 1;
     case MemoryTier.Mid:
-      return 3;
+      return 2;
     case MemoryTier.High:
-      return 4;
+      return 3;
     case MemoryTier.SuperHigh:
-      return 5;
+      return 4;
     default:
-      return -1; // Unknown
+      return -1; 
   }
 }
 
