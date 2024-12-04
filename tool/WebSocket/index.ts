@@ -1094,13 +1094,13 @@ discordClient.on('interactionCreate', async (interaction) => {
                 playersToShow.sort((a, b) => new Date(b.lastLeave ?? 0).getTime() - new Date(a.lastLeave ?? 0).getTime());
 
 
-                const totalPages = Math.ceil(playersToShow.length / 5);
+                const totalPages = Math.ceil(playersToShow.length / 3);
                 if (page > totalPages) {
                     return interaction.reply({ content: `ページ ${page} は存在しません。`, ephemeral: true });
                 }
 
-                const startIndex = (page - 1) * 5;
-                const endIndex = startIndex + 5;
+                const startIndex = (page - 1) * 3;
+                const endIndex = startIndex + 3;
                 const paginatedPlayers = playersToShow.slice(startIndex, endIndex);
 
 
