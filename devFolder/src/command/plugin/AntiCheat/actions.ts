@@ -26,7 +26,7 @@ export function executeFreeze(player: Player, configs: any, playerDataManager: P
     if (!data) return;
 
     playerDataManager.update(player, { isFrozen: true, freezeStartTime: Date.now(), originalGamemode: player.getGameMode() });
-    player.setGameMode(GameMode.adventure); // フリーズ中はアドベンチャーモードに設定
+    player.setGameMode(GameMode.adventure); 
     player.teleport(player.location, { dimension: player.dimension });
     player.inputPermissions.movementEnabled = false;
     player.inputPermissions.cameraEnabled = false;

@@ -7,7 +7,7 @@ import { tickEvent } from '../../Modules/tick';
 
 let isServerPaused = false; // サーバーが一時停止されているかどうかを追跡する変数
 let isRealTimePingEnabled = false; // リアルタイムping検知が有効かどうか
-
+const savedGameRules: { [rule: string]: boolean | number | string } = {};
 let startTime = Date.now();
 const oldData: { name: string, id: string }[] = [];
 
@@ -107,30 +107,54 @@ export function getPing(player?:Player): Promise<{ ping: number; level: string }
 
 
 export function toggleServerPause() {
-    isServerPaused = !isServerPaused; // 一時停止状態を反転
+    isServerPaused = !isServerPaused;
 
     if (isServerPaused) {
-        system.runTimeout(() => { // 1 ティック遅延させてゲームルールを変更
-            // 一時停止 
+        system.runTimeout(() => {
+            // ゲームルールを保存
+            savedGameRules.mobGriefing = world.gameRules.mobGriefing;
+            savedGameRules.doFireTick = world.gameRules.doFireTick;
+            savedGameRules.tntExplodes = world.gameRules.tntExplodes;
+            savedGameRules.respawnBlocksExplode = world.gameRules.respawnBlocksExplode;
+
+
+            // 一時停止処理
+            for (const player of world.getPlayers()) {
+                if (!player.hasTag("op") && !player.hasTag("staff")) {
+                    player.inputPermissions.movementEnabled = false;
+                    player.inputPermissions.cameraEnabled = false;
+                }
+            }
+
             world.gameRules.mobGriefing = false;
             world.gameRules.doFireTick = false;
             world.gameRules.tntExplodes = false;
             world.gameRules.respawnBlocksExplode = false;
+
             world.sendMessage('Server paused. Protection enabled');
 
-            // 全プレイヤーの現在地
             for (const player of world.getPlayers()) {
                 const { x, y, z } = player.location;
                 world.sendMessage(`§f>>§a${player.name}'s   §blocation: x= ${Math.floor(x)}, y= ${Math.floor(y)}, z= ${Math.floor(z)}`);
             }
+            
         }, 1);
     } else {
-        system.runTimeout(() => { // 1 ティック遅延させてゲームルールを変更
-            // 再開
-            world.gameRules.mobGriefing = true;
-            world.gameRules.doFireTick = true;
-            world.gameRules.tntExplodes = true;
-            world.gameRules.respawnBlocksExplode = true;
+        system.runTimeout(() => {
+            // ゲームルールを復元
+            world.gameRules.mobGriefing = savedGameRules.mobGriefing as boolean; 
+            world.gameRules.doFireTick = savedGameRules.doFireTick as boolean;
+            world.gameRules.tntExplodes = savedGameRules.tntExplodes as boolean;
+            world.gameRules.respawnBlocksExplode = savedGameRules.respawnBlocksExplode as boolean;
+
+
+            // 再開処理
+            for (const player of world.getPlayers()) {
+                if (!player.hasTag("op") && !player.hasTag("staff")) {
+                    player.inputPermissions.movementEnabled = true;
+                    player.inputPermissions.cameraEnabled = true;
+                }
+            }
             world.sendMessage('Server resumed. Protection disabled');
         }, 1);
     }
