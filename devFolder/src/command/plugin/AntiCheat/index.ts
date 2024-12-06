@@ -8,6 +8,7 @@ import * as Speed from './detections/Speed';
 import * as KillAura from './detections/KillAura';
 import * as Xray from './detections/Xray';
 import * as Spam from './detections/Spam';
+import * as editionFake from './detections/editionFake';
 import { PlayerDataManager } from './PlayerData';
 import { handleCheatDetection, unfreezePlayer } from './actions';
 import { addPositionHistory, cleanupSuspiciousBlocks, updateEnderPearlInterval } from './utils';
@@ -18,6 +19,7 @@ import { getPlayerCPS } from '../tag';
 // 設定 (必要に応じて調整)
 const configs = {
     debugMode: false,
+    ver: 0.2,
     antiCheat: {
         enabled: true, 
         detectionThreshold: 2,
@@ -29,7 +31,8 @@ const configs = {
             speed: false,
             killAura: false,
             xray: false,
-            spam: true
+            spam: true,
+            editionFake:true
         }
     },
 };
@@ -71,6 +74,11 @@ function runTick(): void {
             if (configs.antiCheat.modules.speed) { // speed モジュールが有効な場合のみ実行
                 const speedResult = Speed.detectSpeed(player, playerDataManager);
                 if (speedResult) handleCheatDetection(player, speedResult, configs, playerDataManager);
+            }
+
+            if (configs.antiCheat.modules.editionFake) { // speed モジュールが有効な場合のみ実行
+                const response = editionFake.detectEditionFake(player, playerDataManager);
+                if (response) handleCheatDetection(player, response, configs, playerDataManager);
             }
 
             cleanupSuspiciousBlocks(data, currentTime);

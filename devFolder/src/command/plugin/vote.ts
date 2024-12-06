@@ -18,6 +18,7 @@ interface VoteData {
     showLiveResults: boolean;
     maxResultsToShow: number;
     handleTies: boolean; 
+    checkVote: boolean;
 }
 
 const VOTE_DATA_KEY = 'vote_data';
@@ -31,7 +32,8 @@ const defaultVoteData: VoteData = {
     announceInterval: 15,
     showLiveResults: false,
     maxResultsToShow: 10,
-    handleTies: false, // デフォルトでは同率順位を処理しない
+    handleTies: false, 
+    checkVote: false,
 };
 
 let voteData: VoteData = defaultVoteData;
@@ -163,6 +165,53 @@ function announceResults(voteItems: VoteItem[], customResultText: string): void 
             currentRank++;
         }
         previousScore = item.score;
+    }
+
+
+
+    if (voteData.checkVote) {
+        const checkScoreboardName = "vote_check";
+        let checkScoreboard = world.scoreboard.getObjective(checkScoreboardName);
+        if (!checkScoreboard) {
+            checkScoreboard = world.scoreboard.addObjective(checkScoreboardName, "投票確認");
+        }
+
+        checkScoreboard.getParticipants().forEach(participant => checkScoreboard.removeParticipant(participant));
+
+        // 投票結果から順位マップを作成 (同点の順位を適切に処理)
+        const rankMap: { [itemName: string]: number } = {};
+        let currentRank = 1;
+        let previousScore = -1;
+
+        const sortedVoteItems = [...voteItems].sort((a, b) => b.score - a.score); // ソートしたコピーを作成
+        for (let i = 0; i < sortedVoteItems.length; i++) {
+            const item = sortedVoteItems[i];
+            if (item.score !== previousScore) {
+                rankMap[item.name] = currentRank;
+                currentRank++;
+            } else {
+                rankMap[item.name] = currentRank - 1; // 同点の場合は前の順位と同じにする
+            }
+            previousScore = item.score;
+        }
+
+        // 各プレイヤーの投票結果と順位をスコアボードに記録
+        for (const playerName in playerVotes) {
+            const votedItemIndex = playerVotes[playerName];
+            const votedItemName = getVoteItemsFromScoreboard()[votedItemIndex]?.name;
+
+
+            if (votedItemName) {
+                const rank = rankMap[votedItemName];
+                const player = world.getPlayers().find(p => p.name === playerName);
+                if (player) {
+                    checkScoreboard.setScore(player, rank);
+                }
+                if (!player) {
+                    checkScoreboard.setScore(playerName, rank);
+                }
+            }
+        }
     }
 
     sendMessageToTarget(results);
@@ -315,7 +364,8 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             .textField("票数表示テキスト (例: 票、pt)", "例: 票", voteData.voteText ?? "票")
             .textField("表示する最大順位", "", voteData.maxResultsToShow.toString())
             .textField("対象プレイヤーのタグ (空欄は全員)", "例: voter", targetTag ?? "")
-            .toggle("同率順位を処理", voteData.handleTies);
+            .toggle("同率順位を処理", voteData.handleTies)
+            .toggle("投票結果をスコアボードに記録", voteData.checkVote);
         //@ts-ignore
         form.show(player).then((response: ModalFormResponse) => {
             if (response.canceled || !response.formValues) return;
@@ -332,6 +382,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             const maxResultsToShowString = response.formValues[9] as string;
             targetTag = response.formValues[10] as string;
             voteData.handleTies = response.formValues[11] as boolean;
+            voteData.checkVote = response.formValues[12] as boolean;
 
 
 
@@ -369,6 +420,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             voteData.duration = newDuration;
             voteData.resultText = resultText;
             voteData.allowMultipleVotes = allowMultipleVotes;
+            player.sendMessage(`投票結果のスコアボード記録を ${voteData.checkVote ? '有効' : '無効'} にしました。`);
             player.sendMessage(`投票時間を ${newDuration} 秒に設定しました。`);
             player.sendMessage(`投票結果のタイトルを "${resultText}" に設定しました。`);
             player.sendMessage(`複数投票を${allowMultipleVotes ? '許可' : '禁止'}しました。`);

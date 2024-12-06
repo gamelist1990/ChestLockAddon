@@ -1,17 +1,15 @@
 //AntiCheat/detections/Speed.ts
 import { Player } from '@minecraft/server';
 import { PlayerDataManager } from '../PlayerData';
-import { calculateHorizontalSpeed, hasEffect } from '../utils';
+import { hasEffect } from '../utils'; // calculateHorizontalSpeed は不要になります
 import { updatePlayerData } from '../DataUpdate';
 import { getGamemode } from '../../../../Modules/Util';
-
 
 export function detectSpeed(player: Player, playerDataManager: PlayerDataManager): { cheatType: string; value?: number } | null {
     const data = playerDataManager.get(player);
     if (!data) return null;
 
-
-    // 無効化条件
+    // 無効化条件 (変更なし)
     if (
         data.isTeleporting ||
         player.isGliding ||
@@ -30,31 +28,31 @@ export function detectSpeed(player: Player, playerDataManager: PlayerDataManager
     }
 
     const now = Date.now();
-    const checkInterval = 500; // チェック間隔 (ミリ秒)
+    const checkInterval = 500;
 
     if (now - data.lastSpeedCheck < checkInterval) return null;
 
+    try {
+        const movementVector = player.inputInfo.getMovementVector();
+        const speed = Math.sqrt(movementVector.x * movementVector.x + movementVector.y * movementVector.y) * (1000 / checkInterval) * 20 / 50;
 
-    const lastPosition = data.positionHistory[data.positionHistory.length - 2] || player.location;
-    const distance = calculateHorizontalSpeed(player.location, lastPosition);
-    const speed = distance * (1000 / checkInterval);
+        const allowedSpeed = 4.0;
 
-
-    const allowedSpeed = 4.0; // 通常のプレイヤーの最大速度は4.3block/s程度なので4.0に設定
-
-
-    if (speed > allowedSpeed) {
-        data.speedViolationCount++;
-        if (data.speedViolationCount >= 2) {
-            updatePlayerData(player, playerDataManager, { speedViolationCount: 0, lastSpeedCheck: now });//DataUpdate経由で更新
-            return { cheatType: 'Speed', value: speed };
+        if (speed > allowedSpeed) {
+            data.speedViolationCount++;
+            if (data.speedViolationCount >= 2) {
+                updatePlayerData(player, playerDataManager, { speedViolationCount: 0, lastSpeedCheck: now });
+                return { cheatType: 'Speed', value: speed };
+            }
+        } else {
+            updatePlayerData(player, playerDataManager, { speedViolationCount: 0, lastSpeedCheck: now });
         }
 
-    } else {
-        updatePlayerData(player, playerDataManager, { speedViolationCount: 0, lastSpeedCheck: now });//DataUpdate経由で更新
-
+    } catch (error) {
+        console.error("getMovementVectorでエラーが発生しました:", error);
+        return null; 
     }
+
 
     return null;
 }
-
