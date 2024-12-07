@@ -555,9 +555,7 @@ server.events.on('serverOpen', async () => {
 });
 
 server.events.on('worldAdd', async (event) => {
-    const { world } = event;
     isWorldLoaded = true;
-    world.subscribeEvent("PlayerTravelled")
 });
 
 server.events.on('playerChat', async (event) => {
@@ -601,48 +599,6 @@ server.events.on('playerChat', async (event) => {
         }
     }
 });
-
-interface PlayerTravelled {
-    isUnderwater: boolean;
-    metersTravelled: number;
-    newBiome: number;
-    player: {
-        color: string;
-        dimension: number;
-        id: number;
-        name: string;
-        position: {
-            x: number;
-            y: number;               // Y座標
-            z: number;               // Z座標
-        };
-        type: string;              // エンティティの種類
-        variant: number;           // バリアント
-        yRot: number;              // Y軸の回転
-    };
-    travelMethod: number;        // 移動方法 0 =歩き 2=ジャンプ 8=走り 飛行=5 えりとら=通常時2 ダッシュ後使用で8
-}
-
-//@ts-ignore
-server.events.on('PlayerTravelled', async (event: PlayerTravelled) => {
-    const { isUnderwater, metersTravelled, player } = event;
-
-    const flag = false;
-    //if (player.name !== 'PEXkoukunn') return; 
-
-
-    if (flag) {
-        console.log(`Player: ${player.name}`);
-        console.log(`Underwater: ${isUnderwater}`);
-        console.log(`Distance: ${metersTravelled} meters`);
-        console.log(`Position: x=${player.position.x}, y=${player.position.y}, z=${player.position.z}`);
-    }
-
-});
-
-
-
-
 
 
 
@@ -828,7 +784,7 @@ discordClient.on('ready', async () => {
         const groupVcs = category.children.cache.filter((c) => c.name.startsWith('Group') && c.type === ChannelType.GuildVoice);
         for (const vc of groupVcs.values()) {
             try {
-                await vc.delete();
+              //  await vc.delete();
             } catch (error) {
                 console.error(`VC ${vc.name} の削除エラー:`, error);
             }

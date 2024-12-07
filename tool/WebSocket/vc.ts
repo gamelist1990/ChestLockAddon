@@ -69,28 +69,29 @@ export async function updateVoiceChannels(): Promise<void> {
     }
 }
 
-async function fetchPlayerData(): Promise<{ [discordId: string]: any }> {
-    const playersByDiscordId: { [discordId: string]: any } = {};
-
+async function fetchPlayerData(): Promise<{ [discordId: string]: { position: { x: number; y: number; z: number; }; uniqueId: string; } }> {
+    const playersByDiscordId: { [discordId: string]: { position: { x: number; y: number; z: number; }; uniqueId: string; } } = {};
     await Promise.all(
         Object.entries(minecraftPlayerDiscordIds).map(async ([uuid, { name }]) => {
             try {
                 const playerData = await WorldPlayer(name);
-                if (playerData) {
-                    playersByDiscordId[minecraftPlayerDiscordIds[uuid].discordId] = { ...playerData, uniqueId: uuid };
+                if (playerData && playerData["0"] && playerData["0"].position) {
+                    playersByDiscordId[minecraftPlayerDiscordIds[uuid].discordId] = {
+                        position: playerData["0"].position,
+                        uniqueId: uuid,
+                    };
                 }
             } catch (error) {
                 console.error(`Minecraftプレイヤーデータ取得エラー(${name}):`, error);
             }
         })
     );
-
     return playersByDiscordId;
 }
 
 function createProximityGroups(playersByDiscordId: { [discordId: string]: any }): Map<number, GuildMember[]> {
     const proximityGroups = new Map<number, GuildMember[]>();
-    const DISTANCE_THRESHOLD = 10;
+    const DISTANCE_THRESHOLD = 11;
     let groupNumber = 1;
 
     for (const discordId in playersByDiscordId) {
@@ -100,7 +101,10 @@ function createProximityGroups(playersByDiscordId: { [discordId: string]: any })
         let assigned = false;
         for (const [existingGroupNumber, existingMembers] of proximityGroups) {
             for (const existingMember of existingMembers) {
-                const distance = calculateDistance(playersByDiscordId[discordId].position, playersByDiscordId[existingMember.id]?.position); //nullチェックを追加
+              //  console.log(`Player1:${JSON.stringify(playersByDiscordId[discordId])}`);
+              //  console.log(`Player2:${JSON.stringify(playersByDiscordId[existingMember.id])}`);
+                const distance = calculateDistance(playersByDiscordId[discordId].position, playersByDiscordId[existingMember.id].position); 
+
                 if (distance <= DISTANCE_THRESHOLD) {
                     proximityGroups.get(existingGroupNumber)!.push(member);
                     assigned = true;
@@ -180,8 +184,8 @@ async function deleteUnusedVcs(proximityGroups: Map<number, GuildMember[]>): Pro
     }
 }
 
-function calculateDistance(pos1: { x: number; y: number; z: number }, pos2: { x: number; y: number; z: number } | undefined | null): number { //型定義を追加
-    if (!pos2) return 0; //pos2がnullまたはundefinedの場合は0を返す
+function calculateDistance(pos1: { x: number; y: number; z: number } | undefined | null, pos2: { x: number; y: number; z: number } | undefined | null): number {
+    if (!pos1 || !pos2) return 0;
 
     const dx = pos1.x - pos2.x;
     const dy = pos1.y - pos2.y;

@@ -17,7 +17,7 @@ interface VoteData {
     announceInterval: number;
     showLiveResults: boolean;
     maxResultsToShow: number;
-    handleTies: boolean; 
+    handleTies: boolean;
     checkVote: boolean;
 }
 
@@ -32,13 +32,13 @@ const defaultVoteData: VoteData = {
     announceInterval: 15,
     showLiveResults: false,
     maxResultsToShow: 10,
-    handleTies: false, 
+    handleTies: false,
     checkVote: false,
 };
 
 let voteData: VoteData = defaultVoteData;
 let voteResults: { [name: string]: number } = {};
-let playerVotes: { [name: string]: number } = {};
+let playerVotes: { [name: string]: string[] } = {};
 let voteEndTime: number | null = null;
 let lastAnnounceTime: number = 0;
 let targetTag: string | null = null;
@@ -197,17 +197,19 @@ function announceResults(voteItems: VoteItem[], customResultText: string): void 
 
         // 各プレイヤーの投票結果と順位をスコアボードに記録
         for (const playerName in playerVotes) {
-            const votedItemIndex = playerVotes[playerName];
-            const votedItemName = getVoteItemsFromScoreboard()[votedItemIndex]?.name;
+            const votedItemNames = playerVotes[playerName];
 
+            const ranks = Array.isArray(votedItemNames)
+                ? votedItemNames.map(name => rankMap[name]).filter(rank => rank !== undefined)
+                : rankMap[votedItemNames];
 
-            if (votedItemName) {
-                const rank = rankMap[votedItemName];
+            if (ranks) {
+                const rank = Array.isArray(ranks) ? Math.min(...ranks) : ranks;
                 const player = world.getPlayers().find(p => p.name === playerName);
+
                 if (player) {
                     checkScoreboard.setScore(player, rank);
-                }
-                if (!player) {
+                } else {
                     checkScoreboard.setScore(playerName, rank);
                 }
             }
@@ -240,7 +242,7 @@ system.runInterval(() => {
         const voteItems = getVoteItems();
         announceResults(voteItems, voteData.resultText);
         voteEndTime = null;
-        playerVotes = {}; 
+        playerVotes = {};
         resetVoteScoreboard();
         sendMessageToTarget("投票が終了しました。");
         world.getPlayers().forEach(player => {
@@ -248,6 +250,7 @@ system.runInterval(() => {
                 uiManager.closeAllForms(player as any);
             }
         });
+        world.getPlayers().forEach(player => player.removeTag("voted"));
     }
 });
 
@@ -281,10 +284,14 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
         if (!voteData.allowMultipleVotes && player.hasTag("voted")) {
             player.sendMessage("あなたはすでに投票済みです。");
             return;
-        } else if (voteData.allowMultipleVotes && playerVotes[player.name] >= voteData.maxVotesPerPlayer) {
+        } else if (
+            voteData.allowMultipleVotes &&
+            (Array.isArray(playerVotes[player.name]) ? playerVotes[player.name].length : (playerVotes[player.name] !== undefined ? 1 : 0)) >= voteData.maxVotesPerPlayer
+        ) {
             player.sendMessage(`あなたはすでに最大投票数(${voteData.maxVotesPerPlayer}票)に達しています。`);
             return;
         }
+
 
         const form = new ActionFormData().title("投票");
         voteItems.forEach(item => form.button(item.name));
@@ -304,47 +311,60 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
         }
 
         voteResults[selectedItem.name] = (voteResults[selectedItem.name] || 0) + 1;
-        playerVotes[player.name] = (playerVotes[player.name] || 0) + 1;
-        if (playerVotes[player.name] === 1) {
-            player.addTag("voted");
+
+
+        if (!playerVotes[player.name]) {
+            playerVotes[player.name] = [];
         }
 
+        
+        if (voteData.allowMultipleVotes) {
+            if (playerVotes[player.name].length < voteData.maxVotesPerPlayer) {
+                playerVotes[player.name].push(selectedItem.name);
+            } else {
+                player.sendMessage(`あなたはすでに最大投票数(${voteData.maxVotesPerPlayer}票)に達しています。`);
+                return;
+            }
+        } else { 
+            if (playerVotes[player.name].length === 0) { // Check if already voted
+                playerVotes[player.name].push(selectedItem.name);
+            } else {
+                player.sendMessage("あなたはすでに投票済みです。");
+                return;
+            }
+        }
         player.sendMessage(`${selectedItem.name} に投票しました。`);
 
     } else if (id === "ch:Vcheck" && player.hasTag("op")) {
-        if (checkVoteStatus()) {
-            let results = voteData.resultText + '\n';
+        if (checkVoteStatus() || voteEndTime !== null) {
+            let results = "現在の投票状況:\n";
             const sortedVotes = Object.entries(voteResults).sort(([, a], [, b]) => b - a);
-            player.sendMessage("投票はまだ終了していません。");
-            const timeLeft = Math.floor((voteEndTime! - system.currentTick) / 20);
-            player.sendMessage(`残り時間: ${timeLeft}秒`);
-            player.sendMessage(`________________________`);
+
+            if (checkVoteStatus()) {
+                const timeLeft = Math.floor((voteEndTime! - system.currentTick) / 20);
+                results += `残り時間: ${timeLeft}秒\n`;
+            }
+            results += `________________________\n`;
+
             for (const [itemName, votes] of sortedVotes) {
                 results += `${itemName}: ${votes}票\n`;
 
-                const voters = Object.keys(playerVotes).filter(playerName => playerVotes[playerName] > 0);
+                const voters = Object.keys(playerVotes).filter(playerName => {
+                    const votedItems = playerVotes[playerName];
+                    return Array.isArray(votedItems) ? votedItems.includes(itemName) : votedItems === itemName;
+                });
 
                 if (voters.length > 0) {
                     results += `  投票者: ${voters.join(', ')}\n`;
                 }
             }
-
+            results += `________________________`;
             player.sendMessage(results);
-            player.sendMessage(`________________________`);
-
-        } else if (voteEndTime !== null || Object.keys(playerVotes).length > 0) {
-            const sortedVotes = Object.entries(voteResults).sort(([, a], [, b]) => b - a);
-            
-            if (sortedVotes.length === 0) {
-                player.sendMessage("投票はありませんでした。");
-                return;
-            }
-            voteEndTime = null;
-
 
         } else {
             player.sendMessage("投票が開始されていません。");
         }
+
     } else if (id === "ch:Vallreset" && player.hasTag("op")) {
         resetAllVoteData();
     } if (id === "ch:Vreset") {
@@ -415,7 +435,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             } else {
                 player.sendMessage("無効な最大順位です。");
             }
-            
+
 
             voteData.duration = newDuration;
             voteData.resultText = resultText;
