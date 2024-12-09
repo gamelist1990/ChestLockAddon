@@ -16,6 +16,7 @@ import * as fs from 'fs/promises';
 import { config } from 'dotenv';
 import { updateVoiceChannels, initVcFunctions } from './vc';
 import path from 'path';
+import { WarnData, warnList } from './command/warn';
 
 
 
@@ -570,6 +571,7 @@ server.events.on('playerChat', async (event) => {
             }
         }
     }
+
     if (message.startsWith(MINECRAFT_COMMAND_PREFIX)) {
         const prefix = MINECRAFT_COMMAND_PREFIX;
         const args = message
@@ -754,8 +756,10 @@ const commands = [
         .addSubcommand(subcommand =>
             subcommand.setName('data').setDescription('特定のプレイヤーのデータを確認します。').addStringOption(option => option.setName('player').setDescription('プレイヤー名').setRequired(true))
         ),
-
+    new SlashCommandBuilder().setName('warn').setDescription('プレイヤーに警告を追加します。').addStringOption(option => option.setName('player').setDescription('プレイヤー名').setRequired(true)).addStringOption(option => option.setName('reason').setDescription('理由').setRequired(true)),
 ].map(command => command.toJSON());
+
+
 
 
 discordClient.on('ready', async () => {
@@ -784,7 +788,7 @@ discordClient.on('ready', async () => {
         const groupVcs = category.children.cache.filter((c) => c.name.startsWith('Group') && c.type === ChannelType.GuildVoice);
         for (const vc of groupVcs.values()) {
             try {
-              //  await vc.delete();
+                //  await vc.delete();
             } catch (error) {
                 console.error(`VC ${vc.name} の削除エラー:`, error);
             }
@@ -827,21 +831,20 @@ discordClient.on('ready', async () => {
 
 discordClient.on('interactionCreate', async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
+    const isAdmin = interaction.inGuild() && interaction.member instanceof GuildMember && interaction.member.roles.cache.has(ADMIN_ROLE_ID);
 
     if (interaction.commandName === 'mc') {
-        if (interaction.inGuild() && interaction.member instanceof GuildMember && !interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
+        if (!isAdmin) {
             const noPermissionEmbed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('Permission Denied')
                 .setDescription('このコマンドを実行するには管理者権限が必要です。');
             return interaction.reply({ embeds: [noPermissionEmbed], ephemeral: true });
-        } else if (!interaction.inGuild()) { //ギルド外の場合
-            const dmEmbed = new EmbedBuilder().setColor('#ff0000').setTitle('Error').setDescription('このコマンドはサーバー内でのみ実行できます。');
-            return interaction.reply({ embeds: [dmEmbed], ephemeral: true });
         }
 
+       
 
-        const command = interaction.options.getString('command', true); // 第二引数にtrueを追加
+        const command = interaction.options.getString('command', true);
 
         const world = server.getWorlds()[0];
         if (world) {
@@ -892,7 +895,7 @@ discordClient.on('interactionCreate', async (interaction) => {
 
     } else if (interaction.commandName === 'toggle') {
 
-        if (!interaction.memberPermissions || !interaction.memberPermissions.has(PermissionsBitField.Flags.Administrator)) { //nullチェックを追加
+        if (!isAdmin) {
             return interaction.reply({ content: 'このコマンドを実行するには管理者権限が必要です。', ephemeral: true });
         }
 
@@ -933,7 +936,7 @@ discordClient.on('interactionCreate', async (interaction) => {
             );
         }
     } else if (interaction.commandName === 'ban' || interaction.commandName === 'unban') {
-        if (!interaction.memberPermissions || !interaction.memberPermissions.has(PermissionsBitField.Flags.Administrator)) {
+        if (!isAdmin) {
             return interaction.reply({ content: 'このコマンドを実行するには管理者権限が必要です。', ephemeral: true });
         }
 
@@ -1005,7 +1008,6 @@ discordClient.on('interactionCreate', async (interaction) => {
                     world.sendMessage(broadcastMessage);
                 } catch (error) {
                     console.error("キックコマンドの実行エラー:", error);
-                    // interaction.followUp()でエラーメッセージを送信
                     interaction.followUp({ content: 'プレイヤーのキック中にエラーが発生しました。', ephemeral: true }).catch(console.error); // followUpのエラー処理も追加
                 }
             }
@@ -1014,6 +1016,9 @@ discordClient.on('interactionCreate', async (interaction) => {
             await interaction.reply({ content: `プレイヤー ${playerName} をBANしました。`, ephemeral: true });
 
         } else if (interaction.commandName === 'unban') {
+            if (!isAdmin) {
+                return interaction.reply({ content: 'このコマンドを実行するには管理者権限が必要です。', ephemeral: true });
+            }
             let banList = await getBanList();
             const targetBan = banList.find(ban => ban.name === playerName);
 
@@ -1028,7 +1033,7 @@ discordClient.on('interactionCreate', async (interaction) => {
             return interaction.reply({ content: `プレイヤー ${playerName} のBANを解除しました。`, ephemeral: true });
         }
     } else if (interaction.commandName === 'check') {
-        if (!interaction.memberPermissions || !interaction.memberPermissions.has(PermissionsBitField.Flags.Administrator)) {
+        if (!isAdmin) {
             return interaction.reply({ content: 'このコマンドを実行するには管理者権限が必要です。', ephemeral: true });
         }
 
@@ -1131,9 +1136,80 @@ discordClient.on('interactionCreate', async (interaction) => {
 
                 return interaction.reply({ embeds: [embed], ephemeral: true });
             }
-
             default:
                 return interaction.reply({ content: '無効なサブコマンドです。', ephemeral: true });
+        }
+    } else if (interaction.commandName === 'warn') {
+        if (!isAdmin) {
+            return interaction.reply({ content: 'このコマンドを実行するには管理者権限が必要です。', ephemeral: true });
+        }
+
+        const playerName = interaction.options.getString('player', true);
+        const reason = interaction.options.getString('reason', true);
+
+        const playerData = await WorldPlayer(playerName);
+        if (!playerData || playerData.length === 0) {
+            return interaction.reply({ content: `プレイヤー ${playerName} は見つかりませんでした。`, ephemeral: true });
+        }
+
+        const playerInfo = playerData[0];
+        const uuid = playerInfo.uniqueId;
+
+        const newWarn: WarnData = {
+            uuid: uuid,
+            name: playerName,
+            reason: reason,
+            warnedBy: interaction.user.username, 
+            warnedAt: Date.now(),
+        };
+
+        warnList.push(newWarn);
+
+        const playerWarns = warnList.filter(warn => warn.uuid === uuid);
+        const warnCount = playerWarns.length;
+
+        const world = server.getWorlds()[0];
+
+        if (world) {
+            world.sendMessage(`§l§f[Server]§r §e${playerName} §aに警告を追加しました。(§c${warnCount}回目§a) 理由: §c${reason} §fby §b${interaction.user.username}`);
+            world.sendMessage(`§eあなたは警告を受けました。理由: §c${reason} §fby §b${interaction.user.username} (合計${warnCount}回)`, playerName);
+        } else {
+            return interaction.reply({ content: `ワールドと接続されていない可能性があります`, ephemeral: true });
+        }
+
+
+
+
+
+        if (playerWarns.length >= warnCount) {
+            world.sendMessage(`§l§f[Server] §cプレイヤー §e${playerName} §cは${warnCount}回警告を受けたため、一時的にBANされます。`);
+
+            let banList = await getBanList();
+            const newBan: BanData = {
+                uuid: uuid,
+                name: playerName,
+                reason: `§e${warnCount}回§c警告を受けたため`,
+                bannedBy: "Server",
+                bannedAt: Date.now(),
+                expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+            };
+            banList.push(newBan);
+            await saveBanList();
+
+            // 警告リストから該当プレイヤーの警告を削除
+            warnList.filter(warn => warn.uuid !== uuid);
+
+            try {
+                const kickMessage = `\n§4[§cBAN通知§4]\n§fあなたはBANされました。\n§f理由: §e${warnCount}回警告を受けたため\n§fBANした管理者: §bServer\n§f期限: §e24時間`;
+                await world.runCommand(`kick "${playerName}" ${kickMessage}`);
+                const broadcastMessage = `§6===============================\n§a[BAN通知] §e${playerName}§a ユーザーがBANされました！\n§f理由: §e${warnCount}回警告を受けたが改善しなかった為\n§fBANした管理者: §bServer\n§6===============================`;
+                world.sendMessage(broadcastMessage);
+            } catch (error) {
+                console.error("キックコマンドの実行エラー:", error);
+            }
+
+
+            await interaction.reply({ content: `プレイヤー ${playerName} に警告を追加しました。`, ephemeral: true });
         }
     }
 });
