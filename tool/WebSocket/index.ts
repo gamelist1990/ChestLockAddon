@@ -1345,8 +1345,7 @@ async function sendServerStatus() {
 
         if (playerListResult) {
             for (const player of playerListResult) {
-                const playerData = await getData(player.name);
-
+                const playerData = userData[player.name];
                 if (playerData && playerData.ping && playerData.ping > highestPing) {
                     highestPing = playerData.ping;
                     highestPingPlayer = player.name;
