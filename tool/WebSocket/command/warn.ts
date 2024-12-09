@@ -45,7 +45,7 @@ registerCommand('warn', `${MINECRAFT_COMMAND_PREFIX}warn <player> <reason>`, '�
 
     const playerWarns = warnList.filter(warn => warn.uuid === uuid);
 
-    world.sendMessage(`§aプレイヤー §e${playerName} §aに警告を発令しました。§f理由: §c${reason}`, sender);
+    world.sendMessage(`§aプレイヤー §e${playerName} §aに警告を発令しました。現在:(§e${playerWarns.length}§a)§f理由: §c${reason}`, sender);
     world.sendMessage(`§eあなたは警告を受けました。§f理由: §c${reason}§f, 発令者: §b${sender}`, playerName);
 
 

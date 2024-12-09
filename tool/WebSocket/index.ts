@@ -605,7 +605,7 @@ server.events.on('serverOpen', async () => {
     updatePlayersInterval = setInterval(updatePlayers, 500) as NodeJS.Timeout;
 });
 
-server.events.on('worldAdd', async (event) => {
+server.events.on('worldAdd', async () => {
     isWorldLoaded = true;
 });
 
@@ -1218,13 +1218,12 @@ discordClient.on('interactionCreate', async (interaction) => {
         warnList.push(newWarn);
 
         const playerWarns = warnList.filter(warn => warn.uuid === uuid);
-        const warnCount = playerWarns.length;
-
         const world = server.getWorlds()[0];
 
         if (world) {
-            world.sendMessage(`§l§f[Server]§r §e${playerName} §aに警告を追加しました。(§c${warnCount}回目§a) 理由: §c${reason} §fby §b${interaction.user.username}`);
-            world.sendMessage(`§eあなたは警告を受けました。理由: §c${reason} §fby §b${interaction.user.username} (合計${warnCount}回)`, playerName);
+            world.sendMessage(`§l§f[Server]§r §e${playerName} §aに警告を追加しました。(§e理由:§c${reason}§a) §fby §b${interaction.user.username}`);
+            world.sendMessage(`§eあなたは警告を受けました。理由: §c${reason} §fby §b${interaction.user.username} `, playerName);
+            await interaction.reply({ content: `プレイヤー ${playerName} に警告を追加しました。現在${playerWarns.length}`, ephemeral: true });
         } else {
             return interaction.reply({ content: `ワールドと接続されていない可能性があります`, ephemeral: true });
         }
@@ -1307,7 +1306,6 @@ async function sendServerStatus() {
     }
 
     try {
-        const world = server.getWorlds()[0];
         const playerListResult = await playerList();
         const playerCount = playerListResult?.length || 0;
 
