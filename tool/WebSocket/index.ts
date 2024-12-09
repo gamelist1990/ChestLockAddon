@@ -16,7 +16,8 @@ import * as fs from 'fs/promises';
 import { config } from 'dotenv';
 import { updateVoiceChannels, initVcFunctions } from './vc';
 import path from 'path';
-import { WarnData, warnList } from './command/warn';
+import os from 'os';
+
 
 
 
@@ -31,9 +32,11 @@ LOBBY_VC_ID="ロビーvcのiD"
 ADMIN_ROLE_ID="管理者権限を持つロールのID"
 ADMINUUID=['マイクラでの管理者のID']
 ADMINNAME=['マイクラでの管理者のname']
+SERVER_STATUS_INTERVAL=5000
+SERVER_STATUS_CHANNEL_ID=あなたのチャンネルID
 `;
 
-const createDefaultEnvFile = async (filePath) => {
+const createDefaultEnvFile = async (filePath:any) => {
     try {
         await fs.writeFile(filePath, defaultEnvContent);
         console.log(`Created default .env file at ${filePath}`);
@@ -77,6 +80,9 @@ const initEnv = async () => {
 
 
 initEnv();
+const SERVER_STATUS_INTERVAL = parseInt(process.env.SERVER_STATUS_INTERVAL || "5000", 10); // デフォルト値を設定
+const SERVER_STATUS_CHANNEL_ID = process.env.SERVER_STATUS_CHANNEL_ID;
+const serverStartTime = Date.now();
 
 // Discord設定
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
@@ -96,17 +102,31 @@ const featureToggles: FeatureToggles = {
     vc: false,
 };
 
+interface StatusData {
+    messageId: string | null;
+}
+export interface WarnData {
+    uuid: string;
+    name: string;
+    reason: string;
+    warnedBy: string;
+    warnedAt: number;
+}
+
 // Minecraftコマンド設定
 export const MINECRAFT_COMMAND_PREFIX = '#';
 export const MINECRAFT_COMMANDS_PER_PAGE = 3;
 const adminUUIDs: string[] = process.env.ADMINUUID as any;
 const adminNames: string[] = process.env.ADMINNAME as any;
+export let warnList: WarnData[] = []
+export const warnCount = 5;
 
 
 // データファイルパス
 const WS_DATA_PATH = 'wsData.json';
 const USER_DATA_PATH = 'User.json';
 const BAN_USER_PATH = 'banUser.json';
+const STATUS_DATA_PATH = 'statusData.json';
 
 
 // グローバル変数
@@ -117,6 +137,8 @@ let updateVoiceChannelsTimeout: NodeJS.Timeout;
 let updatePlayersInterval: NodeJS.Timeout;
 export let banList: BanData[] = [];
 let isWorldLoaded = false; //defaultではワールドにつないでないためoff
+let statusData: StatusData = { messageId: null };
+let serverStatusMessageId: string | null = null;
 
 
 // Discordクライアント
@@ -241,6 +263,33 @@ async function loadBanList(): Promise<void> {
         }
     }
 }
+// ステータスデータの読み込み
+async function loadStatusData() {
+    try {
+        const data = await fs.readFile(STATUS_DATA_PATH, 'utf8');
+        statusData = JSON.parse(data);
+        serverStatusMessageId = statusData.messageId;
+    } catch (error) {
+        if ((error as any).code === 'ENOENT') {
+            console.log('statusData.json not found. Creating a new one.');
+            await saveStatusData();
+        } else {
+            console.error('Error loading statusData.json:', error);
+        }
+    }
+}
+
+// ステータスデータの保存
+async function saveStatusData() {
+    try {
+        statusData.messageId = serverStatusMessageId;
+        const data = JSON.stringify(statusData, null, 2);
+        await fs.writeFile(STATUS_DATA_PATH, data, 'utf8');
+    } catch (error) {
+        console.error('Error saving statusData.json:', error);
+    }
+}
+
 export const getBanList = async (): Promise<BanData[]> => {
     try {
         const data = await fs.readFile(BAN_USER_PATH, 'utf8');
@@ -552,6 +601,7 @@ server.events.on('serverOpen', async () => {
     await loadWsData();
     await loadUserData();
     await loadBanList();
+    await loadStatusData();
     updatePlayersInterval = setInterval(updatePlayers, 500) as NodeJS.Timeout;
 });
 
@@ -770,6 +820,8 @@ discordClient.on('ready', async () => {
         console.error("ギルドが見つかりません。");
         process.exit(1);
     }
+
+    setInterval(sendServerStatus, SERVER_STATUS_INTERVAL);
 
     if (featureToggles.vc) {
         initVcFunctions(guild, CATEGORY_ID, LOBBY_VC_ID);
@@ -1243,3 +1295,104 @@ discordClient.on('messageCreate', async (message) => {
         console.error('Minecraftサーバーに接続されていません。');
     }
 });
+
+
+async function sendServerStatus() {
+    if (!guild) return; // guild が利用可能になるまで待機
+
+    const statusChannel = guild.channels.cache.get(SERVER_STATUS_CHANNEL_ID);
+    if (!statusChannel || !statusChannel.isTextBased()) {
+        console.error("指定されたチャンネルが見つからないか、テキストチャンネルではありません。");
+        return;
+    }
+
+    try {
+        const world = server.getWorlds()[0];
+        const playerListResult = await playerList();
+        const playerCount = playerListResult?.length || 0;
+
+
+
+        const cpus = os.cpus();
+        let totalCpuTime = 0;
+        let totalIdleTime = 0;
+        for (const cpu of cpus) {
+            for (const type in cpu.times) {
+                totalCpuTime += cpu.times[type as keyof typeof cpu.times];
+            }
+            totalIdleTime += cpu.times.idle;
+        }
+        const cpuUsage = 100 - (100 * totalIdleTime / totalCpuTime);
+
+
+        const totalMem = os.totalmem();
+        const freeMem = os.freemem();
+        const usedMem = totalMem - freeMem;
+
+        const memUsage = Math.round((usedMem / totalMem) * 100);
+        const serverUptime = Math.floor((Date.now() - serverStartTime) / 1000); // アップタイムを秒単位で取得
+        const days = Math.floor(serverUptime / (3600 * 24));
+        const hours = Math.floor((serverUptime % (3600 * 24)) / 3600);
+        const minutes = Math.floor((serverUptime % 3600) / 60);
+        const seconds = serverUptime % 60;
+        const uptimeString = `${days}日 ${hours}時間 ${minutes}分 ${seconds}秒`;
+
+
+        const loadavg = os.loadavg();
+
+        let highestPingPlayer = "";
+        let highestPing = 0;
+
+        if (playerListResult) {
+            for (const player of playerListResult) {
+                const playerData = await getData(player.name);
+
+                if (playerData && playerData.ping && playerData.ping > highestPing) {
+                    highestPing = playerData.ping;
+                    highestPingPlayer = player.name;
+                }
+            }
+        }
+
+
+        const embed = new EmbedBuilder()
+            .setColor('#0099ff')
+            .setTitle('Minecraft Server Status')
+            .addFields(
+                { name: '起動時間', value: uptimeString, inline: true },
+                { name: '現在のワールド人数', value: playerCount.toString(), inline: true },
+                { name: 'CPU使用率', value: `${cpuUsage.toFixed(2)}%`, inline: true },
+                { name: 'メモリ使用率', value: `${memUsage}% (${Math.round(usedMem / 1024 / 1024)}MB/${Math.round(totalMem / 1024 / 1024)}MB)`, inline: true },
+                { name: '空きメモリ', value: `${Math.round(freeMem / 1024 / 1024)}MB`, inline: true },
+                { name: '負荷', value: `${loadavg[0]}, ${loadavg[1]}, ${loadavg[2]}`, inline: true }, 
+                { name: 'Pingが最も高いプレイヤー', value: highestPingPlayer ? `${highestPingPlayer} (${highestPing}ms)` : "なし", inline: true },
+
+            )
+            .setTimestamp();
+
+        if (serverStatusMessageId) {
+            try {
+                const existingMessage = await statusChannel.messages.fetch(serverStatusMessageId);
+                await existingMessage.edit({ embeds: [embed] });
+
+            } catch (error) {
+                console.error("既存のメッセージの編集エラー:", error);
+                serverStatusMessageId = null; // メッセージIDをリセット
+                // 新しいメッセージを送信
+                const newMessage = await statusChannel.send({ embeds: [embed] });
+                serverStatusMessageId = newMessage.id;
+            }
+
+        } else {
+
+            if (!serverStatusMessageId) {
+                const message = await statusChannel.send({ embeds: [embed] });
+                serverStatusMessageId = message.id;
+                await saveStatusData(); // データを保存
+            }
+        }
+
+    } catch (error) {
+        console.error("Server Status Error:", error);
+    }
+}

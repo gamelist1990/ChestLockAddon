@@ -5,21 +5,13 @@ import {
     BanData,
     saveBanList,
     getBanList,
+    warnCount,
+    WarnData,
+    warnList,
 } from '../index';
 
-// 警告リストのデータ構造
-export interface WarnData {
-    uuid: string;
-    name: string;
-    reason: string;
-    warnedBy: string;
-    warnedAt: number;
-}
 
 
-export let warnList:WarnData[] = []
-
-export const warnCount = 5;
 
 
 registerCommand('warn', `${MINECRAFT_COMMAND_PREFIX}warn <player> <reason>`, 'プレイヤーに警告を発令します。', true, async (sender, world, args) => {
@@ -73,7 +65,7 @@ registerCommand('warn', `${MINECRAFT_COMMAND_PREFIX}warn <player> <reason>`, '�
         await saveBanList();
 
         // 警告リストから該当プレイヤーの警告を削除
-        warnList = warnList.filter(warn => warn.uuid !== uuid);
+        warnList.filter(warn => warn.uuid !== uuid);
 
 
         try {
