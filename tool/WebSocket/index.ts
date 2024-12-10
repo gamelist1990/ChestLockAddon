@@ -17,6 +17,7 @@ import { updateVoiceChannels, initVcFunctions } from './vc';
 import path from 'path';
 import os from 'os';
 import express from 'express';
+import { createContext, Script } from 'vm';
 
 
 
@@ -213,7 +214,7 @@ const app = express();
 app.use(express.json());
 
 // プラグイン登録API
-app.post('/api/register', (req:any, res:any) => {
+app.post('/api/register', (req: any, res: any) => {
     const { name, data } = req.body;  // デストラクチャリングで読みやすく
     if (!name || !data) {
         return res.status(400).json({ error: 'Invalid plugin data. "name" and "data" are required.' });
@@ -237,36 +238,65 @@ app.get('/api/getData/:dataName', (req, res) => {
 app.get('/api/get/:itemName', async (req, res) => {
     const itemName = req.params.itemName;
 
-    if (sharedData[itemName]) {
-        res.json(sharedData[itemName]);
-    } else if (allowedFunctions[itemName]) {
-        try {
+    try {
+        if (sharedData[itemName]) {
+            res.json(sharedData[itemName]);
+        } else if (allowedFunctions[itemName]) {
             const func = allowedFunctions[itemName];
             let result;
-
-            // 関数の引数をクエリパラメータから取得
             const args = Object.values(req.query);
 
-            if (func.constructor.name === 'AsyncFunction') {
-                result = await func(...args); // 非同期関数の場合
+            if (func.constructor.name === 'AsyncFunction' || func().then) {
+                result = await func(...args);
             } else {
-                result = func(...args); // 同期関数の場合
+                result = func(...args);
             }
             res.json(result);
 
-        } catch (error) {
-            console.error(`Error executing function ${itemName}:`, error);
-            res.status(500).json({ error: 'Failed to execute function.' + error }); // エラー内容を返す
+        } else if (allowedDefinitions[itemName]) {
+            // ここでstringifyを使う
+            const serializedDefinition = JSON.stringify(allowedDefinitions[itemName]);
+            res.json(serializedDefinition);
+
+        } else {
+            res.status(404).json({ error: 'Item not found.' });
         }
-    } else if (allowedDefinitions[itemName]) {
-        try {
-            res.json(allowedDefinitions[itemName]);
-        } catch (error) {
-            console.error(`Error accessing definition ${itemName}:`, error);
-            res.status(500).json({ error: 'Failed to access definition.' + error });
+
+    } catch (error) {
+        console.error(`Error handling item ${itemName}:`, error);
+        res.status(500).json({ error: 'Failed to handle item.' + error });
+    }
+});
+
+app.post('/api/execute', async (req: any, res: any) => {
+    const { code, functionName, args } = req.body;
+
+    if (!code || !functionName) {
+        return res.status(400).json({ error: 'Code and functionName are required.' });
+    }
+
+    try {
+        const sandbox = {
+            server,
+            console,
+        };
+
+        const context = createContext(sandbox);
+
+
+        const script = new Script(code);
+        script.runInContext(context);
+        const func = sandbox[functionName];
+
+        if (typeof func !== 'function') {
+            throw new Error(`'${functionName}' is not a function.`);
         }
-    } else {
-        res.status(404).json({ error: 'Item not found.' });
+        const result = func(server, ...args);
+        const resolvedResult = result instanceof Promise ? await result : result;
+        res.json({ result: resolvedResult });
+    } catch (error) {
+        console.error('Error executing code:', error);
+        res.status(500).json({ error: 'Failed to execute code.', details: error.message });
     }
 });
 
@@ -597,7 +627,7 @@ async function updatePlayers(): Promise<void> {
 
         let hasChanges = false;
 
-        for (const playerData of playerDataList) {  
+        for (const playerData of playerDataList) {
             userData[playerData.name] = userData[playerData.name] || {}; // userDataにプレイヤーが存在しない場合の初期化
 
             userData[playerData.name].name = playerData.name;
@@ -693,10 +723,16 @@ export const server = new Server({
 
 
 //渡す権限(関数)
+
 allowedFunctions['playerList'] = playerList;
-allowedFunctions['isAdmin'] = isAdmin; 
-allowedFunctions['getBanList'] = getBanList; 
-allowedDefinitions['server'] = server; 
+allowedFunctions['isAdmin'] = isAdmin;
+allowedFunctions['getBanList'] = getBanList;
+allowedFunctions['WorldPlayer'] = WorldPlayer;
+allowedFunctions['getData'] = getData;
+
+
+
+
 
 
 
@@ -719,6 +755,7 @@ server.events.on('serverOpen', async () => {
 server.events.on('worldAdd', async () => {
     isWorldLoaded = true;
     ServerStauts = setInterval(sendServerStatus, SERVER_STATUS_INTERVAL);
+
 });
 
 server.events.on('worldRemove', async () => {
@@ -1007,20 +1044,19 @@ discordClient.on('ready', async () => {
         clearTimeout(updateVoiceChannelsTimeout);
         clearInterval(updatePlayersInterval);
         clearInterval(ServerStauts);
-        sendServerStatus(true);
         discordClient.user?.setPresence({ status: 'invisible' });
         try {
             const lobbyChannel = guild.channels.cache.get(LOBBY_VC_ID);
             if (lobbyChannel && lobbyChannel.isVoiceBased()) { //型ガードを追加
                 await Promise.all(lobbyChannel.members.map(async (member) => member.voice.setMute(false).catch((error) => console.error(`Error unmuting ${member.displayName}:`, error))));
             }
-            httpServer.close(() => {
-                console.log('HTTP server closed.');
-            })
         } catch (error) {
             console.error("Error unmuting members on exit:", error);
         } finally {
             console.log("Exiting Discord bot.");
+            console.log('HTTP server closed.');
+            httpServer.close();
+            await sendServerStatus(true);
             discordClient.destroy();
             process.exit(0);
         }
@@ -1472,8 +1508,7 @@ async function sendServerStatus(status?: boolean) {
         let StatusIco: string;
         const now = new Date();
         const formattedTime = now.toLocaleTimeString();
-        let tps = "N/A";
-        let tpsResTime = 0;
+
 
 
         const cpus = os.cpus();
@@ -1519,40 +1554,17 @@ async function sendServerStatus(status?: boolean) {
 
 
 
-        const serverPing = world.ping;
 
-
-        try {
-            const startTime = performance.now();
-            const res = await world.runCommand('list');
-            const endTime = performance.now();
-            if (res.statusCode !== 0) {
-                console.error(`TPS Status (${res.statusCode})`)
-                tps = "N/A";
-                tpsResTime = 999;
-                return;
-            }
-            tpsResTime = Math.round(endTime - startTime);
-
-
-            if (tpsResTime < 30) {
-                tps = "20+";
-            } else if (tpsResTime < 50) {
-                tps = "15-20";
-            } else if (tpsResTime < 75) {
-                tps = "10-15";
-            } else if (tpsResTime < 100) {
-                tps = "5-10";
-            } else if (tpsResTime < 150) {
-                tps = "1-5";
-            } else {
-                tps = "<1";
-            }
-        } catch (error) {
-            console.error(`TPS Error: ${error}`);
-            tps = "N/A";
-            tpsResTime = 999;
+        const wsping = world.ping;
+        let serverPing: number;
+        if (wsping) {
+            serverPing = wsping - 50;
+        } else {
+            serverPing = 999;
         }
+
+
+
         if (status) {
             StatusIco = `(Offline)❌`
         } else {
@@ -1577,7 +1589,6 @@ async function sendServerStatus(status?: boolean) {
                 { name: '使用メモリ', value: `${Math.round(usedMem / 1024 / 1024)}MB`, inline: true },
                 { name: '負荷', value: `${loadStatus} (${loadAverage.toFixed(2)})`, inline: true },
                 { name: 'wsのping値', value: `${serverPing}ms`, inline: true },
-                { name: '推定TPS (参考値)', value: `TPS:${tps} (${tpsResTime}ms)`, inline: true }
 
 
 
