@@ -16,7 +16,7 @@ import { config } from 'dotenv';
 import { updateVoiceChannels, initVcFunctions } from './vc';
 import path from 'path';
 import os from 'os';
-
+import express from 'express';
 
 
 
@@ -35,7 +35,7 @@ SERVER_STATUS_INTERVAL=5000
 SERVER_STATUS_CHANNEL_ID=あなたのチャンネルID
 `;
 
-const createDefaultEnvFile = async (filePath:any) => {
+const createDefaultEnvFile = async (filePath: any) => {
     try {
         await fs.writeFile(filePath, defaultEnvContent);
         console.log(`Created default .env file at ${filePath}`);
@@ -119,6 +119,8 @@ const adminUUIDs: string[] = process.env.ADMINUUID as any;
 const adminNames: string[] = process.env.ADMINNAME as any;
 export let warnList: WarnData[] = []
 export const warnCount = 5;
+let ServerStauts: NodeJS.Timeout;
+
 
 
 // データファイルパス
@@ -126,6 +128,7 @@ const WS_DATA_PATH = 'wsData.json';
 const USER_DATA_PATH = 'User.json';
 const BAN_USER_PATH = 'banUser.json';
 const STATUS_DATA_PATH = 'statusData.json';
+
 
 
 // グローバル変数
@@ -138,6 +141,18 @@ export let banList: BanData[] = [];
 let isWorldLoaded = false; //defaultではワールドにつないでないためoff
 let statusData: StatusData = { messageId: null };
 let serverStatusMessageId: string | null = null;
+const sharedData: { [key: string]: any } = {};
+const allowedFunctions: { [key: string]: Function } = {};
+const allowedDefinitions: { [key: string]: any } = {};
+
+
+//APIに渡すデータ値
+sharedData['userData'] = userData;
+
+
+
+
+
 
 
 
@@ -188,16 +203,99 @@ export interface BanData {
     expiresAt: number | null;
 }
 
-interface PartialPlayerData {
+interface InfoPlayerData {
     name: string;
     uuid: string;
 }
+
+
+const app = express();
+app.use(express.json());
+
+// プラグイン登録API
+app.post('/api/register', (req:any, res:any) => {
+    const { name, data } = req.body;  // デストラクチャリングで読みやすく
+    if (!name || !data) {
+        return res.status(400).json({ error: 'Invalid plugin data. "name" and "data" are required.' });
+    }
+
+    sharedData[name] = data;
+    console.log(`Plugin "${name}" registered with data:`, data); // データの内容もログに出力
+    res.json({ message: 'Plugin registered successfully' });
+});
+
+// データ取得API
+app.get('/api/getData/:dataName', (req, res) => {
+    const dataName = req.params.dataName;
+    if (sharedData[dataName]) {
+        res.json(sharedData[dataName]);
+    } else {
+        res.status(404).json({ error: 'Data not found for key: ' + dataName }); // エラーメッセージを明確化
+    }
+});
+
+app.get('/api/get/:itemName', async (req, res) => {
+    const itemName = req.params.itemName;
+
+    if (sharedData[itemName]) {
+        res.json(sharedData[itemName]);
+    } else if (allowedFunctions[itemName]) {
+        try {
+            const func = allowedFunctions[itemName];
+            let result;
+
+            // 関数の引数をクエリパラメータから取得
+            const args = Object.values(req.query);
+
+            if (func.constructor.name === 'AsyncFunction') {
+                result = await func(...args); // 非同期関数の場合
+            } else {
+                result = func(...args); // 同期関数の場合
+            }
+            res.json(result);
+
+        } catch (error) {
+            console.error(`Error executing function ${itemName}:`, error);
+            res.status(500).json({ error: 'Failed to execute function.' + error }); // エラー内容を返す
+        }
+    } else if (allowedDefinitions[itemName]) {
+        try {
+            res.json(allowedDefinitions[itemName]);
+        } catch (error) {
+            console.error(`Error accessing definition ${itemName}:`, error);
+            res.status(500).json({ error: 'Failed to access definition.' + error });
+        }
+    } else {
+        res.status(404).json({ error: 'Item not found.' });
+    }
+});
+
+const httpServer = app.listen(5000, () => {
+    console.log('ポート5000でバックエンドAPIを起動しました');
+});
+
+// getSharedPluginData関数を修正 (dataNameのみを受け取る)
+export async function getSharedPluginData(dataName: string): Promise<any> {
+    try {
+        const response = await fetch(`http://localhost:5000/api/getData/${dataName}`);
+        if (!response.ok) {
+            const errorData = await response.json(); // エラーレスポンスも取得
+            throw new Error(`HTTP error ${response.status}: ${errorData.error}`); // エラーメッセージに詳細を追加
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(`Error getting shared plugin data for "${dataName}":`, error);
+        return null;
+    }
+}
+
 
 export const minecraftCommands: { [commandName: string]: MinecraftCommand } = {};
 
 export function registerCommand(name: string, usage: string, description: string, adminOnly: boolean, execute: (sender: string, world: any, args: string[]) => Promise<void>): void {
     minecraftCommands[name] = { name, usage, description, adminOnly, execute };
 }
+
 
 // isAdmin関数 (管理者権限チェック)
 export const isAdmin = async (playerName: string): Promise<boolean> => {
@@ -216,6 +314,7 @@ export const isAdmin = async (playerName: string): Promise<boolean> => {
         return false;
     }
 };
+
 
 
 // データ読み込み/保存関数
@@ -482,7 +581,7 @@ export async function playerList(): Promise<{ name: string, uuid: string }[] | n
 // updatePlayers関数
 async function updatePlayers(): Promise<void> {
     try {
-        let playerDataList: (PlayerData | PartialPlayerData)[] = []; // PlayerDataまたはPartialPlayerDataの配列
+        let playerDataList: (PlayerData | InfoPlayerData)[] = []; // PlayerDataまたはPartialPlayerDataの配列
         const dataFromGetData = await getData();
 
         if (dataFromGetData) {
@@ -498,7 +597,7 @@ async function updatePlayers(): Promise<void> {
 
         let hasChanges = false;
 
-        for (const playerData of playerDataList) {  // for...of ループに変更
+        for (const playerData of playerDataList) {  
             userData[playerData.name] = userData[playerData.name] || {}; // userDataにプレイヤーが存在しない場合の初期化
 
             userData[playerData.name].name = playerData.name;
@@ -537,6 +636,7 @@ async function updatePlayers(): Promise<void> {
 
 
         if (hasChanges) {
+            sharedData['userData'] = userData;
             await saveUserData(); // awaitを追加
         }
     } catch (error) {
@@ -592,6 +692,15 @@ export const server = new Server({
 
 
 
+//渡す権限(関数)
+allowedFunctions['playerList'] = playerList;
+allowedFunctions['isAdmin'] = isAdmin; 
+allowedFunctions['getBanList'] = getBanList; 
+allowedDefinitions['server'] = server; 
+
+
+
+
 server.events.on('serverOpen', async () => {
     console.log('Minecraft server is connected via websocket!');
     const load = await import('./import');
@@ -605,16 +714,23 @@ server.events.on('serverOpen', async () => {
     updatePlayersInterval = setInterval(updatePlayers, 500) as NodeJS.Timeout;
 });
 
+
+
 server.events.on('worldAdd', async () => {
     isWorldLoaded = true;
-    setInterval(sendServerStatus, SERVER_STATUS_INTERVAL);
+    ServerStauts = setInterval(sendServerStatus, SERVER_STATUS_INTERVAL);
 });
+
+server.events.on('worldRemove', async () => {
+    isWorldLoaded = false;
+    clearInterval(ServerStauts);
+})
 
 server.events.on('playerChat', async (event) => {
     const { sender, world, message, type } = event;
     if (sender === 'External') return;
 
-    
+
 
     const channel = guild.channels.cache.get(TARGET_DISCORD_CHANNEL_ID);
     if (featureToggles.discord) {
@@ -635,7 +751,7 @@ server.events.on('playerChat', async (event) => {
             ?.map((match: string) => match.replace(/"/g, ''));
 
 
-        if (!args) return; // argsがnullまたはundefinedの場合は処理をスキップ
+        if (!args) return;
 
         const commandName = args.shift()!.toLowerCase();
         const command = minecraftCommands[commandName];
@@ -692,47 +808,64 @@ registerCommand('toggle', `${MINECRAFT_COMMAND_PREFIX}toggle <Module>`, '機能�
     }
 });
 
+const playerListCache = {};
+
+
+
+
+
 //BANシステムでの自動キック処理
 server.events.on('playerJoin', async (event) => {
     const world = server.getWorlds()[0];
     if (!world) return;
 
-    for (const playerNames of event.players) {
+    for (const playerNameWithTags of event.players) {
         try {
-            let playerInfo: { name: string; uuid: string } | undefined;
-            let attempts = 0;
-            const maxAttempts = 10; // 最大試行回数
-
-            while (!playerInfo && attempts < maxAttempts) {
-                const playerListResult = await playerList();
-
-                if (playerListResult) {
-                    // player.name を直接使用
-                    playerInfo = playerListResult.find(p => p.name === playerNames);
-                } else {
-                    console.error("Failed to get player list.");
-                }
-
-                if (!playerInfo) {
-                    attempts++;
-                    await new Promise(resolve => setTimeout(resolve, 500)); // 500ms待機
+            let playerInfo: { name: string; uuid: string; } | undefined;
+            for (const realPlayerName in playerListCache) {
+                if (playerNameWithTags.includes(realPlayerName)) {
+                    playerInfo = playerListCache[realPlayerName]
+                    break;
                 }
             }
 
             if (!playerInfo) {
-                console.warn(`Player ${playerNames} not found in player list after ${maxAttempts} attempts.`);
-                continue; // 次のプレイヤーの処理へ
+                let attempts = 0;
+                const maxAttempts = 10;
+
+                while (!playerInfo && attempts < maxAttempts) {
+                    const playerListResult = await playerList();
+
+                    if (playerListResult) {
+                        playerInfo = playerListResult.find(p => playerNameWithTags.includes(p.name));
+                    } else {
+                        console.error("Failed to get player list.");
+                    }
+
+
+                    if (!playerInfo) {
+                        attempts++;
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }
+
+
+                if (!playerInfo) {
+                    console.warn(`Player ${playerNameWithTags} not found in player list after ${maxAttempts} attempts.`);
+                    continue;
+                }
+
+                playerListCache[playerInfo.name] = playerInfo;
+
             }
 
-
-            const playerName = playerInfo.name;
+            const realPlayerName = playerInfo.name;
             const uuid = playerInfo.uuid;
 
-            // userDataの初期化処理を追加 (userDataが未定義の場合のエラーを回避)
-            if (!userData[playerName]) {
-                userData[playerName] = { lastJoin: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) };
-            } else {
-                userData[playerName].lastJoin = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+            if (!userData[realPlayerName]) {
+                userData[realPlayerName] = { lastJoin: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) };
+            } else if (!playerListCache[realPlayerName]) {
+                userData[realPlayerName].lastJoin = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
             }
             await saveUserData();
 
@@ -742,43 +875,57 @@ server.events.on('playerJoin', async (event) => {
                 if (ban.expiresAt && ban.expiresAt < Date.now()) {
                     banList = banList.filter(b => b.uuid !== uuid);
                     await saveBanList();
-                    console.log(`Expired ban for ${playerName} removed.`);
+                    console.log(`Expired ban for ${realPlayerName} removed.`);
                     continue;
                 }
 
                 const kickMessage = `§4[§cBAN通知§4]\n§fあなたはBANされました。\n§f理由: §e${ban.reason}\n§fBANした管理者: §b${ban.bannedBy}\n§f期限: §e${ban.expiresAt ? new Date(ban.expiresAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) : '永久'}`;
-                await world.runCommand(`kick "${playerName}" ${kickMessage}`);
-                console.log(`Banned player ${playerName} tried to join.`);
-                continue; // BAN処理後は次のプレイヤーへ
+                await world.runCommand(`kick "${realPlayerName}" ${kickMessage}`);
+                await world.sendMessage(`§l§f[Server]§r\n§c X §aユーザー §b${realPlayerName}§a はBANされています。§r\n§c参加を拒否しました。`);
+                console.log(`Banned player ${realPlayerName} tried to join.`);
+                continue;
             }
         } catch (error) {
-            console.error(`Error processing player ${playerNames}:`, error);
+            console.error(`Error processing player ${playerNameWithTags}:`, error);
         }
     }
 });
 
 server.events.on('playerLeave', async (event) => {
-    const players = event.players;
+    const playersWithTags = event.players;
 
-    if (Array.isArray(players)) {
-        for (const player of players) {
-            for (const playerName in userData) {
-                if (player && player.includes(playerName)) {
-                    try {
-                        userData[playerName].lastLeave = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
-                        await saveUserData();
-                        break;
-                    } catch (error) {
-                        console.error(`Error recording lastLeave for ${playerName}:`, error);
-                    }
+    if (Array.isArray(playersWithTags)) {
+        for (const playerNameWithTags of playersWithTags) {
+
+            let realPlayerName: any;
+            for (const name in playerListCache) {
+                if (playerNameWithTags.includes(name)) {
+                    realPlayerName = name;
+                    break;
                 }
+            }
+
+            if (realPlayerName && userData[realPlayerName]) {
+                try {
+                    userData[realPlayerName].lastLeave = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+                    await saveUserData();
+                } catch (error) {
+                    console.error(`Error recording lastLeave for ${realPlayerName}:`, error);
+                }
+            }
+
+            const playerListResult = await playerList();
+            if (playerListResult && realPlayerName && !playerListResult.find(p => p.name === realPlayerName)) {
+                delete playerListCache[realPlayerName];
+                console.log(`Player ${realPlayerName} (${playerNameWithTags}) removed from cache.`);
+            } else if (!playerListResult) {
+                console.error("Failed to get player list on playerLeave.");
             }
         }
     } else {
         console.error("event.players is not an array. Check your BeAPI version or configuration.");
     }
 });
-
 
 // Discord bot起動時の処理
 discordClient.login(DISCORD_TOKEN);
@@ -824,7 +971,7 @@ discordClient.on('ready', async () => {
         process.exit(1);
     }
 
-    
+
 
     if (featureToggles.vc) {
         initVcFunctions(guild, CATEGORY_ID, LOBBY_VC_ID);
@@ -833,7 +980,7 @@ discordClient.on('ready', async () => {
 
 
     discordClient.user?.setPresence({
-        activities: [{ name: 'WebSocket起動中！', type: ActivityType.Playing }],
+        activities: [{ name: 'WebSocketが起動中!!', type: ActivityType.Playing }],
         status: 'online',
     });
 
@@ -843,7 +990,7 @@ discordClient.on('ready', async () => {
         const groupVcs = category.children.cache.filter((c) => c.name.startsWith('Group') && c.type === ChannelType.GuildVoice);
         for (const vc of groupVcs.values()) {
             try {
-                //  await vc.delete();
+                await vc.delete();
             } catch (error) {
                 console.error(`VC ${vc.name} の削除エラー:`, error);
             }
@@ -853,14 +1000,23 @@ discordClient.on('ready', async () => {
 
     process.on('SIGINT', async () => {
         console.log("Process Clear.");
+        const world = server.getWorlds()[0];
+        if (world) {
+            world.sendMessage(`§l§f[Server]§r:§bWebSocket§aが正常に終了しました`)
+        }
         clearTimeout(updateVoiceChannelsTimeout);
         clearInterval(updatePlayersInterval);
+        clearInterval(ServerStauts);
+        sendServerStatus(true);
         discordClient.user?.setPresence({ status: 'invisible' });
         try {
             const lobbyChannel = guild.channels.cache.get(LOBBY_VC_ID);
             if (lobbyChannel && lobbyChannel.isVoiceBased()) { //型ガードを追加
                 await Promise.all(lobbyChannel.members.map(async (member) => member.voice.setMute(false).catch((error) => console.error(`Error unmuting ${member.displayName}:`, error))));
             }
+            httpServer.close(() => {
+                console.log('HTTP server closed.');
+            })
         } catch (error) {
             console.error("Error unmuting members on exit:", error);
         } finally {
@@ -897,7 +1053,7 @@ discordClient.on('interactionCreate', async (interaction) => {
             return interaction.reply({ embeds: [noPermissionEmbed], ephemeral: true });
         }
 
-       
+
 
         const command = interaction.options.getString('command', true);
 
@@ -1214,7 +1370,7 @@ discordClient.on('interactionCreate', async (interaction) => {
             uuid: uuid,
             name: playerName,
             reason: reason,
-            warnedBy: interaction.user.username, 
+            warnedBy: interaction.user.username,
             warnedAt: Date.now(),
         };
 
@@ -1300,7 +1456,7 @@ discordClient.on('messageCreate', async (message) => {
 
 
 
-async function sendServerStatus() {
+async function sendServerStatus(status?: boolean) {
     if (!guild) return;
 
     const statusChannel = guild.channels.cache.get(SERVER_STATUS_CHANNEL_ID);
@@ -1313,6 +1469,12 @@ async function sendServerStatus() {
         const world = await server.getWorlds()[0];
         const playerListResult = await playerList();
         const playerCount = playerListResult?.length ?? 0;
+        let StatusIco: string;
+        const now = new Date();
+        const formattedTime = now.toLocaleTimeString();
+        let tps = "N/A";
+        let tpsResTime = 0;
+
 
         const cpus = os.cpus();
         let totalCpuTime = 0;
@@ -1355,17 +1517,57 @@ async function sendServerStatus() {
             }
         }
 
-   
+
 
         const serverPing = world.ping;
 
-        const now = new Date(); 
-        const formattedTime = now.toLocaleTimeString(); 
+
+        try {
+            const startTime = performance.now();
+            const res = await world.runCommand('list');
+            const endTime = performance.now();
+            if (res.statusCode !== 0) {
+                console.error(`TPS Status (${res.statusCode})`)
+                tps = "N/A";
+                tpsResTime = 999;
+                return;
+            }
+            tpsResTime = Math.round(endTime - startTime);
+
+
+            if (tpsResTime < 30) {
+                tps = "20+";
+            } else if (tpsResTime < 50) {
+                tps = "15-20";
+            } else if (tpsResTime < 75) {
+                tps = "10-15";
+            } else if (tpsResTime < 100) {
+                tps = "5-10";
+            } else if (tpsResTime < 150) {
+                tps = "1-5";
+            } else {
+                tps = "<1";
+            }
+        } catch (error) {
+            console.error(`TPS Error: ${error}`);
+            tps = "N/A";
+            tpsResTime = 999;
+        }
+        if (status) {
+            StatusIco = `(Offline)❌`
+        } else {
+            StatusIco = `(Online)⭕`
+        }
+
+
+
+
+
 
 
         const embed = new EmbedBuilder()
             .setColor('#0099ff')
-            .setTitle('Minecraft Server Status')
+            .setTitle(`Minecraft Server Status:${StatusIco}`)
             .addFields(
                 { name: '起動時間', value: uptimeString },
                 { name: 'ワールド人数', value: playerCount.toString(), inline: true },
@@ -1375,8 +1577,10 @@ async function sendServerStatus() {
                 { name: '使用メモリ', value: `${Math.round(usedMem / 1024 / 1024)}MB`, inline: true },
                 { name: '負荷', value: `${loadStatus} (${loadAverage.toFixed(2)})`, inline: true },
                 { name: 'wsのping値', value: `${serverPing}ms`, inline: true },
-                
-                
+                { name: '推定TPS (参考値)', value: `TPS:${tps} (${tpsResTime}ms)`, inline: true }
+
+
+
             )
             .setFooter({ text: `最終更新: ${formattedTime}` });
 
