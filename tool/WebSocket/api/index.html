@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Player Information</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        #playerList {
+            list-style: none;
+            padding: 0;
+        }
+
+        #playerList li {
+            margin-bottom: 5px;
+            cursor: pointer;
+            /* マウスオーバー時にポインターを表示 */
+            padding: 5px 10px;
+            /* 内部にパディングを追加 */
+            border: 1px solid #ccc;
+            /* 枠線を追加 */
+            border-radius: 5px;
+            /* 角を丸くする */
+            transition: background-color 0.3s ease;
+            /* hover時のトランジション */
+        }
+
+        #playerList li:hover {
+            background-color: #f0f0f5;
+            /* hover時の背景色 */
+        }
+
+
+        #playerList li.active {
+            background-color: #e0e0eb;
+            /* アクティブ時の背景色 */
+            border-color: #aaa;
+            font-weight: bold;
+        }
+
+        #playerList .status {
+            margin-left: 10px;
+            font-size: smaller;
+            color: gray;
+        }
+
+        .online {
+            color: green;
+        }
+
+        .offline {
+            color: red;
+        }
+
+        #playerDetails {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            white-space: pre-wrap;
+            background-color: #f8f8f8;
+            /* 背景色を追加 */
+            border-radius: 5px;
+        }
+
+        #getDataData {
+            /*  getDataData のスタイルを追加 */
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            white-space: pre-wrap;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+        }
+
+
+        #loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #loading .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+
+            #playerDetails,
+            #getDataData {
+                /* getDataData もレスポンシブ対応 */
+                font-size: 12px;
+            }
+
+            #playerList li {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Online Players (<span id="onlineCount">0</span>)</h1>
+
+    <input type="text" id="search" placeholder="Search players..." onkeyup="filterPlayers()">
+
+    <ul id="playerList"></ul>
+    <div id="loading">
+        <div class="spinner-border text-light" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <div id="playerDetails"></div>
+    <div id="getDataData"></div>
+
+
+    <script>
+        let playerData = []; // プレイヤーデータを格納する配列
+
+        function fetchPlayerList() {
+            showLoading();
+
+            fetch('/playerList')
+                .then(res => res.json())
+                .then(data => {
+                    playerData = data.players || data;
+                    renderPlayerList(playerData);
+                    document.getElementById('onlineCount').textContent = playerData.length;
+                })
+                .catch(error => console.error("Error fetching player list:", error))
+                .finally(() => hideLoading());
+        }
+
+
+        function renderPlayerList(data) {
+            const playerList = document.getElementById('playerList');
+            playerList.innerHTML = '';
+            document.getElementById('playerDetails').innerHTML = '';
+            document.getElementById('getDataData').innerHTML = '';
+            data.forEach(player => {
+                const li = document.createElement('li');
+                li.textContent = player.name;
+
+                li.addEventListener('click', () => {
+                    Array.from(playerList.children).forEach(child => child.classList.remove('active'));
+                    li.classList.add('active');
+                    fetchPlayerDetails(player.name);
+                });
+                playerList.appendChild(li);
+            });
+        }
+
+
+
+        function filterPlayers() {
+            const searchText = document.getElementById('search').value.toLowerCase();
+            const filteredPlayers = playerData.filter(player => player.name.toLowerCase().includes(searchText));
+            renderPlayerList(filteredPlayers);
+            document.getElementById('onlineCount').textContent = filteredPlayers.length;
+
+        }
+
+
+
+        function fetchPlayerDetails(playerName) {
+            fetch(`/playerData/${playerName}`)
+                .then(response => response.json())
+                .then(data => {
+                    const detailsDiv = document.getElementById('playerDetails');
+                    const getDataDiv = document.getElementById('getDataData');
+
+                    detailsDiv.innerHTML = `<pre>${JSON.stringify(data.worldPlayer, null, 2)}</pre>`;
+                    getDataDiv.innerHTML = `<pre>${JSON.stringify(data.getData, null, 2)}</pre>`;
+                })
+                .catch(error => console.error(`Error fetching details for ${playerName}:`, error));
+        }
+
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+
+        fetchPlayerList();
+    </script>
+</body>
+
+</html>
