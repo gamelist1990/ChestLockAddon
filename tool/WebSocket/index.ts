@@ -1555,9 +1555,10 @@ async function sendServerStatus(status?: boolean) {
 
 
 
-        const wsping = world.ping;
         let serverPing: number;
-        if (wsping) {
+        if (status) {
+            const wsping = world.ping;
+
             serverPing = wsping - 50;
         } else {
             serverPing = 999;

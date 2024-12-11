@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>World Map</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #map-container {
+            width: 800px;
+            height: 600px;
+            border: 2px solid #333;
+            margin: 20px;
+            position: relative;
+            overflow: hidden;
+            background-color: #e0e0e0;
+            background-image: url('https://simple-repeat.com/img/jpgimg/grid/gray/gridEW0gray256.jpg');
+        }
+
+        .player-dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: #007bff;
+            border: 1px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+            z-index: 2;
+        }
+
+        .player-dot:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        #player-list {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: calc(100vh - 40px);
+        }
+
+        #player-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #player-list li {
+            cursor: pointer;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        #player-list li:hover {
+            background-color: #f0f0f0;
+        }
+
+        .player-info {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px;
+            border-radius: 3px;
+            pointer-events: none;
+            display: none;
+            z-index: 3;
+        }
+
+        .player-dot:hover .player-info {
+            display: block;
+        }
+
+        #seed-map-container {
+            width: 800px;
+            height: 600px;
+            border: 2px solid #333;
+            margin: 20px auto;
+        }
+
+        #seed-map-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        #seed-input-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        #player-info-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 20px;
+            z-index: 100;
+            /* Ensure it's on top */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #player-info-modal h2 {
+            margin-top: 0;
+        }
+
+        #close-modal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>World Map</h1>
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+    <div id="player-list">
+        <ul id="player-list-ul"></ul>
+    </div>
+    <div id="seed-input-container">
+        Seed: <input type="text" id="seed-input" placeholder="Enter seed">
+        <button id="load-seed-button">Load Seed Map</button>
+    </div>
+    <div id="seed-map-container">
+        <iframe id="seed-map-iframe"></iframe>
+    </div>
+
+    <div id="player-info-modal">
+        <span id="close-modal">×</span>
+        <h2 id="modal-player-name"></h2>
+        <p>UUID: <span id="modal-player-uuid"></span></p>
+        <p>X: <span id="modal-player-x"></span></p>
+        <p>Y: <span id="modal-player-y"></span></p>
+        <p>Z: <span id="modal-player-z"></span></p>
+    </div>
+
+
+    <script>
+        const mapContainer = document.getElementById('map-container');
+        const playerListUl = document.getElementById('player-list-ul');
+        const seedInput = document.getElementById('seed-input');
+        const loadSeedButton = document.getElementById('load-seed-button');
+        const seedMapIframe = document.getElementById('seed-map-iframe');
+        let mapOffsetX = 0;
+        let mapOffsetY = 0;
+        let isDragging = false;
+        let startDragX = 0;
+        let startDragY = 0;
+
+        const map = document.createElement('div');
+        map.id = 'map';
+        mapContainer.appendChild(map);
+
+        const playerInfoModal = document.getElementById('player-info-modal');
+        const modalPlayerName = document.getElementById('modal-player-name');
+        const modalPlayerUuid = document.getElementById('modal-player-uuid');
+        const modalPlayerX = document.getElementById('modal-player-x');
+        const modalPlayerY = document.getElementById('modal-player-y');
+        const modalPlayerZ = document.getElementById('modal-player-z');
+        const closeModalButton = document.getElementById('close-modal');
+
+
+        playerListUl.addEventListener('click', (e) => {
+            const playerName = e.target.textContent;
+            const dot = map.querySelector(`.player-dot[title="${playerName}"]`);
+
+            if (dot) {
+                const uuid = dot.dataset.uuid;
+                const info = dot.querySelector('.player-info');
+                const x = info.querySelector('.player-x').textContent;
+                const y = info.querySelector('.player-y').textContent;
+                const z = info.querySelector('.player-z').textContent;
+
+
+                modalPlayerName.textContent = playerName;
+                modalPlayerUuid.textContent = uuid;
+                modalPlayerX.textContent = x;
+                modalPlayerY.textContent = y;
+                modalPlayerZ.textContent = z;
+
+                playerInfoModal.style.display = 'block';
+
+            
+
+
+
+            }
+        });
+
+        closeModalButton.addEventListener('click', () => {
+            playerInfoModal.style.display = 'none';
+        });
+
+
+
+        setInterval(updatePlayerPositions, 2000);
+
+        async function updatePlayerPositions() {
+            const response = await fetch('/onlinePlayerData');
+            const data = await response.json();
+
+            map.innerHTML = ''; // マップをクリア
+            playerListUl.innerHTML = ''; // プレイヤーリストをクリア
+
+            data.forEach(player => {
+                const playerName = player.playerName || "Unknown"; // playerNameがない場合は"Unknown"を設定
+                const playerData = player.data && player.data[0]; // player.dataがundefinedでない場合、最初の要素を取得
+
+                if (playerData && playerData.position) { // playerDataとpositionがundefinedでない場合
+                    let dot = map.querySelector(`.player-dot[data-uuid="${playerData.uniqueId}"]`); // uniqueIdでドットを検索
+
+                    if (!dot) {
+                        // ドットが存在しない場合は作成
+                        dot = document.createElement('div');
+                        dot.className = 'player-dot';
+                        dot.title = playerName;
+                        dot.dataset.uuid = playerData.uniqueId;
+                        map.appendChild(dot);
+
+                        const info = document.createElement('div');
+                        info.className = 'player-info';
+                        info.innerHTML = `<span class="player-name">${playerName}</span><br>X: <span class="player-x">${playerData.position.x}</span><br>Y: <span class="player-y">${playerData.position.y}</span><br>Z: <span class="player-z">${playerData.position.z}</span>`;
+                        dot.appendChild(info);
+                    }
+
+                    // ドットの位置と情報を更新 (常に更新)
+                    const x = playerData.position.x - mapOffsetX;
+                    const y = playerData.position.z - mapOffsetY;
+                    dot.style.left = x + 'px';
+                    dot.style.top = y + 'px';
+
+                    const info = dot.querySelector('.player-info');
+                    info.querySelector('.player-name').textContent = playerName;
+                    info.querySelector('.player-x').textContent = playerData.position.x;
+                    info.querySelector('.player-y').textContent = playerData.position.y;
+                    info.querySelector('.player-z').textContent = playerData.position.z;
+
+                    // プレイヤーリストのアイテム
+                    const listItem = document.createElement('li');
+                    listItem.textContent = playerName;
+
+
+                    playerListUl.appendChild(listItem);
+                }
+            });
+        }
+
+
+        mapContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startDragX = e.clientX;
+            startDragY = e.clientY;
+        });
+
+        mapContainer.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                mapOffsetX += (e.clientX - startDragX);
+                mapOffsetY += (e.clientY - startDragY);
+                updatePlayerPositions(); // マップの移動に合わせてプレイヤーの位置も更新
+                startDragX = e.clientX;
+                startDragY = e.clientY;
+            }
+        });
+
+        mapContainer.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        mapContainer.addEventListener('mouseleave', () => {
+            isDragging = false;
+        });
+
+
+        loadSeedButton.addEventListener('click', () => {
+            const seed = seedInput.value;
+            const bedrockVersion = '1.21.50';
+            const iframeSrc = `https://mcseedmap.net/${bedrockVersion}-Bedrock/${seed}#x=0&z=0&l=0`;
+            seedMapIframe.src = iframeSrc;
+        });
+
+        updatePlayerPositions();
+    </script>
+</body>
+
+</html>

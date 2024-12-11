@@ -18,6 +18,12 @@ async function fetchData(url: string, options?: RequestInit) {
     }
 }
 
+/**
+ * 
+ * @param playerName 
+ * @returns WorldPlayerでは各々のJSONを返すNameを指定した場合はその対象の情報だけを返す
+ * 
+ */
 async function getPlayerData(playerName: string): Promise<any> {
     try {
         const playerData = await fetchData(`http://localhost:5000/api/get/WorldPlayer?playerName=${playerName}`);
@@ -85,6 +91,50 @@ const server = http.createServer(async (req, res) => {
             }
         } catch (error) {
             console.error("Error fetching player data:", error);
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Internal Server Error');
+        }
+    } else if (req.method === 'GET' && req.url === '/worldMap') {
+        try {
+            const filePath = path.join(__dirname, 'worldMap.html'); // worldMap.htmlへのパス
+            const data = fs.readFileSync(filePath, 'utf-8');
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(data);
+        } catch (error) {
+            console.error("Error reading worldMap.html:", error);
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Internal Server Error');
+        }
+    } else if (req.method === 'GET' && req.url === '/onlinePlayerData') {
+        try {
+            const playerList = await fetchData('http://localhost:5000/api/get/playerList');
+            if (!playerList) {
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                res.end('Failed to fetch player list.');
+                return;
+            }
+
+            const onlinePlayersData = await Promise.all(
+                playerList.map(async (player: { name: any; }) => {
+                    const playerName = player.name;
+
+                    if (!playerName) {  // nameプロパティが存在しない場合のエラー処理
+                        console.error("Player name is undefined:", player);
+                        return { playerName: "unknown", data: null };
+                    }
+
+                    // console.log("Fetching data for:", playerName);
+
+                    const getDataData = await getPlayerData(playerName);
+                    return { playerName: playerName, data: getDataData, playerlist: playerList };
+                })
+            );
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(onlinePlayersData));
+
+        } catch (error) {
+            console.error("Error fetching online player data:", error);
             res.writeHead(500, { 'Content-Type': 'text/plain' });
             res.end('Internal Server Error');
         }
