@@ -112,24 +112,25 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
                 }
             } else if (pathname === '/worldMap') {
                 sendFile('worldMap.html', res);
-            } else if (pathname === '/shopData') {
+            } else if (pathname === '/shops') {
+                sendFile('shops.html', res);
+            } else {
+                sendError(404, 'Not Found', res);
+            }
+        } else if (method === 'POST') {
+            if (pathname === '/shopData') {
                 let body = '';
                 req.on('data', chunk => body += chunk);
                 req.on('end', async () => {
                     try {
-                        const { username, password } = JSON.parse(body);
-                        const user = users.find(u => u.username === username);
+                        const { username: shopOwner, buyerUsername } = JSON.parse(body); // shopOwner と buyerUsername を受け取る
+                        const user = users.find(u => u.username === shopOwner); // shopOwner でユーザーを検索
 
                         if (user) {
-                            const passwordMatch = await bcrypt.compare(password, user.password);
-                            if (passwordMatch) {
-                                if (user.shop) {
-                                    sendJSON({ shopData: user.shop }, res);
-                                } else {
-                                    sendJSON({ message: "ショップはまだ開設されていません。" }, res);
-                                }
+                            if (user.shop) {
+                                sendJSON({ shopData: user.shop }, res);
                             } else {
-                                sendError(401, 'パスワードが違います', res);
+                                sendJSON({ message: "ショップはまだ開設されていません。" }, res);
                             }
                         } else {
                             sendError(401, 'ユーザーが存在しません', res);
@@ -139,13 +140,8 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
                         sendError(500, 'Internal Server Error', res);
                     }
                 });
-            } else if (pathname === '/shops') {
-                sendFile('shops.html', res);
-            } else {
-                sendError(404, 'Not Found', res);
-            }
-        } else if (method === 'POST') {
-            if (pathname === '/register') {
+
+            } else if (pathname === '/register') {
                 let body = '';
                 req.on('data', chunk => body += chunk);
                 req.on('end', async () => {
@@ -225,37 +221,49 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
                 req.on('data', chunk => body += chunk);
                 req.on('end', async () => {
                     try {
-                        const { itemName, username, password } = JSON.parse(body);
-                        const user = users.find(u => u.username === username);
+                        const { itemName, username: shopOwner, buyer, password } = JSON.parse(body); // キーを修正
+                        const buyerUser = users.find(u => u.username === buyer);         // 購入者を探す
+                        const shopOwnerUser = users.find(u => u.username === shopOwner); // ショップオーナーを探す
 
-                        if (user && user.shop) {
-                            const passwordMatch = await bcrypt.compare(password, user.password);
+                        if (!buyerUser) {
+                            sendError(401, '購入者が見つかりません', res);
+                            return;
+                        }
 
-                            if (passwordMatch) {
-                                const item = user.shop.items.find(i => i.name === itemName);
+                        if (!shopOwnerUser || !shopOwnerUser.shop) {
+                            sendError(404, 'ショップが見つかりません', res);
+                            return;
+                        }
 
-                                if (!item) {
-                                    sendError(404, '商品が見つかりません。', res);
-                                    return;
-                                }
 
-                                if (item.quantity <= 0) {
-                                    sendError(400, '在庫切れです。', res);
-                                    return;
-                                }
+                        const passwordMatch = await bcrypt.compare(password, buyerUser.password); // ここでエラー
 
-                                item.quantity--;
-                                user.shop.balance += item.price;
-                                saveUsers();
+                        if (passwordMatch) {
+                            const item = shopOwnerUser.shop.items.find(i => i.name === itemName);
 
-                                sendJSON({ message: `${itemName} を購入しました。`, shopData: user.shop }, res);
-                            } else {
-                                sendError(401, 'パスワードが違います', res);
+                            if (!item) {
+                                sendError(404, '商品が見つかりません。', res);
                                 return;
                             }
+
+                            if (item.quantity <= 0) {
+                                sendError(400, '在庫切れです。', res);
+                                return;
+                            }
+
+                            item.quantity--;
+                            shopOwnerUser.shop.balance += item.price;
+                            saveUsers();
+
+                            sendJSON({
+                                message: `${itemName} を ${shopOwner} のショップで購入しました。`,
+                                shopData: shopOwnerUser.shop
+                            }, res);
                         } else {
-                            sendError(401, '認証エラー、またはショップが存在しません', res);
+                            sendError(401, 'パスワードが違います', res);
+                            return;
                         }
+
                     } catch (error) {
                         console.error("購入処理エラー:", error);
                         sendError(500, 'Internal Server Error', res);
@@ -424,8 +432,9 @@ function sendJSON(data: any, res: http.ServerResponse) {
 }
 
 function sendError(statusCode: number, message: string, res: http.ServerResponse) {
-    res.writeHead(statusCode, { 'Content-Type': 'text/plain' });
-    res.end(message);
+    res.statusCode = statusCode;
+    res.setHeader('Content-Type', 'application/json'); 
+    res.end(JSON.stringify({ message: message }));
 }
 
 loadUsers();
