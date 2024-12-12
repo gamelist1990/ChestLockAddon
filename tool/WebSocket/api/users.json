@@ -1,0 +1,16 @@
+[
+  {
+    "username": "hello",
+    "password": "$2b$10$v1hZDPn.RLx43eudEMq8buIs4lPhZVD397IwzClzuIeq3g5.4ppyW",
+    "shop": {
+      "items": [
+        {
+          "name": "リンゴ(新鮮)",
+          "price": 10,
+          "quantity": 1
+        }
+      ],
+      "balance": 0
+    }
+  }
+]

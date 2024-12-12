@@ -152,12 +152,14 @@
     </div>
 
     <div id="player-info-modal">
-        <span id="close-modal">×</span>
+        <span id="close-modal">X</span>
         <h2 id="modal-player-name"></h2>
         <p>UUID: <span id="modal-player-uuid"></span></p>
         <p>X: <span id="modal-player-x"></span></p>
         <p>Y: <span id="modal-player-y"></span></p>
         <p>Z: <span id="modal-player-z"></span></p>
+        <button id="tp-button">TP</button>
+        <div id="tp-button"></div>
     </div>
 
 
@@ -167,6 +169,7 @@
         const seedInput = document.getElementById('seed-input');
         const loadSeedButton = document.getElementById('load-seed-button');
         const seedMapIframe = document.getElementById('seed-map-iframe');
+        const tpButton = document.getElementById('tp-button');
         let mapOffsetX = 0;
         let mapOffsetY = 0;
         let isDragging = false;
@@ -204,14 +207,33 @@
                 modalPlayerY.textContent = y;
                 modalPlayerZ.textContent = z;
 
-                playerInfoModal.style.display = 'block';
+                const seed = seedInput.value; 
+                const bedrockVersion = '1.21.50';
+                const iframeSrc = `https://mcseedmap.net/${bedrockVersion}-Bedrock/${seed}#x=${x}&z=${z}&l=2`;
+                seedMapIframe.src = iframeSrc;
 
-            
+
+                playerInfoModal.style.display = 'block';
 
 
 
             }
         });
+
+
+        tpButton.onclick = () => {
+                const x = parseInt(modalPlayerX.textContent, 10);
+                const z = parseInt(modalPlayerZ.textContent, 10);
+
+                // プレイヤーの座標を新しい中心座標とする
+                mapOffsetX = x;
+                mapOffsetY = z;
+
+                updatePlayerPositions();
+                playerInfoModal.style.display = 'none';
+            };
+
+
 
         closeModalButton.addEventListener('click', () => {
             playerInfoModal.style.display = 'none';
@@ -227,6 +249,9 @@
 
             map.innerHTML = ''; // マップをクリア
             playerListUl.innerHTML = ''; // プレイヤーリストをクリア
+
+            const mapCenterX = mapContainer.offsetWidth / 2;
+            const mapCenterZ = mapContainer.offsetHeight / 2;
 
             data.forEach(player => {
                 const playerName = player.playerName || "Unknown"; // playerNameがない場合は"Unknown"を設定
@@ -250,8 +275,8 @@
                     }
 
                     // ドットの位置と情報を更新 (常に更新)
-                    const x = playerData.position.x - mapOffsetX;
-                    const y = playerData.position.z - mapOffsetY;
+                    const x = playerData.position.x + mapCenterX - mapOffsetX;
+                    const y = playerData.position.z + mapCenterZ - mapOffsetY;
                     dot.style.left = x + 'px';
                     dot.style.top = y + 'px';
 

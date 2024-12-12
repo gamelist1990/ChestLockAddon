@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ショップ</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            text-align: center;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="number"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-right: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #shop-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-gap: 20px;
+        }
+
+        .shop-item {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .shop-item h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+
+        #items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-gap: 20px;
+            margin-top: 20px;
+        }
+
+        .item-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .item-card p {
+            margin: 5px 0;
+        }
+
+        .edit-delete-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .edit-delete-buttons button {
+            background-color: #dc3545;
+            margin-left: 5px;
+        }
+
+        .edit-delete-buttons button:hover {
+            background-color: #bd2130;
+        }
+
+        .container h2 {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        #login-form,
+        #shop-management {
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>ショップ</h1>
+
+        <div id="user-area">
+            <div id="login-form">
+                <h2>ログイン</h2>
+                <input type="text" id="login-username" placeholder="ユーザー名">
+                <input type="password" id="login-password" placeholder="パスワード">
+                <button onclick="login()">ログイン</button><br><br>
+                <h2>新規登録</h2>
+                <input type="text" id="register-username" placeholder="ユーザー名">
+                <input type="password" id="register-password" placeholder="パスワード">
+                <button onclick="register()">登録</button>
+            </div>
+
+            <div id="shop-management" style="display:none;">
+                <h2>ショップ管理</h2>
+                <button onclick="createShop()">お店を開設</button>
+                <div id="shop-content" style="display:none;">
+                    <h3>商品一覧</h3>
+                    <div id="items"></div>
+                    <hr>
+                    <h4>商品追加</h4>
+                    <input type="text" id="itemName" placeholder="商品名">
+                    <input type="number" id="price" placeholder="価格">
+                    <input type="number" id="quantity" placeholder="数量">
+                    <button onclick="addItem()">商品を追加</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="shop-list-area" style="display:none;">
+            <h2>他のショップ</h2>
+            <div id="shop-list"></div>
+        </div>
+    </div>
+
+
+    <script>
+        let currentUser = null;
+
+        function register() {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+
+            fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.user) {
+                        currentUser = data.user;
+                        showShopManagement();
+                    }
+                })
+                .catch(err => alert("登録エラー: " + err));
+        }
+
+        function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.message === 'ログイン成功') {
+                        currentUser = data.user;
+                        showShopManagement();
+                        loadShopData();
+                        loadOtherShops();
+                        document.getElementById('shop-list-area').style.display = 'block';
+                    }
+                })
+                .catch(err => alert("ログインエラー: " + err));
+        }
+
+        function showShopManagement() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('shop-management').style.display = 'block';
+        }
+
+        function createShop() {
+            const username = currentUser.username;
+            const password = document.getElementById('login-password').value;
+            fetch('/createShop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.message === "ショップ開設成功" || data.message === "すでにショップを開設済みです") {
+                        alert(data.message);
+                        currentUser = data.user;
+                        loadShopData();
+                        showShopContent();
+                    } else {
+                        alert("ショップ開設エラー: " + (data.message || "不明なエラー"));
+                    }
+                })
+                .catch(err => alert("ショップ開設エラー: " + err));
+        }
+
+        function showShopContent() {
+            document.getElementById('shop-content').style.display = 'block';
+        }
+
+
+        function loadShopData() {
+            fetch('/shopData', {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: currentUser.username,
+                    password: document.getElementById("login-password").value
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    const itemsDiv = document.getElementById('items');
+                    itemsDiv.innerHTML = "";
+
+                    if (data.shopData && data.shopData.items) {
+                        if (data.shopData.items.length > 0) {
+                            data.shopData.items.forEach(item => {
+                                const itemDiv = document.createElement('div');
+                                itemDiv.classList.add("item-card");
+
+                                const buttonsDiv = document.createElement('div');
+                                buttonsDiv.className = 'edit-delete-buttons';
+                                buttonsDiv.innerHTML = `
+    <button onclick="editItem('${item.name}')">編集</button>
+    <button onclick="deleteItem('${item.name}')">削除</button>
+    `;
+                                itemDiv.appendChild(buttonsDiv);
+
+                                itemDiv.innerHTML += `
+    <p>商品名: ${item.name}</p>
+    <p>価格: ${item.price}円</p>
+    <p>在庫数: ${item.quantity}個</p>
+    <button onclick="buyItem('${item.name}')">購入</button>
+    `;
+                                itemsDiv.appendChild(itemDiv);
+                            });
+                        } else {
+                            itemsDiv.textContent = "商品はまだありません。";
+                        }
+                    } else {
+                        itemsDiv.textContent = "ショップデータの取得に失敗しました。";
+                    }
+                })
+                .catch(error => {
+                    console.error("ショップデータの読み込みエラー:", error);
+                    const itemsDiv = document.getElementById('items');
+                    itemsDiv.innerHTML = "";
+                    itemsDiv.textContent = "ショップデータの取得に失敗しました。";
+                });
+        }
+
+
+        async function buyItem(itemName) {
+            const username = currentUser.username;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch('/buy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ itemName, username, password })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: '購入エラー' }));
+                    alert(errorData.message || "購入エラー");
+                    return;
+                }
+
+                const data = await response.json();
+                alert(data.message);
+                if (data.shopData) {
+                    updateShopData(data.shopData);
+                }
+
+            } catch (error) {
+                console.error("購入処理エラー:", error);
+                alert("購入処理中にエラーが発生しました。");
+            }
+        }
+
+
+        function updateShopData(shopData) { //loadShopDataと同じ処理
+            const itemsDiv = document.getElementById('items');
+            itemsDiv.innerHTML = "";
+
+            if (shopData && shopData.items) {
+                if (shopData.items.length > 0) {
+                    shopData.items.forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.classList.add("item-card");
+
+
+                        const buttonsDiv = document.createElement('div');
+                        buttonsDiv.className = 'edit-delete-buttons';
+                        buttonsDiv.innerHTML = `
+    <button onclick="editItem('${item.name}')">編集</button>
+    <button onclick="deleteItem('${item.name}')">削除</button>
+    `;
+                        itemDiv.appendChild(buttonsDiv);
+                        itemDiv.innerHTML += `
+    <p>商品名: ${item.name}</p>
+    <p>価格: ${item.price}円</p>
+    <p>在庫数: ${item.quantity}個</p>
+    <button onclick="buyItem('${item.name}')">購入</button>
+    `;
+                        itemsDiv.appendChild(itemDiv);
+                    });
+                } else {
+                    itemsDiv.textContent = "商品はまだありません。";
+                }
+            } else {
+                itemsDiv.textContent = "ショップデータの取得に失敗しました。";
+            }
+        }
+
+
+        async function addItem() {
+            const itemName = document.getElementById('itemName').value;
+            const price = parseInt(document.getElementById('price').value, 10);
+            const quantity = parseInt(document.getElementById('quantity').value, 10);
+
+            if (!itemName || isNaN(price) || isNaN(quantity)) {
+                alert('商品名、価格、数量を正しく入力してください。');
+                return;
+            }
+
+            const username = currentUser.username;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch('/addItem', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ itemName, price, quantity, username, password })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: '商品追加エラー' }));
+                    alert(errorData.message || "商品追加エラー");
+                    return;
+                }
+
+                const data = await response.json();
+                alert(data.message);
+                loadShopData();
+
+            } catch (error) {
+                console.error("商品追加エラー:", error);
+                alert("商品追加中にエラーが発生しました。");
+            }
+        }
+
+        async function editItem(itemName) {
+            const user = currentUser;
+            const password = document.getElementById('login-password').value;
+            const newPrice = prompt(`${itemName} の新しい価格を入力してください:`);
+            const newQuantity = prompt(`${itemName} の新しい在庫数を入力してください:`);
+
+            if (newPrice === null || newQuantity === null) {
+                return;
+            }
+
+            const price = parseInt(newPrice);
+            const quantity = parseInt(newQuantity);
+            if (isNaN(price) || isNaN(quantity)) {
+                alert("価格と在庫数は数値で入力してください。");
+                return;
+            }
+
+
+
+            try {
+                const response = await fetch('/editItem', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ itemName, price, quantity, username: user.username, password })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: '商品編集エラー' }));
+                    alert(errorData.message || "商品編集エラー");
+                    return;
+                }
+
+
+                const data = await response.json();
+                alert(data.message);
+                loadShopData();
+
+            } catch (error) {
+                console.error("商品編集エラー:", error);
+                alert("商品編集中にエラーが発生しました。");
+            }
+        }
+
+
+        async function deleteItem(itemName) {
+            const password = document.getElementById('login-password').value;
+
+            if (confirm(`${itemName} を本当に削除しますか？`)) {
+                try {
+                    const response = await fetch('/deleteItem', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ itemName, username: currentUser.username, password })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: '商品削除エラー' }));
+                        alert(errorData.message || "商品削除エラー");
+                        return;
+                    }
+
+                    const data = await response.json();
+                    alert(data.message);
+                    loadShopData();
+                } catch (error) {
+                    console.error("商品削除エラー:", error);
+                    alert("商品削除中にエラーが発生しました。");
+                }
+            }
+        }
+
+
+        function loadOtherShops() {
+            const password = document.getElementById("login-password").value;
+
+            fetch('/otherShops', {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUser.username, password: password })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    const shopListDiv = document.getElementById('shop-list');
+                    shopListDiv.innerHTML = "";
+
+                    if (data.shops && data.shops.length > 0) {
+                        data.shops.forEach(shop => {
+                            const shopDiv = document.createElement('div');
+                            shopDiv.classList.add('shop-item');
+
+                            shopDiv.innerHTML = `<h3>${shop.username}のお店</h3>`;
+
+                            if (shop.items && shop.items.length > 0) {
+                                const ul = document.createElement('ul');
+
+                                shop.items.forEach(item => {
+                                    const li = document.createElement('li');
+                                    li.textContent = `${item.name} - ${item.price}円 (残り${item.quantity}個)`;
+                                    ul.appendChild(li);
+                                });
+
+                                shopDiv.appendChild(ul);
+
+                            } else {
+                                shopDiv.innerHTML += "<p>商品はまだありません。</p>";
+                            }
+
+                            shopListDiv.appendChild(shopDiv);
+                        });
+                    } else {
+                        shopListDiv.textContent = "他のショップはまだありません。";
+                    }
+                })
+                .catch(error => {
+                    console.error("他のショップの読み込みエラー:", error);
+                    document.getElementById('shop-list').textContent = "他のショップの読み込みに失敗しました。";
+                });
+        }
+
+    </script>
+</body>
+
+</html>
