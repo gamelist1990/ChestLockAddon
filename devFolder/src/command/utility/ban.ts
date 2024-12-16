@@ -19,7 +19,7 @@ interface BanList {
 
 let banList: BanList = { banPlayers: [] };
 
-
+// サーバー起動時にBANデータをロード
 export function loadBan(): void {
     loadData();
     const data = chestLockAddonData.banList;
@@ -28,8 +28,6 @@ export function loadBan(): void {
     }
     checkAllBanned();
 }
-
-
 // サーバー起動時、または各プレイヤーのスポーン時に呼び出す
 function checkAllBanned() {
 
@@ -78,7 +76,32 @@ registerCommand({
     executor: (player: Player, args: string[]) => {
         const targetName = args[0];
         const reason = args[1];
-        const duration = args[2] ? parseInt(args[2]) : undefined;
+        let duration: number | undefined = undefined;
+        if (args[2]) {
+            const timeMatch = args[2].match(/(\d+)([dhms])/);
+            if (timeMatch) {
+                const value = parseInt(timeMatch[1]);
+                const unit = timeMatch[2];
+                switch (unit) {
+                    case "d":
+                        duration = value * 24 * 60 * 60
+                        break;
+                    case "h":
+                        duration = value * 60 * 60
+                        break;
+                    case "m":
+                        duration = value * 60
+                        break;
+                    case "s":
+                        duration = value
+                        break;
+                    default:
+                        duration = undefined;
+                }
+            } else {
+                duration = parseInt(args[2]);
+            }
+        }
 
 
         const target = world.getAllPlayers().find(p => p.name === targetName);
@@ -124,10 +147,16 @@ registerCommand({
 function banPlayer(player: Player, targetName: string, targetId: string, reason: string, duration?: number) {
     let found = false;
     let targetPlayer: BanPlayer = { name: targetName, id: targetId, reason: reason, unban: 'false' };
+    const target = world.getAllPlayers().find(p => p.name === targetName);
     if (duration !== undefined) {
         targetPlayer.duration = duration;
         targetPlayer.banTime = Date.now();
     }
+    
+    const requiredTags = ["staff", "op"];
+    if (requiredTags.every(tag => target?.hasTag(tag))) return;
+
+    
 
     if (chestLockAddonData && chestLockAddonData.banlist && chestLockAddonData.banlist.banPlayers) {
         banList.banPlayers = chestLockAddonData.banlist.banPlayers;
@@ -144,8 +173,7 @@ function banPlayer(player: Player, targetName: string, targetId: string, reason:
             banList.banPlayers.push(targetPlayer);
             saveData("banlist", banList);
             player.sendMessage(translate(player, "command.ban.banSuccess") + targetName + translate(player, "command.ban.reason", { reason: reason }) + (duration ? translate(player, "command.ban.duration", { duration: duration, second: translate(player, 'command.ban.second') }) : translate(player, "command.ban.noDuration")));
-            world.sendMessage(`§l§e[Ban] §c${targetName} §e is banned by §a${player.name} for §c${reason} ` + (duration ? `for ${duration} seconds` : "with no end duration") + ` !`);
-            const target = world.getAllPlayers().find(p => p.name === targetName);
+            world.sendMessage(`§l§e[BAN] §c${targetName} §e is banned by §a${player.name} for §c${reason} ` + (duration ? `for ${duration} seconds` : "with no end duration") + ` !`);
             if (target) {
                 tempKick(target, reason, duration, Date.now());
             }
@@ -182,7 +210,7 @@ function unbanPlayer(player: Player, targetName: string) {
                 foundTarget.unban = 'true';
                 saveData("banlist", banList);
                 player.sendMessage(translate(player, 'command.ban.unbanSuccess') + (foundTarget?.name || foundTarget?.id));
-                world.sendMessage(`§l§e[Ban] §a${foundTarget?.name || foundTarget?.id} §e is unbanned by §a${player.name} !`)
+                world.sendMessage(`§l§6[UnBan] §a${foundTarget?.name || foundTarget?.id} §e is unbanned by §a${player.name} !`)
                 return;
             }
         }
@@ -225,14 +253,13 @@ function tempKick(player: Player, reason: string, duration?: number, banTime?: n
 
     if (duration && banTime) {
         const timeLeft = Math.ceil((banTime + (duration * 1000) - Date.now()) / 1000);
-        kickMessage += translate(player, 'command.ban.reason', { reason: `${reason}` }) + `\n`
-        kickMessage += translate(player, 'command.ban.duration', { duration: `${timeLeft}`, second: `${translate(player, 'command.ban.second')}` })
+        kickMessage += translate(player, 'command.ban.reason', { reason: reason }) + `\n`
+        kickMessage += translate(player, 'command.ban.duration', { duration: timeLeft, second: translate(player, 'command.ban.second') })
     } else {
-        kickMessage += translate(player, 'command.ban.reason', { reason: `${reason}` }) + `\n` + translate(player, 'command.ban.noDuration');
+        kickMessage += translate(player, 'command.ban.reason', { reason: reason }) + `\n` + translate(player, 'command.ban.noDuration');
     }
     player.runCommand('kick ' + player.name + ' ' + kickMessage);
 }
-
 
 // 各プレイヤーのスポーン時にロードとチェック
 world.afterEvents.playerSpawn.subscribe((event) => {
