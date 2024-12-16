@@ -7,5 +7,7 @@ import './report';
 import './staff';
 import './server';
 import './ping';
+import './ban';
+
 
 

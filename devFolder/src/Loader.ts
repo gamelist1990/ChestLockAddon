@@ -11,6 +11,7 @@ import { banPlayers } from './Modules/globalBan';
 import { loadReport } from './command/utility/report';
 import { ver } from './Modules/version';
 import { AddNewPlayers, initializeAntiCheat } from './command/plugin/AntiCheat/index';
+import { loadBan } from './command/utility/ban';
 
 const startTime = Date.now();
 
@@ -46,6 +47,7 @@ async function main() {
       AddNewPlayers();
       //_____________//
       loadGate();
+      loadBan();
       loadjoinModules();
       loadProtectedChests();
       await loadAllImports();
@@ -88,8 +90,7 @@ world.afterEvents.itemUse.subscribe(({ itemStack: item, source: player }) => {
 world.afterEvents.playerSpawn.subscribe((event: any) => {
   const { player } = event;
 
-
-
+  //globalBAN
 
   system.runTimeout(() => {
     if (player) {
@@ -106,3 +107,4 @@ if (config().module.debugMode.enabled === true) {
   console.warn(`Full ChestLock Addon Data loaded!! Version${ver}`);
 
 }
+

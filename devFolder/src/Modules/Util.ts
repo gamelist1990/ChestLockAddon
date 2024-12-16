@@ -135,6 +135,21 @@ export const config = (): { commands: { [key: string]: CommandConfig }; admin: s
       adminOnly: false,
       requireTag: [],
     },
+    ban: {
+      enabled: true,
+      adminOnly: false,
+      requireTag: ["staff","op"],
+    },
+    unban: {
+      enabled: true,
+      adminOnly: false,
+      requireTag: ["staff", "op"],
+    },
+    banlist: {
+      enabled: true,
+      adminOnly: false,
+      requireTag: [],
+    },
   },
   admin: 'op',
 

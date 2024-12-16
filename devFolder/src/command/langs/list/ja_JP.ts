@@ -71,6 +71,18 @@ export const translations = {
     msgid: "Invsee Command ",
     msgstr: "指定したユーザーのインベントリを確認できるよ"
   },
+  "ban_docs": {
+    msgid: "Bans a player from the server",
+    msgstr: ""
+  },
+  "unban_docs": {
+    msgid: "Unbans a player from the server",
+    msgstr: ""
+  },
+  "banlist_docs": {
+    msgid: "Shows the list of banned players  ",
+    msgstr: ""
+  },
   "ui.ReportButton": {
     msgid: "§0Report Menu",
     msgstr: "§0報告メニュー"
@@ -858,5 +870,49 @@ export const translations = {
   "command.sumo.Win": {
     msgid: "§l§f>> §a You are Win ! §f<<",
     msgstr: "§l§f>> §a あなたの勝利 §f<<"
+  },
+  "command.ban.alreadyBanned": {
+    msgid: "§l§f>>　§cPlayer is already banned:",
+    msgstr: ""
+  },
+  "command.ban.banSuccess": {
+    msgid: "§l§f>> §aSuccessfully banned player:",
+    msgstr: ""
+  },
+  "command.ban.reason": {
+    msgid: "§e, reason: §c{reason}",
+    msgstr: ""
+  },
+  "command.ban.duration": {
+    msgid: "§a §e, duration: §c{duration} {second}",
+    msgstr: ""
+  },
+  "command.ban.second": {
+    msgid: "seconds",
+    msgstr: ""
+  },
+  "command.ban.noDuration": {
+    msgid: "§e, no duration",
+    msgstr: ""
+  },
+  "command.ban.isOnline": {
+    msgid: "§l§f>> §cPlayer is online",
+    msgstr: ""
+  },
+  "command.ban.unbanSuccess": {
+    msgid: "§l§f>> §aSuccessfully unbanned player",
+    msgstr: ""
+  },
+  "command.ban.unbanNotFound": {
+    msgid: "§l§f>> §cPlayer not found in ban list",
+    msgstr: ""
+  },
+  "command.ban.noBanned": {
+    msgid: "§l§f>> §cThere are no banned players",
+    msgstr: ""
+  },
+  "command.ban.bannedMessage": {
+    msgid: "§l§f>> §cYou are banned from the server",
+    msgstr: ""
   },
 };
