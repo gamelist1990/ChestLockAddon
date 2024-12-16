@@ -4,8 +4,8 @@ import { ver } from '../../Modules/version';
 import { registerCommand, getAllCommandNames, verifier, prefix } from '../../Modules/Handler';
 import { translate } from '../langs/list/LanguageManager';
 
-const COMMANDS_PER_PAGE = 10; // 1ページに表示するコマンド数
-const PREFIX = prefix; // prefix を定数として定義
+const COMMANDS_PER_PAGE = 10; 
+const PREFIX = prefix; 
 
 registerCommand({
   name: 'help',
