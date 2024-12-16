@@ -255,6 +255,13 @@
             margin-bottom: 20px;
             text-align: left;
         }
+
+        #user-balance {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 
@@ -284,7 +291,9 @@
 
         <div id="shop-management" style="display:none;">
             <h2>ショップ管理</h2>
+            <p id="user-balance">残高: <span id="balance-value"></span></p>
             <button onclick="createShop()">お店を開設</button>
+            <button onclick="showPurchaseHistory()">購入履歴</button>
             <div id="shop-content">
                 <h3>商品一覧(購入後&品一覧)</h3>
                 <div id="items"></div>
@@ -321,7 +330,7 @@
             <h2>購入確認</h2>
             <div id="modal-item-details"></div>
             <div class="modal-buttons">
-                <button onclick="confirmPurchase()" class="buy-button">購入する</button>
+                <button onclick="confirmPurchase() && closeShopDetailModal()" class="buy-button">購入する</button>
                 <button onclick="closeModal()">キャンセル</button>
             </div>
         </div>
@@ -410,7 +419,7 @@
                 .then(res => res.json())
                 .then(data => {
                     alert(`${data.message}しましたログインしてください`);
-                    
+
                     if (data.user) {
                         currentUser = data.user;
                     }
@@ -469,6 +478,7 @@
                         currentUser = data.user;
                         loadShopData();
                         showShopContent();
+                        updateBalanceDisplay(data.user.money)
                     } else {
                         alert("ショップ開設エラー: " + (data.message || "不明なエラー"));
                     }
@@ -478,6 +488,15 @@
 
         function showShopContent() {
             document.getElementById('shop-content').style.display = 'block';
+        }
+
+       function updateBalanceDisplay(money) {
+            if (money !== undefined) {
+                document.getElementById('balance-value').textContent = money;
+            } else {
+                document.getElementById('balance-value').textContent = "取得できませんでした"; 
+                console.warn("ユーザーの所持金を取得できませんでした");
+            }
         }
 
 
@@ -518,6 +537,7 @@
     <p>在庫数: ${item.quantity}個</p>
     `;
                                 itemsDiv.appendChild(itemDiv);
+                                updateBalanceDisplay(data.shop.money)
                             });
                         } else {
                             itemsDiv.textContent = "商品はまだありません。";
@@ -576,8 +596,9 @@
                 const data = await response.json();
                 alert(data.message);
 
-                loadShop(shopOwner); // 購入後にショップデータを再読み込み
+                loadShop(shopOwner);
                 closeModal()
+                updateBalanceDisplay(data.buyerBalance);
             } catch (error) {
                 console.error("購入処理エラー:", error);
                 alert("購入処理中にエラーが発生しました。");
@@ -1018,6 +1039,41 @@
                     searchResultsDiv.textContent = "商品の検索に失敗しました。";
                 });
 
+        }
+
+        function showPurchaseHistory() {
+            const password = document.getElementById("login-password").value;
+            fetch('/purchaseHistory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: currentUser.username,
+                    password: password
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    const historyDiv = document.getElementById('items'); // 例：既存のアイテム表示領域を使用
+                    historyDiv.innerHTML = ''; // 既存の内容をクリア
+
+                    if (data.purchaseHistory && data.purchaseHistory.length > 0) {
+                        const historyList = document.createElement('ul');
+                        data.purchaseHistory.forEach(item => {
+                            const listItem = document.createElement('li');
+                            listItem.textContent = `購入者: ${item.buyer}, 商品: ${item.itemName}, 価格: ${item.price}円, 購入日時: ${new Date(item.purchaseDate).toLocaleString()}`;
+                            historyList.appendChild(listItem);
+                        });
+                        historyDiv.appendChild(historyList);
+                    } else {
+                        historyDiv.textContent = '購入履歴はありません。';
+                    }
+                })
+                .catch(error => {
+                    console.error("購入履歴の取得エラー:", error);
+                    alert("購入履歴の取得に失敗しました。")
+                });
         }
     </script>
 </body>

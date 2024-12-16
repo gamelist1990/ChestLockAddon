@@ -1,52 +1,60 @@
 [
   {
-    "username": "testUser1",
-    "password": "$2b$10$.u4pJfZPGud.apx58jxTROU9beequpK4k1iLr/prBS79AeQ2QDUiq",
+    "username": "a",
+    "password": "$2b$10$t63OMwkx3D1qSyL1PkJFSOWDp9TGUjrKFnyoLArY5/T9Mp0Btk6Oq",
     "shop": {
       "items": [
         {
-          "name": "真の剣",
-          "price": 1000,
-          "quantity": 0
-        },
-        {
-          "name": "伝説の剣(レプリカ)",
+          "name": "核ミサイル(リニューアル:今ならお得!)",
           "price": 100,
           "quantity": 1
         }
-      ],
-      "balance": 1000
-    }
+      ]
+    },
+    "money": 100,
+    "purchaseHistory": [
+      {
+        "buyer": "aa",
+        "itemName": "核ミサイル",
+        "price": 50,
+        "purchaseDate": "2024-12-12T05:37:20.913Z"
+      }
+    ]
   },
   {
-    "username": "testUser2",
-    "password": "$2b$10$qgXHB3tzWs.RiYFPk1Ugi.1.bfmjvWo8VR7cR5iulmY.TPXY1mWq.",
+    "username": "aa",
+    "password": "$2b$10$LH9M.upDJiQg/a93dkG70e6jZCOVyYEGXP72rGcwK0DE9dLEN9D4S",
     "shop": {
       "items": [
         {
-          "name": "りんご",
-          "price": 5,
-          "quantity": 10
-        },
-        {
-          "name": "さくらんぼ",
-          "price": 5,
-          "quantity": 10
+          "name": "核ミサイル",
+          "price": 50,
+          "quantity": 0
         }
-      ],
-      "balance": 0
-    }
+      ]
+    },
+    "money": 100,
+    "purchaseHistory": [
+      {
+        "buyer": "a",
+        "itemName": "核ミサイル",
+        "price": 50,
+        "purchaseDate": "2024-12-12T05:43:42.200Z"
+      }
+    ]
   },
   {
-    "username": "nikoniko",
-    "password": "$2b$10$lGXuTWi/wx7IhOQwUuPUYuCmj5fsMmjLTjn7be/RgBtReVht0/e3C"
-  },
-  {
-    "username": "PEXkurann",
-    "password": "$2b$10$KlIsa529oJ9RdQQyaVqvoeQDcDjpNVGav/ALAmKRf2ZTsnd/ZyNlG"
-  },
-  {
-    "username": "cat",
-    "password": "$2b$10$C8PpUhpViPSyWogDJY9Xfu1S52FTL.GIH9a/wWaYTnRhjjufBRXvC"
+    "username": "sunsun",
+    "password": "$2b$10$zMAlWJmKHw9o4FbXf8bOnOxvUjA47q8zvcAWYSL/ThxPCDrh/9lmC",
+    "shop": {
+      "items": [
+        {
+          "name": "sunsunのゲーム",
+          "price": 999999,
+          "quantity": 0
+        }
+      ]
+    },
+    "money": 100
   }
 ]

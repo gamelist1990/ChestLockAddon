@@ -18,14 +18,24 @@ interface ShopItem {
 
 interface ShopData {
     items: ShopItem[];
-    balance: number;
+}
+
+interface PurchaseHistoryItem {
+    buyer: string;
+    itemName: string;
+    price: number;
+    purchaseDate: string;
 }
 
 interface User {
     username: string;
     password: string;
     shop?: ShopData;
+    money?: number;
+    purchaseHistory?: PurchaseHistoryItem[];
 }
+
+
 
 let users: User[] = [];
 
@@ -128,7 +138,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
 
                         if (user) {
                             if (user.shop) {
-                                sendJSON({ shopData: user.shop }, res);
+                                sendJSON({ shopData: user.shop, shop: user }, res);
                             } else {
                                 sendJSON({ message: "ショップはまだ開設されていません。" }, res);
                             }
@@ -198,7 +208,8 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
                             const passwordMatch = await bcrypt.compare(password, user.password);
                             if (passwordMatch) {
                                 if (!user.shop) {
-                                    user.shop = { items: [], balance: 0 };
+                                    user.shop = { items: [] };
+                                    user.money = 100; //初期金額
                                     saveUsers();
                                     sendJSON({ message: 'ショップ開設成功', user }, res);
                                 } else {
@@ -216,14 +227,15 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
                         sendError(500, 'Internal Server Error', res);
                     }
                 });
+
             } else if (pathname === '/buy') {
                 let body = '';
                 req.on('data', chunk => body += chunk);
                 req.on('end', async () => {
                     try {
-                        const { itemName, username: shopOwner, buyer, password } = JSON.parse(body); // キーを修正
-                        const buyerUser = users.find(u => u.username === buyer);         // 購入者を探す
-                        const shopOwnerUser = users.find(u => u.username === shopOwner); // ショップオーナーを探す
+                        const { itemName, username: shopOwner, buyer, password } = JSON.parse(body);
+                        const buyerUser = users.find(u => u.username === buyer);
+                        const shopOwnerUser = users.find(u => u.username === shopOwner);
 
                         if (!buyerUser) {
                             sendError(401, '購入者が見つかりません', res);
@@ -235,12 +247,10 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
                             return;
                         }
 
-
-                        const passwordMatch = await bcrypt.compare(password, buyerUser.password); // ここでエラー
+                        const passwordMatch = await bcrypt.compare(password, buyerUser.password);
 
                         if (passwordMatch) {
                             const item = shopOwnerUser.shop.items.find(i => i.name === itemName);
-
                             if (!item) {
                                 sendError(404, '商品が見つかりません。', res);
                                 return;
@@ -251,18 +261,46 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
                                 return;
                             }
 
+                            if (buyerUser.money === undefined || buyerUser.money < item.price) {
+                                sendError(400, '残高が足りません。', res);
+                                return;
+                            }
+
+
                             item.quantity--;
-                            shopOwnerUser.shop.balance += item.price;
+                            // shopOwnerUser.shop.balance += item.price; // 削除
+                            if (shopOwnerUser.money === undefined) {
+                                shopOwnerUser.money = 0;
+                            }
+                            shopOwnerUser.money += item.price 
+                            buyerUser.money -= item.price
+
+                            // 購入履歴の追加
+                            const purchaseDate = new Date().toISOString();
+                            const purchaseItem: PurchaseHistoryItem = {
+                                buyer: buyer,
+                                itemName: itemName,
+                                price: item.price,
+                                purchaseDate: purchaseDate,
+                            };
+
+                            if (!shopOwnerUser.purchaseHistory) {
+                                shopOwnerUser.purchaseHistory = [];
+                            }
+                            shopOwnerUser.purchaseHistory.push(purchaseItem);
+
                             saveUsers();
 
                             sendJSON({
                                 message: `${itemName} を ${shopOwner} のショップで購入しました。`,
-                                shopData: shopOwnerUser.shop
+                                shopData: shopOwnerUser.shop,
+                                buyerBalance: buyerUser.money,
                             }, res);
                         } else {
                             sendError(401, 'パスワードが違います', res);
                             return;
                         }
+
 
                     } catch (error) {
                         console.error("購入処理エラー:", error);
@@ -401,6 +439,37 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
                         sendError(500, 'Internal Server Error', res);
                     }
                 });
+            }
+            else if (pathname === '/purchaseHistory') {
+                let body = '';
+                req.on('data', chunk => body += chunk);
+                req.on('end', async () => {
+                    try {
+                        const { username, password } = JSON.parse(body);
+                        const user = users.find(u => u.username === username);
+
+                        if (!user) {
+                            sendError(401, 'ユーザーが見つかりません', res);
+                            return;
+                        }
+
+                        const passwordMatch = await bcrypt.compare(password, user.password);
+
+                        if (!passwordMatch) {
+                            sendError(401, 'パスワードが違います', res);
+                            return;
+                        }
+
+                        if (user.purchaseHistory) {
+                            sendJSON({ purchaseHistory: user.purchaseHistory }, res);
+                        } else {
+                            sendJSON({ message: '購入履歴はありません' }, res);
+                        }
+                    } catch (error) {
+                        console.error("購入履歴取得エラー:", error);
+                        sendError(500, 'Internal Server Error', res);
+                    }
+                });
             } else {
                 sendError(404, 'Not Found', res);
             }
@@ -433,7 +502,7 @@ function sendJSON(data: any, res: http.ServerResponse) {
 
 function sendError(statusCode: number, message: string, res: http.ServerResponse) {
     res.statusCode = statusCode;
-    res.setHeader('Content-Type', 'application/json'); 
+    res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ message: message }));
 }
 
