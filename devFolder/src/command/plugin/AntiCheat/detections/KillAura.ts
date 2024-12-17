@@ -33,7 +33,7 @@ export function detectKillAura(attackingPlayer: Player, event: EntityHurtAfterEv
 
 
     // Reach Check (Lag Compensation)
-    const maxReach = 6.7;
+    const maxReach = 7;
     const pastPositions = data.pastPositions || [];
 
     // サーバー側のラグ補正（過去の位置データから最大距離を計算）
