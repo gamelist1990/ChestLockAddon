@@ -1,11 +1,20 @@
-import { Player } from '@minecraft/server';
+import { Player, Vector3 } from '@minecraft/server';
 import { PlayerDataManager } from '../PlayerData';
 import { hasEffect } from '../utils';
 import { getGamemode } from '../../../../Modules/Util';
 
 const checkInterval = 500;
-const allowedSpeed = 4.0;
+const allowedSpeed = 15;
 const violationThreshold = 2;
+
+function calculateSpeed(prevPos: Vector3, currentPos: Vector3, deltaTime: number): number {
+    const dx = currentPos.x - prevPos.x;
+    const dy = currentPos.y - prevPos.y;
+    const dz = currentPos.z - prevPos.z;
+    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    return distance / (deltaTime / 1000); // m/s
+}
+
 
 export function detectSpeed(player: Player, playerDataManager: PlayerDataManager): { cheatType: string; value?: number } | null {
     const data = playerDataManager.get(player);
@@ -32,22 +41,33 @@ export function detectSpeed(player: Player, playerDataManager: PlayerDataManager
     const now = Date.now();
     if (now - data.speedData.lastSpeedCheck < checkInterval) return null;
 
+
     try {
-        const movementVector = player.inputInfo.getMovementVector();
-        const speed = Math.sqrt(movementVector.x * movementVector.x + movementVector.y * movementVector.y) * (1000 / checkInterval) * 20 / 50;
+        const prevPos = data.speedData.lastPosition;
+        const currentPos = player.location;
+        if (!prevPos) {
+            playerDataManager.update(player, { speedData: { ...data.speedData, lastSpeedCheck: now, lastPosition: currentPos } });
+            return null;
+        }
+
+
+        const deltaTime = now - data.speedData.lastSpeedCheck;
+        const speed = calculateSpeed(prevPos, currentPos, deltaTime);
+
 
         if (speed > allowedSpeed) {
             data.speedData.speedViolationCount++;
             if (data.speedData.speedViolationCount >= violationThreshold) {
-                playerDataManager.update(player, { speedData: { speedViolationCount: 0, lastSpeedCheck: now } });
+                playerDataManager.update(player, { speedData: { speedViolationCount: 0, lastSpeedCheck: now, lastPosition: currentPos } });
                 return { cheatType: 'Speed', value: speed };
             }
         } else {
-            playerDataManager.update(player, { speedData: { speedViolationCount: 0, lastSpeedCheck: now } });
+
+            playerDataManager.update(player, { speedData: { speedViolationCount: 0, lastSpeedCheck: now, lastPosition: currentPos } });
         }
 
     } catch (error) {
-        console.error("getMovementVectorでエラーが発生しました:", error);
+        console.error("速度計算でエラーが発生しました:", error);
         return null;
     }
     return null;

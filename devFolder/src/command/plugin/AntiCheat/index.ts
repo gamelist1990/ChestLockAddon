@@ -15,7 +15,7 @@ import { getPlayerCPS } from '../tag';
 // 設定 (必要に応じて調整)
 const configs = {
     debugMode: false,
-    ver: 0.2,
+    ver: 0.3,
     antiCheat: {
         enabled: true,
         detectionThreshold: 2,
@@ -26,8 +26,8 @@ const configs = {
         modules: {
             airJump: false,
             speed: false,
-            killAura: false,
-            xray: false,
+            killAura: true,
+            xray: true,
             spam: true,
             editionFake: true
         }

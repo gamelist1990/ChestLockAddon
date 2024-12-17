@@ -4,6 +4,7 @@ import { Player, Vector3, GameMode } from '@minecraft/server';
 interface SpeedData {
     lastSpeedCheck: number;
     speedViolationCount: number;
+    lastPosition: Vector3 | null;
 }
 
 // プレイヤーの回転変化を記録するインターフェース
@@ -71,6 +72,7 @@ export class PlayerDataManager {
             speedData: {
                 lastSpeedCheck: 0,
                 speedViolationCount: 0,
+                lastPosition:null,
             },
             // KillAura Module
             lastRotationY: 0,
