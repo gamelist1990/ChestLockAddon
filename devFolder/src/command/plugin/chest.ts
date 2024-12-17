@@ -15,7 +15,7 @@ interface ChestProtectionData {
 }
 
 const CHEST_CHECK_RADIUS = 20;
-const CHECK_INTERVAL = 20 * 60; // 1分 (20ティック/秒 * 60秒)
+const CHECK_INTERVAL = 10; // 1分 (20ティック/秒 * 60秒)
 const MAX_CHESTS_PER_PLAYER = 12;
 
 let protectedChests: Record<string, ChestProtectionData> = {};
@@ -286,29 +286,55 @@ system.run(() => {
           Object.values(protectedChests[key].locations).includes(chestKey)
         );
 
+
         if (chestDataKey) {
           const chestData = protectedChests[chestDataKey];
-          const originalLocation = parseChestKey(Object.values(chestData.locations)[0]);
-          const cloneCommand = `clone ${newLoc.x} ${newLoc.y} ${newLoc.z} ${newLoc.x} ${newLoc.y} ${newLoc.z} ${originalLocation.x} ${originalLocation.y} ${originalLocation.z} replace`;
-          dimension.runCommand(cloneCommand);
+          if (chestData) {
+            const originalLocations = Object.values(chestData.locations);
+            const originalLocation = parseChestKey(originalLocations[0]);
+
+            const cloneCommand = `clone ${newLoc.x} ${newLoc.y} ${newLoc.z} ${newLoc.x} ${newLoc.y} ${newLoc.z} ${originalLocation.x} ${originalLocation.y} ${originalLocation.z} move`;
+            dimension.runCommand(cloneCommand);
+
+            // protectedChests の座標情報を更新
+            originalLocations.forEach((locationKey) => {
+              if (protectedChests[locationKey]) {
+                const chestData = protectedChests[locationKey];
+                // 新しい位置情報を設定
+                const updatedLocations: { [key: string]: string } = {};
+                for (let i = 0; i < Object.keys(chestData.locations).length; i++) {
+                  const oldKey = Object.values(chestData.locations)[i]
+                  if (oldKey === getChestKey(blockLocation)) {
+                    updatedLocations[i + 1] = getChestKey(newLoc);
+                    continue;
+                  }
+
+                  updatedLocations[i + 1] = oldKey;
+                }
+
+                protectedChests[locationKey].locations = updatedLocations;
+              }
+            })
+            saveProtectedChests();
+          }
         }
       }
     });
   });
+
   function getVectorOnMove(vector: Vector3, pistonDirection: number, isExpanding: boolean): Vector3 {
     const { x, y, z } = vector;
-    const subtractThenAdd = isExpanding ? -1 : 1;
     const addThenSubtract = isExpanding ? 1 : -1;
-
+    const subtractThenAdd = isExpanding ? -1 : 1;
     switch (pistonDirection) {
       case 0:
-        return { x: x, y: y + subtractThenAdd, z: z };
-      case 1:
         return { x: x, y: y + addThenSubtract, z: z };
+      case 1:
+        return { x: x, y: y + subtractThenAdd, z: z };
       case 2:
-        return { x: x, y: y, z: z + addThenSubtract };
-      case 3:
         return { x: x, y: y, z: z + subtractThenAdd };
+      case 3:
+        return { x: x, y: y, z: z + addThenSubtract };
       case 4:
         return { x: x + addThenSubtract, y: y, z: z };
       case 5:
@@ -403,12 +429,14 @@ system.run(() => {
       }
     }, 0);
   });
+
   system.runInterval(() => {
     checkProtectedChests();
     handleHopper();
     saveProtectedChests();
   }, CHECK_INTERVAL);
 });
+
 function handleHopper() {
   for (const chestKey in protectedChests) {
     const location = parseChestKey(chestKey);
