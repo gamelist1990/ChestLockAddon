@@ -912,7 +912,7 @@ export const translations = {
     msgstr: ""
   },
   "command.ban.bannedMessage": {
-    msgid: "§l§f>> §cYou are banned from the server",
+    msgid: "§l§f>> §cYou are banned from the server\n§e, Reason: §c{reason}\n§e, Duration: §c{duration}",
     msgstr: ""
   },
 };

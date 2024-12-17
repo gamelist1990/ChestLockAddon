@@ -190,9 +190,9 @@ function banPlayer(
                     : translate(player, 'command.ban.noDuration')),
             );
             world.sendMessage(
-                `§l§e[BAN] §c${targetName} §e is banned by §a${player.name} for §c${reason} ` +
-                (duration ? `for ${duration} seconds` : 'with no end duration') +
-                ` !`,
+                `§l§e[§bNEW§gBan] §c${targetName} §e was banned by §a${player.name} §eReason: §c${reason} ` +
+                (duration ? `§e(§c${duration} seconds§e)§r` : '§e(permanently)') +
+                `!`,
             );
             if (target) {
                 // durationがundefinedの場合は、通常BAN
@@ -202,7 +202,7 @@ function banPlayer(
                     const durationInHours = duration / 3600;
                     if (durationInHours <= 5) {
                         try {
-                            tempkick(player);
+                            tempkick(target);
                         } catch (error: any) {
                             ban(target, reason, duration, Date.now());
                         }
@@ -227,20 +227,19 @@ function banPlayer(
                 : translate(player, 'command.ban.noDuration')),
         );
         world.sendMessage(
-            `§l§e[Ban] §c${targetName} §e is banned by §a${player.name} for §c${reason} ` +
-            (duration ? `for ${duration} seconds` : 'with no end duration') +
-            ` !`,
+            `§l§e[§bNEW§gBan] §c${targetName} §e was banned by §a${player.name} §eReason: §c${reason} ` +
+            (duration ? `§e(§c${duration} seconds§e)§r` : '§e(permanently)') +
+            `!`,
         );
         const target = world.getAllPlayers().find((p) => p.name === targetName);
         if (target) {
-            // durationがundefinedの場合は、通常BAN
             if (duration === undefined) {
                 ban(target, reason);
             } else {
                 const durationInHours = duration / 3600;
                 if (durationInHours <= 5) {
                     try {
-                        tempkick(player);
+                        tempkick(target);
                     } catch (error: any) {
                         ban(target, reason, duration, Date.now());
                     }
@@ -259,7 +258,8 @@ function unbanPlayer(player: Player, targetName: string) {
         let foundTarget: BanPlayer | undefined;
 
         banList.banPlayers.forEach((playerBan, index) => {
-            if (playerBan.name === targetName || playerBan.id === targetName) {
+            // プレイヤー名でのみ検索するように変更
+            if (playerBan.name === targetName) {
                 foundIndex = index;
                 foundTarget = playerBan;
             }
@@ -273,7 +273,7 @@ function unbanPlayer(player: Player, targetName: string) {
                     translate(player, 'command.ban.unbanSuccess') + (foundTarget?.name || foundTarget?.id),
                 );
                 world.sendMessage(
-                    `§l§6[UnBan] §a${foundTarget?.name || foundTarget?.id} §e is unbanned by §a${player.name} !`,
+                    `§l§6[UnBan] §a${foundTarget?.name || foundTarget?.id} §eのBANを §a${player.name} §eが解除しました！`,
                 );
                 return;
             }
@@ -314,22 +314,39 @@ function showBanList(player: Player) {
 }
 
 function ban(player: Player, reason: string, duration?: number, banTime?: number) {
-    let kickMessage = translate(player, 'command.ban.bannedMessage') + `\n`;
+    let kickMessage = translate(player, 'command.ban.bannedMessage', { reason: reason, duration: "" });
 
     if (duration && banTime) {
         const timeLeft = Math.ceil((banTime + duration * 1000 - Date.now()) / 1000);
-        kickMessage += translate(player, 'command.ban.reason', { reason: reason }) + `\n`;
-        kickMessage += translate(player, 'command.ban.duration', {
-            duration: timeLeft,
-            second: translate(player, 'command.ban.second'),
-        });
+        kickMessage = translate(player, 'command.ban.bannedMessage', { reason: reason, duration: formatTime(timeLeft) });
     } else {
-        kickMessage +=
-            translate(player, 'command.ban.reason', { reason: reason }) +
-            `\n` +
-            translate(player, 'command.ban.noDuration');
+        kickMessage = translate(player, 'command.ban.bannedMessage', { reason: reason, duration: translate(player, 'command.ban.noDuration') });
     }
-    player.runCommand('kick ' + player.name + ' ' + kickMessage);
+
+    try {
+        system.runTimeout(() => {
+            console.log("Kick Start")
+            player.runCommand(`kick ${player.name} ${kickMessage}`);
+        })
+    } catch (error) {
+        console.log(error)
+    }
+}
+function formatTime(seconds: number): string {
+    const days = Math.floor(seconds / (24 * 60 * 60));
+    seconds -= days * 24 * 60 * 60;
+    const hours = Math.floor(seconds / (60 * 60));
+    seconds -= hours * 60 * 60;
+    const minutes = Math.floor(seconds / 60);
+    seconds -= minutes * 60;
+
+    let formattedTime = "";
+    if (days > 0) formattedTime += `${days}d `;
+    if (hours > 0) formattedTime += `${hours}h `;
+    if (minutes > 0) formattedTime += `${minutes}m `;
+    if (seconds > 0) formattedTime += `${seconds}s`;
+
+    return formattedTime.trim();
 }
 
 // 各プレイヤーのスポーン時にロードとチェック
@@ -367,15 +384,18 @@ world.afterEvents.playerSpawn.subscribe((event) => {
                                 if (bannedPlayer.duration === undefined) {
                                     ban(player, bannedPlayer.reason);
                                 } else {
-                                    const durationInHours = bannedPlayer.duration / 3600;
-                                    if (durationInHours <= 5) {
-                                        try {
-                                            tempkick(player);
-                                        } catch (error: any) {
-                                            ban(player, bannedPlayer.reason, bannedPlayer.duration, bannedPlayer.banTime);
-                                        }
-                                    } else {
-                                        ban(player, bannedPlayer.reason, bannedPlayer.duration, bannedPlayer.banTime);
+                                    const timeLeft = Math.ceil((bannedPlayer.banTime + bannedPlayer.duration * 1000 - Date.now()) / 1000);
+
+                                    let kickMessage = translate(player, 'command.ban.bannedMessage', { reason: bannedPlayer.reason, duration: formatTime(timeLeft) });
+
+
+                                    try {
+                                        system.runTimeout(() => {
+                                            console.log("Kick Start")
+                                            player.runCommand(`kick ${player.name} ${kickMessage}`);
+                                        })
+                                    } catch (error) {
+                                        console.log(error)
                                     }
                                 }
                             }

@@ -873,46 +873,46 @@ export const translations = {
   },
   "command.ban.alreadyBanned": {
     msgid: "§l§f>>　§cPlayer is already banned:",
-    msgstr: ""
+    msgstr: "§l§f>> §cプレイヤーは既にBANされています:"
   },
   "command.ban.banSuccess": {
     msgid: "§l§f>> §aSuccessfully banned player:",
-    msgstr: ""
+    msgstr: "§l§f>> §aプレイヤーを正常にBANしました:"
   },
   "command.ban.reason": {
     msgid: "§e, reason: §c{reason}",
-    msgstr: ""
+    msgstr: "§e, 理由: §c{reason}"
   },
   "command.ban.duration": {
     msgid: "§a §e, duration: §c{duration} {second}",
-    msgstr: ""
+    msgstr: "§a, 期間: §c{duration} {second}"
   },
   "command.ban.second": {
     msgid: "seconds",
-    msgstr: ""
+    msgstr: "秒"
   },
   "command.ban.noDuration": {
     msgid: "§e, no duration",
-    msgstr: ""
+    msgstr: "§e, 期間なし"
   },
   "command.ban.isOnline": {
     msgid: "§l§f>> §cPlayer is online",
-    msgstr: ""
+    msgstr: "§l§f>> §cプレイヤーはオンラインです"
   },
   "command.ban.unbanSuccess": {
     msgid: "§l§f>> §aSuccessfully unbanned player",
-    msgstr: ""
+    msgstr: "§l§f>> §aプレイヤーのBANを正常に解除しました"
   },
   "command.ban.unbanNotFound": {
     msgid: "§l§f>> §cPlayer not found in ban list",
-    msgstr: ""
+    msgstr: "§l§f>> §cBANリストにプレイヤーが見つかりません"
   },
   "command.ban.noBanned": {
     msgid: "§l§f>> §cThere are no banned players",
-    msgstr: ""
+    msgstr: "§l§f>> §cBANされたプレイヤーはいません"
   },
   "command.ban.bannedMessage": {
-    msgid: "§l§f>> §cYou are banned from the server",
-    msgstr: ""
+    msgid: "§l§f>> §cYou are banned from the server\n§e, Reason: §c{reason}\n§e, Duration: §c{duration}",
+    msgstr: "§l§f>> §cあなたはサーバーからBANされました\n§e, 理由: §c{reason}\n§e, 期間: §c{duration}"
   },
 };

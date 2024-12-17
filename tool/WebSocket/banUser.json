@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "uuid": "64f1ede9-24d6-3047-93e6-b6ecb6b45933",
+    "name": "おいしいにく",
+    "reason": "§e5回§c警告を受けたため",
+    "bannedBy": "Server",
+    "bannedAt": 1734093933456,
+    "expiresAt": 1734180333456
+  }
+]

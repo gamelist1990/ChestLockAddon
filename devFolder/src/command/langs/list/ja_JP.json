@@ -979,19 +979,19 @@
   },
   "command.ban.reason": {
     "msgid": "§e, reason: §c{reason}",
-     "msgstr": "§e, 理由: §c{reason}"
+    "msgstr": "§e, 理由: §c{reason}"
   },
   "command.ban.duration": {
     "msgid": "§a §e, duration: §c{duration} {second}",
-    "msgstr": "§a §e, 期間: §c{duration} {second}"
+    "msgstr": "§a, 期間: §c{duration} {second}"
   },
   "command.ban.second": {
     "msgid": "seconds",
     "msgstr": "秒"
   },
-   "command.ban.noDuration": {
+  "command.ban.noDuration": {
     "msgid": "§e, no duration",
-     "msgstr": "§e, 期間なし"
+    "msgstr": "§e, 期間なし"
   },
   "command.ban.isOnline": {
     "msgid": "§l§f>> §cPlayer is online",
@@ -1010,7 +1010,7 @@
     "msgstr": "§l§f>> §cBANされたプレイヤーはいません"
   },
   "command.ban.bannedMessage": {
-    "msgid": "§l§f>> §cYou are banned from the server",
-    "msgstr": "§l§f>> §cあなたはサーバーからBANされました"
+    "msgid": "§l§f>> §cYou are banned from the server\n§e, Reason: §c{reason}\n§e, Duration: §c{duration}",
+    "msgstr": "§l§f>> §cあなたはサーバーからBANされました\n§e, 理由: §c{reason}\n§e, 期間: §c{duration}"
   }
 }

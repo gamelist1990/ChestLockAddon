@@ -1,9 +1,9 @@
-import { Player, system } from '@minecraft/server';
+import { Player, system, world } from '@minecraft/server';
 import { isPlayer, registerCommand, verifier } from '../../Modules/Handler';
 import { config, tempkick } from '../../Modules/Util';
 import { showPlayerLanguage, resetPlayerLanguages, translate } from '../langs/list/LanguageManager';
 import { showProtectedChestData, resetProtectedChests } from '../plugin/chest';
-import { resetData, logData } from './../../Modules/DataBase';
+import { resetData, logData, saveData } from './../../Modules/DataBase';
 
 registerCommand({
   name: 'dev',
@@ -35,6 +35,14 @@ registerCommand({
       } else {
         logData();
       }
+    } else if (subCommand === 'banlist') {
+      system.runTimeout(()=>{
+        world.sendMessage("§l§eWarn §aChestLockAddon §6BanList§a is Reset");
+        let banList: any = { banPlayers: [] };
+        saveData('banlist', banList);
+      })
+     
+
     } else if (subCommand === 'tempkick') {
       if (option === '-p') {
         const playerName = isPlayer(args[2]);
@@ -45,7 +53,7 @@ registerCommand({
         }
       } else {
         player.sendMessage(translate(player, "server.PlayerNotFound"))
-      } 
+      }
     } else {
       player.sendMessage('Unknown subcommand');
     }
