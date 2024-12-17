@@ -21,7 +21,7 @@ export function updateEnderPearlInterval(player: Player, playerDataManager: Play
         playerDataManager.update(player, { enderPearlInterval: data.enderPearlInterval });
 
         if (data.enderPearlInterval <= 0) {
-            playerDataManager.update(player, { recentlyUsedEnderPearl: false, enderPearlInterval: null });
+            playerDataManager.update(player, { recentlyUsedEnderPearl: false, enderPearlInterval: 0 });
         }
     }
 }

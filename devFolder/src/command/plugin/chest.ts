@@ -2,7 +2,7 @@ import { registerCommand, verifier, isPlayer } from '../../Modules/Handler';
 import { config } from '../../Modules/Util';
 import { ver } from '../../Modules/version';
 import { saveData, loadData, chestLockAddonData } from '../../Modules/DataBase';
-import { world, Player, system, Vector3, PlayerPlaceBlockBeforeEvent } from '@minecraft/server';
+import { world, Player, system, Vector3, PlayerPlaceBlockBeforeEvent, ExplosionBeforeEvent, PistonActivateAfterEvent } from '@minecraft/server';
 import { translate } from '../langs/list/LanguageManager';
 
 interface ChestProtectionData {
@@ -14,14 +14,12 @@ interface ChestProtectionData {
   };
 }
 
-
 const CHEST_CHECK_RADIUS = 20;
-
 const CHECK_INTERVAL = 20 * 60; // 1分 (20ティック/秒 * 60秒)
 const MAX_CHESTS_PER_PLAYER = 12;
 
-
 let protectedChests: Record<string, ChestProtectionData> = {};
+
 
 // コマンド登録
 registerCommand({
@@ -169,8 +167,6 @@ function protectChest(player: Player, lockState: boolean) {
       return;
     }
 
-
-
     if (adjacentChest.isLargeChest && adjacentChest.location) {
       chestLocations["1"] = getChestKey(nearbyChestLocation);
       chestLocations["2"] = getChestKey(adjacentChest.location);
@@ -199,6 +195,7 @@ function protectChest(player: Player, lockState: boolean) {
         locations: chestLocations,
       };
     }
+
 
     saveProtectedChests();
     player.sendMessage(
@@ -269,28 +266,66 @@ system.run(() => {
     handleChestBreak(event);
   });
 
-  world.beforeEvents.explosion.subscribe((eventData: any) => {
+  world.beforeEvents.explosion.subscribe((eventData: ExplosionBeforeEvent) => {
     handleExplosion(eventData);
   });
 
+  world.afterEvents.pistonActivate.subscribe((data: PistonActivateAfterEvent) => {
+    const { piston, dimension, isExpanding } = data;
+    const pistonDirection = piston.block.permutation.getState('facing_direction') ?? 0; // デフォルト値0を追加
+    const attachBlocks = piston.getAttachedBlocks();
+
+    attachBlocks.forEach((block) => {
+      const blockLocation = block.location;
+      const newLoc = getVectorOnMove(blockLocation, pistonDirection, isExpanding);
+      const newBlock = dimension.getBlock(newLoc);
+
+      if (newBlock && isChest(newBlock)) {
+        const chestKey = getChestKey(newLoc);
+        const chestDataKey = Object.keys(protectedChests).find(key =>
+          Object.values(protectedChests[key].locations).includes(chestKey)
+        );
+
+        if (chestDataKey) {
+          const chestData = protectedChests[chestDataKey];
+          const originalLocation = parseChestKey(Object.values(chestData.locations)[0]);
+          const cloneCommand = `clone ${newLoc.x} ${newLoc.y} ${newLoc.z} ${newLoc.x} ${newLoc.y} ${newLoc.z} ${originalLocation.x} ${originalLocation.y} ${originalLocation.z} replace`;
+          dimension.runCommand(cloneCommand);
+        }
+      }
+    });
+  });
+  function getVectorOnMove(vector: Vector3, pistonDirection: number, isExpanding: boolean): Vector3 {
+    const { x, y, z } = vector;
+    const subtractThenAdd = isExpanding ? -1 : 1;
+    const addThenSubtract = isExpanding ? 1 : -1;
+
+    switch (pistonDirection) {
+      case 0:
+        return { x: x, y: y + subtractThenAdd, z: z };
+      case 1:
+        return { x: x, y: y + addThenSubtract, z: z };
+      case 2:
+        return { x: x, y: y, z: z + addThenSubtract };
+      case 3:
+        return { x: x, y: y, z: z + subtractThenAdd };
+      case 4:
+        return { x: x + addThenSubtract, y: y, z: z };
+      case 5:
+        return { x: x + subtractThenAdd, y: y, z: z };
+    }
+    return { x, y, z };
+  }
 
   world.beforeEvents.playerPlaceBlock.subscribe((eventData: PlayerPlaceBlockBeforeEvent) => {
-
     const block = eventData.block;
-    handlePistonUse(eventData);
-
-
 
     system.runTimeout(() => {
-
       if (isChest(block)) {
-
-
         const adjacentChest = findAdjacentChest(block.location);
+        const newChestKey = getChestKey(block.location);
 
         if (adjacentChest.isLargeChest && adjacentChest.location) {
-
-          const newChestKey = getChestKey(block.location);
           const adjacentChestKey = getChestKey(adjacentChest.location);
 
           const existingDataKey = Object.keys(protectedChests).find(key =>
@@ -298,9 +333,7 @@ system.run(() => {
           );
 
           if (existingDataKey) {
-
             const existingData = protectedChests[existingDataKey];
-
             const existingLocations = existingData.locations;
 
             if (!Object.values(existingLocations).includes(newChestKey)) {
@@ -316,88 +349,82 @@ system.run(() => {
               eventData.player.sendMessage(translate(eventData.player, 'command.chest.ContributedToChest'));
             }
           } else {
+            // 新しいチェストが保護されていない場合
+            const newChest = world.getDimension('overworld').getBlock(block.location);
+            if (newChest && isChest(newChest)) {
+              const chestKey = getChestKey(newChest.location);
+              const adjacentChestData = findAdjacentChest(block.location);
+              if (adjacentChestData.isLargeChest && adjacentChestData.location) {
+                const adjacentKey = getChestKey(adjacentChestData.location);
+
+                const chestLocations: { [key: string]: string } = {};
+
+                chestLocations["1"] = chestKey;
+                chestLocations["2"] = adjacentKey;
+
+                protectedChests[chestKey] = {
+                  owner: eventData.player.name,
+                  isLocked: false,
+                  members: [],
+                  locations: chestLocations,
+                };
+
+                protectedChests[adjacentKey] = {
+                  owner: eventData.player.name,
+                  isLocked: false,
+                  members: [],
+                  locations: chestLocations,
+                };
+                saveProtectedChests();
+                eventData.player.sendMessage(translate(eventData.player, `command.chest.newChestProtect`));
+
+              }
+            }
+          }
+        } else {
+          //単体チェストを設置した場合
+          const newChest = world.getDimension('overworld').getBlock(block.location);
+          if (newChest && isChest(newChest)) {
+            const chestKey = getChestKey(newChest.location);
+            if (!Object.keys(protectedChests).find(key => Object.values(protectedChests[key].locations).includes(chestKey))) {
+              const chestLocations: { [key: string]: string } = {};
+
+              chestLocations["1"] = chestKey;
+              protectedChests[chestKey] = {
+                owner: eventData.player.name,
+                isLocked: false,
+                members: [],
+                locations: chestLocations,
+              };
+              saveProtectedChests();
+            }
           }
         }
       }
     }, 0);
   });
-
-
   system.runInterval(() => {
     checkProtectedChests();
+    handleHopper();
     saveProtectedChests();
   }, CHECK_INTERVAL);
 });
-
-const RADIUS2 = 2;
-const RADIUS1 = 14;
-const RADIUS2_IDS = ['minecraft:hopper', 'minecraft:hopper_minecart'];
-const RADIUS1_IDS = ['minecraft:piston', 'minecraft:sticky_piston'];
-
-function handlePistonUse(eventData: PlayerPlaceBlockBeforeEvent) {
-  const player = eventData.player;
-  const permutation = eventData.permutationBeingPlaced;
-  const itemId = permutation.type.id;
-  const blockLocation = eventData.block.location;
-  if (!player || !permutation) return;
-
-  if (
-    (RADIUS2_IDS.includes(itemId) && isWithinDetectionArea(blockLocation, RADIUS2)) ||
-    (RADIUS1_IDS.includes(itemId) && isWithinDetectionArea(blockLocation, RADIUS1))
-  ) {
-    // 設置位置の周辺にある保護されたチェストを探索し、オーナーかどうかを確認
-    let isOwner = false;
-    for (let x = -RADIUS2; x <= RADIUS2; x++) {
-      for (let y = -RADIUS2; y <= RADIUS2; y++) {
-        for (let z = -RADIUS2; z <= RADIUS2; z++) {
-          const nearbyLocation: Vector3 = {
-            x: blockLocation.x + x,
-            y: blockLocation.y + y,
-            z: blockLocation.z + z,
-          };
-          const chestKey = getChestKey(nearbyLocation);
-          const chestData = protectedChests[chestKey];
-          if (chestData && chestData.owner === player.nameTag) { // player.nameTag を使用
-            isOwner = true;
-            break;
-          }
-        }
-        if (isOwner) break;
-      }
-      if (isOwner) break;
+function handleHopper() {
+  for (const chestKey in protectedChests) {
+    const location = parseChestKey(chestKey);
+    const dimension = world.getDimension('overworld');
+    const bottomLoc = { x: location.x, y: location.y - 1, z: location.z };
+    const bottomBlock = dimension.getBlock(bottomLoc);
+    if (bottomBlock?.typeId === 'minecraft:hopper') {
+      bottomBlock.setPermutation(bottomBlock.permutation.withState('toggle_bit', true));
     }
-
-    // オーナーではない場合のみキャンセル
-    if (!isOwner) {
-      eventData.cancel = true;
-      player.sendMessage(translate(player, 'command.chest.cannotPlaceItem'));
+    const entities = dimension.getEntitiesAtBlockLocation(bottomLoc);
+    const minecartHopper = entities.filter(entity => entity.typeId === 'minecraft:hopper_minecart');
+    for (const hopper of minecartHopper) {
+      hopper.kill();
     }
   }
 }
-
-// 検知範囲内かどうか判定
-function isWithinDetectionArea(location: Vector3, radius: number): boolean {
-  const chestLocations = Object.keys(protectedChests).map((key) => {
-    const [x, y, z] = key.split(',').map(Number);
-    return { x, y, z };
-  });
-
-  for (const chestLocation of chestLocations) {
-    const distance = Math.sqrt(
-      Math.pow(location.x - chestLocation.x, 2) +
-      Math.pow(location.y - chestLocation.y, 2) +
-      Math.pow(location.z - chestLocation.z, 2)
-    );
-
-    if (distance <= radius) {
-      return true;
-    }
-  }
-  return false;
-}
-
-
-
 
 function checkProtectedChests() {
   const players = world.getPlayers(); // オンラインのプレイヤーを取得
@@ -493,7 +520,7 @@ function handleChestBreak(event: any) {
 }
 
 // 爆発によるチェスト破壊を処理する関数
-function handleExplosion(eventData: any) {
+function handleExplosion(eventData: ExplosionBeforeEvent) {
   const impactedBlocks = eventData.getImpactedBlocks();
   for (const block of impactedBlocks) {
     if (isChest(block)) {

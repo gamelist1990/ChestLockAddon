@@ -1,54 +1,65 @@
-//AntiCheat/PlayerData.ts
 import { Player, Vector3, GameMode } from '@minecraft/server';
 
+// 速度検出用のインターフェース
+interface SpeedData {
+    lastSpeedCheck: number;
+    speedViolationCount: number;
+}
+
+// プレイヤーの回転変化を記録するインターフェース
+interface RotationChange {
+    rotationChange: number;
+    time: number;
+}
+
+// プレイヤーの回転速度変化を記録するインターフェース
+interface RotationSpeedChange {
+    rotationSpeedChange: number;
+    time: number;
+}
+
+// 過去の位置情報を記録するインターフェース
+interface PastPosition {
+    location: Vector3;
+    time: number;
+}
+// X線透視(Xray)検出用データ
 interface XrayData {
     suspiciousBlocks: { [blockLocation: string]: { timestamp: number; count: number } };
 }
 
-
-interface PlayerData {
+// プレイヤーデータ
+export interface PlayerData {
+    speedData: SpeedData;
+    isTeleporting: boolean;
+    recentlyUsedEnderPearl: boolean;
+    lastPosition: Vector3 | null;
+    lastTime: number;
+    mutedUntil?: number;
+    lastMessages: string[];
+    lastMessageTimes: number[];
+    badWordCount: number;
+    lastRotationY: number;
+    aimbotTicks: number;
+    throughBlockCount: number;
+    attackFrequency: number[];
+    pastPositions: PastPosition[];
+    lastAttackTime: number;
+    rotationChanges: RotationChange[];
+    rotationSpeedChanges: RotationSpeedChange[];
+    xrayData: XrayData;
     lastGroundY: number;
-    originalGamemode: GameMode;
-    lastFallDistance: number;
     airJumpDetected: boolean;
     jumpStartTime: number;
     positionHistory: Vector3[];
-    lastTime: number;
-    violationCount: number;
-    lastBlinkCheck: number;
-    isTeleporting: boolean;
-    lastTeleportTime: number;
-    isFrozen: boolean;
-    freezeStartTime: number;
     isJumping: boolean;
     jumpCounter: number;
-    recentlyUsedEnderPearl: boolean;
-    enderPearlInterval: any;
-    lastPosition: Vector3 | null;
-    xrayData: XrayData;
-    lastSpeedCheck: number;
-    speedViolationCount: number;
-    lastRotationY: number;
-    boundaryCenter: Vector3;
-    boundaryRadius: number;
-    lastDamageTime: number | null;
-    lastBreakBlockTime: number | null;
-    beingHit: boolean;
-    lastAttackTime: number;
-    attackFrequency: number[];
-    lastAttackedEntity: any | null;
-    aimbotTicks: number;
-    blinkCount: number;
-    throughBlockHits: { [targetId: string]: number };
-    flyHackCount: number;
-    lastVelocity: { vertical: number; horizontal: number } | null;
-    lastAttackedEntities: any[];
-    lastMessages: string[];
-    lastMessageTimes: number[];
-    mutedUntil?: number;
     lastOnGroundTime: number;
-    badWordCount: Number;
-    throughBlockCount: number;
+    violationCount: number;
+    originalGamemode: GameMode;
+    isFrozen: boolean;
+    freezeStartTime: number;
+    enderPearlInterval: number;
 }
 
 export class PlayerDataManager {
@@ -56,54 +67,47 @@ export class PlayerDataManager {
 
     initialize(player: Player): void {
         this.playerData[player.id] = {
-            lastGroundY: 0,
-            originalGamemode: GameMode.survival,
-            lastFallDistance: 0,
-            positionHistory: [player.location],
-            lastTime: Date.now(),
-            violationCount: 0,
-            isTeleporting: false,
-            lastBlinkCheck: 0,
-            lastTeleportTime: 0,
-            jumpStartTime: 0,
-            lastSpeedCheck: 0,
-            speedViolationCount: 0,
-            isFrozen: false,
-            airJumpDetected: false,
-            freezeStartTime: 0,
-            isJumping: false,
-            jumpCounter: 0,
-            enderPearlInterval: null,
-            recentlyUsedEnderPearl: false,
+            // Speed Module
+            speedData: {
+                lastSpeedCheck: 0,
+                speedViolationCount: 0,
+            },
+            // KillAura Module
             lastRotationY: 0,
-            boundaryCenter: player.location,
-            boundaryRadius: 10,
-            beingHit: false,
+            aimbotTicks: 0,
+            throughBlockCount: 0,
+            attackFrequency: [],
+            pastPositions: [],
+            lastAttackTime: 0,
+            rotationChanges: [],
+            rotationSpeedChanges: [],
+            // Xray Module
             xrayData: {
                 suspiciousBlocks: {},
             },
-            lastDamageTime: null,
-            lastBreakBlockTime: null,
-
-            lastAttackTime: 0,
-            blinkCount: 0,
-            attackFrequency: [],
-            lastAttackedEntity: null,
-            aimbotTicks: 0,
-            throughBlockHits: {},
-            flyHackCount: 0,
-            lastAttackedEntities: [],
-            lastMessages: [],
-            lastVelocity: {
-                vertical: 0,
-                horizontal: 0,
-            },
-            lastMessageTimes: [],
-            mutedUntil: 0,
+            // AirJump Module
+            lastGroundY: 0,
+            airJumpDetected: false,
+            jumpStartTime: 0,
+            positionHistory: [player.location],
+            isJumping: false,
+            jumpCounter: 0,
             lastOnGroundTime: 0,
-            lastPosition: player.location,
+            // Spam Module
+            mutedUntil: 0,
+            lastMessages: [],
+            lastMessageTimes: [],
             badWordCount: 0,
-            throughBlockCount: 0,
+            // Common
+            isTeleporting: false,
+            recentlyUsedEnderPearl: false,
+            lastPosition: player.location,
+            lastTime: Date.now(),
+            violationCount: 0,
+            originalGamemode: GameMode.survival,
+            isFrozen: false,
+            freezeStartTime: 0,
+            enderPearlInterval: 0,
         };
     }
 
@@ -122,13 +126,11 @@ export class PlayerDataManager {
         }
     }
 
-
     reset(player: Player): void {
         const data = this.get(player);
         if (data) {
             data.positionHistory = [player.location];
             data.lastTime = Date.now();
-            data.lastTeleportTime = 0;
         }
     }
 
