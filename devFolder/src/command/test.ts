@@ -1,191 +1,126 @@
-import { world, system, Player } from "@minecraft/server";
-import { ModalFormData, ActionFormData } from "@minecraft/server-ui";
-
-interface Settings {
-    revealRoleOnEject: boolean;
-}
-
-const defaultSettings: Settings = {
-    revealRoleOnEject: false,
+const ruleScores = {
+    exactMatch: 2,
+    fuzzyMatch: 1.5,
+    similarMatch: 1,
 };
 
-let settings: Settings = defaultSettings;
+const badWords = ["fuck", "bad", "crap", "ばか", "アホ", "くそ"];
 
-const mainScoreboard: any = world.scoreboard.getObjective("main") || world.scoreboard.addObjective("main", "Roles");
-const settingScoreboard: any = world.scoreboard.getObjective("setting") || world.scoreboard.addObjective("setting", "Settings");
-
-const mainScore: Record<string, number> = {
-    "§cインポスター": 0,
-    "§cクリーナー": 0,
-    "§cダブルキラー": 0,
-    "§3シェリフ": 0,
-    "§3シーア": 0,
-    "§5妖狐": 0,
-    "§5てるてる": 0,
-    "§3クルー": 0,
-    "参加人数": 0,
+const charPatterns: { [key: string]: string } = {
+    'a': '[aàáâãäåæāăąɑAａ]',
+    'i': '[iìíîïĩīĭįıihIｉ]',
+    'o': '[oòóôõöøōŏőœOｏ]',
+    'e': '[eèéêëēĕėęěɛɜɝǝəEｅ]',
+    's': '[sßśŝşšſSｓ]',
+    'c': '[cçćĉċčɔCｃ]',
+    'u': '[uùúûüũūŭůűųцμυUｕ]',
+    'l': '[lĺļľŀłLｌ]',
+    'k': '[kķĸκKｋ]',
+    'b': '[bßЬBｂ]',
+    'd': '[dďđDｄ]',
+    'r': '[rŕŗřRｒ]',
+    'p': '[pPｐ]',
 };
 
-const settingScore: Record<string, number> = {
-    "meetingSetting": 120,
-    "voteSetting": 30,
-    "killSetting": 20,
-    "revealSetting": 0,
-    "sheriffkillcount": 2,
-    "cleanertime": 30,
-    "skeletoncount": 40,
+// 正規化関数（記号、空白、スペースなどを除去する）
+const normalizeMessage = (message: string): string => {
+    return message.toLowerCase().replace(/[\s　\-\_\.\@\!\?\/\(\)\[\]\{\}\<\>\,\:\;\+\=\`\~\$\%\^\&\*\|\#\№]+/g, '');
 };
 
-function initializeScores(): void {
-    const scoreData: { scoreboard: any; scores: Record<string, number> }[] = [
-        { scoreboard: mainScoreboard, scores: mainScore },
-        { scoreboard: settingScoreboard, scores: settingScore },
-    ];
+// 不適切語のスコアを計算する関数
+const calculateBadWordScore = (message: string): number => {
+    let score = 0;
+    const normalizedMessage = normalizeMessage(message);
+    const detectedWords = new Set<string>();
 
-    scoreData.forEach(({ scoreboard, scores }) => {
-        for (const [key, value] of Object.entries(scores)) {
-            if (!scoreboard.hasParticipant(key)) {
-                scoreboard.setScore(key, value);
+    for (const badWord of badWords) {
+        const normalizedBadWord = normalizeMessage(badWord);
+
+        // Exact Match
+        const exactMatchRegex = new RegExp(`\\b${normalizedBadWord}\\b`, 'gi');
+        if (exactMatchRegex.test(normalizedMessage)) {
+            score += ruleScores.exactMatch;
+            detectedWords.add(normalizedBadWord);
+            continue; // Skip to the next bad word if an exact match is found
+        }
+
+        // Fuzzy Match (only if not already detected)
+        if (!detectedWords.has(normalizedBadWord)) {
+            let fuzzyPattern = "";
+            for (const char of normalizedBadWord) {
+                fuzzyPattern += charPatterns[char] || char;
+            }
+            const fuzzyMatchRegex = new RegExp(`\\b(?:${fuzzyPattern})\\b`, 'giu'); // Word boundaries added
+            if (fuzzyMatchRegex.test(normalizedMessage)) {
+                score += ruleScores.fuzzyMatch;
+                detectedWords.add(normalizedBadWord);
+                continue;  // Skip to the next bad word
             }
         }
-    });
-}
 
-function updatePlayerCounts(): void {
-    for (const player of world.getPlayers()) {
-        player.runCommand("scoreboard players set @a 参加人数 main 0");
-        player.runCommand("scoreboard players add @a[tag=!n] 参加人数 main 1");
-        player.runCommand("scoreboard players operation §3クルー main = 参加人数 main");
-        for (const role of Object.keys(mainScore).filter(key => key !== "§3クルー" && key !== "参加人数")) {
-            player.runCommand(`scoreboard players operation §3クルー main -= ${role} main`);
+        // Similar Match (only if not already detected)
+        if (!detectedWords.has(normalizedBadWord)) {
+            let similarPattern = "";
+            for (const char of normalizedBadWord) {
+                similarPattern += charPatterns[char] || char;
+            }
+
+            similarPattern = similarPattern.replace(/\*/g, '[\\s\\S]*?');
+            const similarRegex = new RegExp(`\\b${similarPattern}\\b`, 'giu');
+
+            if (similarRegex.test(normalizedMessage)) {
+                score += ruleScores.similarMatch;
+                detectedWords.add(normalizedBadWord);
+            }
         }
+
     }
-}
+    return score;
+};
 
-world.afterEvents.itemUse.subscribe((eventData: any) => {
-    const player: any = eventData.source;
-    const item: any = eventData.itemStack;
-
-    const getScoreList = (objective: any, keys: string[]): Record<string, number> => {
-        return keys.reduce((obj, key) => {
-            obj[key] = objective.getScore(key);
-            return obj;
-        }, {} as Record<string, number>);
-    };
-
-
-    if (item.typeId === "js:crewmate" && player.hasTag("host")) {
-        const roleScores = getScoreList(mainScoreboard, ["§cインポスター", "§cクリーナー", "§cダブルキラー", "§3シェリフ", "§3シーア", "§5妖狐", "§5てるてる"]);
-        const form = new ModalFormData()
-            .title("Role Settings")
-            .slider("§cインポスター", 0, 6, 1, roleScores["§cインポスター"])
-            .slider("§cクリーナー", 0, 2, 1, roleScores["§cクリーナー"])
-            .slider("§cダブルキラー", 0, 2, 1, roleScores["§cダブルキラー"])
-            .slider("§3シェリフ", 0, 2, 1, roleScores["§3シェリフ"])
-            .slider("§3シーア", 0, 2, 1, roleScores["§3シーア"])
-            .slider("§5妖狐", 0, 1, 1, roleScores["§5妖狐"])
-            .slider("§5てるてる", 0, 1, 1, roleScores["§5てるてる"]);
-
-        form.show(player).then((response: any) => {
-            if (!response.canceled && Array.isArray(response.formValues)) {
-                mainScoreboard.setScore("§cインポスター", Number(response.formValues[0]));
-                mainScoreboard.setScore("§cクリーナー", Number(response.formValues[1]));
-                mainScoreboard.setScore("§cダブルキラー", Number(response.formValues[2]));
-                mainScoreboard.setScore("§3シェリフ", Number(response.formValues[3]));
-                mainScoreboard.setScore("§3シーア", Number(response.formValues[4]));
-                mainScoreboard.setScore("§5妖狐", Number(response.formValues[5]));
-                mainScoreboard.setScore("§5てるてる", Number(response.formValues[6]));
-            }
-        });
-    } else if (item.typeId === "js:crewmate_blue" && player.hasTag("host")) {
-        const settingScores = getScoreList(settingScoreboard, ["meetingSetting", "voteSetting", "killSetting", "sheriffkillcount", "cleanertime", "skeletoncount"]);
-        const form = new ModalFormData()
-            .title("Game Settings")
-            .slider("§a会議時間", 10, 180, 1, settingScores["meetingSetting"])
-            .slider("§b投票時間", 10, 60, 1, settingScores["voteSetting"])
-            .slider("§cキルクールタイム", 1, 60, 1, settingScores["killSetting"])
-            .toggle("§6追放時の役職を確認", settings.revealRoleOnEject)
-            .slider("シェリフの最大kill数", 1, 10, 1, settingScores["sheriffkillcount"])
-            .slider("§cクリーナークールタイム", 1, 120, 1, settingScores["cleanertime"])
-            .slider("最大スケルトンの数", 1, 100, 1, settingScores["skeletoncount"]);
+// テストケース
+const testCases = [
+    { input: "fuck", expectedScore: 5.25, description: "基本的なテスト (英語)" },
+    { input: "f u c k", expectedScore: 5.25, description: "スペースあり (英語)" },
+    { input: "fｕｃk", expectedScore: 2.25, description: "全角文字あり (英語)" },
+    { input: "f@ck", expectedScore: 5.25, description: "記号あり (英語)" },
+    { input: "Ｆｕｃｋ", expectedScore: 2.25, description: "全角大文字あり (英語)" },
+    { input: "good", expectedScore: 0, description: "不適切語なし (英語)" },
+    { input: "f*ck", expectedScore: 3.5, description: "類似単語、アスタリスクあり (英語)" },
+    { input: "fu", expectedScore: 1.5, description: "あいまい一致のみ (英語)" },
+    { input: "ばか", expectedScore: 5.25, description: "基本的なテスト (日本語)" },
+    { input: "ば か", expectedScore: 5.25, description: "スペースあり (日本語)" },
+    { input: "バカ", expectedScore: 2.25, description: "カタカナ (日本語)" },
+    { input: "b a d", expectedScore: 5.25, description: "スペースあり (英語)" },
+    { input: "b@d b a d", expectedScore: 10.5, description: "複数の不適切語、記号とスペースあり (英語)" },
+    { input: "くそ", expectedScore: 5.25, description: "新しい単語のテスト (日本語)" },
+    { input: "く*そ", expectedScore: 3.5, description: "類似単語、アスタリスクあり (日本語)" },
+    { input: "badword", expectedScore: 2.25, description: "bad のあいまいマッチ (英語)" },
+    { input: "kuso", expectedScore: 2.25, description: "くそのあいまいマッチ (日本語)" },
+    { input: "fuckfuck", expectedScore: 8.75, description: "連続した不適切語 (英語)" },
+    { input: "ばかばか", expectedScore: 8.75, description: "連続した不適切語 (日本語)" },
+    { input: "f-u_c.k", expectedScore: 5.25, description: "ハイフン、アンダーバー、ドットあり (英語)" },
+    { input: "ば-か", expectedScore: 5.25, description: "ハイフンあり (日本語)" },
+    { input: "ｆｕｃｋ", expectedScore: 2.25, description: "全角小文字 (英語)" },
+    { input: "ばか", expectedScore: 5.25, description: "全角小文字 (日本語)" },
+];
 
 
-        form.show(player).then((response: any) => {
-            if (!response.canceled && Array.isArray(response.formValues)) {
-                settingScoreboard.setScore("meetingSetting", Number(response.formValues[0]));
-                settingScoreboard.setScore("voteSetting", Number(response.formValues[1]));
-                player.runCommand(`scriptevent ch:Vsetting {"duration":${response.formValues[1]}}`);
-                settingScoreboard.setScore("killSetting", Number(response.formValues[2]));
-                settings.revealRoleOnEject = Boolean(response.formValues[3]);
-                player.sendMessage(`§6追放時の役職を確認§r: ${settings.revealRoleOnEject ? 'Enabled' : 'Disabled'}`);
-                settingScoreboard.setScore("revealSetting", settings.revealRoleOnEject ? 1 : 0);
-                settingScoreboard.setScore("sheriffkillcount", Number(response.formValues[4]));
-                settingScoreboard.setScore("cleanertime", Number(response.formValues[5]));
-                settingScoreboard.setScore("skeletoncount", Number(response.formValues[6]));
-            }
-        });
-    } else if (item.typeId === "minecraft:diamond" && player.hasTag("host")) {
-        const sampleForm = new ActionFormData();
-        sampleForm.title("ゲーム開始")
-        sampleForm.button("開始")
-        sampleForm.button("")
-        sampleForm.button("")
-        sampleForm.show(player).then(({ selection, canceled }: any) => {
-            if (canceled) return;
-            if (selection === 0) {
-                player.runCommand("fill -66 -60 10 -65 -60 10 redstone_block");
-            }
-        }
-
-        )
-    } else if (item.typeId === "js:nais" && player.hasTag("uranai")) {
-
-        const form = new ActionFormData();
-        form.title("占い ※§4ゲーム中一度しか占うことはできません!!");
-
-
-        const playerNames = getAllPlayerNames(player as any); // playerにany型アサーションを追加
-        if (playerNames.length === 0) {
-            form.button("戻る"); // 戻るボタンを追加
-            form.show(player);
+// テストを実行する関数
+function runTests(tests: { input: string; expectedScore: number; description: string; }[]) {
+    let passed = 0;
+    let failed = 0;
+    for (const test of tests) {
+        const actualScore = calculateBadWordScore(test.input);
+        if (actualScore.toFixed(2) === test.expectedScore.toFixed(2)) {
+            console.log(`✅ ${test.description}`);
+            passed++;
         } else {
-            playerNames.forEach(p => form.button(p));
-            form.show(player).then((response: any) => {
-
-                if (response.canceled || response.selection === undefined) return;
-                const selectedPlayer = playerNames[response.selection];
-                const target = getPlayerByName(selectedPlayer);
-                if (target) {
-                    player.sendMessage(target.hasTag("oni") ? "やつは鬼だった" : "やつは鬼ではない");
-                }
-            });
+            console.error(`❌ ${test.description}: 期待値 ${test.expectedScore}, 実際の結果 ${actualScore}  入力: ${test.input}`);
+            failed++;
         }
     }
+    console.log(`\nテスト完了: ${passed} 件成功, ${failed} 件失敗`);
+}
 
-
-
-    function getAllPlayerNames(currentPlayer: Player): string[] {
-        const playerNames: string[] = [];
-        for (const player of world.getPlayers()) {
-            if (player.name !== currentPlayer.name) {
-                playerNames.push(player.name);
-            }
-        }
-        return playerNames;
-    }
-
-    function getPlayerByName(playerName: string): Player | null {
-        for (const player of world.getPlayers()) {
-            if (player.name === playerName) {
-                return player;
-            }
-        }
-        return null;
-    }
-
-
-});
-
-
-system.runInterval(updatePlayerCounts, 20);
-initializeScores();
+runTests(testCases);

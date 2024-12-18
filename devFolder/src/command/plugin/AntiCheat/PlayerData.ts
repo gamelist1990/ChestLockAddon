@@ -1,4 +1,4 @@
-import { Player, Vector3, GameMode } from '@minecraft/server';
+import { Player, Vector3, GameMode, Vector2 } from '@minecraft/server';
 
 // 速度検出用のインターフェース
 interface SpeedData {
@@ -9,13 +9,15 @@ interface SpeedData {
 
 // プレイヤーの回転変化を記録するインターフェース
 interface RotationChange {
-    rotationChange: number;
+    rotationChangeX: number;
+    rotationChangeY: number;
     time: number;
 }
 
 // プレイヤーの回転速度変化を記録するインターフェース
 interface RotationSpeedChange {
-    rotationSpeedChange: number;
+    rotationSpeedChangeX: number;
+    rotationSpeedChangeY: number;
     time: number;
 }
 
@@ -40,7 +42,7 @@ export interface PlayerData {
     lastMessages: string[];
     lastMessageTimes: number[];
     badWordCount: number;
-    lastRotationY: number;
+    lastRotation: Vector2 | null;
     aimbotTicks: number;
     throughBlockCount: number;
     attackFrequency: number[];
@@ -75,7 +77,7 @@ export class PlayerDataManager {
                 lastPosition:null,
             },
             // KillAura Module
-            lastRotationY: 0,
+            lastRotation: null,
             aimbotTicks: 0,
             throughBlockCount: 0,
             attackFrequency: [],

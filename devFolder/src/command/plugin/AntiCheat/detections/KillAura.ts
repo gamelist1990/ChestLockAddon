@@ -1,19 +1,37 @@
-import { EntityHurtAfterEvent, Player, Vector3 } from '@minecraft/server';
+import { EntityHurtAfterEvent, Player, Vector2, Vector3 } from '@minecraft/server';
 import { PlayerDataManager, PlayerData } from '../PlayerData';
 import { calculateDistance } from '../utils';
-
 
 // Vector3 の長さを手動で計算する関数
 function calculateVectorLength(vector: Vector3): number {
     return Math.sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
 }
 
+// 2点間のベクトルを計算する関数
+function calculateVector(from: Vector3, to: Vector3): Vector3 {
+    return {
+        x: to.x - from.x,
+        y: to.y - from.y,
+        z: to.z - from.z,
+    };
+}
+
+// ベクトルを加算する関数
+function addVector(vec1: Vector3, vec2: Vector3): Vector3 {
+    return {
+        x: vec1.x + vec2.x,
+        y: vec1.y + vec2.y,
+        z: vec1.z + vec2.z,
+    }
+}
+
+
 export function detectKillAura(attackingPlayer: Player, event: EntityHurtAfterEvent, playerDataManager: PlayerDataManager, getPlayerCPS: (player: Player) => number): { cheatType: string } | null {
     const attackedEntity = event.hurtEntity as Player;
     if (!attackedEntity || attackingPlayer === attackedEntity || !(event.damageSource.cause === 'entityAttack')) return null;
 
     const data = playerDataManager.get(attackingPlayer) ?? {
-        lastRotationY: 0,
+        lastRotation: { x: 0, y: 0 },
         aimbotTicks: 0,
         throughBlockCount: 0,
         attackFrequency: [],
@@ -26,6 +44,7 @@ export function detectKillAura(attackingPlayer: Player, event: EntityHurtAfterEv
     if (!data) return null;
 
     const now = Date.now();
+    //クッソ簡単なCPS20超えたら検知するだけのやつ
     const cps = getPlayerCPS(attackingPlayer);
     if (cps >= 20) {
         return { cheatType: 'Kill Aura (CPS20+)' };
@@ -33,60 +52,75 @@ export function detectKillAura(attackingPlayer: Player, event: EntityHurtAfterEv
 
 
     // Reach Check (Lag Compensation)
-    const maxReach = 7;
+    //通常のリーチは3.4block(動かない場合)
+    //ラグで計算がずれる事を想定して6ぐらいにしとく
+    const maxReach = 6;
     const pastPositions = data.pastPositions || [];
 
-    // サーバー側のラグ補正（過去の位置データから最大距離を計算）
-    let maxDistance = 0;
-    for (const pastPosition of pastPositions) {
-        const distance = calculateDistance(pastPosition.location, attackedEntity.location);
-        maxDistance = Math.max(maxDistance, distance);
+    // 移動ベクトルの算出と予測位置の計算
+    let predictedPosition = attackingPlayer.location;
+    if (pastPositions.length > 1) {
+        const lastPosition = pastPositions[pastPositions.length - 1].location;
+        const secondLastPosition = pastPositions[pastPositions.length - 2].location;
+        const moveVector = calculateVector(secondLastPosition, lastPosition);
+        predictedPosition = addVector(lastPosition, moveVector)
     }
-
-
-    if (maxDistance > maxReach) {
+    // 予測位置から攻撃対象までの距離を計算
+    const distanceToTarget = calculateDistance(predictedPosition, attackedEntity.location)
+    if (distanceToTarget > maxReach) {
         playerDataManager.update(attackingPlayer, { pastPositions: [] });
         return { cheatType: `Kill Aura (Reach|${maxReach})` };
     }
 
 
     // Aimbot Check
-    const currentRotation = attackingPlayer.getRotation().y;
-    const lastRotation = data.lastRotationY;
-    const rotationDiff = Math.abs(currentRotation - lastRotation);
+    const currentRotation: Vector2 = attackingPlayer.getRotation();
+    const lastRotation = data.lastRotation ?? { x: 0, y: 0 };
+    const rotationDiffX = Math.abs(currentRotation.x - lastRotation.x);
+    const rotationDiffY = Math.abs(currentRotation.y - lastRotation.y);
+
 
     // 回転速度の変化を記録
-    const rotationChange = currentRotation - lastRotation;
-    data.rotationChanges.push({ rotationChange, time: now });
+    const rotationChangeX = currentRotation.x - lastRotation.x;
+    const rotationChangeY = currentRotation.y - lastRotation.y;
+
+    data.rotationChanges.push({ rotationChangeX, rotationChangeY, time: now });
+
 
     // 直近の数回の回転変化から回転速度の変化を計算
     if (data.rotationChanges.length > 2) {
-        const diff1 = data.rotationChanges[data.rotationChanges.length - 1].rotationChange - data.rotationChanges[data.rotationChanges.length - 2].rotationChange;
-        const diff2 = data.rotationChanges[data.rotationChanges.length - 2].rotationChange - data.rotationChanges[data.rotationChanges.length - 3].rotationChange;
+        const diffX1 = data.rotationChanges[data.rotationChanges.length - 1].rotationChangeX - data.rotationChanges[data.rotationChanges.length - 2].rotationChangeX;
+        const diffX2 = data.rotationChanges[data.rotationChanges.length - 2].rotationChangeX - data.rotationChanges[data.rotationChanges.length - 3].rotationChangeX;
+        const diffY1 = data.rotationChanges[data.rotationChanges.length - 1].rotationChangeY - data.rotationChanges[data.rotationChanges.length - 2].rotationChangeY;
+        const diffY2 = data.rotationChanges[data.rotationChanges.length - 2].rotationChangeY - data.rotationChanges[data.rotationChanges.length - 3].rotationChangeY;
 
-        data.rotationSpeedChanges.push({ rotationSpeedChange: diff1 - diff2, time: now });
+        data.rotationSpeedChanges.push({ rotationSpeedChangeX: diffX1 - diffX2, rotationSpeedChangeY: diffY1 - diffY2, time: now });
         if (data.rotationSpeedChanges.length > 4) {
             data.rotationSpeedChanges.shift();
         }
     }
+
+
     // 回転速度の平均値を計算して、急激な変化がないかを確認
     if (data.rotationSpeedChanges.length > 2) {
-        const averageSpeedChange = data.rotationSpeedChanges.reduce((sum, obj) => sum + obj.rotationSpeedChange, 0) / data.rotationSpeedChanges.length;
+        const averageSpeedChangeX = data.rotationSpeedChanges.reduce((sum, obj) => sum + obj.rotationSpeedChangeX, 0) / data.rotationSpeedChanges.length;
+        const averageSpeedChangeY = data.rotationSpeedChanges.reduce((sum, obj) => sum + obj.rotationSpeedChangeY, 0) / data.rotationSpeedChanges.length;
 
-        if (Math.abs(averageSpeedChange) > 50) {
+
+        if (Math.abs(averageSpeedChangeX) > 50 || Math.abs(averageSpeedChangeY) > 50) {
             data.aimbotTicks++;
             if (data.aimbotTicks >= 3) {
                 data.aimbotTicks = 0;
-                playerDataManager.update(attackingPlayer, { lastRotationY: currentRotation, aimbotTicks: data.aimbotTicks, rotationChanges: data.rotationChanges, rotationSpeedChanges: data.rotationSpeedChanges });
+                playerDataManager.update(attackingPlayer, { lastRotation: currentRotation, aimbotTicks: data.aimbotTicks, rotationChanges: data.rotationChanges, rotationSpeedChanges: data.rotationSpeedChanges });
                 return { cheatType: 'Kill Aura (Aimbot)' };
             }
         }
     }
-    if (rotationDiff > 170 && rotationDiff <= 190) {
+    if ((rotationDiffX > 170 && rotationDiffX <= 190) || (rotationDiffY > 170 && rotationDiffY <= 190)) {
         data.aimbotTicks++;
         if (data.aimbotTicks >= 3) {
             data.aimbotTicks = 0;
-            playerDataManager.update(attackingPlayer, { lastRotationY: currentRotation, aimbotTicks: data.aimbotTicks, rotationChanges: data.rotationChanges, rotationSpeedChanges: data.rotationSpeedChanges });
+            playerDataManager.update(attackingPlayer, { lastRotation: currentRotation, aimbotTicks: data.aimbotTicks, rotationChanges: data.rotationChanges, rotationSpeedChanges: data.rotationSpeedChanges });
             return { cheatType: 'Kill Aura (Aimbot)' };
         }
     } else {
@@ -95,7 +129,6 @@ export function detectKillAura(attackingPlayer: Player, event: EntityHurtAfterEv
     if (data.rotationChanges.length > 10) {
         data.rotationChanges.shift();
     }
-
 
     // Through-Block Check
     const distanceToEntity = calculateDistance(attackingPlayer.location, attackedEntity.location);
@@ -119,7 +152,7 @@ export function detectKillAura(attackingPlayer: Player, event: EntityHurtAfterEv
         data.attackFrequency.shift();
     }
     if (data.attackFrequency.length >= 5) {
-        const attackIntervals: number[] = []; 
+        const attackIntervals: number[] = [];
         for (let i = 1; i < data.attackFrequency.length; i++) {
             const interval = data.attackFrequency[i] - data.attackFrequency[i - 1];
             attackIntervals.push(interval);
@@ -150,7 +183,7 @@ export function detectKillAura(attackingPlayer: Player, event: EntityHurtAfterEv
     }
 
     playerDataManager.update(attackingPlayer, {
-        lastRotationY: currentRotation,
+        lastRotation: currentRotation, 
         aimbotTicks: data.aimbotTicks,
         throughBlockCount: data.throughBlockCount,
         attackFrequency: data.attackFrequency,

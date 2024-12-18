@@ -14,7 +14,7 @@ const oldData: { name: string, id: string }[] = [];
 
 
 const TICKRUN = 20;
-let tps = 20;
+export let tps = 20;
 
 
 
