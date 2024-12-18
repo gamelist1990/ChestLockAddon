@@ -8,6 +8,7 @@ import './staff';
 import './server';
 import './ping';
 import './ban';
+import './lockdown';
 
 
 

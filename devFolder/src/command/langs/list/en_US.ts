@@ -83,6 +83,10 @@ export const translations = {
     msgid: "Shows the list of banned players  ",
     msgstr: ""
   },
+  "lockdown_docs": {
+    msgid: "Toggle lockdown mode",
+    msgstr: ""
+  },
   "ui.ReportButton": {
     msgid: "§0Report Menu",
     msgstr: ""

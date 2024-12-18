@@ -13,7 +13,7 @@ interface moduleConfig {
 }
 
 //コマンド登録(ここから機能有効/無効切り替えてね)
-export const config = (): { commands: { [key: string]: CommandConfig }; admin: string, module: { [key: string]: moduleConfig }; } => ({
+export const config = (): { commands: { [key: string]: CommandConfig }; admin: string, staff: string, module: { [key: string]: moduleConfig }; } => ({
   commands: {
     chest: {
       enabled: true,
@@ -150,8 +150,15 @@ export const config = (): { commands: { [key: string]: CommandConfig }; admin: s
       adminOnly: false,
       requireTag: [],
     },
+    lockdown: {
+      enabled: true,
+      adminOnly: true,
+      requireTag: [],
+    },
   },
+  
   admin: 'op',
+  staff: 'staff',
 
   module: {
     debugMode: {

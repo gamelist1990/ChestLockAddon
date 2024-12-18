@@ -73,14 +73,18 @@
   },
   "ban_docs": {
     "msgid": "Bans a player from the server",
-    "msgstr": ""
+    "msgstr": "危険なプレイヤーのaccessを禁止します"
   },
   "unban_docs": {
     "msgid": "Unbans a player from the server",
-    "msgstr": ""
+    "msgstr": "BANしたプレイヤーのBANを解除します"
   },
   "banlist_docs": {
     "msgid": "Shows the list of banned players  ",
+    "msgstr": "現在BANされているプレイヤーを表示"
+  },
+  "lockdown_docs": {
+    "msgid": "Toggle lockdown mode",
     "msgstr": ""
   },
   "ui.ReportButton": {
