@@ -85,7 +85,7 @@
   },
   "lockdown_docs": {
     "msgid": "Toggle lockdown mode",
-    "msgstr": ""
+    "msgstr": "メンテナンス中に切り替える(Staff以外は入れません)"
   },
   "ui.ReportButton": {
     "msgid": "§0Report Menu",
