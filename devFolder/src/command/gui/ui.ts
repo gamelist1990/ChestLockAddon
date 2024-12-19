@@ -15,7 +15,7 @@ export function showBasicUI(player: Player): Promise<void> {
 
   // ボタンの内容を条件分岐で変更
   if (player.hasTag("staff") || player.hasTag("op")) {
-    form.button(translate(player, 'ui.StaffMenu'), 'textures/items/book_writable'); // アイコンはそのまま
+    form.button(translate(player, 'ui.StaffMenu'), 'textures/ui/FriendsDiversity.png');
   } else {
     form.button(translate(player, 'uihelp'), 'textures/items/book_writable');
   }

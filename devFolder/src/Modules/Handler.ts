@@ -84,7 +84,7 @@ export function verifier(player: Player, setting: CommandConfig): boolean {
   return true;
 }
 
-export function suggestCommand(player: Player, commandName: string) {
+export function suggestCommand(player: Player, commandName: string, args: string[]) {
   const possibleCommands = Object.keys(commands).filter((cmd) => {
     const distance = levenshteinDistance(cmd, commandName);
     return distance <= 2; // 調整可能
@@ -98,7 +98,7 @@ export function suggestCommand(player: Player, commandName: string) {
         prefix: `${prefix}`,
       }),
     );
-    pendingCommand = { player, command: possibleCommands[0], args: [] };
+    pendingCommand = { player, command: possibleCommands[0], args: args }; // 引数を保存
     return possibleCommands[0];
   }
   return null;
@@ -151,7 +151,7 @@ world.beforeEvents.chatSend.subscribe((event: any) => {
     const { command, args: pendingArgs } = pendingCommand;
     const correctCommandOptions = commands[command];
     if (correctCommandOptions && verifier(player, config().commands[command])) {
-      correctCommandOptions.executor(player, pendingArgs);
+      correctCommandOptions.executor(player, pendingArgs); // 引数を渡す
     }
     pendingCommand = null;
     event.cancel = true;
@@ -165,7 +165,7 @@ world.beforeEvents.chatSend.subscribe((event: any) => {
       commandOptions.executor(player, args);
     }
   } else {
-    const suggestedCommand = suggestCommand(player, commandName);
+    const suggestedCommand = suggestCommand(player, commandName, args); // 引数を渡す
     if (!suggestedCommand) {
       player.sendMessage(translate(player, 'server.invalidCom', { commandName: `${commandName}` }));
     }
