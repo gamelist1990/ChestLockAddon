@@ -5,7 +5,7 @@ import { getPing } from './server';
 
 registerCommand({
     name: 'ping',
-    description: 'Pingdocs',
+    description: 'ping_docs',
     parent: false,
     maxArgs: 1,
     minArgs: 0,

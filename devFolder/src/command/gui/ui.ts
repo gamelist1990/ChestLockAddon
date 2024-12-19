@@ -1,10 +1,11 @@
-import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
+import { ActionFormData, ActionFormResponse, ModalFormData } from '@minecraft/server-ui';
 import { Player } from '@minecraft/server';
 import { runCommand } from '../../Modules/Handler';
 import { getTpaRequests } from '../utility/tpa';
 import { getAvailableLanguages, translate } from '../langs/list/LanguageManager';
 import { getAllPlayerNames } from '../../Modules/Util';
 import { checkReports } from '../utility/report';
+import { banList } from '../utility/ban';
 
 export function showBasicUI(player: Player): Promise<void> {
   player.playSound('mob.chicken.plop');
@@ -81,6 +82,7 @@ function showStaffUI(player: Player): Promise<void> {
     .title('Staff Menu')
     .button(translate(player, "ui.checkReports"))
     .button(translate(player, "ui.warnmenu"))
+    .button(translate(player, "ui.BanMenu"))
     .button(translate(player, "back"));
 
   return staffForm
@@ -99,10 +101,51 @@ function showStaffUI(player: Player): Promise<void> {
           showWarnMainMenu(player);
           break;
         case 2:
+          showBanMenu(player);
+          break;
+        case 4:
           showBasicUI(player);
           break;
       }
     });
+}
+
+
+function showBanMenu(player: Player): Promise<void> {
+  return new Promise((resolve) => {
+    player.playSound('mob.chicken.plop');
+
+    const form = new ActionFormData()
+      .title('Ban Menu')
+      .body(translate(player, 'ui.BanCom'))
+      .button(translate(player, 'ui.BanPlayer'))
+      .button(translate(player, 'ui.unbanPlayer'))
+      .button(translate(player, 'back'));
+
+    //@ts-ignore
+    form.show(player).then((response: ActionFormResponse) => {
+      if (response.canceled) {
+        resolve();
+      } else {
+        switch (response.selection) {
+          case 0:
+            banMenu(player);
+            break;
+          case 1:
+            unbanMenu(player);
+            break;
+          case 2:
+            showBasicUI(player);
+            break;
+        }
+        resolve();
+      }
+    }).catch((error: Error) => {
+      console.error(translate(player, 'ui.FromError'), error);
+      player.sendMessage(translate(player, 'ui.FromError') + error.message);
+      resolve();
+    });
+  });
 }
 
 
@@ -784,4 +827,122 @@ function showReportMenu(player: Player): Promise<void> {
         player.sendMessage(translate(player, 'ui.FromError') + error.message);
       })
   );
+}
+
+async function banMenu(player: Player): Promise<void> {
+  player.playSound('mob.chicken.plop');
+
+  const playerNames = getAllPlayerNames(player);
+
+  const form = new ActionFormData()
+    .title('Ban Player')
+    .body(translate(player, 'ui.BanPlayerSelect'));
+
+  playerNames.forEach((p) => {
+    form.button(p);
+  });
+
+  form.button(translate(player, 'back'));
+
+  try {
+    //@ts-ignore
+    const response = await form.show(player);
+
+    if (response.canceled) {
+      return;
+    }
+
+    if (
+      response.selection !== undefined &&
+      response.selection >= 0 &&
+      response.selection < playerNames.length
+    ) {
+      const targetPlayerName = playerNames[response.selection];
+
+      const timeForm = new ModalFormData()
+        .title('Enter Ban Time')
+        .dropdown("Time:", ["1m", "5m", "15m", "30m", "1h", "3h", "12h", "1d", "7d", "永久"], 0)
+
+      //@ts-ignore
+      const timeResponse = await timeForm.show(player);
+      if (timeResponse.canceled || !timeResponse.formValues) {
+        return;
+      }
+
+      let banTime = timeResponse.formValues[0] as string;
+      let banTimes = `[${banTime}]`;
+      if (banTime === "永久") {
+        // 永久BANの場合は時間を削除
+        banTimes = '';
+      }
+
+
+      const reasonForm = new ModalFormData()
+        .title('Enter Ban Reason')
+        .textField('Reason:', 'Enter the reason for the ban');
+
+
+      //@ts-ignore
+      const reasonResponse = await reasonForm.show(player);
+      if (!reasonResponse.canceled && reasonResponse.formValues) {
+        const reason = reasonResponse.formValues[0] as string;
+        runCommand(player.name, 'ban', [targetPlayerName, reason, banTimes]);
+      }
+    } else if (response.selection === playerNames.length) {
+      banMenu(player);
+    }
+  } catch (error: any) {
+    console.error(translate(player, 'ui.FromError'), error);
+    player.sendMessage(translate(player, 'ui.FromError') + error.message);
+  }
+}
+
+async function unbanMenu(player: Player): Promise<void> {
+  player.playSound('mob.chicken.plop');
+
+  const banUser = banList;
+  const bannedPlayers = banUser.banPlayers.map(ban => ban.name || ban.id);
+  if (bannedPlayers.length === 0) {
+    player.sendMessage(translate(player, 'ui.NoBannedPlayers'));
+    return;
+  }
+
+  const form = new ActionFormData()
+    .title('Unban Player')
+    .body(translate(player, 'ui.SelectPlayerToUnban'));
+
+  bannedPlayers.forEach((name) => {
+      if (name !== undefined) {
+          form.button(name);
+      }
+    });
+
+  form.button(translate(player, 'back'));
+
+  try {
+    //@ts-ignore
+    const response = await form.show(player);
+
+    if (response.canceled) {
+      return;
+    }
+
+    if (
+      response.selection !== undefined &&
+      response.selection >= 0 &&
+      response.selection < bannedPlayers.length
+    ) {
+      const targetName = bannedPlayers[response.selection];
+      if (targetName !== undefined) {
+        runCommand(player.name, 'unban', [targetName]);
+        player.sendMessage(translate(player, 'command.ban.unbanSuccess') + targetName);
+      }
+      player.sendMessage(translate(player, 'command.ban.unbanSuccess') + targetName);
+    } else if (response.selection === bannedPlayers.length) {
+      showBanMenu(player);
+    }
+  } catch (error: any) {
+    console.error(translate(player, 'ui.FromError'), error);
+    player.sendMessage(translate(player, 'ui.FromError') + error.message);
+  }
 }

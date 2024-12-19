@@ -17,7 +17,7 @@ interface BanList {
     banPlayers: BanPlayer[];
 }
 
-let banList: BanList = { banPlayers: [] };
+export let banList: BanList = { banPlayers: [] };
 
 // サーバー起動時にBANデータをロード
 export function loadBan(): void {
