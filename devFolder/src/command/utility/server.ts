@@ -297,7 +297,7 @@ function removeNametag(player: Player | undefined, targetPlayer: Player | undefi
 
 registerCommand({
     name: 'server',
-    description: 'server_command_description',
+    description: 'server_docs',
     parent: false,
     maxArgs: 4,
     minArgs: 1,

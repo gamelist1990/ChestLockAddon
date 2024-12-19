@@ -87,6 +87,10 @@
     "msgid": "Toggle lockdown mode",
     "msgstr": ""
   },
+  "server_docs": {
+    "msgid": "Server Info Command",
+    "msgstr": ""
+  },
   "ui.ReportButton": {
     "msgid": "§0Report Menu",
     "msgstr": ""

@@ -306,3 +306,27 @@ export function closeForm(player: Player) {
   uiManager.closeAllForms(player as any);
 }
 
+// timestamp を日本語でフォーマットする関数
+export function formatTimestamp(timestamp: string | number | Date) {
+  if (!timestamp) {
+    return ''; 
+  }
+
+  try {
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) {
+      return 'Invalid Date'; 
+    }
+    return date.toLocaleString('ja-JP', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  } catch (error) {
+    console.error('Error formatting timestamp:', error);
+    return 'Error'; 
+  }
+}

@@ -296,23 +296,29 @@ function showBanList(player: Player) {
     }
     player.sendMessage('§l§e===== §6Ban List §e=====');
     banList.banPlayers.forEach((ban) => {
+        let timeRemaining = "";
+        if (ban.duration && ban.banTime) {
+            const timeLeft = Math.ceil((ban.banTime + ban.duration * 1000 - Date.now()) / 1000);
+            if (timeLeft > 0) {
+                timeRemaining = `§e Remaining: §c${formatTime(timeLeft)}`;
+            }
+        }
+        if (ban.unban == 'true') {
+            timeRemaining = '§a Unbanned'
+        }
+
         if (ban.name !== undefined) {
             player.sendMessage(
-                `§e- §c${ban.name} §eReason: §c${ban.reason} ` +
-                (ban.duration ? `§eDuration:§c ${ban.duration}s` : '§eNo Duration') +
-                (ban.unban == 'true' ? `§a Unban:true` : '§c Unban:false'),
+                `§e- §c${ban.name} §eReason: §c${ban.reason} ` + timeRemaining
             );
         } else {
             player.sendMessage(
-                `§e- §c${ban.id} §eReason: §c${ban.reason}` +
-                (ban.duration ? `§eDuration:§c ${ban.duration}s` : '§eNo Duration') +
-                (ban.unban == 'true' ? `§a Unban:true` : '§c Unban:false'),
+                `§e- §c${ban.id} §eReason: §c${ban.reason} ` + timeRemaining
             );
         }
     });
     player.sendMessage('§l§e====================');
 }
-
 function ban(player: Player, reason: string, duration?: number, banTime?: number) {
     let kickMessage = translate(player, 'command.ban.bannedMessage', { reason: reason, duration: "" });
 
@@ -332,6 +338,7 @@ function ban(player: Player, reason: string, duration?: number, banTime?: number
         console.log(error)
     }
 }
+
 function formatTime(seconds: number): string {
     const days = Math.floor(seconds / (24 * 60 * 60));
     seconds -= days * 24 * 60 * 60;
@@ -359,7 +366,6 @@ world.afterEvents.playerSpawn.subscribe((event) => {
     }
     system.runTimeout(() => {
         if (!player) return;
-
         if (chestLockAddonData && chestLockAddonData.banlist && chestLockAddonData.banlist.banPlayers) {
             banList.banPlayers = chestLockAddonData.banlist.banPlayers;
             const playerXuid = player.id;
@@ -380,6 +386,11 @@ world.afterEvents.playerSpawn.subscribe((event) => {
                             return;
                         } else {
                             if (bannedPlayer.unban === 'false') {
+                                const timeLeft = Math.ceil((bannedPlayer.banTime + bannedPlayer.duration * 1000 - Date.now()) / 1000);
+
+                                if (timeLeft > 0) {
+                                    player.sendMessage(translate(player, 'command.ban.bannedMessage', { reason: bannedPlayer.reason, duration: formatTime(timeLeft) }));
+                                }
                                 // durationがundefinedの場合は、通常BAN
                                 if (bannedPlayer.duration === undefined) {
                                     ban(player, bannedPlayer.reason);
@@ -391,7 +402,7 @@ world.afterEvents.playerSpawn.subscribe((event) => {
 
                                     try {
                                         system.runTimeout(() => {
-                                            console.log("Kick Start")
+                                            console.log("Kick To Ban Player:" + player.name);
                                             player.runCommand(`kick ${player.name} ${kickMessage}`);
                                         })
                                     } catch (error) {
