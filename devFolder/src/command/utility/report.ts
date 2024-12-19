@@ -91,7 +91,6 @@ export function checkReports(player: Player) {
     return;
   }
 
-  // リクエスターごとのレポート数を集計し、最新のタイムスタンプを取得
   const reporterInfo: { [reporter: string]: { count: number; latestTimestamp: number } } = {};
   reports.forEach((report) => {
     if (!reporterInfo[report.reporter]) {
@@ -106,43 +105,37 @@ export function checkReports(player: Player) {
 
   const mainForm = new ActionFormData().title('§l§0Reports');
 
-  // 最新のレポートを上に、古いレポートを下に表示
   const sortedReports = [...reports].sort((a, b) => b.timestamp - a.timestamp);
 
-  // リクエスターごとにボタンを表示
   for (const reporter in reporterInfo) {
     const { count, latestTimestamp } = reporterInfo[reporter];
-    const latestTime = new Date(latestTimestamp).toLocaleString();
-    const buttonText =
-      count > 1 ? `${reporter} x${count} (${latestTime})` : `${reporter} (${latestTime})`;
+    // 日本時間に変換
+    const latestTime = formatTimestamp(latestTimestamp);
+    const buttonText = count > 1 ? `${reporter} x${count} (${latestTime})` : `${reporter} (${latestTime})`;
     mainForm.button(buttonText);
   }
   //@ts-ignore
 
   mainForm.show(player).then((response) => {
-    if (response.selection === undefined) return; // キャンセルされた場合
+    if (response.selection === undefined) return;
 
     const selectedReporter = Object.keys(reporterInfo)[response.selection];
-    // 選択されたリクエスターのレポートを表示するフォーム
     const reporterReports = sortedReports.filter((report) => report.reporter === selectedReporter);
     const reporterForm = new ActionFormData().title(
       translate(player, 'command.ui.reportTitle', { selectedReporter: `${selectedReporter}` }),
     );
 
     reporterReports.forEach((report) => {
-      const reportTime = new Date(report.timestamp).toLocaleString();
+      const reportTime = formatTimestamp(report.timestamp); 
       reporterForm.button(`${report.reportedPlayer} (${reportTime})`);
     });
 
     //@ts-ignore
-
     reporterForm.show(player).then((response) => {
-      if (response.selection === undefined) return; // キャンセルされた場合
+      if (response.selection === undefined) return;
 
       const selectedReport = reporterReports[response.selection];
-
-      // 選択されたレポートの詳細を表示するフォーム
-      const timestamp = formatTimestamp(selectedReport.timestamp);
+      const timestamp = formatTimestamp(selectedReport.timestamp); // 既存のformatTimestampを使用
 
       const detailsForm = new ActionFormData()
         .title(translate(player, 'command.ui.reportDetails'))
@@ -151,22 +144,17 @@ export function checkReports(player: Player) {
             reporter: `${selectedReport.reporter}`,
             reportedPlayer: `${selectedReport.reportedPlayer}`,
             reason: `${selectedReport.reason}`,
-            timestamp: `${timestamp}`,
+            timestamp: `${timestamp}`, // formatTimestampを使用
           }),
         )
         .button(translate(player, 'back'));
+      //@ts-ignore
 
-      detailsForm
-        //@ts-ignore
-        .show(player)
-        .then((response) => {
-          if (response.canceled) {
-          } else {
-            if (response.selection === 0) {
-              checkReports(player);
-            }
-          }
-        });
+      detailsForm.show(player).then((response) => {
+        if (!response.canceled && response.selection === 0) {
+          checkReports(player);
+        }
+      });
     });
   });
 }

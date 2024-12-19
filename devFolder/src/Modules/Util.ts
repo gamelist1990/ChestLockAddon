@@ -306,27 +306,57 @@ export function closeForm(player: Player) {
   uiManager.closeAllForms(player as any);
 }
 
-// timestamp を日本語でフォーマットする関数
-export function formatTimestamp(timestamp: string | number | Date) {
-  if (!timestamp) {
-    return ''; 
+
+export function formatTimestamp(timestamp: string | number | Date): string {
+  if (timestamp == null) {
+   // console.warn('formatTimestamp received a null or undefined timestamp.');
+    return '';
   }
 
-  try {
-    const date = new Date(timestamp);
-    if (isNaN(date.getTime())) {
-      return 'Invalid Date'; 
+ // console.log('Raw timestamp:', timestamp, typeof timestamp);
+
+  let date: Date;
+
+  if (typeof timestamp === 'number') {
+    date = new Date(timestamp);
+  } else if (timestamp instanceof Date) {
+    date = timestamp;
+  } else if (typeof timestamp === 'string') {
+    const parsedInt = parseInt(timestamp, 10);
+    if (!isNaN(parsedInt)) {
+      date = new Date(parsedInt);
+    } else {
+      date = new Date(timestamp);
     }
-    return date.toLocaleString('ja-JP', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-  } catch (error) {
-    console.error('Error formatting timestamp:', error);
-    return 'Error'; 
+  } else {
+    console.error('Invalid timestamp type:', timestamp, typeof timestamp);
+    return 'Invalid Timestamp';
   }
+
+
+
+ // console.log('Date object (UTC):', date);
+ // console.log('Date object in UTC:', date.toUTCString()); // Log the Date in UTC for comparison
+
+
+  if (isNaN(date.getTime())) {
+    console.error('Invalid timestamp:', timestamp);
+    return 'Invalid Timestamp';
+  }
+  // UTCからJSTに変換処理(9時間分のミリ秒を追加)
+  const jstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+
+  const year = jstDate.getFullYear();
+  const month = String(jstDate.getMonth() + 1).padStart(2, '0');
+  const day = String(jstDate.getDate()).padStart(2, '0');
+  const hours = String(jstDate.getHours()).padStart(2, '0');
+  const minutes = String(jstDate.getMinutes()).padStart(2, '0');
+  const seconds = String(jstDate.getSeconds()).padStart(2, '0');
+
+
+  const formattedTimestamp = `${year}/${month}/${day}, ${hours}:${minutes}:${seconds}`;
+
+  //console.log('Formatted timestamp (manual):', formattedTimestamp);
+
+  return formattedTimestamp;
 }

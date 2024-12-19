@@ -89,7 +89,11 @@
   },
   "server_docs": {
     "msgid": "Server Info Command",
-    "msgstr": ""
+    "msgstr": "サーバー情報コマンド"
+  },
+  "ping_docs": {
+    "msgid": "Ping Command",
+    "msgstr": "Pingコマンド"
   },
   "ui.ReportButton": {
     "msgid": "§0Report Menu",
@@ -346,6 +350,54 @@
   "ui.FromError": {
     "msgid": "§c An error occurred while displaying the form:",
     "msgstr": "§cフォームの表示中にエラーが発生しました"
+  },
+  "ui.BanMenu": {
+    "msgid": "§0 Ban Menu",
+    "msgstr": "§0 Banメニュー"
+  },
+  "ui.BanCom": {
+    "msgid": "§2 Select a ban command:",
+    "msgstr": "§2 Banコマンドを選択してください:"
+  },
+  "ui.BanPlayer": {
+    "msgid": "§0 Ban Player",
+    "msgstr": "§0 プレイヤーをBan"
+  },
+  "ui.unbanPlayer": {
+    "msgid": "§0 Unban Player",
+    "msgstr": "§0 プレイヤーのBanを解除"
+  },
+  "ui.BanPlayerSelect": {
+    "msgid": "§2Select The Ban Player",
+    "msgstr": "§2 Banするプレイヤーを選択してください"
+  },
+  "ui.BanDurationTitle": {
+    "msgid": "§0 Ban Duration",
+    "msgstr": "§0 Banの期間"
+  },
+  "ui.BanDurationPrompt": {
+    "msgid": "§2 Enter the ban duration in minutes:",
+    "msgstr": "§2 Banの期間を分単位で入力してください:"
+  },
+  "ui.BanReasonTitle": {
+    "msgid": "§0 Ban Reason",
+    "msgstr": "§0 Banの理由"
+  },
+  "ui.BanReasonPrompt": {
+    "msgid": "§2 Enter the reason for the ban:",
+    "msgstr": "§2 Banの理由を入力してください:"
+  },
+  "ui.BanReasonPlaceholder": {
+    "msgid": "§2 Reason for the ban",
+    "msgstr": "§2 Banの理由"
+  },
+  "ui.NoBannedPlayers": {
+    "msgid": "§c No banned players.",
+    "msgstr": "§c Banされたプレイヤーはいません。"
+  },
+  "ui.SelectPlayerToUnban": {
+    "msgid": "§2 Select the player you want to unban:",
+    "msgstr": "§2 Banを解除したいプレイヤーを選択してください:"
   },
   "back": {
     "msgid": "§2 Back",

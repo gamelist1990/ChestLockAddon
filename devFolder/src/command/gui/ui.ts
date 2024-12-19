@@ -835,7 +835,7 @@ async function banMenu(player: Player): Promise<void> {
   const playerNames = getAllPlayerNames(player);
 
   const form = new ActionFormData()
-    .title('Ban Player')
+    .title("BAN menu") // More descriptive title
     .body(translate(player, 'ui.BanPlayerSelect'));
 
   playerNames.forEach((p) => {
@@ -852,16 +852,34 @@ async function banMenu(player: Player): Promise<void> {
       return;
     }
 
-    if (
-      response.selection !== undefined &&
-      response.selection >= 0 &&
-      response.selection < playerNames.length
-    ) {
+    const backButtonIndex = playerNames.length;
+
+    if (response.selection !== undefined && response.selection >= 0 && response.selection < backButtonIndex) {
       const targetPlayerName = playerNames[response.selection];
 
+      const timeOptions = [
+        { value: "permanent", label: "Permanent" },
+        { value: "1m", label: "1 Minute" },
+        { value: "5m", label: "5 Minutes" },
+        { value: "10m", label: "10 Minutes" },
+        { value: "15m", label: "15 Minutes" },
+        { value: "30m", label: "30 Minutes" },
+        { value: "1h", label: "1 Hour" },
+        { value: "2h", label: "2 Hours" }, 
+        { value: "3h", label: "3 Hours" },
+        { value: "6h", label: "6 Hours" }, 
+        { value: "12h", label: "12 Hours" },
+        { value: "1d", label: "1 Day" },
+        { value: "2d", label: "2 Days" }, 
+        { value: "3d", label: "3 Days" }, 
+        { value: "7d", label: "7 Days" },
+        { value: "14d", label: "14 Days" }, 
+        { value: "30d", label: "30 Days" }, 
+      ];
+
       const timeForm = new ModalFormData()
-        .title('Enter Ban Time')
-        .dropdown("Time:", ["1m", "5m", "15m", "30m", "1h", "3h", "12h", "1d", "7d", "永久"], 0)
+        .title(translate(player, 'ui.BanDurationTitle'))
+        .dropdown(translate(player, 'ui.BanDurationPrompt'), timeOptions.map(o => o.label), 0)
 
       //@ts-ignore
       const timeResponse = await timeForm.show(player);
@@ -869,39 +887,43 @@ async function banMenu(player: Player): Promise<void> {
         return;
       }
 
-      let banTime = timeResponse.formValues[0] as string;
-      let banTimes = `[${banTime}]`;
-      if (banTime === "永久") {
-        // 永久BANの場合は時間を削除
-        banTimes = '';
-      }
-
+      const selectedTime = timeOptions[Number(timeResponse.formValues[0])].value;
+      const banTimes = selectedTime === "permanent" ? '' : `[${selectedTime}]`; 
 
       const reasonForm = new ModalFormData()
-        .title('Enter Ban Reason')
-        .textField('Reason:', 'Enter the reason for the ban');
+        .title(translate(player, 'ui.BanReasonTitle'))
+        .textField(translate(player, 'ui.BanReasonPrompt'), translate(player, 'ui.BanReasonPlaceholder')); 
 
 
       //@ts-ignore
       const reasonResponse = await reasonForm.show(player);
-      if (!reasonResponse.canceled && reasonResponse.formValues) {
-        const reason = reasonResponse.formValues[0] as string;
-        runCommand(player.name, 'ban', [targetPlayerName, reason, banTimes]);
+      if (reasonResponse.canceled || !reasonResponse.formValues || typeof reasonResponse.formValues[0] !== 'string' || reasonResponse.formValues[0].trim() === "") { // Handles empty reason
+        return;
       }
-    } else if (response.selection === playerNames.length) {
-      banMenu(player);
+
+      const reason = reasonResponse.formValues[0] as string;
+      runCommand(player.name, 'ban', [targetPlayerName, reason, banTimes]);
+
+    } else if (response.selection === backButtonIndex) {
+      // Assuming showBanMenu exists and handles going back.  If not, replace with appropriate action.
+      showBanMenu(player);
     }
+
   } catch (error: any) {
     console.error(translate(player, 'ui.FromError'), error);
     player.sendMessage(translate(player, 'ui.FromError') + error.message);
   }
 }
 
+
+
 async function unbanMenu(player: Player): Promise<void> {
   player.playSound('mob.chicken.plop');
 
   const banUser = banList;
-  const bannedPlayers = banUser.banPlayers.map(ban => ban.name || ban.id);
+  const bannedPlayers = banUser.banPlayers
+    .filter(ban => ban.name && ban.unban === "false")
+    .map(ban => ban.name);
   if (bannedPlayers.length === 0) {
     player.sendMessage(translate(player, 'ui.NoBannedPlayers'));
     return;
@@ -912,10 +934,10 @@ async function unbanMenu(player: Player): Promise<void> {
     .body(translate(player, 'ui.SelectPlayerToUnban'));
 
   bannedPlayers.forEach((name) => {
-      if (name !== undefined) {
-          form.button(name);
-      }
-    });
+    if (name !== undefined) {
+      form.button(name);
+    }
+  });
 
   form.button(translate(player, 'back'));
 
@@ -935,9 +957,7 @@ async function unbanMenu(player: Player): Promise<void> {
       const targetName = bannedPlayers[response.selection];
       if (targetName !== undefined) {
         runCommand(player.name, 'unban', [targetName]);
-        player.sendMessage(translate(player, 'command.ban.unbanSuccess') + targetName);
       }
-      player.sendMessage(translate(player, 'command.ban.unbanSuccess') + targetName);
     } else if (response.selection === bannedPlayers.length) {
       showBanMenu(player);
     }

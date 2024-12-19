@@ -91,6 +91,10 @@ export const translations = {
     msgid: "Server Info Command",
     msgstr: ""
   },
+  "ping_docs": {
+    msgid: "Ping Command",
+    msgstr: ""
+  },
   "ui.ReportButton": {
     msgid: "§0Report Menu",
     msgstr: ""
@@ -321,6 +325,54 @@ export const translations = {
   },
   "ui.FromError": {
     msgid: "§c An error occurred while displaying the form:",
+    msgstr: ""
+  },
+  "ui.BanMenu": {
+    msgid: "§0 Ban Menu",
+    msgstr: ""
+  },
+  "ui.BanCom": {
+    msgid: "§2 Select a ban command:",
+    msgstr: ""
+  },
+  "ui.BanPlayer": {
+    msgid: "§0 Ban Player",
+    msgstr: ""
+  },
+  "ui.unbanPlayer": {
+    msgid: "§0 Unban Player",
+    msgstr: ""
+  },
+  "ui.BanPlayerSelect": {
+    msgid: "§2Select The Ban Player",
+    msgstr: ""
+  },
+  "ui.BanDurationTitle": {
+    msgid: "§0 Ban Duration",
+    msgstr: ""
+  },
+  "ui.BanDurationPrompt": {
+    msgid: "§2 Enter the ban duration in minutes:",
+    msgstr: ""
+  },
+  "ui.BanReasonTitle": {
+    msgid: "§0 Ban Reason",
+    msgstr: ""
+  },
+  "ui.BanReasonPrompt": {
+    msgid: "§2 Enter the reason for the ban:",
+    msgstr: ""
+  },
+  "ui.BanReasonPlaceholder": {
+    msgid: "§2 Reason for the ban",
+    msgstr: ""
+  },
+  "ui.NoBannedPlayers": {
+    msgid: "§c No banned players.",
+    msgstr: ""
+  },
+  "ui.SelectPlayerToUnban": {
+    msgid: "§2 Select the player you want to unban:",
     msgstr: ""
   },
   "back": {

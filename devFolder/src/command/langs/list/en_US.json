@@ -359,6 +359,26 @@
     "msgid": "§2Select The Ban Player",
     "msgstr": ""
   },
+  "ui.BanDurationTitle": {
+    "msgid": "§0 Ban Duration",
+    "msgstr": ""
+  },
+  "ui.BanDurationPrompt": {
+    "msgid": "§2 Enter the ban duration in minutes:",
+    "msgstr": ""
+  },
+  "ui.BanReasonTitle": {
+    "msgid": "§0 Ban Reason",
+    "msgstr": ""
+  },
+  "ui.BanReasonPrompt": {
+    "msgid": "§2 Enter the reason for the ban:",
+    "msgstr": ""
+  },
+  "ui.BanReasonPlaceholder": {
+    "msgid": "§2 Reason for the ban",
+    "msgstr": ""
+  },
   "ui.NoBannedPlayers": {
     "msgid": "§c No banned players.",
     "msgstr": ""

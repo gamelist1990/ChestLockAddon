@@ -17,10 +17,14 @@ export function saveData(key: string, value: any): void {
 export function loadData(): void {
   const data = world.getDynamicProperty('ChestLockAddonData');
   if (data && typeof data === 'string') {
-    chestLockAddonData = JSON.parse(data);
+    chestLockAddonData = JSON.parse(data, (key, value) => {
+      if (typeof value === 'number' && key === 'timestamp') {
+        return new Date(value);
+      }
+      return value;
+    });
   }
 }
-
 
 // データの出力関数
 export function logData(): void {
