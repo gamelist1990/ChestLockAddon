@@ -1,6 +1,6 @@
 import { config } from '../../Modules/Util';
 import { registerCommand, verifier } from '../../Modules/Handler';
-import { Player, system, Vector3, world } from '@minecraft/server';
+import { Player, system, Vector3, world, Dimension } from '@minecraft/server';
 import { translate } from '../langs/list/LanguageManager';
 
 registerCommand({
@@ -11,20 +11,33 @@ registerCommand({
     minArgs: 0,
     require: (player: Player) => verifier(player, config().commands['hub']),
     executor: (player: Player) => {
-        let countdown = 5; 
+        let countdown = 5;
         const intervalId = system.runInterval(() => {
             player.sendMessage(translate(player, "command.hub.move", { countdown: `${countdown}` }));
             countdown--;
 
             if (countdown < 0) {
                 system.clearRun(intervalId);
-                const Default = world.getDefaultSpawnLocation();
+                const defaultSpawn = world.getDefaultSpawnLocation();
+                let teleportY = (defaultSpawn.y === undefined || defaultSpawn.y === null || defaultSpawn.y === 32767) ? 64 : defaultSpawn.y;
+                let teleportLocation: Vector3 = { x: defaultSpawn.x, y: teleportY, z: defaultSpawn.z };
+                const playerDimension: Dimension = player.dimension;
 
-                const teleportLocation: Vector3 = {
-                    x: Default.x,
-                    y: Default.y !== undefined && Default.y !== null ? Default.y : 64,
-                    z: Default.z
-                };
+
+                // 空気ブロックを探す処理
+                const maxSearchHeight = 100;
+                for (let i = 0; i < maxSearchHeight; i++) {
+                    const block = playerDimension.getBlock(teleportLocation); 
+                    if (block && block.typeId === "minecraft:air") {
+                        break; 
+                    }
+                    teleportLocation.y++;
+                }
+
+              
+                if (teleportLocation.y - teleportY >= maxSearchHeight) {
+                    teleportLocation.y = (defaultSpawn.y === undefined || defaultSpawn.y === null || defaultSpawn.y === 32767) ? 64 : defaultSpawn.y;
+                }
 
                 player.teleport(teleportLocation);
             }
