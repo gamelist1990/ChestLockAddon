@@ -85,6 +85,10 @@ export const translations = {
   },
   "lockdown_docs": {
     msgid: "Toggle lockdown mode",
+    msgstr: "メンテナンス中に切り替える(Staff以外は入れません)"
+  },
+  "server_docs": {
+    msgid: "Server Info Command",
     msgstr: ""
   },
   "ui.ReportButton": {
@@ -380,8 +384,8 @@ export const translations = {
     msgstr: "§f>>§a報告は正常に送信されました"
   },
   "command.about.about": {
-    msgid: "§a== About ChestLockAddon ==\n\nChestLockAddon is a useful utility addon for Minecraft version 1.21.40 that provides chest protection and more.\n\n§b== Main Features ==\n• Chest Protection: Protect your chests from other players.\n• Multilingual Support: Change the language setting with the lang command.\n• Teleport Request: Send a teleport request to another player with the tpa command.\n• And more: More useful commands will be added in the future.\n\n§b== Links ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== Notes ==\nThis addon is under development and may contain unexpected bugs. If you find any bugs, please report them on GitHub or Discord.\n\n§a== Message from the Developer ==\nWe welcome your feedback to make ChestLockAddon a better addon.",
-    msgstr: "§a== ChestLockAddonについて ==\n\nChestLockAddonは、Minecraftバージョン1.21.40用の便利なユーティリティアドオンで、チェスト保護などを提供します。\n\n§b== 主な機能 ==\n• チェスト保護：他のプレイヤーからチェストを保護します。\n• 多言語サポート：langコマンドで言語設定を変更できます。\n• テレポートリクエスト：tpaコマンドで他のプレイヤーにテレポートリクエストを送信します。\n• その他：今後、さらに便利なコマンドが追加される予定です。\n\n§b== リンク ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== 注意 ==\nこのアドオンは開発中であり、予期しないバグが含まれている可能性があります。バグを見つけた場合は、GitHubまたはDiscordでご報告ください。\n\n§a== 開発者からのメッセージ ==\nChestLockAddonをより良いアドオンにするために、皆様からのフィードバックをお待ちしております。"
+    msgid: "§a== About ChestLockAddon ==\n\nChestLockAddon is a useful utility addon for Minecraft version 1.21.50 that provides chest protection and more.\n\n§b== Main Features ==\n• Chest Protection: Protect your chests from other players.\n• Multilingual Support: Change the language setting with the lang command.\n• Teleport Request: Send a teleport request to another player with the tpa command.\n• And more: More useful commands will be added in the future.\n\n§b== Links ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== Notes ==\nThis addon is under development and may contain unexpected bugs. If you find any bugs, please report them on GitHub or Discord.\n\n§a== Message from the Developer ==\nWe welcome your feedback to make ChestLockAddon a better addon.",
+    msgstr: "§a== ChestLockAddonについて ==\n\nChestLockAddonは、Minecraftバージョン1.21.50用の便利なユーティリティアドオンで、チェスト保護などを提供します。\n\n§b== 主な機能 ==\n• チェスト保護：他のプレイヤーからチェストを保護します。\n• 多言語サポート：langコマンドで言語設定を変更できます。\n• テレポートリクエスト：tpaコマンドで他のプレイヤーにテレポートリクエストを送信します。\n• その他：今後、さらに便利なコマンドが追加される予定です。\n\n§b== リンク ==\n• GitHub: https://github.com/gamelist1990/ChestLockAddon\n• YouTube: https://www.youtube.com/@PEXkoukunn\n• Discord: https://discord.gg/GJyqBm7Pyd\n\n§c== 注意 ==\nこのアドオンは開発中であり、予期しないバグが含まれている可能性があります。バグを見つけた場合は、GitHubまたはDiscordでご報告ください。\n\n§a== 開発者からのメッセージ ==\nChestLockAddonをより良いアドオンにするために、皆様からのフィードバックをお待ちしております。"
   },
   "server.ServerVersion": {
     msgid: "§bThis ChestLockAddon is running version {version}",

@@ -87,6 +87,10 @@
     "msgid": "Toggle lockdown mode",
     "msgstr": ""
   },
+  "server_docs": {
+    "msgid": "Server Info Command",
+    "msgstr": ""
+  },
   "ui.ReportButton": {
     "msgid": "§0Report Menu",
     "msgstr": ""
@@ -395,7 +399,7 @@
     "msgid": [
       "§a== About ChestLockAddon ==",
       "",
-      "ChestLockAddon is a useful utility addon for Minecraft version 1.21.40 that provides chest protection and more.",
+      "ChestLockAddon is a useful utility addon for Minecraft version 1.21.50 that provides chest protection and more.",
       "",
       "§b== Main Features ==",
       "• Chest Protection: Protect your chests from other players.",
