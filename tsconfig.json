@@ -44,6 +44,6 @@
         "noUnusedParameters": true,
         "sourceMap": false,
         "removeComments": true,
-        "allowSyntheticDefaultImports": false
+        "allowSyntheticDefaultImports": true
     }
 }

@@ -9,7 +9,7 @@ interface Report {
   reporter: string;
   reportedPlayer: string;
   reason: string;
-  timestamp: number;
+  timestamp: number | string;
 }
 
 let reports: Report[] = [];
@@ -24,7 +24,12 @@ export function loadReport(): void {
   loadData();
   const data = chestLockAddonData.reports;
   if (data && typeof data === 'object') {
-    reports = data;
+    reports = data.map(report => {
+      if (typeof report.timestamp === 'string') {
+        return { ...report, timestamp: Date.parse(report.timestamp) };
+      }
+      return report;
+    }) as Report[];
   }
 }
 
@@ -99,18 +104,23 @@ export function checkReports(player: Player) {
     reporterInfo[report.reporter].count++;
     reporterInfo[report.reporter].latestTimestamp = Math.max(
       reporterInfo[report.reporter].latestTimestamp,
-      report.timestamp,
+      typeof report.timestamp === 'number' ? report.timestamp : Date.parse(report.timestamp),
     );
   });
 
   const mainForm = new ActionFormData().title('§l§0Reports');
 
-  const sortedReports = [...reports].sort((a, b) => b.timestamp - a.timestamp);
+  const sortedReports = [...reports].sort((a, b) => (typeof b.timestamp === 'number' ? b.timestamp : Date.parse(b.timestamp)) - (typeof a.timestamp === 'number' ? a.timestamp : Date.parse(a.timestamp)));
 
   for (const reporter in reporterInfo) {
     const { count, latestTimestamp } = reporterInfo[reporter];
+    if (typeof latestTimestamp !== 'number') {
+      console.error('Invalid latestTimestamp type:', latestTimestamp, typeof latestTimestamp);
+      continue; // もし数値でないなら、次のループへ
+    }
+
     // 日本時間に変換
-    const latestTime = formatTimestamp(latestTimestamp);
+    const latestTime = formatTimestamp(latestTimestamp, 9);
     const buttonText = count > 1 ? `${reporter} x${count} (${latestTime})` : `${reporter} (${latestTime})`;
     mainForm.button(buttonText);
   }
@@ -126,7 +136,7 @@ export function checkReports(player: Player) {
     );
 
     reporterReports.forEach((report) => {
-      const reportTime = formatTimestamp(report.timestamp); 
+      const reportTime = formatTimestamp(typeof report.timestamp === 'number' ? report.timestamp : Date.parse(report.timestamp), 9);
       reporterForm.button(`${report.reportedPlayer} (${reportTime})`);
     });
 
@@ -135,7 +145,7 @@ export function checkReports(player: Player) {
       if (response.selection === undefined) return;
 
       const selectedReport = reporterReports[response.selection];
-      const timestamp = formatTimestamp(selectedReport.timestamp); // 既存のformatTimestampを使用
+      const timestamp = formatTimestamp(typeof selectedReport.timestamp === 'number' ? selectedReport.timestamp : Date.parse(selectedReport.timestamp), 9);
 
       const detailsForm = new ActionFormData()
         .title(translate(player, 'command.ui.reportDetails'))
@@ -144,7 +154,7 @@ export function checkReports(player: Player) {
             reporter: `${selectedReport.reporter}`,
             reportedPlayer: `${selectedReport.reportedPlayer}`,
             reason: `${selectedReport.reason}`,
-            timestamp: `${timestamp}`, // formatTimestampを使用
+            timestamp: `${timestamp}`,
           }),
         )
         .button(translate(player, 'back'));
@@ -176,3 +186,4 @@ registerCommand({
     submitReport(player, reportedPlayerName, reason);
   },
 });
+

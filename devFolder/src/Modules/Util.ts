@@ -1,6 +1,8 @@
 import { Player, GameMode, world, system, PlatformType, MemoryTier, InputMode, } from '@minecraft/server';
 import { uiManager } from '@minecraft/server-ui';
 
+
+
 interface CommandConfig {
   enabled: boolean;
   adminOnly: boolean;
@@ -307,56 +309,61 @@ export function closeForm(player: Player) {
 }
 
 
-export function formatTimestamp(timestamp: string | number | Date): string {
+
+export function formatTimestamp(timestamp: string | number | Date, timezoneOffsetHours: number): string {
   if (timestamp == null) {
-   // console.warn('formatTimestamp received a null or undefined timestamp.');
     return '';
   }
 
- // console.log('Raw timestamp:', timestamp, typeof timestamp);
-
   let date: Date;
 
-  if (typeof timestamp === 'number') {
-    date = new Date(timestamp);
-  } else if (timestamp instanceof Date) {
-    date = timestamp;
-  } else if (typeof timestamp === 'string') {
-    const parsedInt = parseInt(timestamp, 10);
-    if (!isNaN(parsedInt)) {
-      date = new Date(parsedInt);
-    } else {
+  try {
+    if (typeof timestamp === 'number') {
       date = new Date(timestamp);
+    } else if (timestamp instanceof Date) {
+      date = timestamp;
+    } else if (typeof timestamp === 'string') {
+      // 文字列の場合は、Date.parseを使用する
+      const parsedDate = new Date(Date.parse(timestamp));
+      if (isNaN(parsedDate.getTime())) {
+        console.error('Invalid timestamp string:', timestamp);
+        return 'Invalid Timestamp';
+      }
+      date = parsedDate;
+    } else {
+      console.error('Invalid timestamp type:', timestamp, typeof timestamp);
+      return 'Invalid Timestamp';
     }
-  } else {
-    console.error('Invalid timestamp type:', timestamp, typeof timestamp);
-    return 'Invalid Timestamp';
+
+    if (isNaN(date.getTime())) {
+      console.error('Invalid timestamp:', timestamp);
+      return 'Invalid Timestamp';
+    }
+
+    const timezoneOffsetMilliseconds = timezoneOffsetHours * 60 * 60 * 1000;
+    const adjustedDate = new Date(date.getTime() + timezoneOffsetMilliseconds);
+    const year = adjustedDate.getFullYear();
+    const month = String(adjustedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(adjustedDate.getDate()).padStart(2, '0');
+    const hours = String(adjustedDate.getHours()).padStart(2, '0');
+    const minutes = String(adjustedDate.getMinutes()).padStart(2, '0');
+    const seconds = String(adjustedDate.getSeconds()).padStart(2, '0');
+
+    const formattedTimestamp = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+    return formattedTimestamp;
+
+  } catch (error) {
+    console.error('An unexpected error occurred:', error);
+    return 'Unexpected Error';
   }
+}
 
+// JST でフォーマットする場合 (JSTはUTC+9)
+export function formatTimestampJST(timestamp: string | number | Date): string {
+  return formatTimestamp(timestamp, 9);
+}
 
-
- // console.log('Date object (UTC):', date);
- // console.log('Date object in UTC:', date.toUTCString()); // Log the Date in UTC for comparison
-
-
-  if (isNaN(date.getTime())) {
-    console.error('Invalid timestamp:', timestamp);
-    return 'Invalid Timestamp';
-  }
-  // UTCからJSTに変換処理(9時間分のミリ秒を追加)
-  const jstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
-
-  const year = jstDate.getFullYear();
-  const month = String(jstDate.getMonth() + 1).padStart(2, '0');
-  const day = String(jstDate.getDate()).padStart(2, '0');
-  const hours = String(jstDate.getHours()).padStart(2, '0');
-  const minutes = String(jstDate.getMinutes()).padStart(2, '0');
-  const seconds = String(jstDate.getSeconds()).padStart(2, '0');
-
-
-  const formattedTimestamp = `${year}/${month}/${day}, ${hours}:${minutes}:${seconds}`;
-
-  //console.log('Formatted timestamp (manual):', formattedTimestamp);
-
-  return formattedTimestamp;
+// UTC でフォーマットする場合 (UTCはオフセット0)
+export function formatTimestampUTC(timestamp: string | number | Date): string {
+  return formatTimestamp(timestamp, 0);
 }

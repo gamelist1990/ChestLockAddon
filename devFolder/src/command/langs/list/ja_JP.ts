@@ -353,7 +353,7 @@ export const translations = {
   },
   "ui.BanDurationPrompt": {
     msgid: "§2 Enter the ban duration in minutes:",
-    msgstr: "§2 Banの期間を分単位で入力してください:"
+    msgstr: "§2 Banの期間を決めて下さい:"
   },
   "ui.BanReasonTitle": {
     msgid: "§0 Ban Reason",

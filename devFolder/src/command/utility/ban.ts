@@ -3,6 +3,7 @@ import { registerCommand, verifier } from '../../Modules/Handler';
 import { config, tempkick } from '../../Modules/Util';
 import { translate } from '../langs/list/LanguageManager';
 import { saveData, loadData, chestLockAddonData } from '../../Modules/DataBase';
+import { ServerReport } from './report';
 
 interface BanPlayer {
     name?: string;
@@ -197,17 +198,17 @@ function banPlayer(
             if (target) {
                 // durationがundefinedの場合は、通常BAN
                 if (duration === undefined) {
-                    ban(target, reason);
+                    ban(target, reason, undefined, undefined, player); // レポート送信のため、playerを渡す
                 } else {
                     const durationInHours = duration / 3600;
                     if (durationInHours <= 5) {
                         try {
                             tempkick(target);
                         } catch (error: any) {
-                            ban(target, reason, duration, Date.now());
+                            ban(target, reason, duration, Date.now(), player); // レポート送信のため、playerを渡す
                         }
                     } else {
-                        ban(target, reason, duration, Date.now());
+                        ban(target, reason, duration, Date.now(), player); // レポート送信のため、playerを渡す
                     }
                 }
             }
@@ -234,17 +235,17 @@ function banPlayer(
         const target = world.getAllPlayers().find((p) => p.name === targetName);
         if (target) {
             if (duration === undefined) {
-                ban(target, reason);
+                ban(target, reason, undefined, undefined, player);  // レポート送信のため、playerを渡す
             } else {
                 const durationInHours = duration / 3600;
                 if (durationInHours <= 5) {
                     try {
                         tempkick(target);
                     } catch (error: any) {
-                        ban(target, reason, duration, Date.now());
+                        ban(target, reason, duration, Date.now(), player); // レポート送信のため、playerを渡す
                     }
                 } else {
-                    ban(target, reason, duration, Date.now());
+                    ban(target, reason, duration, Date.now(), player); // レポート送信のため、playerを渡す
                 }
             }
         }
@@ -319,7 +320,8 @@ function showBanList(player: Player) {
     });
     player.sendMessage('§l§e====================');
 }
-function ban(player: Player, reason: string, duration?: number, banTime?: number) {
+
+function ban(player: Player, reason: string, duration?: number, banTime?: number, banBy?: Player) {
     let kickMessage = translate(player, 'command.ban.bannedMessage', { reason: reason, duration: "" });
 
     if (duration && banTime) {
@@ -329,8 +331,15 @@ function ban(player: Player, reason: string, duration?: number, banTime?: number
         kickMessage = translate(player, 'command.ban.bannedMessage', { reason: reason, duration: translate(player, 'command.ban.noDuration') });
     }
 
+    // レポートを送信
+
+
+
     try {
-        system.runTimeout(() => {
+        system.runTimeout(async () => {
+            if (banBy) {
+                await ServerReport(player, `Banned by ${banBy.name} \nReason: ${reason}`);
+            }
             console.log("Kick Start")
             player.runCommand(`kick ${player.name} ${kickMessage}`);
         })
