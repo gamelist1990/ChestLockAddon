@@ -5,155 +5,155 @@
   },
   "help_docs": {
     "msgid": "Help command (This command displays help information)",
-    "msgstr": ""
+    "msgstr": "Apukomento (Tämä komento näyttää ohjetiedot)"
   },
   "lang_docs": {
     "msgid": "Lang command (This command switches the language)",
-    "msgstr": "lang-komento"
+    "msgstr": "lang-komento (Tämä komento vaihtaa kielen)"
   },
   "staff_docs": {
     "msgid": "Staff-only commands",
-    "msgstr": ""
+    "msgstr": "Vain henkilökunnan komennot"
   },
   "report_docs": {
     "msgid": "You can report players doing bad things.",
-    "msgstr": ""
+    "msgstr": "Voit ilmoittaa pelaajista, jotka tekevät pahoja asioita."
   },
   "about_docs": {
     "msgid": "View an overview of this add-on",
-    "msgstr": ""
+    "msgstr": "Näytä yleiskatsaus tästä lisäosasta"
   },
   "item_docs": {
     "msgid": "Item UI Command (Accesses Chest Lock UI)",
-    "msgstr": ""
+    "msgstr": "Esineen käyttöliittymäkomento (käyttää arkun lukitusliittymää)"
   },
   "jpch_docs": {
     "msgid": "JPCH command (Experimental feature)",
-    "msgstr": ""
+    "msgstr": "JPCH-komento (kokeellinen ominaisuus)"
   },
   "ui_docs": {
     "msgid": "UI command (This command displays a GUI with ActionForm)",
-    "msgstr": ""
+    "msgstr": "Käyttöliittymäkomento (Tämä komento näyttää graafisen käyttöliittymän ActionFormin avulla)"
   },
   "edit_docs": {
     "msgid": "WorldEdit Commands",
-    "msgstr": ""
+    "msgstr": "WorldEdit-komennot"
   },
   "lore_docs": {
     "msgid": "Change Item Lore",
-    "msgstr": ""
+    "msgstr": "Muuta esineen kuvaustekstiä"
   },
   "warpgate_docs": {
     "msgid": "Set Warp Gate",
-    "msgstr": ""
+    "msgstr": "Aseta Warp-portti"
   },
   "join_docs": {
     "msgid": "Displays a message when joining a world.",
-    "msgstr": ""
+    "msgstr": "Näyttää viestin, kun liityt maailmaan."
   },
   "tp_docs": {
     "msgid": "Send a request and teleport.",
-    "msgstr": ""
+    "msgstr": "Lähetä pyyntö ja teleporttaa."
   },
   "chest_docs": {
     "msgid": "Chest Command",
-    "msgstr": ""
+    "msgstr": "Arkku-komento"
   },
   "hub_docs": {
     "msgid": "Hub Command",
-    "msgstr": ""
+    "msgstr": "Hub-komento"
   },
   "tag_docs": {
     "msgid": "tag Command ",
-    "msgstr": ""
+    "msgstr": "tag-komento"
   },
   "invsee_docs": {
     "msgid": "Invsee Command ",
-    "msgstr": ""
+    "msgstr": "Invsee-komento"
   },
   "ban_docs": {
     "msgid": "Bans a player from the server",
-    "msgstr": ""
+    "msgstr": "Portaa pelaajan palvelimelta"
   },
   "unban_docs": {
     "msgid": "Unbans a player from the server",
-    "msgstr": ""
+    "msgstr": "Poistaa porttikiellon pelaajalta palvelimelta"
   },
   "banlist_docs": {
     "msgid": "Shows the list of banned players  ",
-    "msgstr": ""
+    "msgstr": "Näyttää porttikieltolistalla olevat pelaajat"
   },
   "lockdown_docs": {
     "msgid": "Toggle lockdown mode",
-    "msgstr": ""
+    "msgstr": "Vaihda sulkutila päälle/pois"
   },
   "ui.ReportButton": {
     "msgid": "§0Report Menu",
-    "msgstr": ""
+    "msgstr": "§0Ilmoitusvalikko"
   },
   "ui.EnterReport": {
     "msgid": "§bPlease enter the reason for the report",
-    "msgstr": ""
+    "msgstr": "§bOle hyvä ja kirjoita ilmoituksen syy"
   },
   "command.report.newReport": {
     "msgid": "§f>>§a§lNew report from {reporter} about {reportedPlayer}",
-    "msgstr": ""
+    "msgstr": "§f>>§a§lUusi ilmoitus käyttäjältä {reporter} koskien käyttäjää {reportedPlayer}"
   },
   "command.report.NotReport": {
     "msgid": "§f>>§4No reports found",
-    "msgstr": ""
+    "msgstr": "§f>>§4Ilmoituksia ei löytynyt"
   },
   "ui.MainLoreButton": {
     "msgid": "§0Custom Item Name/Lore",
-    "msgstr": ""
+    "msgstr": "§0Mukautettu esineen nimi/kuvaus"
   },
   "command.ui.reportTitle": {
     "msgid": "§l§0{selectedReporter}§e has Report",
-    "msgstr": ""
+    "msgstr": "§l§0Käyttäjällä {selectedReporter} on ilmoitus"
   },
   "command.ui.reportDetails": {
     "msgid": "§l§0Report Details",
-    "msgstr": ""
+    "msgstr": "§l§0Ilmoituksen tiedot"
   },
   "ui.reportPSelect": {
     "msgid": "§l§3Select Report To Player",
-    "msgstr": ""
+    "msgstr": "§l§3Valitse ilmoitettava pelaaja"
   },
   "ui.StaffMenu": {
     "msgid": "§l§0Staff Menu",
-    "msgstr": ""
+    "msgstr": "§l§0Henkilökunnan valikko"
   },
   "ui.checkReports": {
     "msgid": "§l§0Check Report",
-    "msgstr": ""
+    "msgstr": "§l§0Tarkista ilmoitus"
   },
   "ui.warnmenu": {
     "msgid": "§l§0Warn Menu",
-    "msgstr": ""
+    "msgstr": "§l§0Varoitusvalikko"
   },
   "command.warnMain": {
     "msgid": "§l§3Select to Action",
-    "msgstr": ""
+    "msgstr": "§l§3Valitse toiminto"
   },
   "ui.showWarn": {
     "msgid": "§l§0Show Warn",
-    "msgstr": ""
+    "msgstr": "§l§0Näytä varoitus"
   },
   "ui.sendtempkickUser": {
     "msgid": "§l§bSelect users to kick",
-    "msgstr": ""
+    "msgstr": "§l§bValitse potkittavat käyttäjät"
   },
   "ui.warnPlayer": {
     "msgid": "§l§3Select Warn To Player",
-    "msgstr": ""
+    "msgstr": "§l§3Valitse varoitettava pelaaja"
   },
   "ui.kick": {
     "msgid": "§l§0Kick user",
-    "msgstr": ""
+    "msgstr": "§l§0Potkaise käyttäjä"
   },
   "command.staff.UsageCom": {
     "msgid": "§l§bUsage§a Staff Command §f| world <-send> Message | report <-check> | freecam -<p/s/v/exit> playerName only needs (p/v)",
-    "msgstr": ""
+    "msgstr": "§l§bKäyttö§a Henkilökunnan komento §f| world <-send> Viesti | report <-check> | freecam -<p/s/v/exit> pelaajan nimi tarvitsee vain (p/v)"
   },
   "command.ui.reportBody": {
     "msgid": [
@@ -169,227 +169,239 @@
       "",
       "§a================"
     ],
-    "msgstr": ""
+    "msgstr": [
+      "§a== Ilmoitusvalikko ==",
+      "",
+      "§l§bIlmoittaja§f:{reporter}",
+      "",
+      "§l§6Ilmoitettu pelaaja§f: {reportedPlayer}",
+      "",
+      "§l§2Syy§f: {reason}",
+      "",
+      "§l§gAikaleima§f: {timestamp}",
+      "",
+      "§a================"
+    ]
   },
   "command.ui.loreDocs": {
     "msgid": "§2Change the item's name/lore (Place the item in the first slot of your hotbar)",
-    "msgstr": ""
+    "msgstr": "§2Muuta esineen nimeä/kuvausta (Aseta esine pikavalikon ensimmäiseen paikkaan)"
   },
   "command.ui.Changelore": {
     "msgid": "§0Change Item Lore",
-    "msgstr": ""
+    "msgstr": "§0Muuta esineen kuvausta"
   },
   "command.ui.ChangeName": {
     "msgid": "§0Change Item Name",
-    "msgstr": ""
+    "msgstr": "§0Muuta esineen nimeä"
   },
   "command.ui.ClearLore": {
     "msgid": "§0Clear Item Lore",
-    "msgstr": ""
+    "msgstr": "§0Poista esineen kuvaus"
   },
   "command.ui.NewLore": {
     "msgid": "Enter new lore:",
-    "msgstr": ""
+    "msgstr": "Kirjoita uusi kuvausteksti:"
   },
   "command.ui.NewName": {
     "msgid": "Enter new name:",
-    "msgstr": ""
+    "msgstr": "Kirjoita uusi nimi:"
   },
   "ui.TpaRequesMenu": {
     "msgid": "§2 Welcome to the TPA Menu! Current requests: {requestList} people",
-    "msgstr": ""
+    "msgstr": "§2 Tervetuloa TPA-valikkoon! Nykyiset pyynnöt: {requestList} henkilöä"
   },
   "ui.SendTpa": {
     "msgid": "§0 Send a TPA Request",
-    "msgstr": ""
+    "msgstr": "§0 Lähetä TPA-pyyntö"
   },
   "ui.ShowTpaRequests": {
     "msgid": "§0 Confirm TP requests addressed to me",
-    "msgstr": ""
+    "msgstr": "§0 Vahvista minulle osoitetut TP-pyynnöt"
   },
   "ui.NoTpaRequests": {
     "msgid": "§c You have no TP requests.",
-    "msgstr": ""
+    "msgstr": "§c Sinulla ei ole TP-pyyntöjä."
   },
   "ui.SelectTpaRequest": {
     "msgid": "§2 You have received a TPA request. Please select the player you want to accept.",
-    "msgstr": ""
+    "msgstr": "§2Olet saanut TPA-pyynnön. Valitse pelaaja, jonka haluat hyväksyä."
   },
   "ui.SendTpaSelect": {
     "msgid": "§2 Select the player you want to send a request to:",
-    "msgstr": ""
+    "msgstr": "§2Valitse pelaaja, jolle haluat lähettää pyynnön:"
   },
   "uihelp": {
     "msgid": "§0 Help Menu",
-    "msgstr": ""
+    "msgstr": "§0 Ohjevalikko"
   },
   "uichest": {
     "msgid": "§0 Chest Menu (BETA)",
-    "msgstr": ""
+    "msgstr": "§0 Arkkuvalikko (BETA)"
   },
   "uilang": {
     "msgid": "§0 Language Menu",
-    "msgstr": ""
+    "msgstr": "§0 Kielivalikko"
   },
   "uijpch": {
     "msgid": "§0 JPCH Menu (BETA)",
-    "msgstr": ""
+    "msgstr": "§0 JPCH-valikko (BETA)"
   },
   "uitpa": {
     "msgid": "§0 TPA Menu (BETA)",
-    "msgstr": ""
+    "msgstr": "§0 TPA-valikko (BETA)"
   },
   "ui.jpchCom": {
     "msgid": "§2 Functions like LunaChat.",
-    "msgstr": ""
+    "msgstr": "§2 Toimii kuten LunaChat."
   },
   "ui.jpenable": {
     "msgid": "§a Function enabled.",
-    "msgstr": ""
+    "msgstr": "§a Toiminto käytössä."
   },
   "ui.jpdisable": {
     "msgid": "§c Function disabled.",
-    "msgstr": ""
+    "msgstr": "§c Toiminto pois käytöstä."
   },
   "ui.ChooseCom": {
     "msgid": "§2 Select a command:",
-    "msgstr": ""
+    "msgstr": "§2 Valitse komento:"
   },
   "ui.ChestCom": {
     "msgid": "§2 Select a chest:",
-    "msgstr": ""
+    "msgstr": "§2 Valitse arkku:"
   },
   "ui.Chestinfo": {
     "msgid": "§0 See nearby chests",
-    "msgstr": ""
+    "msgstr": "§0 Näytä lähellä olevat arkut"
   },
   "ui.Chestlock": {
     "msgid": "§0 Lock System",
-    "msgstr": ""
+    "msgstr": "§0 Lukitusjärjestelmä"
   },
   "ui.ChestMember": {
     "msgid": "§0 Member System",
-    "msgstr": ""
+    "msgstr": "§0 Jäsenjärjestelmä"
   },
   "ui.lockinfo": {
     "msgid": "§2 Select the lock type:",
-    "msgstr": ""
+    "msgstr": "§2 Valitse lukitustyyppi:"
   },
   "ui.locking": {
     "msgid": "§a Locking!",
-    "msgstr": ""
+    "msgstr": "§a Lukitaan!"
   },
   "ui.unlocking": {
     "msgid": "§c Unlocking!",
-    "msgstr": ""
+    "msgstr": "§c Avataan lukitus!"
   },
   "ui.ProtectChest": {
     "msgid": "§0 Chest Protection Status",
-    "msgstr": ""
+    "msgstr": "§0 Arkun suojaustila"
   },
   "ui.MemberChoose": {
     "msgid": "§2 Choose your members:",
-    "msgstr": ""
+    "msgstr": "§2 Valitse jäsenet:"
   },
   "ui.MemberAdd": {
     "msgid": "§0 Add Member",
-    "msgstr": ""
+    "msgstr": "§0 Lisää jäsen"
   },
   "ui.MemberRemove": {
     "msgid": "§0 Remove Member",
-    "msgstr": ""
+    "msgstr": "§0 Poista jäsen"
   },
   "ui.Memberall": {
     "msgid": "§0 Member List",
-    "msgstr": ""
+    "msgstr": "§0 Jäsenluettelo"
   },
   "ui.AddMemberSelect": {
     "msgid": "§2 Select the member you want to add:",
-    "msgstr": ""
+    "msgstr": "§2 Valitse lisättävä jäsen:"
   },
   "ui.RemoveMemberSelect": {
     "msgid": "§2 Select the member you want to remove:",
-    "msgstr": ""
+    "msgstr": "§2 Valitse poistettava jäsen:"
   },
   "ui.SelectLang": {
     "msgid": "§2 Select an operation from the language menu:",
-    "msgstr": ""
+    "msgstr": "§2 Valitse toiminto kielivalikosta:"
   },
   "ui.langList": {
     "msgid": "§0 Language List",
-    "msgstr": ""
+    "msgstr": "§0 Kieliluettelo"
   },
   "ui.langChange": {
     "msgid": "§0 Change Language",
-    "msgstr": ""
+    "msgstr": "§0 Vaihda kieli"
   },
   "ui.langChange1": {
     "msgid": "§2 Please select the language you want to change to:",
-    "msgstr": ""
+    "msgstr": "§2 Valitse kieli, johon haluat vaihtaa:"
   },
   "ui.FromError": {
     "msgid": "§c An error occurred while displaying the form:",
-    "msgstr": ""
+    "msgstr": "§c Virhe lomakkeen näyttämisen aikana:"
   },
   "back": {
     "msgid": "§2 Back",
-    "msgstr": ""
+    "msgstr": "§2 Takaisin"
   },
   "command.report.reportNotPlayer": {
     "msgid": "§f>>§4Reported player not found",
-    "msgstr": ""
+    "msgstr": "§f>>§4Ilmoitettua pelaajaa ei löydy"
   },
   "command.offhand.NotEnchant": {
     "msgid": "§f>>§6Enchanted items §4cannot be equipped in the offhand",
-    "msgstr": ""
+    "msgstr": "§f>>§6Lumottuja esineitä §4ei voi varustaa toiseen käteen"
   },
   "command.offhand.alreadyOffhand": {
     "msgid": "§f>>§6Offhand item§4 already exists",
-    "msgstr": ""
+    "msgstr": "§f>>§6Toisen käden esine§4 on jo olemassa"
   },
   "command.offhand.OffhandItem": {
     "msgid": "§f>>§aOffhand item set.",
-    "msgstr": ""
+    "msgstr": "§f>>§aToisen käden esine asetettu."
   },
   "command.offhand.NoMainHand": {
     "msgid": "§f>>§6No item in mainhand.",
-    "msgstr": ""
+    "msgstr": "§f>>§6Pääkädessä ei ole esinettä."
   },
   "command.offhand.RemoveOffhand": {
     "msgid": "§f>>§aOffhand item Remove",
-    "msgstr": ""
+    "msgstr": "§f>>§aToisen käden esine poistettu"
   },
   "command.offhand.offhandUsage": {
     "msgid": "§f>>§b Invalid argument Use -set",
-    "msgstr": ""
+    "msgstr": "§f>>§b Virheellinen argumentti Käytä -set"
   },
   "command.help.invalid_page_number": {
     "msgid": "§f>>§l§4Invalid page number",
-    "msgstr": ""
+    "msgstr": "§f>>§l§4Virheellinen sivunumero"
   },
   "command.help.helpPage": {
     "msgid": "§2--- Showing help page {pageNumber} of {totalPages} ({PREFIX}help <page: int>) ---\n",
-    "msgstr": ""
+    "msgstr": "§2--- Näytetään ohjesivu {pageNumber} / {totalPages} ({PREFIX}help <sivu: kokonaisluku>) ---\n"
   },
   "command.warn.WarnTarget": {
     "msgid": "§f>>§4You have been warned. §eReason§f: {reason}. §6Total warnings§f: {warnings} §bIf you are warned more than 3 times, you will be KICKED!",
-    "msgstr": ""
+    "msgstr": "§f>>§4Sinut on varoitettu. §eSyy§f: {reason}. §6Varoituksia yhteensä§f: {warnings} §bJos sinut varoitetaan enemmän kuin 3 kertaa, sinut POTKAISTAAN ULOS!"
   },
   "command.warn.WarnPlayer": {
     "msgid": "§f>>§aYou have warned §b{target}. §eReason§f: {reason}. §6Total warnings§f: {warnings}",
-    "msgstr": ""
+    "msgstr": "§f>>§aOlet varoittanut käyttäjää §b{target}. §eSyy§f: {reason}. §6Varoituksia yhteensä§f: {warnings}"
   },
   "command.warn.WarnKickMes": {
     "msgid": "§f>>§c{target} §ahas been kicked for receiving §e{warnings} warnings.",
-    "msgstr": ""
+    "msgstr": "§f>>§c{target} §aon potkaistu ulos saatuaan §e{warnings} varoitusta."
   },
   "command.staff.NoFreecam": {
     "msgid": "§f>>§cYou must use -exit before using another freecam option.",
-    "msgstr": ""
+    "msgstr": "§f>>§cSinun on käytettävä -exit ennen toisen vapaa kamera -vaihtoehdon käyttöä."
   },
   "command.report.reportSubmit": {
     "msgid": "§f>>§aReport submitted successfully",
-    "msgstr": ""
+    "msgstr": "§f>>§aIlmoitus lähetetty onnistuneesti"
   },
   "command.about.about": {
     "msgid": [
@@ -414,321 +426,344 @@
       "§a== Message from the Developer ==",
       "We welcome your feedback to make ChestLockAddon a better addon."
     ],
-    "msgstr": ""
+    "msgstr": [
+      "§a== Tietoja ChestLockAddonista ==",
+      "",
+      "ChestLockAddon on hyödyllinen apulisäosa Minecraft-versiolle 1.21.40, joka tarjoaa arkun suojauksen ja paljon muuta.",
+      "",
+      "§b== Pääominaisuudet ==",
+      "• Arkun suojaus: Suojaa arkut muilta pelaajilta.",
+      "• Monikielinen tuki: Vaihda kieliasetusta lang-komennolla.",
+      "• Teleportointipyyntö: Lähetä teleportointipyyntö toiselle pelaajalle tpa-komennolla.",
+      "• Ja paljon muuta: Tulevaisuudessa lisätään lisää hyödyllisiä komentoja.",
+      "",
+      "§b== Linkit ==",
+      "• GitHub: https://github.com/gamelist1990/ChestLockAddon",
+      "• YouTube: https://www.youtube.com/@PEXkoukunn",
+      "• Discord: https://discord.gg/GJyqBm7Pyd",
+      "",
+      "§c== Huomautukset ==",
+      "Tämä lisäosa on kehitteillä ja saattaa sisältää odottamattomia virheitä. Jos löydät virheitä, ilmoita niistä GitHubissa tai Discordissa.",
+      "",
+      "§a== Viesti kehittäjältä ==",
+      "Otamme mielellämme palautetta vastaan tehdäksemme ChestLockAddonista paremman lisäosan."
+    ]
   },
   "server.ServerVersion": {
     "msgid": [
       "§bThis ChestLockAddon is running version {version}"
     ],
-    "msgstr": ""
+    "msgstr": [
+      "§bTämä ChestLockAddon käyttää versiota {version}"
+    ]
   },
   "server.Invalid": {
     "msgid": "§c Invalid argument.",
-    "msgstr": ""
+    "msgstr": "§c Virheellinen argumentti."
   },
   "server.PlayerNotFound": {
     "msgid": "§cPlayer not found! Make sure you're in a valid location.",
-    "msgstr": ""
+    "msgstr": "§cPelaajaa ei löydy! Varmista, että olet kelvollisessa sijainnissa."
   },
   "server.closeChat": {
     "msgid": "§a == Close The Chat Panel ==",
-    "msgstr": ""
+    "msgstr": "§a == Sulje chat-paneeli =="
   },
   "server.desabledCom": {
     "msgid": "§c Unregistered or disabled command.",
-    "msgstr": ""
+    "msgstr": "§c Rekisteröimätön tai poistettu komento käytöstä."
   },
   "server.desableComSuggest": {
     "msgid": "§6 Invalid command. Did you mean: {possibleCommands}? If so, answer {prefix}yes",
-    "msgstr": ""
+    "msgstr": "§6 Virheellinen komento. Tarkoittiko: {possibleCommands}? Jos kyllä, vastaa {prefix}kyllä"
   },
   "server.AllowTagCom": {
     "msgid": "§c Only players with an authorized tag can use this command.",
-    "msgstr": ""
+    "msgstr": "§c Vain pelaajat, joilla on valtuutettu tunnus, voivat käyttää tätä komentoa."
   },
   "server.invalidCom": {
     "msgid": "§6 Invalid command. Please make sure it is correct. Commands used: {commandName}",
-    "msgstr": ""
+    "msgstr": "§6 Virheellinen komento. Varmista, että se on oikein. Käytetyt komennot: {commandName}"
   },
   "server.unavailable": {
     "msgid": "§c You do not have permission to do that.",
-    "msgstr": ""
+    "msgstr": "§c Sinulla ei ole oikeutta tehdä tätä."
   },
   "command.lore.UsageLore": {
     "msgid": "§3Usage: {prefix}lore -set \"<lore content>\" or {prefix}lore -remove \"<lore content>\" or {prefix}lore -rename \"<new name>\" or {prefix}lore -command.ClearLore",
-    "msgstr": ""
+    "msgstr": "§3Käyttö: {prefix}lore -set \"<kuvausteksti>\" tai {prefix}lore -remove \"<kuvausteksti>\" tai {prefix}lore -rename \"<uusi nimi>\" tai {prefix}lore -command.ClearLore"
   },
   "command.lore.AddLore": {
     "msgid": "§aLore added, please check.",
-    "msgstr": ""
+    "msgstr": "§aKuvausteksti lisätty, ole hyvä ja tarkista."
   },
   "command.lore.takeItem": {
     "msgid": "§cPlease hold the item.",
-    "msgstr": ""
+    "msgstr": "§cOle hyvä ja pidä esinettä kädessäsi."
   },
   "command.lore.NotFoundLore": {
     "msgid": "§cLore not found.",
-    "msgstr": ""
+    "msgstr": "§cKuvaustekstiä ei löydy."
   },
   "command.lore.RemoveLore": {
     "msgid": "§aLore deleted. Please check.",
-    "msgstr": ""
+    "msgstr": "§aKuvausteksti poistettu. Ole hyvä ja tarkista."
   },
   "command.lore.ChangeNames": {
     "msgid": "§aItem renamed.",
-    "msgstr": ""
+    "msgstr": "§aEsine on nimetty uudelleen."
   },
   "command.edit.FirstPointSet": {
     "msgid": "§f>>§a First point set.",
-    "msgstr": ""
+    "msgstr": "§f>>§a Ensimmäinen piste asetettu."
   },
   "command.edit.SecondPointSet": {
     "msgid": "§f>>§6 Second point set.",
-    "msgstr": ""
+    "msgstr": "§f>>§6 Toinen piste asetettu."
   },
   "command.edit.SelectionCompleted": {
     "msgid": "§f>>§a Selection completed.",
-    "msgstr": ""
+    "msgstr": "§f>>§a Valinta valmis."
   },
   "command.edit.PointSet": {
     "msgid": "§f>> §aPoint set.",
-    "msgstr": ""
+    "msgstr": "§f>> §a Piste asetettu."
   },
   "command.edit.WallsCreated": {
     "msgid": "§f>>§a Walls created.",
-    "msgstr": ""
+    "msgstr": "§f>>§a Seinät luotu."
   },
   "command.edit.InvalidBlockId": {
     "msgid": "§f>>§c Invalid block ID.",
-    "msgstr": ""
+    "msgstr": "§f>>§c Virheellinen lohko-ID."
   },
   "command.edit.OutlineCreated": {
     "msgid": "§f>>§a Outline created.",
-    "msgstr": ""
+    "msgstr": "§f>>§a Ääriviiva luotu."
   },
   "command.edit.FilledCircleCreated": {
     "msgid": "§f>>§a Filled circle created.",
-    "msgstr": ""
+    "msgstr": "§f>>§a Täytetty ympyrä luotu."
   },
   "command.edit.RangeSet": {
     "msgid": "§f>>§a Range set with the specified block ({blockId}).",
-    "msgstr": ""
+    "msgstr": "§f>>§a Alue asetettu määritetyllä lohkolla ({blockId})."
   },
   "command.edit.RangeCleared": {
     "msgid": "§f>>§a Range cleared.",
-    "msgstr": ""
+    "msgstr": "§f>>§a Alue tyhjennetty."
   },
   "command.edit.WallsToolSelected": {
     "msgid": "§f>>§a Walls tool selected. (Block ID: {blockId})",
-    "msgstr": ""
+    "msgstr": "§f>>§a Seinätyökalu valittu. (Lohko-ID: {blockId})"
   },
   "command.edit.OutlineToolSelected": {
     "msgid": "§f>>§a Outline tool selected. (Radius: {radius}, Block ID: {blockId})",
-    "msgstr": ""
+    "msgstr": "§f>>§a Ääriviivatyökalu valittu. (Säde: {radius}, Lohko-ID: {blockId})"
   },
   "command.edit.FilledCircleToolSelected": {
     "msgid": "§f>>§a Filled circle tool selected. (Radius: {radius}, Block ID: {blockId})",
-    "msgstr": ""
+    "msgstr": "§f>>§a Täytetty ympyrätyökalu valittu. (Säde: {radius}, Lohko-ID: {blockId})"
   },
   "command.edit.ToolExited": {
     "msgid": "§f>>§a Tool exited.",
-    "msgstr": ""
+    "msgstr": "§f>>§a Työkalu poistettu käytöstä."
   },
   "command.edit.ToolOptions": {
     "msgid": "§f>> §3Tool options: -wall <blockID>, -outline <radius> <blockID>, -filledCircle <radius> <blockID>, -exit",
-    "msgstr": ""
+    "msgstr": "§f>> §3Työkaluvaihtoehdot: -wall <lohko-ID>, -outline <säde> <lohko-ID>, -filledCircle <säde> <lohko-ID>, -exit"
   },
   "command.edit.StartRangeSelection2": {
     "msgid": "§f>>§a Range selection started. Please break two blocks.",
-    "msgstr": ""
+    "msgstr": "§f>>§a Alueen valinta aloitettu. Ole hyvä ja riko kaksi lohkoa."
   },
   "command.edit.StartRangeSelection": {
     "msgid": "§f>>§a Range selection started. Hold a wooden hoe and break a block.",
-    "msgstr": ""
+    "msgstr": "§f>>§a Alueen valinta aloitettu. Pidä puista kuokkaa kädessä ja riko lohko."
   },
   "command.edit.InvalidCommandUsage": {
     "msgid": "§f>>§3 Invalid command usage: /{prefix}edit -set <blockID> | /{prefix}edit -clear | /{prefix}edit tool <options> | /{prefix}edit start",
-    "msgstr": ""
+    "msgstr": "§f>>§3 Virheellinen komennon käyttö: /{prefix}edit -set <lohko-ID> | /{prefix}edit -clear | /{prefix}edit tool <vaihtoehdot> | /{prefix}edit start"
   },
   "command.edit.TheFirestBlock": {
     "msgid": "§a1. First block recorded. Destroy the block again.",
-    "msgstr": ""
+    "msgstr": "§a1. Ensimmäinen lohko tallennettu. Riko lohko uudelleen."
   },
   "command.edit.TheSecond": {
     "msgid": "§a2. Second block recorded. Warp gate has been set.",
-    "msgstr": ""
+    "msgstr": "§a2. Toinen lohko tallennettu. Warp-portti on asetettu."
   },
   "command.warp.WarpUsage": {
     "msgid": "§c Usage: warpgate -create <gate name> <x> <y> <z>",
-    "msgstr": ""
+    "msgstr": "§c Käyttö: warpgate -create <portin nimi> <x> <y> <z>"
   },
   "command.warp.AlreadyWarp": {
     "msgid": "§c A warp gate with that name already exists.",
-    "msgstr": ""
+    "msgstr": "§c Samanniminen Warp-portti on jo olemassa."
   },
   "command.warp.CreateGate": {
     "msgid": "§a Creating warp gate: {gatename} \n §a Next, destroy two blocks to define the gate's boundaries.",
-    "msgstr": ""
+    "msgstr": "§a Luodaan warp-porttia: {gatename} \n §a Seuraavaksi tuhoa kaksi lohkoa määrittääksesi portin rajat."
   },
   "command.warp.NotWarp": {
     "msgid": "§c The specified warp gate does not exist.",
-    "msgstr": ""
+    "msgstr": "§c Määritettyä Warp-porttia ei ole olemassa."
   },
   "command.warp.deleteWarp": {
     "msgid": "§a Gate removed: {gatename}",
-    "msgstr": ""
+    "msgstr": "§a Portti poistettu: {gatename}"
   },
   "command.warp.NotWarpSetting": {
     "msgid": "§c No warp gate is set.",
-    "msgstr": ""
+    "msgstr": "§c Warp-porttia ei ole asetettu."
   },
   "command.warp.listGate": {
     "msgid": "§a List of warp gates:\n",
-    "msgstr": ""
+    "msgstr": "§a Warp-porttien luettelo:\n"
   },
   "command.warp.UsageGate": {
     "msgid": "§c Invalid subcommand usage: {prefix}warpgate <-create/delete/list> [name] |\n§c Create command only: -create [name] [x,y,z]",
-    "msgstr": ""
+    "msgstr": "§c Virheellinen alikomennot käyttö: {prefix}warpgate <-create/delete/list> [nimi] |\n§c Vain luontikomento: -create [nimi] [x,y,z]"
   },
   "command.warp.TPGATE": {
     "msgid": "§a Teleported to warp gate: {gate}.",
-    "msgstr": ""
+    "msgstr": "§a Teleportattu Warp-porttiin: {gate}."
   },
   "command.join.Joinenabled": {
     "msgid": "§a Enabled join messages.",
-    "msgstr": ""
+    "msgstr": "§a Liittymisviestit käytössä."
   },
   "command.join.Joindisabled": {
     "msgid": "§c Disabled join messages.",
-    "msgstr": ""
+    "msgstr": "§c Liittymisviestit pois käytöstä."
   },
   "command.join.UsageJoin": {
     "msgid": "§c Usage: join <-true/-false/-settings>",
-    "msgstr": ""
+    "msgstr": "§c Käyttö: join <-true/-false/-settings>"
   },
   "command.join.welcome": {
     "msgid": "§7 Welcome to My Server!",
-    "msgstr": ""
+    "msgstr": "§7 Tervetuloa palvelimelleni!"
   },
   "command.join.Rulejoin": {
     "msgid": "§6 Server Rules!!",
-    "msgstr": ""
+    "msgstr": "§6 Palvelimen säännöt!!"
   },
   "command.join.RulesNumber": {
     "msgid": "§b Number of Rules:",
-    "msgstr": ""
+    "msgstr": "§b Sääntöjen määrä:"
   },
   "command.join.RulesEnter": {
     "msgid": "§0 Enter the number of rules:",
-    "msgstr": ""
+    "msgstr": "§0 Kirjoita sääntöjen määrä:"
   },
   "command.join.RuleSettings": {
     "msgid": "§6 Rule Settings",
-    "msgstr": ""
+    "msgstr": "§6 Sääntöasetukset"
   },
   "command.join.Rules": {
     "msgid": "§b Rule {i}:",
-    "msgstr": ""
+    "msgstr": "§b Sääntö {i}:"
   },
   "command.join.RuleEnter2": {
     "msgid": "§0 Enter rule {i}:",
-    "msgstr": ""
+    "msgstr": "§0 Kirjoita sääntö {i}:"
   },
   "command.join.RuleUpdate": {
     "msgid": "§a Rules updated!",
-    "msgstr": ""
+    "msgstr": "§a Säännöt päivitetty!"
   },
   "command.join.joinSettings": {
     "msgid": "§6 Join Log Settings",
-    "msgstr": ""
+    "msgstr": "§6 Liittymislokiasetukset"
   },
   "commnad.tpa.tpaRequestSent": {
     "msgid": "§a TPA request sent to§b {playerName}.",
-    "msgstr": ""
+    "msgstr": "§a TPA-pyyntö lähetetty käyttäjälle §b{playerName}."
   },
   "commnad.tpa.tpaRequestAlreadySent": {
     "msgid": "§c You have already sent a TPA request to§6 {playerName}!",
-    "msgstr": ""
+    "msgstr": "§c Olet jo lähettänyt TPA-pyynnön käyttäjälle §6{playerName}!"
   },
   "commnad.tpa.tpaRequestReceived": {
     "msgid": "§2 Received a TPA request from §b{playerName}.",
-    "msgstr": ""
+    "msgstr": "§2 Vastaanotettu TPA-pyyntö käyttäjältä §b{playerName}."
   },
   "commnad.tpa.noPendingTpaRequests": {
     "msgid": "§3 You have no pending TPA requests.",
-    "msgstr": ""
+    "msgstr": "§3 Sinulla ei ole odottavia TPA-pyyntöjä."
   },
   "commnad.tpa.invalidTpaRequest": {
     "msgid": "§c Invalid TPA request.",
-    "msgstr": ""
+    "msgstr": "§c Virheellinen TPA-pyyntö."
   },
   "commnad.tpa.requesterNotFound": {
     "msgid": "§c Requester not found.",
-    "msgstr": ""
+    "msgstr": "§c Pyytäjää ei löydy."
   },
   "commnad.tpa.teleportedToPlayer": {
     "msgid": "§a Teleported to §b{playerName}.",
-    "msgstr": ""
+    "msgstr": "§a Teleportattu käyttäjälle §b{playerName}."
   },
   "commnad.tpa.tpaRequestAccepted": {
     "msgid": "§a §b{playerName} §ahas accepted your TPA request.",
-    "msgstr": ""
+    "msgstr": "§a §b{playerName} §aon hyväksynyt TPA-pyyntösi."
   },
   "commnad.tpa.tpaRequestAcceptes": {
     "msgid": "§a TPA request from §b{playerName}§a accepted!",
-    "msgstr": ""
+    "msgstr": "§a TPA-pyyntö käyttäjältä §b{playerName}§a hyväksytty!"
   },
   "commnad.tpa.cannotTpaToSelf": {
     "msgid": "§c You cannot send a TPA request to yourself.",
-    "msgstr": ""
+    "msgstr": "§c Et voi lähettää TPA-pyyntöä itsellesi."
   },
   "commnad.tpa.invalidTpaCommandUsage": {
     "msgid": "§3 Invalid usage. Use {prefix}tpa -r <player> to send a request, or {prefix}tpa -a <player> to accept.",
-    "msgstr": ""
+    "msgstr": "§3 Virheellinen käyttö. Käytä {prefix}tpa -r <pelaaja> lähettääksesi pyynnön, tai {prefix}tpa -a <pelaaja> hyväksyäksesi."
   },
   "commnad.tpa.tpaRequestTimedOut": {
     "msgid": "§3 TPA request from §6{playerName}§3 has timed out.",
-    "msgstr": ""
+    "msgstr": "§3 TPA-pyyntö käyttäjältä §6{playerName}§3 on vanhentunut."
   },
   "commnad.item.FullInv": {
     "msgid": "§c Your inventory is full. Items cannot be granted.",
-    "msgstr": ""
+    "msgstr": "§c Varastosi on täynnä. Esineitä ei voi antaa."
   },
   "commnad.item.AlreadyInv": {
     "msgid": "§c That UI item already exists in your inventory.",
-    "msgstr": ""
+    "msgstr": "§c Kyseinen käyttöliittymäesine on jo varastossasi."
   },
   "commnad.item.AddInv": {
     "msgid": "§a Item added to your inventory! (Please check)",
-    "msgstr": ""
+    "msgstr": "§a Esine lisätty varastoosi! (Ole hyvä ja tarkista)"
   },
   "commands.list.usage": {
     "msgid": "§a Usage: {prefix}list show <playerName> or {prefix}list all",
-    "msgstr": ""
+    "msgstr": "§a Käyttö: {prefix}list show <pelaajan nimi> tai {prefix}list all"
   },
   "commands.list.playerInfo": {
     "msgid": "§6 ==== Player Info =====\n §2Name: §f{name},\n §2ID: §f{TargetID},\n §2dimension:§f{dimension}\n §2Location: §f({TargetX}, {TargetY}, {TargetZ}),\n §2Health: §f{health},\n §2Game Mode:§f {GameMode},\n §2Ping:§f {ping}\n §2Device: §f{device}\n §2Memory: §f{memory}\n §2Input Type: §f{inputType}\n §6 ===========",
-    "msgstr": ""
+    "msgstr": "§6 ==== Pelaajan tiedot =====\n §2Nimi: §f{name},\n §2ID: §f{TargetID},\n §2ulottuvuus:§f{dimension}\n §2Sijainti: §f({TargetX}, {TargetY}, {TargetZ}),\n §2Terveys: §f{health},\n §2Pelitila:§f {GameMode},\n §2Ping:§f {ping}\n §2Laite: §f{device}\n §2Muisti: §f{memory}\n §2Syöttötapa: §f{inputType}\n §6 ==========="
   },
   "commands.list.playerNotFound": {
     "msgid": "§c Player not found: §6{tragetplayer}",
-    "msgstr": ""
+    "msgstr": "§c Pelaajaa ei löydy: §6{tragetplayer}"
   },
   "command.lang.lang_list": {
     "msgid": "§a Available Languages:\n",
-    "msgstr": ""
+    "msgstr": "§a Käytettävissä olevat kielet:\n"
   },
   "command.lang.lang_change": {
     "msgid": "§a Language changed to: {language}",
-    "msgstr": ""
+    "msgstr": "§a Kieli vaihdettu: {language}"
   },
   "command.lang.lang_failed": {
     "msgid": "§c Failed to change language to: {language}",
-    "msgstr": ""
+    "msgstr": "§c Kielen vaihtaminen kieleen: {language} epäonnistui"
   },
   "command.lang.lang_invalid": {
     "msgid": "§c Invalid command usage. Use /lang list or /lang change <language_code>",
-    "msgstr": ""
+    "msgstr": "§c Virheellinen komennon käyttö. Käytä /lang list tai /lang change <kielikoodi>"
   },
   "command.chest.chest_help": {
     "msgid": [
@@ -746,87 +781,101 @@
       "  §bAuthor: Koukun        - License AGPL-3.0",
       "  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
     ],
-    "msgstr": ""
+    "msgstr": [
+      "§c Virheellinen komento.",
+      "§a Arkun suojauskomennon käyttö:",
+      "  §bchest lock        - Lukitsee arkun",
+      "  §bchest info       - Näyttää tiedot lähimmästä arkusta",
+      "  §bchest unlock      - Avaa arkun lukituksen",
+      "  §bchest protect <lukitse/avaa> - Vaihtaa arkun suojauksen päälle/pois",
+      "  §bchest add <pelaajan nimi>   - Lisää jäsenen arkkuun",
+      "  §bchest remove <pelaajan nimi>  - Poistaa jäsenen arkusta",
+      "  §bchest all        - Näyttää luettelon arkun jäsenistä",
+      "  §bchest list        - Näyttää luettelon arkuista",
+      "  §b_______________________________________",
+      "  §bTekijä: Koukun        - Lisenssi AGPL-3.0",
+      "  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
+    ]
   },
   "command.chest.MaxChestLimitReached": {
     "msgid": "§c The installation limit of §d{limit}§c has been reached.",
-    "msgstr": "§c{protectChest} asennusraja on jo saavutettu"
+    "msgstr": "§c{protectChest} asennusraja on jo saavutettu."
   },
   "command.chest.chestLocksCount": {
     "msgid": "§a You are currently protecting §6{protectChest}§a chests.",
-    "msgstr": "§aSuojaat tällä hetkellä {protectChest} arkkua"
+    "msgstr": "§a Suojaat tällä hetkellä §6{protectChest}§a arkkua."
   },
   "command.chest.ChestlistCom": {
     "msgid": "§a You have protected §6{playerChests}§a chests:",
-    "msgstr": "§aOlet suojannut {playerChests} arkkua:"
+    "msgstr": "§a Olet suojannut §6{playerChests}§a arkkua:"
   },
   "command.chest.chestlocation": {
     "msgid": "§e - Location: {key}",
-    "msgstr": ""
+    "msgstr": "§e - Sijainti: {key}"
   },
   "command.chest.nearby_chest_info": {
     "msgid": "§a ---- Nearby Chest Info ----",
-    "msgstr": "§a---- Lähellä olevan arkun tiedot ----"
+    "msgstr": "§a ---- Lähellä olevan arkun tiedot ----"
   },
   "command.chest.coordinate_x": {
     "msgid": "§b X: §e",
-    "msgstr": "§bX: §e"
+    "msgstr": "§b X: §e"
   },
   "command.chest.coordinate_y": {
     "msgid": "§b Y: §e",
-    "msgstr": "§bY: §e"
+    "msgstr": "§b Y: §e"
   },
   "command.chest.coordinate_z": {
     "msgid": "§b Z: §e",
-    "msgstr": "§bZ: §e"
+    "msgstr": "§b Z: §e"
   },
   "command.chest.protected": {
     "msgid": "§a Protected",
-    "msgstr": ""
+    "msgstr": "§a Suojattu"
   },
   "command.chest.owner": {
     "msgid": "§b Owner: §e",
-    "msgstr": ""
+    "msgstr": "§b Omistaja: §e"
   },
   "command.chest.members": {
     "msgid": "§b Members: §e",
-    "msgstr": ""
+    "msgstr": "§b Jäsenet: §e"
   },
   "command.chest.large_chest": {
     "msgid": "§b Large Chest: §e",
-    "msgstr": "§bIso arkku: §e"
+    "msgstr": "§b Iso arkku: §e"
   },
   "command.chest.yes": {
     "msgid": "Yes",
-    "msgstr": ""
+    "msgstr": "Kyllä"
   },
   "command.chest.no": {
     "msgid": "No",
-    "msgstr": ""
+    "msgstr": "Ei"
   },
   "command.chest.not_protected": {
     "msgid": "§c Not Protected",
-    "msgstr": "§cEi suojattu"
+    "msgstr": "§c Ei suojattu"
   },
   "command.chest.notFound_chest": {
     "msgid": "§c Cannot find chest.",
-    "msgstr": "§cArkkua ei löydy"
+    "msgstr": "§c Arkkua ei löydy."
   },
   "command.chest.chest_lookstate": {
     "msgid": "§a Chest protection: {lcokstate}",
-    "msgstr": "§a arkku suojattu {lcokstate}"
+    "msgstr": "§a Arkun suojaus: {lcokstate}"
   },
   "command.chest.chest_removeData": {
     "msgid": "§a All chest protection data has been reset.",
-    "msgstr": "§aKaikki arkun suojaus tiedot on nollattu."
+    "msgstr": "§a Kaikki arkun suojaustiedot on nollattu."
   },
   "command.chest.ContributedToChest": {
     "msgid": "§a Thanks for going out of your way to make it a large chest",
-    "msgstr": ""
+    "msgstr": "§a Kiitos vaivannäöstäsi tehdäksesi siitä suuren arkun"
   },
   "command.chest.isLookChest": {
     "msgid": "§c This chest is locked by §b{owner}",
-    "msgstr": ""
+    "msgstr": "§c Tämän arkun on lukinnut §b{owner}"
   },
   "command.chest.isProChest": {
     "msgid": "§c This chest is protected!",
@@ -834,138 +883,138 @@
   },
   "command.chest.ProChestBreak": {
     "msgid": "§a Protected chest destroyed. Protection data also deleted.",
-    "msgstr": "§a Suojattu arkku on tuhottu. Suojatut tiedot on myös poistettu."
+    "msgstr": "§a Suojattu arkku tuhottu. Suojaustiedot myös poistettu."
   },
   "command.chest.lockChange": {
     "msgid": "§a Chest protection state changed to: {lock}",
-    "msgstr": "§a Arkkujen suojaustila on vaihdettu tilaan"
+    "msgstr": "§a Arkun suojaustila vaihdettu tilaan: {lock}"
   },
   "command.chest.NotChest": {
     "msgid": "§c You are not authorized to access this chest.",
-    "msgstr": "§cSinulla ei ole oikeuksia käyttää tätä arkkua."
+    "msgstr": "§c Sinulla ei ole oikeutta käyttää tätä arkkua."
   },
   "command.chest.AddM": {
     "msgid": "§b{member} §aadded as a member at location: §6{chestLocation}",
-    "msgstr": ""
+    "msgstr": "§b{member} §alisätty jäseneksi sijaintiin: §6{chestLocation}"
   },
   "command.chest.addYouM": {
     "msgid": "§b{playerName} §ahas added you to the following chests: §6{chestLocation}",
-    "msgstr": ""
+    "msgstr": "§b{playerName} §aon lisännyt sinut seuraaviin arkuihin: §6{chestLocation}"
   },
   "command.chest.RemoveYouM": {
     "msgid": "§b{playerName} §ahas removed you from the following chests: §6{chestLocation}",
-    "msgstr": ""
+    "msgstr": "§b{playerName} §aon poistanut sinut seuraavista arkuista: §6{chestLocation}"
   },
   "command.chest.MAlreday": {
     "msgid": "§b{member}§c is already a member.",
-    "msgstr": ""
+    "msgstr": "§b{member}§c on jo jäsen."
   },
   "command.chest.RemoveM": {
     "msgid": "§b{member} §ahas been removed from members.",
-    "msgstr": ""
+    "msgstr": "§b{member} §aon poistettu jäsenistä."
   },
   "command.chest.NotM": {
     "msgid": "§c Not a member.",
-    "msgstr": ""
+    "msgstr": "§c Ei jäsen."
   },
   "command.chest.allM": {
     "msgid": "§a Members: ",
-    "msgstr": ""
+    "msgstr": "§a Jäsenet: "
   },
   "command.chest.NotFoundM": {
     "msgid": "§c No members.",
-    "msgstr": ""
+    "msgstr": "§c Ei jäseniä."
   },
   "command.chest.ExplosionWarning": {
     "msgid": "§c Please do not explode that.",
-    "msgstr": ""
+    "msgstr": "§c Ole hyvä älä räjäytä sitä."
   },
   "command.chest.cannotPlaceItem": {
     "msgid": "§c You are not allowed to place pistons in this area.",
-    "msgstr": ""
+    "msgstr": "§c Et saa asettaa mäntiä tälle alueelle."
   },
   "command.hub.move": {
     "msgid": "§l§f>> §aHUB move in §b{countdown}§a seconds",
-    "msgstr": ""
+    "msgstr": "§l§f>> §aHUB siirtyy §b{countdown}§a sekunnin kuluttua"
   },
   "command.invsee.title": {
     "msgid": "Inventory for player {targetPlayer}",
-    "msgstr": ""
+    "msgstr": "Pelaajan {targetPlayer} varasto"
   },
   "command.sumo.15block": {
     "msgid": "§l§f>> §cReset due to being more than 15 blocks away from opponent",
-    "msgstr": ""
+    "msgstr": "§l§f>> §cNollattu koska olet enemmän kuin 15 lohkon päässä vastustajasta"
   },
   "command.sumo.match": {
     "msgid": "§l§f>> §cAll slots are currently in use§6(Please wait until a slot becomes available)",
-    "msgstr": ""
+    "msgstr": "§l§f>> §cKaikki paikat ovat tällä hetkellä käytössä§6(Ole hyvä ja odota kunnes paikka vapautuu)"
   },
   "command.sumo.play1": {
     "msgid": "§l§f>> §aStart playing against §b{hitPlayer}§a!",
-    "msgstr": ""
+    "msgstr": "§l§f>> §aAloita pelaaminen vastaan §b{hitPlayer}§a!"
   },
   "command.sumo.play2": {
     "msgid": "§l§f>> §aStart playing against §b{attackingPlayer}§a!",
-    "msgstr": ""
+    "msgstr": "§l§f>> §aAloita pelaaminen vastaan §b{attackingPlayer}§a!"
   },
   "command.sumo.start": {
     "msgid": "§l§f>> §b{attackingPlayer} §6vs §b{hitPlayer} §a(Tag: {sumoTag})§r",
-    "msgstr": ""
+    "msgstr": "§l§f>> §b{attackingPlayer} §6vs §b{hitPlayer} §a(Tunniste: {sumoTag})§r"
   },
   "command.sumo.attackUser": {
     "msgid": "§cDo not attack players other than the one you are playing against",
-    "msgstr": ""
+    "msgstr": "§cÄlä hyökkää muiden kuin vastustajasi pelaajien kimppuun"
   },
   "command.sumo.attackOther": {
     "msgid": "§cYou cannot attack players who are in a match",
-    "msgstr": ""
+    "msgstr": "§cEt voi hyökätä pelaajien kimppuun, jotka ovat ottelussa"
   },
   "command.sumo.Win": {
     "msgid": "§l§f>> §a You are Win ! §f<<",
-    "msgstr": ""
+    "msgstr": "§l§f>> §a Olet voittaja! §f<<"
   },
   "command.ban.alreadyBanned": {
     "msgid": "§l§f>>　§cPlayer is already banned:",
-    "msgstr": ""
+    "msgstr": "§l§f>>　§cPelaaja on jo porttikiellossa:"
   },
   "command.ban.banSuccess": {
     "msgid": "§l§f>> §aSuccessfully banned player:",
-    "msgstr": ""
+    "msgstr": "§l§f>> §aPelaajan porttikielto onnistui:"
   },
   "command.ban.reason": {
     "msgid": "§e, reason: §c{reason}",
-    "msgstr": ""
+    "msgstr": "§e, syy: §c{reason}"
   },
   "command.ban.duration": {
     "msgid": "§a §e, duration: §c{duration} {second}",
-    "msgstr": ""
+    "msgstr": "§a §e, kesto: §c{duration} {second}"
   },
   "command.ban.second": {
     "msgid": "seconds",
-    "msgstr": ""
+    "msgstr": "sekuntia"
   },
   "command.ban.noDuration": {
     "msgid": "§e, no duration",
-    "msgstr": ""
+    "msgstr": "§e, ei kestoa"
   },
   "command.ban.isOnline": {
     "msgid": "§l§f>> §cPlayer is online",
-    "msgstr": ""
+    "msgstr": "§l§f>> §cPelaaja on paikalla"
   },
   "command.ban.unbanSuccess": {
     "msgid": "§l§f>> §aSuccessfully unbanned player",
-    "msgstr": ""
+    "msgstr": "§l§f>> §aPelaajan porttikielto poistettu onnistuneesti"
   },
   "command.ban.unbanNotFound": {
     "msgid": "§l§f>> §cPlayer not found in ban list",
-    "msgstr": ""
+    "msgstr": "§l§f>> §cPelaajaa ei löydy porttikiellolistasta"
   },
   "command.ban.noBanned": {
     "msgid": "§l§f>> §cThere are no banned players",
-    "msgstr": ""
+    "msgstr": "§l§f>> §cEi ole porttikiellossa olevia pelaajia"
   },
   "command.ban.bannedMessage": {
     "msgid": "§l§f>> §cYou are banned from the server\n§e, Reason: §c{reason}\n§e, Duration: §c{duration}",
-    "msgstr": ""
+    "msgstr": "§l§f>> §cSinut on porttikiellossa palvelimelta\n§e, Syy: §c{reason}\n§e, Kesto: §c{duration}"
   }
 }
