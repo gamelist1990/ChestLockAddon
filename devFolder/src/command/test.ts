@@ -1,127 +1,171 @@
-import { badWords } from "./plugin/AntiCheat/detections/BadList";
+// 全角を半角に変換する関数（変更なし）
+const toHalfWidth = (str: string) => {
+    return str
+        .replace(/[！-～]/g, (char: string) => String.fromCharCode(char.charCodeAt(0) - 0xFEE0))
+        .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (char: string) => String.fromCharCode(char.charCodeAt(0) - 0xFEE0))
+        .replace(/[\u3000]/g, " ");
+};
 
+// 正規化関数を修正（変更なし）
+const normalize = (message: any) => {
+    return toHalfWidth(message)
+        .toLowerCase()
+        .replace(/[ \-\~\@\!\?\/\(\)\[\]\{\}\<\>\,\:\;\+\=\`\~\$\%\^\&\*\|\#._]+/g, '');
+};
+
+// 不適切語リスト
+const badWords = [
+    "3p",
+    "av女優",
+    "gスポット",
+    "ntr",
+    "fuck",
+    "fck",
+    "badd",
+    "bad",
+    "くそ",
+    "ばか",
+];
+
+// スコア設定
+const scoreConfig = {
+    "3p": 10,
+    "av女優": 8,
+    "gスポット": 8,
+    "ntr": 10,
+    "fuck": 10,
+    "fck": 8,
+    "badd": 5,
+    "bad": 5,
+    "くそ": 7,
+    "ばか": 7,
+}
+
+// スコアリングシステムの設定
 const ruleScores = {
-    exactMatch: 2,
-    fuzzyMatch: 1.5,
-    similarMatch: 1,
+    exactMatch: 2,  // 完全一致のスコア
+    fuzzyMatch: 1.5, // あいまい一致のスコア
+    similarMatch: 1  // 類似一致のスコア
 };
 
-//const badWords: string[] = ["fuck", "bad", "crap", "ばか", "アホ", "くそ"];
+// スコアリング関数
+const calculateScore = (normalizedText: string, badWords: string[], scoreConfig: { [key: string]: number }, ruleScores: { exactMatch: number, fuzzyMatch: number, similarMatch: number }): number => {
+    let totalScore = 0;
+    const matchedWords = new Set<string>();
 
-const levenshteinDistance = (s1: string, s2: string): number => {
-    if (s1.length < s2.length) {
-        return levenshteinDistance(s2, s1);
-    }
-
-    if (s2.length === 0) {
-        return s1.length;
-    }
-
-    let previousRow = Array.from({ length: s2.length + 1 }, (_, i) => i);
-
-    for (let i = 0; i < s1.length; i++) {
-        const c1 = s1[i];
-        const currentRow = [i + 1];
-        for (let j = 0; j < s2.length; j++) {
-            const c2 = s2[j];
-            const insertions = previousRow[j + 1] + 1;
-            const deletions = currentRow[j] + 1;
-            const substitutions = previousRow[j] + (c1 !== c2 ? 1 : 0);
-            currentRow.push(Math.min(insertions, deletions, substitutions));
+    for (const word of badWords) {
+        // 完全一致
+        const exactMatchRegex = new RegExp(`(?:^|\\s)${word}(?:$|\\s)`, "g"); // 単語境界 \b を使用して完全一致をチェック, gフラグ追加
+        const exactMatches = normalizedText.matchAll(exactMatchRegex);
+        for (const match of exactMatches) {
+            totalScore += (scoreConfig[word] || 0) * ruleScores.exactMatch;
+            matchedWords.add(match[0].trim()); // マッチした単語を保存
         }
-        previousRow = currentRow;
+        // あいまい一致（部分一致）
+        if (!matchedWords.has(word)) {
+            const fuzzyMatchRegex = new RegExp(`${word}`, "g"); // gフラグ追加
+            const fuzzyMatches = normalizedText.matchAll(fuzzyMatchRegex);
+            for (const _match of fuzzyMatches) {
+                totalScore += (scoreConfig[word] || 0) * ruleScores.fuzzyMatch;
+            }
+        }
+
     }
-    return previousRow[previousRow.length - 1];
+    return totalScore;
 };
 
-const normalize = (message: string): string => {
-    return message.toLowerCase().replace(/[\s\-\_\.\@\!\?\/\(\)\[\]\{\}\<\>\,\:\;\+\=\`\~\$\%\^\&\*\|\#\№]+/g, '');
-};
+// スコアのしきい値
+const scoreThreshold = 10;
 
-const calculateBadWordScore = (message: string): number => {
-    let score = 0;
+// スコアリング結果を判定する関数
+const isMessageInappropriate = (message: string): boolean => {
     const normalizedMessage = normalize(message);
-
-    for (const badWord of badWords) {
-        const normalizedBadWord = normalize(badWord);
-
-        // Exact Match
-        const exactMatchRegex = new RegExp(`\\b${normalizedBadWord}\\b`, 'gi');
-        if (exactMatchRegex.test(normalizedMessage)) {
-            score += ruleScores.exactMatch;
-            continue; // If found exact match, skip other match types
-        }
-
-        // Fuzzy Match
-        let fuzzyMatchScore = 0;
-        for (let i = 0; i <= normalizedMessage.length - normalizedBadWord.length; i++) {
-            const subString = normalizedMessage.substring(i, i + normalizedBadWord.length);
-            const distance = levenshteinDistance(normalizedBadWord, subString);
-            if (distance <= 2) {
-                fuzzyMatchScore += ruleScores.fuzzyMatch * (1 - (distance / 2));
-            }
-        }
-        score += fuzzyMatchScore;
-
-        // Similar Match
-        let similarMatchScore = 0;
-        for (let i = 0; i <= normalizedMessage.length - normalizedBadWord.length; i++) {
-            const subString = normalizedMessage.substring(i, i + normalizedBadWord.length);
-            const distance = levenshteinDistance(normalizedBadWord, subString);
-            const similarityScore = (normalizedBadWord.length - distance) / normalizedBadWord.length;
-
-            if (distance <= 4 && similarityScore > 0.4) {
-                similarMatchScore += ruleScores.similarMatch * similarityScore;
-            }
-        }
-        score += similarMatchScore;
-    }
-
-    return score;
+    const score = calculateScore(normalizedMessage, badWords, scoreConfig, ruleScores);
+    return score >= scoreThreshold;
 };
 
-// テストケース
-const testCases: { input: string; expectedScore: number; description: string; }[] = [
-    { input: "fuck", expectedScore: 2, description: "基本的なテスト (英語)" },
-    { input: "f u c k", expectedScore: 2, description: "スペースあり (英語)" },
-    { input: "fｕｃk", expectedScore: 1.5, description: "全角文字あり (英語)" },
-    { input: "f@ck", expectedScore: 2, description: "記号あり (英語)" },
-    { input: "Ｆｕｃｋ", expectedScore: 2, description: "全角大文字あり (英語)" },
-    { input: "good", expectedScore: 0, description: "不適切語なし (英語)" },
-    { input: "f*ck", expectedScore: 1.5, description: "類似単語、アスタリスクあり (英語)" },
-    { input: "fu", expectedScore: 1.5 * 0.5, description: "あいまい一致のみ (英語)" },
-    { input: "ばか", expectedScore: 2, description: "基本的なテスト (日本語)" },
-    { input: "ば か", expectedScore: 2, description: "スペースあり (日本語)" },
-    { input: "バカ", expectedScore: 1.5, description: "カタカナ (日本語)" },
-    { input: "b a d", expectedScore: 2, description: "スペースあり (英語)" },
-    { input: "b@d b a d", expectedScore: 4, description: "複数の不適切語、記号とスペースあり (英語)" },
-    { input: "くそ", expectedScore: 2, description: "新しい単語のテスト (日本語)" },
-    { input: "く*そ", expectedScore: 1.5, description: "類似単語、アスタリスクあり (日本語)" },
-    { input: "badword", expectedScore: 1.5, description: "bad のあいまいマッチ (英語)" },
-    { input: "kuso", expectedScore: 1.5, description: "くそのあいまいマッチ (日本語)" },
-    { input: "fuckfuck", expectedScore: 4, description: "連続した不適切語 (英語)" },
-    { input: "ばかばか", expectedScore: 4, description: "連続した不適切語 (日本語)" },
-    { input: "f-u_c.k", expectedScore: 2, description: "ハイフン、アンダーバー、ドットあり (英語)" },
-    { input: "ば-か", expectedScore: 2, description: "ハイフンあり (日本語)" },
-    { input: "ｆｕｃｋ", expectedScore: 1.5, description: "全角小文字 (英語)" },
-    { input: "ばか", expectedScore: 2, description: "全角小文字 (日本語)" },
+// テストケースの修正
+const testCases = [
+    // 英語の基本的なケース
+    { input: "fuck", expectedNormalized: "fuck", expectedScore: 20, description: "英語の基本単語" }, // 完全一致
+    { input: "FUCK", expectedNormalized: "fuck", expectedScore: 20, description: "大文字の英語単語" },
+    { input: "f*ck", expectedNormalized: "fck", expectedScore: 16, description: "アスタリスクを含む英語単語" }, //あいまい一致
+
+    // 日本語の基本的なケース
+    { input: "ばか", expectedNormalized: "ばか", expectedScore: 14, description: "日本語の基本単語" },  // 完全一致
+    { input: "バカ", expectedNormalized: "バカ", expectedScore: 0, description: "カタカナの日本語単語" },
+    { input: "くそ", expectedNormalized: "くそ", expectedScore: 14, description: "別の日本語単語" }, // 完全一致
+
+    // 記号とスペースのケース
+    { input: "f-u-c-k", expectedNormalized: "fuck", expectedScore: 20, description: "ハイフンを含む単語" },
+    { input: "f_u_c_k", expectedNormalized: "fuck", expectedScore: 20, description: "アンダーバーを含む単語" },
+    { input: "f.u.c.k", expectedNormalized: "fuck", expectedScore: 20, description: "ドットを含む単語" },
+    { input: "b a d", expectedNormalized: "bad", expectedScore: 10, description: "スペースで区切られた単語" },
+
+    // 複数の不適切語のケース
+    { input: "bad bad", expectedNormalized: "badbad", expectedScore: 15, description: "連続した不適切語" }, //あいまい一致
+    { input: "badd", expectedNormalized: "badd", expectedScore: 17.5, description: "連続した不適切語" }, //あいまい一致
+    { input: "bad,bad", expectedNormalized: "badbad", expectedScore: 15, description: "カンマで区切られた不適切語" }, //あいまい一致
+    { input: "b@d b@d", expectedNormalized: "bdbd", expectedScore: 0, description: "記号で区切られた不適切語" }, //あいまい一致
+
+    // 全角と半角のケース
+    { input: "ｆｕｃｋ", expectedNormalized: "fuck", expectedScore: 20, description: "全角英字" }, // 完全一致
+    { input: "１２３", expectedNormalized: "123", expectedScore: 0, description: "全角数字" },
+
+    // 類似単語のケース
+    { input: "f*ck", expectedNormalized: "fck", expectedScore: 12, description: "類似英語単語 (アスタリスク)" }, //あいまい一致
+    { input: "fck", expectedNormalized: "fck", expectedScore: 16, description: "類似英語単語 (c の欠落)" }, //完全一致
+    { input: "ば*か", expectedNormalized: "ばか", expectedScore: 12, description: "類似日本語単語 (アスタリスク)" }, //あいまい一致
+    { input: "ばか", expectedNormalized: "ばか", expectedScore: 14, description: "類似日本語単語 (か の欠落)" }, //完全一致
+
+    // その他のケース
+    { input: "abc123", expectedNormalized: "abc123", expectedScore: 0, description: "英数字の組み合わせ" },
+    { input: " ", expectedNormalized: "", expectedScore: 0, description: "空白のみ" },
+    { input: "", expectedNormalized: "", expectedScore: 0, description: "空文字列" },
+    { input: "a", expectedNormalized: "a", expectedScore: 0, description: "1文字の単語" },
+    { input: "very_very_long_word_with_many_characters", expectedNormalized: "veryverylongwordwithmanycharacters", expectedScore: 0, description: "非常に長い単語" },
+    { input: "fuck you", expectedNormalized: "fuckyou", expectedScore: 15, description: "不適切語を含む文章" }, //あいまい一致
+    { input: "bad day", expectedNormalized: "badday", expectedScore: 7.5, description: "不適切語を含む文章" },  //あいまい一致
+    { input: "くそー", expectedNormalized: "くそー", expectedScore: 10.5, description: "不適切語を含む文章" }, //あいまい一致
+    { input: "ばかだな", expectedNormalized: "ばかだな", expectedScore: 10.5, description: "不適切語を含む文章" }, //あいまい一致
+    { input: "3p", expectedNormalized: "3p", expectedScore: 20, description: "3p" }, // 完全一致
+    { input: "AV女優", expectedNormalized: "av女優", expectedScore: 16, description: "av女優" }, // 完全一致
+    { input: "Gスポット", expectedNormalized: "gスポット", expectedScore: 16, description: "Gスポット" }, // 完全一致
+    { input: "NTR", expectedNormalized: "ntr", expectedScore: 20, description: "NTR" }, // 完全一致
+    { input: "this is a fuck", expectedNormalized: "thisisafuck", expectedScore: 15, description: "文章のなかのfuck" }, //あいまい一致
+
 ];
 
 // テストを実行する関数
-function runTests(tests: { input: string; expectedScore: number; description: string; }[]): void {
+function runTests(tests: any[]) {
     let passed = 0;
     let failed = 0;
-    for (const test of tests) {
-        const actualScore = calculateBadWordScore(test.input);
 
-        if (actualScore.toFixed(3) === test.expectedScore.toFixed(3)) {
-            console.log(`✅ ${test.description}`);
+    tests.forEach((test: { input: any; expectedNormalized: any; expectedScore: number, description: any; }) => {
+        const actualNormalized = normalize(test.input);
+        const actualScore = calculateScore(actualNormalized, badWords, scoreConfig, ruleScores);
+        if (actualNormalized === test.expectedNormalized && actualScore === test.expectedScore) {
+            console.log(`✅ ${test.description} (スコア: ${actualScore})`);
             passed++;
         } else {
-            console.error(`❌ ${test.description}: 期待値 ${test.expectedScore}, 実際の結果 ${actualScore}  入力: ${test.input}`);
+            console.error(`❌ ${test.description}: 期待値 (正規化: "${test.expectedNormalized}", スコア: ${test.expectedScore}), 実際の結果 (正規化: "${actualNormalized}", スコア: ${actualScore})  入力: "${test.input}"`);
             failed++;
         }
-    }
+
+        // 不適切と判定されるかどうかのテスト
+        const isInappropriate = isMessageInappropriate(test.input);
+        if (actualScore >= scoreThreshold && !isInappropriate) {
+            console.error(`❌ 不適切判定テスト失敗: 期待値: 判定あり 実際: 判定なし 入力: ${test.input} スコア: ${actualScore}`)
+            failed++;
+        }
+
+        if (actualScore < scoreThreshold && isInappropriate) {
+            console.error(`❌ 不適切判定テスト失敗: 期待値: 判定なし 実際: 判定あり 入力: ${test.input} スコア: ${actualScore}`)
+            failed++;
+        }
+
+    });
+
     console.log(`\nテスト完了: ${passed} 件成功, ${failed} 件失敗`);
 }
 
