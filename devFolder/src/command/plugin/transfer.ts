@@ -399,6 +399,14 @@ function showServerList(player: Player) {
 
 system.afterEvents.scriptEventReceive.subscribe(async (event) => {
     const { id, sourceEntity, message } = event;
+
+    if (id === 'ch:transferUI' && sourceEntity instanceof Player) {
+        const player = sourceEntity;
+        transferMain(player);
+    }
+
+
+
     if (id === 'ch:transfer' && sourceEntity instanceof Player) {
         const player = sourceEntity;
         const ipPort = message.split(':');
