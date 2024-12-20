@@ -12,6 +12,7 @@ import './vote';
 import './sumo';
 import './AntiCheat/import';
 import './AI';
+import './transfer';
 
 
 

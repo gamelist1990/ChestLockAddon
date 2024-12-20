@@ -1,0 +1,39 @@
+{
+  "format_version": 2,
+  "header": {
+    "description": "使用方法!ワールド入ったら!helpしてみて(beta機能を有効にしてね) ",
+    "name": "ChestLockアドオンv1.6 作者:こう君",
+    "uuid": "f9790881-c28e-4b2d-a133-740b2f55007c",
+    "version": [1, 4, 0],
+    "min_engine_version": [1, 21, 40]
+  },
+  "metadata": {
+        "authors": ["gamelist1990"],
+        "license": "MIT",
+        "url": "https://github.com/gamelist1990/ChestLockAddon"
+    },
+  "modules": [
+    {
+      "description": "",
+      "type": "script",
+      "uuid": "68a6d321-78a9-4dac-b14c-21933121abb4",
+      "version": [0, 0, 1],
+      "language": "javascript",
+      "entry": "scripts/Loader.js"
+    }
+  ],
+ "dependencies": [
+  {
+    "module_name": "@minecraft/server",
+    "version": "1.17.0-beta"
+  },
+  {
+    "module_name": "@minecraft/server-ui",
+    "version": "1.4.0-beta"
+  },
+  {
+    "module_name": "@minecraft/server-admin",
+    "version": "1.0.0-beta"
+  }
+  ]
+}

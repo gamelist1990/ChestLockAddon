@@ -17,7 +17,8 @@ let playerServerData: { [key: string]: ServerInfo[] } = {};
 
 // デフォルトサーバーの定義
 const defaultServers: ServerInfo[] = [
-    { name: "Zepa", ip: "zeqa.net", port: 19132, texturePath: 'textures/blocks/grass_side_carried.png' },
+    { name: "Zepa Server", ip: "zeqa.net", port: 19132, texturePath: 'textures/blocks/grass_side_carried' },
+    { name: "Hive Server", ip: "sg.hivebedrock.network", port: 19132, texturePath: 'textures/ui/csb_faq_bee' },
 ];
 
 function saveTransFerData(): void {
@@ -49,7 +50,7 @@ registerCommand({
     name: 'transfer',
     description: 'transfer_docs',
     parent: false,
-    maxArgs: 2,
+    maxArgs: 1, // 引数の最大数を1に変更
     minArgs: 0,
     require: (player: Player) => verifier(player, config().commands['transfer']),
     executor: (player: Player, args: string[]) => {
@@ -58,26 +59,26 @@ registerCommand({
             return;
         }
 
-        if (args.length === 1) {
-            player.sendMessage(translate(player, 'command.transfer.missingArgument'));
-            return;
-        }
-
-        if (args.length === 2) {
-            const ipPort = args[1].split(':');
-            if (ipPort.length !== 2) {
+        if (args.length === 1) { // 引数が1つの場合のみ処理
+            const ipPort = args[0].split(':');
+            if (ipPort.length !== 2) { // ":" で分割して2つの要素にならない場合はエラー
                 player.sendMessage(translate(player, 'command.transfer.invalidFormat'));
                 return;
             }
             const ip = ipPort[0];
             const port = parseInt(ipPort[1], 10);
 
-            if (isNaN(port)) {
+            if (isNaN(port)) { // ポート番号が数値でない場合はエラー
                 player.sendMessage(translate(player, 'command.transfer.invalidPort'));
                 return;
             }
-            player.sendMessage(translate(player, 'command.transfer.connecting') + `${ip}:${port}`);
-            runTransferCommand(player, ip, port);
+            player.sendMessage(translate(player, 'command.transfer.connecting', { ip: `${ip}`, port: `${port}` }));
+
+            system.runTimeout(() => {
+                //@ts-ignore
+                transferPlayer(player, ip, port);
+            }, 20 * 3)
+
             return;
         }
     },
@@ -412,7 +413,7 @@ system.afterEvents.scriptEventReceive.subscribe(async (event) => {
             player.sendMessage(translate(player, 'command.transfer.invalidPort'));
             return;
         }
-        player.sendMessage(translate(player, 'command.transfer.connecting') + `${ip}:${port}`);
+        player.sendMessage(translate(player, 'command.transfer.connecting', { ip: `${ip}`, port: `${port}` }));
         runTransferCommand(player, ip, port);
 
     }

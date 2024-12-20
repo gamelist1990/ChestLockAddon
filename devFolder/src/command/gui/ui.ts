@@ -16,7 +16,7 @@ export function showBasicUI(player: Player): Promise<void> {
 
   // ボタンの内容を条件分岐で変更
   if (player.hasTag("staff") || player.hasTag("op")) {
-    form.button(translate(player, 'ui.StaffMenu'), 'textures/ui/FriendsDiversity.png');
+    form.button(translate(player, 'ui.StaffMenu'), 'textures/ui/FriendsDiversity');
   } else {
     form.button(translate(player, 'uihelp'), 'textures/items/book_writable');
   }
@@ -27,7 +27,7 @@ export function showBasicUI(player: Player): Promise<void> {
     .button(translate(player, 'uitpa'), 'textures/items/ender_pearl')
     .button(translate(player, 'ui.MainLoreButton'), 'textures/items/name_tag')
     .button(translate(player, 'ui.ReportButton'), 'textures/ui/icon_bell')
-    .button(translate(player, 'ui.transferTitle'))
+    .button(translate(player, 'ui.transferTitle'),'textures/ui/addServer')
     .button(translate(player, 'back'));
 
 

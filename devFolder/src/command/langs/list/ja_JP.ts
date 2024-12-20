@@ -389,42 +389,42 @@ export const translations = {
   },
   "ui.transferBody": {
     msgid: "§2 Transfer to Server",
-    msgstr: "§2 他のサーバーに転送する"
+    msgstr: "§2 他のサーバーに移動できます\n追記：テクスチャのパスのやつはオプションなので空白でok\nサーバー名,IPアドレス,ポート番号は必須です"
   },
   "ui.directConnect": {
-    msgid: "§0 Direct Connect",
-    msgstr: "§0 ダイレクト接続"
+    msgid: "§l§0 Direct Connect",
+    msgstr: "§l§0 ダイレクト接続"
   },
   "ui.addServer": {
-    msgid: "§0 Add Server",
-    msgstr: "§0 サーバーを追加"
+    msgid: "§l§0 Add Server",
+    msgstr: "§l§0 サーバーを追加"
   },
   "ui.removeServer": {
-    msgid: "§0 Remove Server",
-    msgstr: "§0サーバーを削除"
+    msgid: "§l§0 Remove Server",
+    msgstr: "§l§0サーバーを削除"
   },
   "ui.editServer": {
-    msgid: "§0 Edit Server",
-    msgstr: "§0サーバーを編集"
+    msgid: "§l§0 Edit Server",
+    msgstr: "§l§0サーバーを編集"
   },
   "ui.serverList": {
-    msgid: "§0 Server List",
-    msgstr: "§0サーバーリスト"
+    msgid: "§l§0 Server List",
+    msgstr: "§l§0サーバーリスト"
   },
   "ui.ipAddress": {
-    msgid: "§0 IP Address",
+    msgid: "§l§g IP Address",
     msgstr: ""
   },
   "ui.port": {
-    msgid: "§0 Port",
+    msgid: "§l§b Port",
     msgstr: ""
   },
   "ui.serverName": {
-    msgid: "§0 Server Name",
-    msgstr: "§0サーバー名"
+    msgid: "§l§2 Server Name",
+    msgstr: "§l§2 サーバー名"
   },
   "ui.texturePath": {
-    msgid: "§0 Texture Path",
+    msgid: "§l§c Texture Path",
     msgstr: ""
   },
   "ui.editServerDetails": {
@@ -1028,16 +1028,16 @@ export const translations = {
     msgstr: "§l§f>> §cあなたはサーバーからBANされました\n§e, 理由: §c{reason}\n§e, 期間: §c{duration}"
   },
   "command.transfer.missingArgument": {
-    msgid: "§c Missing argument. Use transfer <player> <ip:port> to transfer Server.",
-    msgstr: "§c 引数がありません。 transfer <player> <ip:port> を使用してサーバーに転送します"
+    msgid: "§c Missing argument. Use transfer <ip:port> to transfer Server.",
+    msgstr: "§c 引数がありません。 transfer <ip:port> を使用してサーバーに転送します"
   },
   "command.transfer.invalidFormat": {
-    msgid: "§c Invalid format. Use transfer <player> <ip:port> to transfer Server.",
-    msgstr: "§c フォーマットがおかしいよ transfer <player> <ip:port> を使用してサーバーに転送します"
+    msgid: "§c Invalid format. Use transfer <ip:port> to transfer Server.",
+    msgstr: "§c フォーマットがおかしいよ transfer <ip:port> を使用してサーバーに転送します"
   },
   "command.transfer.invalidPort": {
-    msgid: "§c Invalid port. Use transfer <player> <ip:port> to transfer Server.",
-    msgstr: "§c 間違ってポート番号です transfer <player> <ip:port> を使用してサーバーに転送します"
+    msgid: "§c Invalid port. Use transfer <ip:port> to transfer Server.",
+    msgstr: "§c 間違ってポート番号です transfer <ip:port> を使用してサーバーに転送します"
   },
   "command.transfer.connecting": {
     msgid: "§a Connecting to the {ip}:{port} server...",

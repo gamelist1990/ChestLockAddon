@@ -392,39 +392,39 @@ export const translations = {
     msgstr: ""
   },
   "ui.directConnect": {
-    msgid: "§0 Direct Connect",
+    msgid: "§l§0 Direct Connect",
     msgstr: ""
   },
   "ui.addServer": {
-    msgid: "§0 Add Server",
+    msgid: "§l§0 Add Server",
     msgstr: ""
   },
   "ui.removeServer": {
-    msgid: "§0 Remove Server",
+    msgid: "§l§0 Remove Server",
     msgstr: ""
   },
   "ui.editServer": {
-    msgid: "§0 Edit Server",
+    msgid: "§l§0 Edit Server",
     msgstr: ""
   },
   "ui.serverList": {
-    msgid: "§0 Server List",
+    msgid: "§l§0 Server List",
     msgstr: ""
   },
   "ui.ipAddress": {
-    msgid: "§0 IP Address",
+    msgid: "§l§g IP Address",
     msgstr: ""
   },
   "ui.port": {
-    msgid: "§0 Port",
+    msgid: "§l§b Port",
     msgstr: ""
   },
   "ui.serverName": {
-    msgid: "§0 Server Name",
+    msgid: "§l§2 Server Name",
     msgstr: ""
   },
   "ui.texturePath": {
-    msgid: "§0 Texture Path",
+    msgid: "§l§c Texture Path",
     msgstr: ""
   },
   "ui.editServerDetails": {
@@ -1028,15 +1028,15 @@ export const translations = {
     msgstr: "§l§f>> §cSinut on porttikiellossa palvelimelta\n§e, Syy: §c{reason}\n§e, Kesto: §c{duration}"
   },
   "command.transfer.missingArgument": {
-    msgid: "§c Missing argument. Use transfer <player> <ip:port> to transfer Server.",
+    msgid: "§c Missing argument. Use transfer <ip:port> to transfer Server.",
     msgstr: ""
   },
   "command.transfer.invalidFormat": {
-    msgid: "§c Invalid format. Use transfer <player> <ip:port> to transfer Server.",
+    msgid: "§c Invalid format. Use transfer <ip:port> to transfer Server.",
     msgstr: ""
   },
   "command.transfer.invalidPort": {
-    msgid: "§c Invalid port. Use transfer <player> <ip:port> to transfer Server.",
+    msgid: "§c Invalid port. Use transfer <ip:port> to transfer Server.",
     msgstr: ""
   },
   "command.transfer.connecting": {

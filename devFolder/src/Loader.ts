@@ -12,6 +12,7 @@ import { loadReport } from './command/utility/report';
 import { ver } from './Modules/version';
 import { AddNewPlayers, initializeAntiCheat } from './command/plugin/AntiCheat/index';
 import { loadBan } from './command/utility/ban';
+import { loadTransferData } from './command/plugin/transfer';
 
 const startTime = Date.now();
 
@@ -48,6 +49,7 @@ async function main() {
       //_____________//
       loadGate();
       loadBan();
+      loadTransferData();
       loadjoinModules();
       loadProtectedChests();
       await loadAllImports();
