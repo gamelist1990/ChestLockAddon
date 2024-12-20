@@ -157,6 +157,11 @@ export const config = (): { commands: { [key: string]: CommandConfig }; admin: s
       adminOnly: true,
       requireTag: [],
     },
+    transfer: {
+      enabled: true,
+      adminOnly: false,
+      requireTag: [],
+    }
   },
   
   admin: 'op',
@@ -181,6 +186,12 @@ export const config = (): { commands: { [key: string]: CommandConfig }; admin: s
 
 
 
+/**
+ * Gets the gamemode of a player by their name.
+ *
+ * @param playerName - The name of the player whose gamemode is to be retrieved.
+ * @returns The index of the gamemode in the `gamemodes` array, or 0 if the player is not found in any gamemode.
+ */
 export function getGamemode(playerName: string): number {
   const gamemodes: GameMode[] = [
     GameMode.survival,
@@ -200,6 +211,12 @@ export function getGamemode(playerName: string): number {
 
 
 
+/**
+ * Retrieves the names of all players in the world except the current player.
+ *
+ * @param currentPlayer - The player whose name should be excluded from the list.
+ * @returns An array of player names excluding the current player's name.
+ */
 export function getAllPlayerNames(currentPlayer: Player): string[] {
   const playerNames: string[] = [];
   for (const player of world.getPlayers()) {
@@ -310,6 +327,13 @@ export function closeForm(player: Player) {
 
 
 
+/**
+ * Formats a given timestamp into a string with the format `YYYY/MM/DD HH:mm:ss` adjusted for a specified timezone offset.
+ *
+ * @param {string | number | Date} timestamp - The timestamp to format. Can be a string, number, or Date object.
+ * @param {number} timezoneOffsetHours - The timezone offset in hours to adjust the timestamp.
+ * @returns {string} The formatted timestamp string. Returns 'Invalid Timestamp' if the input is invalid, or 'Unexpected Error' if an unexpected error occurs.
+ */
 export function formatTimestamp(timestamp: string | number | Date, timezoneOffsetHours: number): string {
   if (timestamp == null) {
     return '';

@@ -6,6 +6,7 @@ import { getAvailableLanguages, translate } from '../langs/list/LanguageManager'
 import { getAllPlayerNames } from '../../Modules/Util';
 import { checkReports } from '../utility/report';
 import { banList } from '../utility/ban';
+import { transferMain } from '../plugin/transfer';
 
 export function showBasicUI(player: Player): Promise<void> {
   player.playSound('mob.chicken.plop');
@@ -26,6 +27,7 @@ export function showBasicUI(player: Player): Promise<void> {
     .button(translate(player, 'uitpa'), 'textures/items/ender_pearl')
     .button(translate(player, 'ui.MainLoreButton'), 'textures/items/name_tag')
     .button(translate(player, 'ui.ReportButton'), 'textures/ui/icon_bell')
+    .button(translate(player, 'ui.transferTitle'))
     .button(translate(player, 'back'));
 
 
@@ -66,6 +68,9 @@ export function showBasicUI(player: Player): Promise<void> {
           break;
         case 6:
           showReportMenu(player);
+          break;
+        case 7:
+          transferMain(player);
           break;
       }
     })
@@ -865,16 +870,16 @@ async function banMenu(player: Player): Promise<void> {
         { value: "15m", label: "15 Minutes" },
         { value: "30m", label: "30 Minutes" },
         { value: "1h", label: "1 Hour" },
-        { value: "2h", label: "2 Hours" }, 
+        { value: "2h", label: "2 Hours" },
         { value: "3h", label: "3 Hours" },
-        { value: "6h", label: "6 Hours" }, 
+        { value: "6h", label: "6 Hours" },
         { value: "12h", label: "12 Hours" },
         { value: "1d", label: "1 Day" },
-        { value: "2d", label: "2 Days" }, 
-        { value: "3d", label: "3 Days" }, 
+        { value: "2d", label: "2 Days" },
+        { value: "3d", label: "3 Days" },
         { value: "7d", label: "7 Days" },
-        { value: "14d", label: "14 Days" }, 
-        { value: "30d", label: "30 Days" }, 
+        { value: "14d", label: "14 Days" },
+        { value: "30d", label: "30 Days" },
       ];
 
       const timeForm = new ModalFormData()
@@ -888,11 +893,11 @@ async function banMenu(player: Player): Promise<void> {
       }
 
       const selectedTime = timeOptions[Number(timeResponse.formValues[0])].value;
-      const banTimes = selectedTime === "permanent" ? '' : `[${selectedTime}]`; 
+      const banTimes = selectedTime === "permanent" ? '' : `[${selectedTime}]`;
 
       const reasonForm = new ModalFormData()
         .title(translate(player, 'ui.BanReasonTitle'))
-        .textField(translate(player, 'ui.BanReasonPrompt'), translate(player, 'ui.BanReasonPlaceholder')); 
+        .textField(translate(player, 'ui.BanReasonPrompt'), translate(player, 'ui.BanReasonPlaceholder'));
 
 
       //@ts-ignore

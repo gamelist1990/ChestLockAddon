@@ -7,6 +7,12 @@ interface ChestLockAddonData {
 
 export let chestLockAddonData: ChestLockAddonData = {};
 
+/**
+ * Saves data to the chestLockAddonData object and updates the dynamic property in the world.
+ *
+ * @param key - The key under which the value will be stored.
+ * @param value - The value to be stored.
+ */
 export function saveData(key: string, value: any): void {
   chestLockAddonData[key] = value;
   const data = JSON.stringify(chestLockAddonData);
@@ -14,6 +20,13 @@ export function saveData(key: string, value: any): void {
 }
 
 
+/**
+ * Loads the ChestLockAddon data from the dynamic property in the world.
+ * The data is expected to be a JSON string which is parsed into an object.
+ * If the data contains a `timestamp` key with a numeric value, it is converted to a Date object.
+ *
+ * @throws {SyntaxError} If the JSON string is malformed.
+ */
 export function loadData(): void {
   const data = world.getDynamicProperty('ChestLockAddonData');
   if (data && typeof data === 'string') {

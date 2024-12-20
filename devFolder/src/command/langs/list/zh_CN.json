@@ -95,6 +95,10 @@
     "msgid": "Ping Command",
     "msgstr": ""
   },
+  "transfer_docs": {
+    "msgid": "Transfer Command",
+    "msgstr": ""
+  },
   "ui.ReportButton": {
     "msgid": "§0Report Menu",
     "msgstr": "§0举报菜单"
@@ -402,6 +406,54 @@
   "back": {
     "msgid": "§2 Back",
     "msgstr": "§2 返回"
+  },
+  "ui.transferTitle": {
+    "msgid": "§0 Transfer Menu",
+    "msgstr": ""
+  },
+  "ui.transferBody": {
+    "msgid": "§2 Transfer to Server",
+    "msgstr": ""
+  },
+  "ui.directConnect": {
+    "msgid": "§0 Direct Connect",
+    "msgstr": ""
+  },
+  "ui.addServer": {
+    "msgid": "§0 Add Server",
+    "msgstr": ""
+  },
+  "ui.removeServer": {
+    "msgid": "§0 Remove Server",
+    "msgstr": ""
+  },
+  "ui.editServer": {
+    "msgid": "§0 Edit Server",
+    "msgstr": ""
+  },
+  "ui.serverList": {
+    "msgid": "§0 Server List",
+    "msgstr": ""
+  },
+  "ui.ipAddress": {
+    "msgid": "§0 IP Address",
+    "msgstr": ""
+  },
+  "ui.port": {
+    "msgid": "§0 Port",
+    "msgstr": ""
+  },
+  "ui.serverName": {
+    "msgid": "§0 Server Name",
+    "msgstr": ""
+  },
+  "ui.texturePath": {
+    "msgid": "§0 Texture Path",
+    "msgstr": ""
+  },
+  "ui.editServerDetails": {
+    "msgid": "§0 Edit Server Details",
+    "msgstr": ""
   },
   "command.report.reportNotPlayer": {
     "msgid": "§f>>§4Reported player not found",
@@ -1072,5 +1124,49 @@
   "command.ban.bannedMessage": {
     "msgid": "§l§f>> §cYou are banned from the server\n§e, Reason: §c{reason}\n§e, Duration: §c{duration}",
     "msgstr": "§l§f>> §c你已被服务器封禁\n§e，原因：§c{reason}\n§e，持续时间：§c{duration}"
+  },
+  "command.transfer.missingArgument": {
+    "msgid": "§c Missing argument. Use transfer <player> <ip:port> to transfer Server.",
+    "msgstr": ""
+  },
+  "command.transfer.invalidFormat": {
+    "msgid": "§c Invalid format. Use transfer <player> <ip:port> to transfer Server.",
+    "msgstr": ""
+  },
+  "command.transfer.invalidPort": {
+    "msgid": "§c Invalid port. Use transfer <player> <ip:port> to transfer Server.",
+    "msgstr": ""
+  },
+  "command.transfer.connecting": {
+    "msgid": "§a Connecting to the {ip}:{port} server...",
+    "msgstr": ""
+  },
+  "command.transfer.invalidResponse": {
+    "msgid": "§c Invalid response from the server.",
+    "msgstr": ""
+  },
+  "command.transfer.serverAdded": {
+    "msgid": "§a Server added.",
+    "msgstr": ""
+  },
+  "command.transfer.noServerToRemove": {
+    "msgid": "§c No server to remove.",
+    "msgstr": ""
+  },
+  "command.transfer.serverRemoved": {
+    "msgid": "§a Server removed.",
+    "msgstr": ""
+  },
+  "command.transfer.noServerToEdit": {
+    "msgid": "§c No server to edit.",
+    "msgstr": ""
+  },
+  "command.transfer.serverUpdated": {
+    "msgid": "§a Server updated.",
+    "msgstr": ""
+  },
+  "command.transfer.noServerToConnect": {
+    "msgid": "§c No server to connect to.",
+    "msgstr": ""
   }
 }

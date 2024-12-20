@@ -95,6 +95,10 @@ export const translations = {
     msgid: "Ping Command",
     msgstr: "Pingコマンド"
   },
+  "transfer_docs": {
+    msgid: "Transfer Command",
+    msgstr: ""
+  },
   "ui.ReportButton": {
     msgid: "§0Report Menu",
     msgstr: "§0報告メニュー"
@@ -378,6 +382,54 @@ export const translations = {
   "back": {
     msgid: "§2 Back",
     msgstr: "§2戻る"
+  },
+  "ui.transferTitle": {
+    msgid: "§0 Transfer Menu",
+    msgstr: "§0 転送メニュー"
+  },
+  "ui.transferBody": {
+    msgid: "§2 Transfer to Server",
+    msgstr: "§2 他のサーバーに転送する"
+  },
+  "ui.directConnect": {
+    msgid: "§0 Direct Connect",
+    msgstr: "§0 ダイレクト接続"
+  },
+  "ui.addServer": {
+    msgid: "§0 Add Server",
+    msgstr: "§0 サーバーを追加"
+  },
+  "ui.removeServer": {
+    msgid: "§0 Remove Server",
+    msgstr: "§0サーバーを削除"
+  },
+  "ui.editServer": {
+    msgid: "§0 Edit Server",
+    msgstr: "§0サーバーを編集"
+  },
+  "ui.serverList": {
+    msgid: "§0 Server List",
+    msgstr: "§0サーバーリスト"
+  },
+  "ui.ipAddress": {
+    msgid: "§0 IP Address",
+    msgstr: ""
+  },
+  "ui.port": {
+    msgid: "§0 Port",
+    msgstr: ""
+  },
+  "ui.serverName": {
+    msgid: "§0 Server Name",
+    msgstr: "§0サーバー名"
+  },
+  "ui.texturePath": {
+    msgid: "§0 Texture Path",
+    msgstr: ""
+  },
+  "ui.editServerDetails": {
+    msgid: "§0 Edit Server Details",
+    msgstr: "§0サーバーの詳細を編集"
   },
   "command.report.reportNotPlayer": {
     msgid: "§f>>§4Reported player not found",
@@ -974,5 +1026,49 @@ export const translations = {
   "command.ban.bannedMessage": {
     msgid: "§l§f>> §cYou are banned from the server\n§e, Reason: §c{reason}\n§e, Duration: §c{duration}",
     msgstr: "§l§f>> §cあなたはサーバーからBANされました\n§e, 理由: §c{reason}\n§e, 期間: §c{duration}"
+  },
+  "command.transfer.missingArgument": {
+    msgid: "§c Missing argument. Use transfer <player> <ip:port> to transfer Server.",
+    msgstr: "§c 引数がありません。 transfer <player> <ip:port> を使用してサーバーに転送します"
+  },
+  "command.transfer.invalidFormat": {
+    msgid: "§c Invalid format. Use transfer <player> <ip:port> to transfer Server.",
+    msgstr: "§c フォーマットがおかしいよ transfer <player> <ip:port> を使用してサーバーに転送します"
+  },
+  "command.transfer.invalidPort": {
+    msgid: "§c Invalid port. Use transfer <player> <ip:port> to transfer Server.",
+    msgstr: "§c 間違ってポート番号です transfer <player> <ip:port> を使用してサーバーに転送します"
+  },
+  "command.transfer.connecting": {
+    msgid: "§a Connecting to the {ip}:{port} server...",
+    msgstr: "§a {ip}:{port} サーバーに接続しています..."
+  },
+  "command.transfer.invalidResponse": {
+    msgid: "§c Invalid response from the server.",
+    msgstr: "§c サーバーからの無効な応答です"
+  },
+  "command.transfer.serverAdded": {
+    msgid: "§a Server added.",
+    msgstr: "§a サーバーを追加しました"
+  },
+  "command.transfer.noServerToRemove": {
+    msgid: "§c No server to remove.",
+    msgstr: "§c サーバーを削除できませんでした"
+  },
+  "command.transfer.serverRemoved": {
+    msgid: "§a Server removed.",
+    msgstr: "§a サーバーを削除しました"
+  },
+  "command.transfer.noServerToEdit": {
+    msgid: "§c No server to edit.",
+    msgstr: "§c サーバーを編集出来ません"
+  },
+  "command.transfer.serverUpdated": {
+    msgid: "§a Server updated.",
+    msgstr: "§a サーバーの内容を更新しました"
+  },
+  "command.transfer.noServerToConnect": {
+    msgid: "§c No server to connect to.",
+    msgstr: "§c サーバーへの転送に失敗しました"
   },
 };

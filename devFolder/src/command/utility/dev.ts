@@ -4,6 +4,7 @@ import { config, tempkick } from '../../Modules/Util';
 import { showPlayerLanguage, resetPlayerLanguages, translate } from '../langs/list/LanguageManager';
 import { showProtectedChestData, resetProtectedChests } from '../plugin/chest';
 import { resetData, logData, saveData } from './../../Modules/DataBase';
+import { resetTransferData } from '../plugin/transfer';
 
 registerCommand({
   name: 'dev',
@@ -53,6 +54,13 @@ registerCommand({
         }
       } else {
         player.sendMessage(translate(player, "server.PlayerNotFound"))
+      }
+    } else if (subCommand === 'transfer') {
+      if (option === '-reset') {
+        system.runTimeout(() => {
+          resetTransferData();
+          world.sendMessage("§l§eWarn §aChestLockAddon §6Transfer§a is Reset");
+        })
       }
     } else {
       player.sendMessage('Unknown subcommand');
