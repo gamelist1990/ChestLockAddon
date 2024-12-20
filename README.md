@@ -1,98 +1,140 @@
+## ChestLockAddon Latest Version 1.6
 
-## English Readme
+Last Release : [![GitHub Release](https://img.shields.io/github/v/release/gamelist1990/ChestLockAddon?include_prereleases&sort=date&style=social)](https://github.com/gamelist1990/ChestLockAddon/releases)
 
-[Click here for English 👈](EN_README.md)
-
-## Download⬇️
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/gamelist1990/ChestLockAddon/total?style=flat-square&logo=https%3A%2F%2Fgithub.com%2Fgamelist1990%2FChestLockAddon%2Fblob%2Fmain%2FAllAddon%2Fpack_icon.png%3Fraw%3Dtrue)
-
-![GitHub Release](https://img.shields.io/github/v/release/gamelist1990/ChestLockAddon?include_prereleases&sort=date&style=social)
+Total Download: [![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/gamelist1990/ChestLockAddon/total?style=flat-square&logo=https%3A%2F%2Fgithub.com%2Fgamelist1990%2FChestLockAddon%2Fblob%2Fmain%2FAllAddon%2Fpack_icon.png%3Fraw%3Dtrue)](https://github.com/gamelist1990/ChestLockAddon/releases)
 
 
-[ダウンロードはこちら👈](https://github.com/gamelist1990/ChestLockAddon/releases)
+[English/Readme](./EN_README.md)
 
+ダウンロード方法は下にある使用方法を見てください
 
-## Support
-
-[Discord](https://discord.com/invite/GJyqBm7Pyd)
-
-## Update
-
-**Version 1.4**  新機能を追加しました
-[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.3...1.4)
-
-**更新点**
-詳細な変更点は☝のChangeLogを見てね
-
-ここでは簡潔に変更点をまとめます
-
-- Version1.4に更新
-- その他バグ修正
-- ファイル整理及び翻訳キーの変更
-- またPEX鯖作成時に使用したモジュールを追加
-- 追記:もう少しで1.5-Betaを配布します**あくまでもBETA版です**
-
-
-![alt text](image/image.png)*
-
-## 概要
-
-このコードは、`!help` などのコマンドを実行して使用するアドオンです。一応UI等にサポートしています使う場合は`!item`もしくは`!ui`を使用してください、プレフィックス `!` は `handler.ts` で変更可能です。また多言語にも対応しています。
-
-バグや何か問題点があれば気軽にDiscordもしはIssuseまでお願いします
-
-## コマンド
-
-* オーナー向けのコマンドは全て(OP)タグが必要なので`/tag @s add op `を付けてください
-* **`!help`**:  helpコマンド - 利用可能なコマンド一覧を表示します。
-* **`!chest`**:  chestコマンド - チェストコマンドを開きます
-* **`!lang`**:  Lang コマンド - 言語設定を変更します。
-* **`!dev`**:  デベロッパー専用コマンド -  (op)
-* **`!ui`**:  ps4/5用にuiコマンドを追加しました
-* **`!jpch`**: LunaChatを再現した機能です（実験中）
-* **`!item`**: UIを開くアイテムをゲットできます
-* **`!tpa`**: TPリクエストを送る事ができます
-* **`!list`**: プレイヤーの情報を表示できます(op)
-* **`!antichat`**:使用方法はon|off|freeze Player |unfreeze Player で使います(op)
-* **`!lore`**: lore -set apple で手に持っているアイテムの説明を設定できますlore -rename testでアイテムの名前も変更できます
-* **`!join`**: このコマンドはサブコマンドで-settingsを使用してルールを書けます(-true/-false)で表示の切り替え可能(op)
-* **`!warpgate`**:このコマンドはワープゲートを作成できます使用方法は`!warpgate -create ゲート名 TP先の座標` /削除する場合は `!warpgate -delete ゲート名` /リスト表示は`-list`で可能です
-* **`!about`**:このアドオンの概要を表示してくれます
-* **`!staff`**:こスタッフ専用のコマンドです(タグ:staff必要)
-* **`!report`**:悪い事をしているプレイヤーを報告できます
+現バージョンは**1.6**が最新です(1.5-beta~1.5.5-beta)はGithubでは
+ダウンロードできません
 
 
 
-* その他、コマンドは今後追加予定です。
-
-* **このコマンドリストは1.1の際から更新されていません(1.5時点で更新します)**
 
 
-## プレフィックスの変更
+### 更新履歴 (バージョン 1.4 から 1.6)
 
-コマンドのプレフィックスは `handler.ts` で変更できます。
+#### Version 1.6 (最新)
 
-## 多言語対応
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.4...1.6)
 
-このアドオンは多言語に対応しています。現在対応している言語は以下の通りです。
+- **新機能:**
+  - `transfer` コマンド: サーバー間データ転送機能。
+  - UI に関連ボタンアイコンを追加。
+- **改善:**
+  - バージョンを 1.6 に更新。
+  - Loader にデータ転送機能を追加。
+  - `transfer` コマンドをインポート。
+  - 翻訳を更新。
+  - `package.json` に依存関係を追加。
 
-* **`ja_JP`**: 日本語（完璧に対応）
-* **`en_US`**: 英語（完璧に対応）
-* **`zh_CN`**: 中国語 (簡体字) (一部未対応)
-* **`ru_RU`**: ロシア語　(一部未対応)
-* **`ko_KR`**: 韓国語　(一部未対応)
-* **`fi_FI`**: フィンランド語　(一部未対応)
+#### Version 1.5.5
 
-**`!lang` コマンド** を使用して言語を変更できます。
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.4...1.6)
 
-## 使用方法
+- **新機能:**
+  - 中国語/フィンランド語のフルサポート。
+  - 安定版スコアリングシステム。
+  - ロックダウンモード (lockDown Mode)。
+  - 新しい BAN システム。
+- **改善:**
+  - BAN 処理:
+    - `op` と `staff` タグは BAN 除外。
+    - 期間メッセージを修正、プレイヤー情報を追加。
+    - `player.json` がない場合のエラー対応。
+  - 報告機能: タイムスタンプを追加し強化。
+  - `formatTimestamp` 関数: タイムゾーンオフセットを追加。
+  - `suggestCommand` 関数: 引数を追加。
+  - UI: ボタンアイコンを変更。
+  - ハブでの正常座標 TP と `invsee` のコード整理。
+  - ツール実行後の処理を改善。
 
-1. リリースからアドオンをダウンロードしてください。
-2. マインクラフトの実験機能の `-beta` を有効にしてください。
-3. ワールドに参加し、`!help` でコマンド一覧を確認してください。
-4. ワールドの管理者の場合タグopを付ける事をオススメします。
+#### Version 1.5.3-Beta
 
-## その他
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.4...1.6)
 
-言語フォルダはsrc/command/langs/listにあります
-(jsonに翻訳キーを定義してね)
+- **新機能:**
+  - 新アンチチートシステム (v0.2)。
+  - ServerStatus (サーバステータス表示)。
+  - 最高 ping 値プレイヤー表示機能。
+- **改善:**
+  - 警告 (warn) 機能更新。
+  - エラーチェック機能更新。
+
+#### Version 1.5-Beta
+
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.4...1.6)
+
+- **新機能:**
+  - `ping` コマンド。
+  - 投票機能 (Vote)。
+  - `getPlayersByName` コマンド。
+  - WebSocket イベント収集機能。
+- **改善:**
+  - ChestLockAddon 更新、バグ修正。
+  - ハブの Y 座標バグ修正。
+  - `sample.ts`, `test.ts` 更新。
+- **削除:**
+  - ショップ機能 (Shop)。
+
+#### Version 1.4 (以前のバージョン)
+
+- ファイル整理、翻訳キー変更。
+- その他バグ修正。
+
+### 概要
+
+このアドオンは、`!` で始まるコマンドで操作します。UI 対応 (`!item`, `!ui` コマンド)。プレフィックス `!` は `handler.ts` で変更可能。多言語対応。バグや問題は、Discord または Issue へご連絡ください。
+
+### コマンドリスト
+
+- オーナー: `op` タグが必要 (`/tag @s add op`)。
+- スタッフ: `staff` タグが必要。
+
+| コマンド            | 説明                                                                 | 権限    | 備考                                         |
+| :------------------ | :------------------------------------------------------------------- | :------ | :------------------------------------------- |
+| `!help`             | 利用可能なコマンド一覧を表示。                                       | 誰でも  |                                              |
+| `!chest`            | チェストコマンドを開く。                                             | 誰でも  |                                              |
+| `!lang`             | 言語設定を変更。                                                     | 誰でも  |                                              |
+| `!dev`              | デベロッパー専用コマンド。                                           | `op`    |                                              |
+| `!ui`               | UI を開く (PS4/5 用)。                                               | 誰でも  |                                              |
+| `!jpch`             | LunaChat 再現機能 (実験中)。                                         | 誰でも  |                                              |
+| `!item`             | UI を開くアイテムを取得。                                            | 誰でも  |                                              |
+| `!tpa`              | TP リクエストを送信。                                                | 誰でも  |                                              |
+| `!list`             | プレイヤー情報を表示。                                               | `op`    |                                              |
+| `!antichat`         | アンチチャット制御 (on/off/freeze/unfreeze)。                        | `op`    | 例: `!antichat on`                           |
+| `!lore`             | アイテムの説明や名前を設定。                                         | 誰でも  | 例: `!lore -set apple`, `!lore -rename test` |
+| `!join`             | サブコマンド `-settings` でルール設定、`-true`/`-false` で表示切替。 | `op`    |                                              |
+| `!warpgate`         | ワープゲート作成/削除/一覧表示。                                     | `op`    | 例: `!warpgate -create`, `-delete`, `-list`  |
+| `!about`            | アドオン概要を表示。                                                 | 誰でも  |                                              |
+| `!staff`            | スタッフ専用コマンド。                                               | `staff` |                                              |
+| `!report`           | 不正プレイヤーを報告。                                               | 誰でも  |                                              |
+| `!ping`             | 自身の ping 値を表示。                                               | 誰でも  |                                              |
+| `!vote`             | 投票開始。                                                           | `op`    | (開始は管理者のみ、参加は全員可能)           |
+| `!getPlayersByName` | プレイヤー名から情報を取得。                                         | 誰でも  |                                              |
+| `!lockDown`         | ロックダウンモードを有効化/無効化。                                  | `op`    |                                              |
+| `!ban`              | プレイヤーを BAN。                                                   | `op`    | `op` と `staff` タグは除外                   |
+| `!transfer`         | サーバー間データ転送                                                 | `op`    |                                              |
+
+- バージョン 1.6 のコマンドリストです。
+
+### その他の情報
+
+- **プレフィックス変更:** `handler.ts` で変更可能。
+- **多言語対応:** 日本語 (ja_JP), 英語 (en_US), 中国語 (zh_CN), ロシア語 (ru_RU), 韓国語 (ko_KR), フィンランド語 (fi_FI)
+  - 完全対応: `ja_JP`, `en_US`, `zh_CN`, `fi_FI`
+  - 一部未対応: `ru_RU`, `ko_KR`
+  - `!lang` コマンドで言語変更可能。
+- **使用方法:**
+  1. [リリース](https://github.com/gamelist1990/ChestLockAddon/releases) から最新版をダウンロード。
+  2. マインクラフトの実験機能で[Beta-API]を有効化にしてください
+  3. ワールド参加後、`!help` でコマンド確認。
+  4. 管理者: `op` タグを自身に付与推奨。
+- **言語ファイル:** `src/command/langs/list` (JSON 形式)。
+- **サポート:** [Discord](https://discord.com/invite/GJyqBm7Pyd)
+- **ダウンロード:** [GitHub Releases](https://github.com/gamelist1990/ChestLockAddon/releases)
+

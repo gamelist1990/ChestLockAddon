@@ -1,85 +1,131 @@
-## Japanese Readme
+## ChestLockAddon Latest Version 1.6
 
-[Click here for Japanese 👈](README.md)
+Last Release : [![GitHub Release](https://img.shields.io/github/v/release/gamelist1990/ChestLockAddon?include_prereleases&sort=date&style=social)](https://github.com/gamelist1990/ChestLockAddon/releases)
 
-## Download⬇️
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/gamelist1990/ChestLockAddon/total?style=flat-square&logo=https%3A%2F%2Fgithub.com%2Fgamelist1990%2FChestLockAddon%2Fblob%2Fmain%2FAllAddon%2Fpack_icon.png%3Fraw%3Dtrue)
+Total Downloads: [![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/gamelist1990/ChestLockAddon/total?style=flat-square&logo=https%3A%2F%2Fgithub.com%2Fgamelist1990%2FChestLockAddon%2Fblob%2Fmain%2FAllAddon%2Fpack_icon.png%3Fraw%3Dtrue)](https://github.com/gamelist1990/ChestLockAddon/releases)
 
-[Download Here👈](https://github.com/gamelist1990/ChestLockAddon/releases)
+See "How to Use" below for download instructions.
 
-## Support
+The current latest version is **1.6**. (Versions 1.5-beta ~ 1.5.5-beta are not available on GitHub.)
 
-[Discord](https://discord.com/invite/GJyqBm7Pyd)
+### Update History (Versions 1.4 to 1.6)
 
-## Update
+#### Version 1.6 (Latest)
 
-**Version 1.3** Fixed bugs and added new features from the previous 1.2
-[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.2...1.3)
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.4...1.6)
 
-**Changes:**
-For detailed changes, please refer to the ChangeLog above☝
+-   **New Features:**
+    -   `transfer` command: Cross-server data transfer functionality.
+    -   Added relevant button icons to the UI.
+-   **Improvements:**
+    -   Updated version to 1.6.
+    -   Added data transfer functionality to the Loader.
+    -   Imported the `transfer` command.
+    -   Updated translations.
+    -   Added dependencies to `package.json`.
 
-Here is a brief summary of the changes:
+#### Version 1.5.5
 
-- Updated to Version 1.3
-- Other bug fixes
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.4...1.6)
 
+-   **New Features:**
+    -   Full support for Chinese/Finnish languages.
+    -   Stable scoring system.
+    -   Lockdown Mode.
+    -   New BAN system.
+-   **Improvements:**
+    -   BAN handling:
+        -   Players with `op` and `staff` tags are excluded from being banned.
+        -   Corrected duration message and added player information.
+        -   Handled errors when `player.json` is missing.
+    -   Report function: Enhanced with the addition of timestamps.
+    -   `formatTimestamp` function: Added timezone offset.
+    -   `suggestCommand` function: Added arguments.
+    -   UI: Changed button icons.
+    -   Code cleanup for normal coordinate TP in the hub and `invsee`.
+    -   Improved handling after tool execution.
 
-![alt text](image/EN,image.png)
+#### Version 1.5.3-Beta
 
-## Overview
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.4...1.6)
 
-This addon is operated by executing commands such as `!help`. It supports UI elements, use `!item` or `!ui` to access them. The prefix `!` can be changed in `handler.ts`. The addon is also multilingual. 
+-   **New Features:**
+    -   New Anti-Cheat system (v0.2).
+    -   ServerStatus (displays server status).
+    -   Function to display the player with the highest ping value.
+-   **Improvements:**
+    -   Updated warning (warn) functionality.
+    -   Updated error checking functionality.
 
-If you encounter any bugs or issues, feel free to contact me on Discord or through Issues.
+#### Version 1.5-Beta
 
-## Commands
+[ChangeLog](https://github.com/gamelist1990/ChestLockAddon/compare/1.4...1.6)
 
-* All owner commands require the (OP) tag, so please use `/tag @s add op`.
-* **`!help`**: Displays a list of available commands.
-* **`!chest`**: Opens the chest command menu.
-* **`!lang`**: Changes the language setting.
-* **`!dev`**: Developer command (op required).
-* **`!ui`**: Added a UI command for PS4/5.
-* **`!jpch`**: An experimental feature replicating LunaChat.
-* **`!item`**: Obtain an item that opens the UI.
-* **`!tpa`**: Send a teleport request.
-* **`!list`**: Displays player information (op required).
-* **`!antichat`**: Use with on|off|freeze Player |unfreeze Player (op required).
-* **`!lore`**:  `!lore -set apple` sets the description of the item in hand.  `!lore -rename test` renames the item in hand.
-* **`!join`**:  Use this command with subcommand -settings to set rules. Toggle display with (-true/-false) (op required).
-* **`!warpgate`**: This command allows you to create warp gates. Usage: `!warpgate -create gate_name destination_coordinates` / To delete: `!warpgate -delete gate_name` / To list gates: `-list`.
-* **`!about`**: Displays information about this addon.
-* **`!staff`**: This is a command specifically for staff (requires "staff" tag).
-* **`!report`**: Report players who are misbehaving.
+-   **New Features:**
+    -   `ping` command.
+    -   Voting functionality.
+    -   `getPlayersByName` command.
+    -   WebSocket event collection functionality.
+-   **Improvements:**
+    -   Updated ChestLockAddon, bug fixes.
+    -   Fixed Y-coordinate bug in the hub.
+    -   Updated `sample.ts`, `test.ts`.
+-   **Removed:**
+    -   Shop functionality.
 
-* More commands will be added in the future.
+#### Version 1.4 (Previous Version)
 
-## Changing the Prefix
+-   File reorganization, changed translation keys.
+-   Other bug fixes.
 
-You can change the command prefix in `handler.ts`.
+### Overview
 
-## Multilingual Support
+This addon is operated using commands that begin with `!`. UI support is available (`!item`, `!ui` commands). The `!` prefix can be changed in `handler.ts`. Multilingual support is available. Please report any bugs or problems to Discord or Issues.
 
-This addon supports multiple languages. Currently supported languages are:
+### Command List
 
-* **`ja_JP`**: Japanese (fully supported)
-* **`en_US`**: English (fully supported)
-* **`zh_CN`**: Chinese (Simplified) (partially supported)
-* **`ru_RU`**: Russian (partially supported)
-* **`ko_KR`**: Korean (partially supported)
-* **`fi_FI`**: Finnish (partially supported)
+-   Owner: Requires the `op` tag (`/tag @s add op`).
+-   Staff: Requires the `staff` tag.
 
-You can change the language using the **`!lang` command**.
+| Command            | Description                                                                   | Permission | Notes                                          |
+| :------------------ | :------------------------------------------------------------------------ | :--------- | :--------------------------------------------- |
+| `!help`             | Displays a list of available commands.                                  | Anyone     |                                                |
+| `!chest`            | Opens the chest commands.                                              | Anyone     |                                                |
+| `!lang`             | Changes the language settings.                                          | Anyone     |                                                |
+| `!dev`              | Developer-only commands.                                                | `op`       |                                                |
+| `!ui`               | Opens the UI (for PS4/5).                                               | Anyone     |                                                |
+| `!jpch`             | LunaChat recreation function (experimental).                              | Anyone     |                                                |
+| `!item`             | Gets the item to open the UI.                                           | Anyone     |                                                |
+| `!tpa`              | Sends a TP request.                                                     | Anyone     |                                                |
+| `!list`             | Displays player information.                                              | `op`       |                                                |
+| `!antichat`         | Anti-chat control (on/off/freeze/unfreeze).                             | `op`       | Example: `!antichat on`                        |
+| `!lore`             | Sets the description or name of an item.                               | Anyone     | Example: `!lore -set apple`, `!lore -rename test` |
+| `!join`             | Subcommand `-settings` for rule settings, `-true`/`-false` for display toggle. | `op`       |                                                |
+| `!warpgate`         | Create/delete/list warpgates.                                          | `op`       | Example: `!warpgate -create`, `-delete`, `-list`   |
+| `!about`            | Displays an overview of the addon.                                      | Anyone     |                                                |
+| `!staff`            | Staff-only commands.                                                    | `staff`    |                                                |
+| `!report`           | Report a cheating player.                                                 | Anyone     |                                                |
+| `!ping`             | Displays your ping value.                                                | Anyone     |                                                |
+| `!vote`             | Starts a vote.                                                          | `op`       | (Only admins can start, everyone can participate) |
+| `!getPlayersByName` | Retrieves information from a player's name.                               | Anyone     |                                                |
+| `!lockDown`         | Enables/disables lockdown mode.                                         | `op`       |                                                |
+| `!ban`              | Bans a player.                                                          | `op`       | Excludes players with `op` and `staff` tags     |
+| `!transfer`         | Cross-server data transfer.                                              | `op`       |                                                |
 
-## How to Use
+-   This is the command list for version 1.6.
 
-1. Download the addon from the releases.
-2. Enable the `-beta` experimental features in Minecraft.
-3. Join a world and use `!help` to see a list of commands.
-4. If you are a world administrator, it is recommended to add the "op" tag to yourself. 
+### Other Information
 
-## Others
-
-Language folders are located at src/command/langs/list. 
-(Please define translation keys in the JSON files) 
+-   **Prefix Change:** Can be changed in `handler.ts`.
+-   **Multilingual Support:** Japanese (ja_JP), English (en_US), Chinese (zh_CN), Russian (ru_RU), Korean (ko_KR), Finnish (fi_FI)
+    -   Fully Supported: `ja_JP`, `en_US`, `zh_CN`, `fi_FI`
+    -   Partially Supported: `ru_RU`, `ko_KR`
+    -   Language can be changed using the `!lang` command.
+-   **How to Use:**
+    1. Download the latest version from [Releases](https://github.com/gamelist1990/ChestLockAddon/releases).
+    2. In Minecraft, enable **[Beta API]** under Experimental Features.
+    3. After joining the world, use `!help` to check the commands.
+    4. Administrators: It is recommended to give yourself the `op` tag.
+-   **Language Files:** `src/command/langs/list` (JSON format).
+-   **Support:** [Discord](https://discord.com/invite/GJyqBm7Pyd)
+-   **Download:** [GitHub Releases](https://github.com/gamelist1990/ChestLockAddon/releases)

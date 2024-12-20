@@ -26,8 +26,8 @@ const configs = {
         modules: {
             airJump: false,
             speed: false,
-            killAura: true,
-            xray: true,
+            killAura: false,
+            xray: false,
             spam: true,
             editionFake: true
         }
