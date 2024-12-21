@@ -44,7 +44,7 @@ export function logData(): void {
   console.warn(JSON.stringify(chestLockAddonData, null, 2));
 }
 
-// ResetData
+// ResetData (データ破損時用)
 export function resetData(): void {
   chestLockAddonData = {};
   if (config().module.debugMode.enabled === true) {
@@ -52,4 +52,15 @@ export function resetData(): void {
   }
 
   world.sendMessage("§l§eWarn §aChestLockAddon DataBase is Reset");
+}
+
+// データのキーを出力する関数
+export function logKeys(): void {
+  const keys = Object.keys(chestLockAddonData);
+  if (keys.length === 0) {
+    console.warn('ChestLockAddon Data: No keys are currently registered.');
+    return;
+  }
+  console.warn('ChestLockAddon Data Keys:');
+  keys.forEach(key => console.warn(` - ${key}`));
 }

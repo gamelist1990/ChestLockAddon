@@ -6,6 +6,12 @@ interface TickEventData {
     tps: number;
 }
 
+/**
+ * @author mrpatches123
+ * @license MIT
+ */
+
+
 class TickEvent {
     private subscriptions: { [key: string]: () => void } = {};
     private lastTickDate?: number;
