@@ -18,6 +18,7 @@ import path from 'path';
 import os from 'os';
 import express from 'express';
 import { createContext, Script } from 'vm';
+import World from 'socket-be/typings/structures/World';
 
 
 
@@ -322,7 +323,7 @@ export async function getSharedPluginData(dataName: string): Promise<any> {
 
 export const minecraftCommands: { [commandName: string]: MinecraftCommand } = {};
 
-export function registerCommand(name: string, usage: string, description: string, adminOnly: boolean, execute: (sender: string, world: any, args: string[]) => Promise<void>): void {
+export function registerCommand(name: string, usage: string, description: string, adminOnly: boolean, execute: (sender: string, world: World, args: string[]) => Promise<void>): void {
     minecraftCommands[name] = { name, usage, description, adminOnly, execute };
 }
 

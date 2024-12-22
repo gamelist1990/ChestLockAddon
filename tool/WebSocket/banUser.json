@@ -6,5 +6,21 @@
     "bannedBy": "Server",
     "bannedAt": 1734093933456,
     "expiresAt": 1734180333456
+  },
+  {
+    "uuid": "e2de04ca-2f99-3029-970b-cef96184b963",
+    "name": "PickedTax877",
+    "reason": "BAN",
+    "bannedBy": "PEXkurann",
+    "bannedAt": 1734864760912,
+    "expiresAt": null
+  },
+  {
+    "uuid": "b80b482c-b052-3d5f-9aad-e49370db5b7e",
+    "name": "gold-byroad53",
+    "reason": "Hello",
+    "bannedBy": "PEXkurann",
+    "bannedAt": 1734871159330,
+    "expiresAt": 1734957559239
   }
 ]
