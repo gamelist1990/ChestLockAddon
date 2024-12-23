@@ -7,23 +7,6 @@ function calculateVectorLength(vector: Vector3): number {
     return Math.sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
 }
 
-// 2点間のベクトルを計算する関数
-function calculateVector(from: Vector3, to: Vector3): Vector3 {
-    return {
-        x: to.x - from.x,
-        y: to.y - from.y,
-        z: to.z - from.z,
-    };
-}
-
-// ベクトルを加算する関数
-function addVector(vec1: Vector3, vec2: Vector3): Vector3 {
-    return {
-        x: vec1.x + vec2.x,
-        y: vec1.y + vec2.y,
-        z: vec1.z + vec2.z,
-    }
-}
 
 
 export function detectKillAura(attackingPlayer: Player, event: EntityHurtAfterEvent, playerDataManager: PlayerDataManager, getPlayerCPS: (player: Player) => number): { cheatType: string } | null {
@@ -54,21 +37,14 @@ export function detectKillAura(attackingPlayer: Player, event: EntityHurtAfterEv
     // Reach Check (Lag Compensation)
     //通常のリーチは3.4block(動かない場合)
     //ラグで計算がずれる事を想定して6ぐらいにしとく
-    const maxReach = 6;
-    const pastPositions = data.pastPositions || [];
+    const maxReach = 7;
+    // 攻撃者と被攻撃者の現在位置から距離を計算
+    const distanceToTarget = calculateDistance(attackingPlayer.location, attackedEntity.location);
 
-    // 移動ベクトルの算出と予測位置の計算
-    let predictedPosition = attackingPlayer.location;
-    if (pastPositions.length > 1) {
-        const lastPosition = pastPositions[pastPositions.length - 1].location;
-        const secondLastPosition = pastPositions[pastPositions.length - 2].location;
-        const moveVector = calculateVector(secondLastPosition, lastPosition);
-        predictedPosition = addVector(lastPosition, moveVector)
-    }
-    // 予測位置から攻撃対象までの距離を計算
-    const distanceToTarget = calculateDistance(predictedPosition, attackedEntity.location)
+    // 距離が最大リーチを超えているかチェック
     if (distanceToTarget > maxReach) {
-        playerDataManager.update(attackingPlayer, { pastPositions: [] });
+        // 過去の位置情報をクリア (必要に応じて)
+        // playerDataManager.update(attackingPlayer, { pastPositions: [] }); 
         return { cheatType: `Kill Aura (Reach|${maxReach})` };
     }
 

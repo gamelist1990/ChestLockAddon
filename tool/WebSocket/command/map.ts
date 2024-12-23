@@ -22,14 +22,9 @@ const runningTasks = new Map<string, boolean>();
 
 const CreatorTag = "creator";
 
-registerCommand('map', `${MINECRAFT_COMMAND_PREFIX}map <x> <y> <z> <url> [tool:<0~3>] [-fix]`, `指定したURLの画像をMinecraftの地図として生成します(${CreatorTag})`, false, async (sender, world, args) => {
+registerCommand('map', `${MINECRAFT_COMMAND_PREFIX}map <x> <y> <z> <url> [tool:<0~3>] `, `指定したURLの画像をMinecraftの地図として生成します(${CreatorTag})`, true, async (sender, world, args) => {
     const playerName = sender;
-    const creator = await world.hasTag(playerName, `${CreatorTag}`);
-
-    if (!creator) {
-        world.sendMessage(`このコマンドを使用するには${CreatorTag}タグが必要です!`, sender);
-        return;
-    }
+ 
 
     // 同時実行数のチェック
     if (runningTasks.size >= MAX_CONCURRENT_EXECUTIONS) {
@@ -52,43 +47,31 @@ registerCommand('map', `${MINECRAFT_COMMAND_PREFIX}map <x> <y> <z> <url> [tool:<
         const originalZ = parseInt(args[2]);
         const imageUrl = args[3];
         const toolArg = args[4]; // tool パラメータ
-        const fixOption = args[5]; // -fix オプション
 
         if (isNaN(originalX) || isNaN(originalY) || isNaN(originalZ)) {
             world.sendMessage("座標は数値を指定してください。", sender);
+            runningTasks.delete(playerName);
             return;
         }
 
         if (!imageUrl) {
             world.sendMessage("画像のURLを指定してください。", sender);
+            runningTasks.delete(playerName);
             return;
         }
 
         if (!toolArg) {
             world.sendMessage("Toolを指定してください\n普通なら:0\n油絵:1\n 水彩画風:2\n高画質化:3", sender);
+            runningTasks.delete(playerName);
             return;
         }
 
-        // -fix オプションが指定されているか確認
-        const shouldFix = fixOption === '-fix';
 
         // 座標を修正 (必要な場合)
         let startX = originalX;
         let startZ = originalZ;
-        if (shouldFix) {
-            startX = Math.floor(originalX / 128) * 128;
-            startZ = Math.floor(originalZ / 128) * 128;
-            if (startX !== originalX || startZ !== originalZ) {
-                world.sendMessage(`座標を (${startX}, ${originalY}, ${startZ}) に修正しました.`, sender);
-            }
-        } else {
-            // 座標が地図の左上の端かどうかを確認
-            const isTopLeftCorner = originalX % 128 === 0 && originalZ % 128 === 0;
-            if (!isTopLeftCorner) {
-                world.sendMessage(`警告: (${originalX}, ${originalZ}) は地図の左上の端ではありません。`, sender);
-                world.sendMessage(`-fix オプションを使用すると、自動的に修正できます.`, sender);
-            }
-        }
+
+       
 
         const startY = originalY;
 
@@ -103,7 +86,7 @@ registerCommand('map', `${MINECRAFT_COMMAND_PREFIX}map <x> <y> <z> <url> [tool:<
 
         try {
             if (debugMode) {
-                console.log(`[デバッグ] 地図生成開始: プレイヤー=${playerName}, 座標=(${startX}, ${startY}, ${startZ}), URL=${imageUrl}, ツール=${toolId}, 座標修正=${shouldFix}`);
+                console.log(`[デバッグ] 地図生成開始: プレイヤー=${playerName}, 座標=(${startX}, ${startY}, ${startZ}), URL=${imageUrl}, ツール=${toolId}`);
             }
 
             const response = await fetch(imageUrl);
@@ -158,14 +141,6 @@ registerCommand('map', `${MINECRAFT_COMMAND_PREFIX}map <x> <y> <z> <url> [tool:<
             } else {
                 image = image.resize(size, size, { fit: 'fill', background: { r: 255, g: 255, b: 255, alpha: 1 } });
             }
-
-            image.toFile(`assets/png/output-${playerName}.png`, (err) => {
-                if (err) {
-                    console.error("画像出力エラー:", err);
-                } else {
-                    console.log(`リサイズ後の画像を output-${playerName}.png に保存しました`);
-                }
-            });
 
             const { data, info } = await image.raw().toBuffer({ resolveWithObject: true });
 

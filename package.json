@@ -11,6 +11,7 @@
         "build2": "cd tool/ErrorCheck && bun build index.ts --compile --outfile ErrorCheck"
     },
     "dependencies": {
+        "@discordjs/opus": "^0.9.0",
         "@minecraft/server": "^1.17.0-beta.1.21.50-stable",
         "@minecraft/server-admin": "^1.0.0-beta.1.21.51-stable",
         "@minecraft/server-ui": "^1.4.0-beta.1.21.50-stable",
@@ -25,11 +26,14 @@
         "multer": "^1.4.5-lts.1",
         "node-os-utils": "^1.3.7",
         "npm": "^10.8.3",
+        "opusscript": "^0.1.1",
         "path": "^0.12.7",
+        "pcm-player": "^0.0.18",
         "sharp": "^0.33.5",
         "socket-be": "^1.2.4",
         "tiny-segmenter": "^0.2.0",
-        "tsc": "^2.0.4"
+        "tsc": "^2.0.4",
+        "wavefile": "^11.0.0"
     },
     "devDependencies": {
         "@types/bcrypt": "^5.0.2",

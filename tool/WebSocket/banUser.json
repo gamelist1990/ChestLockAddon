@@ -22,5 +22,13 @@
     "bannedBy": "PEXkurann",
     "bannedAt": 1734871159330,
     "expiresAt": 1734957559239
+  },
+  {
+    "uuid": "30ae996e-9e24-3048-85aa-b7a285c1ab15",
+    "name": "アタル",
+    "reason": "荒らし",
+    "bannedBy": "PEXkurann",
+    "bannedAt": 1734936908827,
+    "expiresAt": null
   }
 ]

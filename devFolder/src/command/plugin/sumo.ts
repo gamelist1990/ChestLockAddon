@@ -92,7 +92,7 @@ world.afterEvents.entityHitEntity.subscribe((event) => {
             sumoTagsInUse.push(sumoTag);
 
             attackingPlayer.sendMessage(translate(attackingPlayer, "command.sumo.play1", { hitPlayer: `${hitPlayer.name}` }));
-            hitPlayer.sendMessage(translate(hitPlayer, "command.sumo.play2", { hitPlayer: `${attackingPlayer.name}` }));
+            hitPlayer.sendMessage(translate(hitPlayer, "command.sumo.play2", { attackingPlayer: `${attackingPlayer.name}` }));
             attackingPlayer.sendMessage(translate(attackingPlayer, "command.sumo.start",
                 {
                     attackingPlayer: `${attackingPlayer.name}`,
