@@ -11,17 +11,25 @@ const debugMode = false;
 // 同時に処理する列数
 const NUM_COLUMNS = 48;
 
-// 遅延時間（ミリ秒）
+// 遅延時間
 const DELAY_TIME = 0;
 
-// 最大同時実行数
+// 最大同時実行数(負荷率を考え2ぐらい)
 const MAX_CONCURRENT_EXECUTIONS = 2;
 
 // 実行中のタスクを追跡するマップ
 const runningTasks = new Map<string, boolean>();
 
-registerCommand('map', `${MINECRAFT_COMMAND_PREFIX}map <x> <y> <z> <url> [tool:<tool_id>]`, '指定したURLの画像をMinecraftの地図として生成します', true, async (sender, world, args) => {
+const CreatorTag = "creator";
+
+registerCommand('map', `${MINECRAFT_COMMAND_PREFIX}map <x> <y> <z> <url> [tool:<0~3>] [-fix]`, `指定したURLの画像をMinecraftの地図として生成します(${CreatorTag})`, false, async (sender, world, args) => {
     const playerName = sender;
+    const creator = await world.hasTag(playerName, `${CreatorTag}`);
+
+    if (!creator) {
+        world.sendMessage(`このコマンドを使用するには${CreatorTag}タグが必要です!`, sender);
+        return;
+    }
 
     // 同時実行数のチェック
     if (runningTasks.size >= MAX_CONCURRENT_EXECUTIONS) {
@@ -29,18 +37,24 @@ registerCommand('map', `${MINECRAFT_COMMAND_PREFIX}map <x> <y> <z> <url> [tool:<
         return;
     }
 
+    if (runningTasks.has(playerName)) {
+        world.sendMessage(`あなたは既に地図を生成中です。完了するまで待ってから再度実行してください。`, sender);
+        return;
+    }
+
     // タスクの開始を記録
     runningTasks.set(playerName, true);
 
     try {
-        // 左上の座標
-        const startX = parseInt(args[0]);
-        const startY = parseInt(args[1]);
-        const startZ = parseInt(args[2]);
+        // 座標
+        const originalX = parseInt(args[0]);
+        const originalY = parseInt(args[1]);
+        const originalZ = parseInt(args[2]);
         const imageUrl = args[3];
         const toolArg = args[4]; // tool パラメータ
+        const fixOption = args[5]; // -fix オプション
 
-        if (isNaN(startX) || isNaN(startY) || isNaN(startZ)) {
+        if (isNaN(originalX) || isNaN(originalY) || isNaN(originalZ)) {
             world.sendMessage("座標は数値を指定してください。", sender);
             return;
         }
@@ -49,6 +63,34 @@ registerCommand('map', `${MINECRAFT_COMMAND_PREFIX}map <x> <y> <z> <url> [tool:<
             world.sendMessage("画像のURLを指定してください。", sender);
             return;
         }
+
+        if (!toolArg) {
+            world.sendMessage("Toolを指定してください\n普通なら:0\n油絵:1\n 水彩画風:2\n高画質化:3", sender);
+            return;
+        }
+
+        // -fix オプションが指定されているか確認
+        const shouldFix = fixOption === '-fix';
+
+        // 座標を修正 (必要な場合)
+        let startX = originalX;
+        let startZ = originalZ;
+        if (shouldFix) {
+            startX = Math.floor(originalX / 128) * 128;
+            startZ = Math.floor(originalZ / 128) * 128;
+            if (startX !== originalX || startZ !== originalZ) {
+                world.sendMessage(`座標を (${startX}, ${originalY}, ${startZ}) に修正しました.`, sender);
+            }
+        } else {
+            // 座標が地図の左上の端かどうかを確認
+            const isTopLeftCorner = originalX % 128 === 0 && originalZ % 128 === 0;
+            if (!isTopLeftCorner) {
+                world.sendMessage(`警告: (${originalX}, ${originalZ}) は地図の左上の端ではありません。`, sender);
+                world.sendMessage(`-fix オプションを使用すると、自動的に修正できます.`, sender);
+            }
+        }
+
+        const startY = originalY;
 
         // tool パラメータの解析
         let toolId = 0; // デフォルトは 0 (最近傍法)
@@ -61,7 +103,7 @@ registerCommand('map', `${MINECRAFT_COMMAND_PREFIX}map <x> <y> <z> <url> [tool:<
 
         try {
             if (debugMode) {
-                console.log(`[デバッグ] 地図生成開始: プレイヤー=${playerName}, 座標=(${startX}, ${startY}, ${startZ}), URL=${imageUrl}, ツール=${toolId}`);
+                console.log(`[デバッグ] 地図生成開始: プレイヤー=${playerName}, 座標=(${startX}, ${startY}, ${startZ}), URL=${imageUrl}, ツール=${toolId}, 座標修正=${shouldFix}`);
             }
 
             const response = await fetch(imageUrl);
@@ -89,22 +131,29 @@ registerCommand('map', `${MINECRAFT_COMMAND_PREFIX}map <x> <y> <z> <url> [tool:<
             // 画像を正方形に整形（128x128にリサイズ）
             const size = 128;
 
-            // toolId: 3 の場合、アップスケーリング風の処理
+            // toolId: 3 の場合、アップスケーリング風の処理 (劣化なしで128x128にリサイズし、さらに高画質化処理を行う)
             if (toolId === 3) {
-                const scaleFactor = 6; 
                 const originalMetadata = await image.metadata();
-                const newWidth = originalMetadata.width ? originalMetadata.width * scaleFactor : size;
-                const newHeight = originalMetadata.height ? originalMetadata.height * scaleFactor : size;
+                const originalWidth = originalMetadata.width || size;
+                const originalHeight = originalMetadata.height || size;
 
-                // Lanczos法でリサイズ
-                image = image.resize(newWidth, newHeight, {
-                    kernel: sharp.kernel.lanczos3,
-                    withoutEnlargement: false,
-                });
-                image = image.resize(size, size, {
-                    kernel: sharp.kernel.nearest,
-                    withoutEnlargement: false,
-                });
+                // 元の画像が128x128より小さい場合は、Lanczos法で拡大
+                if (originalWidth < size || originalHeight < size) {
+                    image = image.resize(size, size, {
+                        kernel: sharp.kernel.lanczos3,
+                        withoutEnlargement: false,
+                    });
+                } else {
+                    // 元の画像が128x128以上の場合は、Lanczos法で縮小
+                    image = image.resize(size, size, {
+                        kernel: sharp.kernel.lanczos3,
+                        withoutEnlargement: true,
+                    });
+                }
+
+                // 高画質化処理 (例: unsharp masking)
+                // 必要に応じて調整
+                image = image.sharpen({ sigma: 1.5 }); // シャープネスを調整 (例)
 
             } else {
                 image = image.resize(size, size, { fit: 'fill', background: { r: 255, g: 255, b: 255, alpha: 1 } });
@@ -126,6 +175,7 @@ registerCommand('map', `${MINECRAFT_COMMAND_PREFIX}map <x> <y> <z> <url> [tool:<
 
             // 地図生成開始のメッセージ
             world.sendMessage(`(${startX}, ${startY}, ${startZ}) に地図の生成を開始します...`, sender);
+            world.sendMessage(`§f§l[Server]§r 地図生成開始: プレイヤー=${playerName}, 座標=(${startX}, ${startY}, ${startZ})`);
 
             const startTime = Date.now();
 
@@ -192,7 +242,7 @@ registerCommand('map', `${MINECRAFT_COMMAND_PREFIX}map <x> <y> <z> <url> [tool:<
             }
 
             // 地図生成完了のメッセージ
-            world.sendMessage(`地図の生成が完了しました。合計 ${blockCount} ブロックを配置しました。座標: ${ startX}| ${ startY }| ${ startZ} `);
+            world.sendMessage(`地図の生成が完了しました プレイヤー:${playerName} 合計:${blockCount} ブロックを配置しました。座標: ${startX}| ${startY}| ${startZ} `);
             if (debugMode) {
                 console.log(`[デバッグ] 地図生成完了: 合計ブロック数=${blockCount}, プレイヤー=${playerName}`);
             }

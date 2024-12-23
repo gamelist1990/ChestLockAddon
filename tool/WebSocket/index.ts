@@ -305,21 +305,6 @@ const httpServer = app.listen(5000, () => {
     console.log('ポート5000でバックエンドAPIを起動しました');
 });
 
-// getSharedPluginData関数を修正 (dataNameのみを受け取る)
-export async function getSharedPluginData(dataName: string): Promise<any> {
-    try {
-        const response = await fetch(`http://localhost:5000/api/getData/${dataName}`);
-        if (!response.ok) {
-            const errorData = await response.json(); // エラーレスポンスも取得
-            throw new Error(`HTTP error ${response.status}: ${errorData.error}`); // エラーメッセージに詳細を追加
-        }
-        return await response.json();
-    } catch (error) {
-        console.error(`Error getting shared plugin data for "${dataName}":`, error);
-        return null;
-    }
-}
-
 
 export const minecraftCommands: { [commandName: string]: MinecraftCommand } = {};
 
@@ -762,6 +747,7 @@ server.events.on('worldAdd', async () => {
 server.events.on('worldRemove', async () => {
     isWorldLoaded = false;
     clearInterval(ServerStauts);
+    await sendServerStatus(true);
 })
 
 server.events.on('playerChat', async (event) => {
@@ -1035,20 +1021,48 @@ discordClient.on('ready', async () => {
         }
     }
 
+    //プロセス終了時の動作
 
     process.on('SIGINT', async () => {
-        console.log("Process Clear.");
+        await handleShutdown('SIGINT');
+    });
+
+    process.on('SIGTERM', async () => {
+        await handleShutdown('SIGTERM');
+    });
+
+    process.on('exit', async (code) => {
+        if (code !== 0) {
+            await handleShutdown('exit with error code: ' + code);
+        }
+    });
+
+    // Windows specific event for handling console closing
+    if (process.platform === 'win32') {
+        process.on('SIGHUP', async () => {
+            await handleShutdown('SIGHUP');
+        });
+    }
+
+
+
+    async function handleShutdown(signal) {
+        console.log(`Received ${signal}. Process Clear.`);
+
         const world = server.getWorlds()[0];
         if (world) {
-            world.sendMessage(`§l§f[Server]§r:§bWebSocket§aが正常に終了しました`)
+            world.sendMessage(`§l§f[Server]§r:§bWebSocket§aが正常に終了しました`);
         }
+
         clearTimeout(updateVoiceChannelsTimeout);
         clearInterval(updatePlayersInterval);
         clearInterval(ServerStauts);
+
         discordClient.user?.setPresence({ status: 'invisible' });
+
         try {
             const lobbyChannel = guild.channels.cache.get(LOBBY_VC_ID);
-            if (lobbyChannel && lobbyChannel.isVoiceBased()) { //型ガードを追加
+            if (lobbyChannel && lobbyChannel.isVoiceBased()) {
                 await Promise.all(lobbyChannel.members.map(async (member) => member.voice.setMute(false).catch((error) => console.error(`Error unmuting ${member.displayName}:`, error))));
             }
         } catch (error) {
@@ -1061,7 +1075,7 @@ discordClient.on('ready', async () => {
             discordClient.destroy();
             process.exit(0);
         }
-    });
+    }
 
 
     try {

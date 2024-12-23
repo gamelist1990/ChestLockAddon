@@ -4,7 +4,34 @@ import {
 } from '../index';
 import fetch from 'node-fetch';
 
+interface AreaData {
+    name: string;
+    enName: string;
+    code: string;
+}
 
+const areas: AreaData[] = [];
+let areaJson: any = {};
+
+async function loadAreas() {
+    try {
+        areaJson = await fetch('https://www.jma.go.jp/bosai/common/const/area.json').then(res => res.json());
+
+        for (const code in areaJson.offices) {
+            areas.push({
+                name: areaJson.offices[code].name,
+                enName: areaJson.offices[code].enName,
+                code: code
+            });
+        }
+
+        //console.log("Loaded areas:", areas); 
+    } catch (error) {
+        console.error("Error loading areas:", error);
+    }
+}
+
+loadAreas();
 
 registerCommand('wh', `${MINECRAFT_COMMAND_PREFIX}wh <県名>`, '指定した地域のお天気情報を取得します', false, async (sender, world, args) => {
     let areaName = args.join(' ');
@@ -14,7 +41,6 @@ registerCommand('wh', `${MINECRAFT_COMMAND_PREFIX}wh <県名>`, '指定した地
     }
 
     try {
-        const areaJson = await fetch('https://www.jma.go.jp/bosai/common/const/area.json').then(res => res.json());
         let areaCode: string | null = null;
 
         function findAreaCode(areaName: string, data: any): string | null {
@@ -42,10 +68,6 @@ registerCommand('wh', `${MINECRAFT_COMMAND_PREFIX}wh <県名>`, '指定した地
             }
         }
 
-
-
-
-
         if (!areaCode) {
             world.sendMessage(`地域名 "${areaName}" が見つかりません。`, sender);
             return;
@@ -69,7 +91,6 @@ registerCommand('wh', `${MINECRAFT_COMMAND_PREFIX}wh <県名>`, '指定した地
 
             let message = `[${publishingOffice}] (${reportDatetime})\n`;
 
-
             for (const timeseries of weatherJson[0].timeSeries) {
                 let targetAreas = timeseries.areas;
 
@@ -92,10 +113,8 @@ registerCommand('wh', `${MINECRAFT_COMMAND_PREFIX}wh <県名>`, '指定した地
                         message += `\n[${area}] (${date}): ${weather}\n`;
                     }
 
-
                 });
             }
-
 
             world.sendMessage(message, sender);
 
@@ -107,9 +126,36 @@ registerCommand('wh', `${MINECRAFT_COMMAND_PREFIX}wh <県名>`, '指定した地
             console.error("気象庁APIエラー:", errorText);
         }
 
-
     } catch (error) {
         console.error("お天気情報取得エラー:", error);
         world.sendMessage("お天気情報の取得に失敗しました。", sender);
     }
+});
+
+registerCommand('wh list', `${MINECRAFT_COMMAND_PREFIX}wh list <page>`, '見れる地域のリストを表示します', false, async (sender, world, args) => {
+    const pageSize = 3;
+    let page = parseInt(args[0]) || 1;
+
+    if (page < 1) {
+        page = 1;
+    }
+
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const pageAreas = areas.slice(startIndex, endIndex);
+
+    if (pageAreas.length === 0) {
+        world.sendMessage("指定されたページには地域情報がありません。", sender);
+        return;
+    }
+
+    let message = `地域リスト (Page ${page}):\n`;
+    pageAreas.forEach(area => {
+        message += `- ${area.name} (${area.enName})\n`;
+    });
+
+    const totalPages = Math.ceil(areas.length / pageSize);
+    message += `\nPage ${page} of ${totalPages}`;
+
+    world.sendMessage(message, sender);
 });

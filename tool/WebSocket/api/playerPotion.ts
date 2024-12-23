@@ -359,7 +359,7 @@ async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse
                             if (passwordMatch) {
 
                                 const otherShops = users.filter(user => user.shop && user.username !== username);
-                                const shopData = otherShops.map(user => ({ username: user.username, items: user.shop?.items || [] }));
+                                const shopData =     otherShops.map(user => ({ username: user.username, items: user.shop?.items || [] }));
                                 sendJSON({ shops: shopData }, res);
                             } else {
                                 sendError(401, 'パスワードが違います', res);

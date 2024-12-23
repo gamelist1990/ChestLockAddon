@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebVC</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        #userList {
+            list-style: none;
+            padding: 0;
+        }
+
+        #userList li {
+            margin-bottom: 5px;
+        }
+
+        #log {
+            border: 1px solid #ccc;
+            height: 200px;
+            overflow-y: scroll;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>WebVC</h1>
+
+    <div>
+        <label for="username">ユーザー名:</label>
+        <select id="username">
+            <!-- プレイヤーリストがここに挿入されます -->
+        </select>
+        <button id="connectBtn">接続</button>
+        <button id="muteBtn" disabled>ミュート</button>
+        <button id="unmuteBtn" disabled>ミュート解除</button>
+        <button id="disconnectBtn" disabled>切断</button>
+    </div>
+
+    <div>
+        <h2>近くのユーザー:</h2>
+        <ul id="userList"></ul>
+    </div>
+
+    <div>
+        <h2>ログ:</h2>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const usernameSelect = document.getElementById('username');
+        const connectBtn = document.getElementById('connectBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const unmuteBtn = document.getElementById('unmuteBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const userList = document.getElementById('userList');
+        const logDiv = document.getElementById('log');
+
+        let socket;
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let audioSources = {}; // ユーザーごとの Audio ノードを管理するオブジェクト
+
+        // プレイヤーリストを取得してセレクトボックスに挿入する関数
+        async function fetchPlayerList() {
+            try {
+                const response = await fetch('http://localhost:5000/api/get/playerList'); // Minecraft サーバーの API
+                if (!response.ok) {
+                    throw new Error('Failed to fetch player list');
+                }
+                const playerList = await response.json();
+                playerList.forEach(player => {
+                    const option = document.createElement('option');
+                    option.value = player.name;
+                    option.textContent = player.name;
+                    usernameSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('プレイヤーリスト取得エラー:', error);
+                logMessage('プレイヤーリストの取得に失敗しました');
+            }
+        }
+
+        // ページ読み込み時にプレイヤーリストを取得
+        fetchPlayerList();
+
+        connectBtn.addEventListener('click', () => {
+            const username = usernameSelect.value;
+            if (username) {
+                connectWebSocket(username);
+                connectBtn.disabled = true;
+                muteBtn.disabled = false;
+                unmuteBtn.disabled = false;
+                disconnectBtn.disabled = false;
+            } else {
+                logMessage('ユーザー名を選択してください');
+            }
+        });
+
+        muteBtn.addEventListener('click', () => {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type: 'mute' }));
+                muteBtn.disabled = true;
+                unmuteBtn.disabled = false;
+            }
+        });
+
+        unmuteBtn.addEventListener('click', () => {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type: 'unmute' }));
+                muteBtn.disabled = false;
+                unmuteBtn.disabled = true;
+            }
+        });
+
+        disconnectBtn.addEventListener('click', () => {
+            if (socket) {
+                socket.close();
+            }
+        });
+
+        function connectWebSocket(username) {
+            //ngrok
+            // const serverUrl = `wss://<random-string>.ngrok.io/ws?username=${username}`;
+            //localhost.run
+            // const serverUrl = `wss://yourname.lhr.rocks/ws?username=${username}`;
+
+            // 実際には、ngrok や localhost.run で発行された URL をここに設定します。
+            const serverUrl = `wss://4d26-222-230-173-49.ngrok-free.app/?username=${username}`;
+            socket = new WebSocket(serverUrl);
+
+            socket.addEventListener('open', () => {
+                logMessage('サーバーに接続しました');
+                // 接続時に位置情報を送信
+                sendPosition();
+                startRecording();
+            });
+
+            socket.addEventListener('message', (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'userList') {
+                    updateUserList(data.users);
+                } else if (data.type === 'voice') {
+                    playAudio(data.from, data.data, data.volume); // data.from を追加
+                } else if (data.type === 'log') {
+                    logMessage(data.message);
+                }
+            });
+
+            socket.addEventListener('close', () => {
+                logMessage('サーバーから切断しました');
+                connectBtn.disabled = false;
+                muteBtn.disabled = true;
+                unmuteBtn.disabled = true;
+                disconnectBtn.disabled = true;
+                userList.innerHTML = '';
+                stopRecording();
+            });
+
+            socket.addEventListener('error', (error) => {
+                console.error('WebSocket エラー:', error);
+                logMessage('エラーが発生しました');
+            });
+        }
+
+        function updateUserList(users) {
+            userList.innerHTML = '';
+            users.forEach(user => {
+                const li = document.createElement('li');
+                li.textContent = user;
+                userList.appendChild(li);
+            });
+        }
+
+        function logMessage(message) {
+            const p = document.createElement('p');
+            p.textContent = message;
+            logDiv.appendChild(p);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function sendPosition() {
+            // ここで Minecraft サーバーから位置情報を取得し、送信する
+            try {
+                const response = await fetch(`http://localhost:5000/api/get/WorldPlayer?playerName=${usernameSelect.value}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch player data');
+                }
+                const playerData = await response.json();
+                const position = {
+                    x: playerData.position.x,
+                    y: playerData.position.y,
+                    z: playerData.position.z,
+                };
+
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({ type: 'position', position }));
+                }
+            } catch (error) {
+                console.error('位置情報取得エラー:', error);
+                logMessage('位置情報の取得に失敗しました');
+            }
+        }
+
+        // 1秒ごとに位置情報を送信
+        setInterval(() => {
+            sendPosition();
+        }, 1000);
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.addEventListener('dataavailable', (event) => {
+                    audioChunks.push(event.data);
+                });
+                mediaRecorder.addEventListener('stop', () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    audioChunks = [];
+                    sendAudio(audioBlob);
+                });
+                mediaRecorder.start(1000); // 1秒ごとにデータを送信
+            } catch (error) {
+                console.error('マイクアクセスエラー:', error);
+                logMessage('マイクへのアクセスが許可されませんでした');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+        }
+
+        function sendAudio(audioBlob) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64Audio = reader.result.split(',')[1];
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({ type: 'voice', data: base64Audio }));
+                }
+            };
+            reader.readAsDataURL(audioBlob);
+        }
+
+        // 修正された playAudio 関数
+        async function playAudio(from, base64Audio, volume) {
+            const audioData = atob(base64Audio);
+            const audioDataBuffer = new Uint8Array(audioData.length);
+            for (let i = 0; i < audioData.length; i++) {
+                audioDataBuffer[i] = audioData.charCodeAt(i);
+            }
+            const audioBuffer = await audioContext.decodeAudioData(audioDataBuffer.buffer);
+            // ユーザーの音声ソースが既に存在する場合は、それを停止して新しいものに置き換える
+            if (audioSources[from]) {
+                audioSources[from].source.stop();
+            }
+
+            const source = audioContext.createBufferSource();
+            const gainNode = audioContext.createGain();
+
+            source.buffer = audioBuffer;
+            source.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            gainNode.gain.value = volume;
+
+            source.start(0);
+
+            // 再生が終了したらソースを削除
+            source.onended = () => {
+                delete audioSources[from];
+            };
+
+            // ユーザーごとの音声ソースを管理
+            audioSources[from] = { source, gainNode };
+        }
+    </script>
+</body>
+
+</html>
