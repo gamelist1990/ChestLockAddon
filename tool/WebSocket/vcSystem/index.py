@@ -10,7 +10,7 @@ from aiohttp import web
 import websockets
 
 HTTP_PORT = 8080
-WS_PORT = 19134
+WS_PORT = 19133
 API_BASE_URL = "http://localhost:5000/api/get"  # 外部APIサーバー 要書き換え
 
 user_positions = []
@@ -146,8 +146,8 @@ async def handle_websocket(websocket):
                                 await broadcast_user_list()
                         else:
                             print(f"Invalid position data received from {username}:", position)
-                  else: #音の処理
-                     await broadcast_audio_data(username, message) #修正 audio_dataのみを送る
+                  else: 
+                     await broadcast_audio_data(username, message) 
                      print("音声データを送りました。")
                      
                      
@@ -185,10 +185,8 @@ async def broadcast_audio_data(sender, audio_data):
         for user in nearby_users:
             user_socket = find_socket_by_username(user["username"])
             if user_socket:
-                try:
-                     # ここでメッセージのタイプを変更し、直接バイナリデータを送信します
-                    
-                    await user_socket.send(audio_data) #修正 audio_dataのみを送る
+                try:                    
+                    await user_socket.send(audio_data) 
 
                 except Exception as e:
                     print(f"Error sending audio data to {user['username']}: {e}")

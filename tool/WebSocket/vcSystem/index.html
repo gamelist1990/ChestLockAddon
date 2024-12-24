@@ -4,10 +4,13 @@
 <head>
     <title>WebVC</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         body {
             font-family: sans-serif;
             margin: 20px;
+            -webkit-text-size-adjust: 100%;
+            /* iOSでのテキストサイズ自動調整を無効化 */
         }
 
         label {
@@ -23,6 +26,8 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            /* タップ時のハイライトを無効化 */
         }
 
         button:disabled {
@@ -44,18 +49,32 @@
             height: 200px;
             overflow-y: scroll;
             padding: 10px;
+            -webkit-overflow-scrolling: touch;
+            /* iOSでのスムーズスクロール */
+        }
+
+        /* iPhoneのランドスケープモードでのスタイル */
+        @media only screen and (max-width: 768px) and (orientation: landscape) {
+            body {
+                margin: 10px;
+            }
+
+            #log {
+                height: 150px;
+            }
         }
     </style>
 </head>
 
 <body>
     <h1>WebVC</h1>
-
+    <p>ミュート中は自分の声が聞こえるようにしてあります()</p>
     <div>
         <label for="username">ユーザー名:</label>
         <select id="username"></select>
         <button id="connectBtn">接続</button>
         <button id="disconnectBtn" disabled>切断</button>
+        <button id="muteBtn">ミュート</button>
     </div>
 
     <div>
@@ -72,6 +91,7 @@
         const usernameSelect = document.getElementById('username');
         const connectBtn = document.getElementById('connectBtn');
         const disconnectBtn = document.getElementById('disconnectBtn');
+        const muteBtn = document.getElementById('muteBtn');
         const userList = document.getElementById('userList');
         const logDiv = document.getElementById('log');
 
@@ -81,10 +101,15 @@
         let sendAudioQueue = [];
         let receiveAudioQueue = [];
         let isSending = false;
-        // let isPlaying = false;
         let intervalId;
-        // ユーザー名とボリュームを保持するオブジェクトは不要
-        // let userVolumes = {};
+        let isMuted = false; 
+
+        // ミュートボタンのイベントリスナー
+        muteBtn.addEventListener('click', () => {
+            isMuted = !isMuted; // ミュート状態を切り替え
+            muteBtn.textContent = isMuted ? 'ミュート解除' : 'ミュート'; // ボタンのテキストを更新
+            logMessage(isMuted ? 'ミュートしました' : 'ミュート解除しました'); // ログにミュート状態を表示
+        });
 
         window.addEventListener('load', async () => {
             await fetchPlayerList();
@@ -175,8 +200,6 @@
 
                 userList.appendChild(li);
 
-                // グローバルオブジェクトにユーザー名とボリュームを格納(不要な処理なのでコメントアウト)
-                // userVolumes[user.username] = user.volume;
             });
         }
 
@@ -188,7 +211,7 @@
         }
 
         function connectWebSocket(username) {
-            const serverUrl = `ws://localhost:19134/?username=${username}`;
+            const serverUrl = `wss://bfxmknk4-19133.asse.devtunnels.ms/?username=${username}`;
             socket = new WebSocket(serverUrl, "binary");
             socket.binaryType = 'arraybuffer';
 
@@ -200,7 +223,7 @@
             socket.addEventListener('message', (event) => {
                 if (event.data instanceof ArrayBuffer) {
                     // event.data をそのまま receiveAudioQueue に追加
-                    const messageData = { username: null, audioData: event.data }; // ユーザー名は後で設定
+                    const messageData = { username: null, audioData: event.data };
                     receiveAudioQueue.push(messageData);
                 } else {
                     try {
@@ -250,11 +273,20 @@
 
         async function startRecording() {
             try {
+                // マイクの許可を求める(httpsであれば不要)
+                if (navigator.mediaDevices.getUserMedia) {
+                    const permission = await navigator.permissions.query({ name: 'microphone' });
+                    if (permission.state !== 'granted') {
+                        await navigator.mediaDevices.getUserMedia({ audio: true });
+                    }
+                }
+
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true } });
                 if (!audioContext) {
                     audioContext = new AudioContext();
                 }
 
+                // 型付き配列のテストとmediaRecorderの設定(型付き配列は意味がないと思うので消去)
                 const mimeType = "audio/webm;codecs=opus";
                 if (!MediaRecorder.isTypeSupported(mimeType)) {
                     console.error("audio/webm;codecs=opus is not supported");
@@ -268,15 +300,18 @@
 
                 mediaRecorder = new MediaRecorder(stream, {
                     mimeType: mimeType,
-                    audioBitsPerSecond: 128000
+                    audioBitsPerSecond: 64000
                 });
 
+                //128000 高
+                //64000 通常
+
+                // mediaRecorderのスタートと再スタートの設定
                 mediaRecorder.ondataavailable = async (event) => {
                     handleLocalAudioData(event);
                 };
 
                 mediaRecorder.start(1000);
-
                 intervalId = setInterval(restartRecording, 1000);
 
             } catch (error) {
@@ -299,6 +334,8 @@
         };
 
         async function handleLocalAudioData(event) {
+            // ミュート状態がtrueの場合は、データの送信をスキップ
+            if (isMuted) return;
             const minDataSize = 1000;
             if (event.data.size > minDataSize) {
                 const reader = new FileReader();
@@ -399,8 +436,6 @@
                 gainNode.connect(audioContext.destination);
 
                 source.onended = () => {
-                    // ここで必要ならば isPlaying を false に設定できますが、
-                    // 現在の実装ではこの変数は使用されていません。
                 };
 
                 source.start();
