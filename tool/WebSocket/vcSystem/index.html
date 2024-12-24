@@ -5,33 +5,7 @@
     <title>WebVC</title>
     <meta charset="utf-8">
     <style>
-        body {
-            font-family: sans-serif;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        div {
-            margin: 10px;
-        }
-
-        #userList {
-            list-style: none;
-            padding: 0;
-        }
-
-        #userList li {
-            margin-bottom: 5px;
-        }
-
-        #log {
-            border: 1px solid #ccc;
-            padding: 5px;
-            height: 200px;
-            overflow-y: scroll;
-        }
+        /* ... (スタイルは変更なし) ... */
     </style>
 </head>
 
@@ -65,10 +39,8 @@
         let socket;
         let mediaRecorder;
         let audioContext;
-        const CHUNK_SIZE = 20 * 48000 / 1000; // 20ms分のサンプル数 (サンプルレート48kHzを想定)
         let audioQueue = [];
         let playing = false;
-
 
         window.addEventListener('load', async () => {
             await fetchPlayerList();
@@ -78,10 +50,10 @@
             const username = usernameSelect.value;
             if (username) {
                 if (!audioContext) {
-                    audioContext = new AudioContext();
+                    audioContext = new AudioContext({ sampleRate: 48000 }); // Opusは48kHzを推奨
                 }
-
                 connectWebSocket(username);
+                startRecording();
                 connectBtn.disabled = true;
                 disconnectBtn.disabled = false;
             } else {
@@ -93,6 +65,7 @@
             if (socket) {
                 socket.close();
             }
+            stopRecording(); // 録音を停止
         });
 
         async function fetchPlayerList() {
@@ -142,42 +115,27 @@
 
             socket.addEventListener('open', () => {
                 logMessage('サーバーに接続しました');
-                startRecording();
                 socket.send(JSON.stringify({ type: 'getPlayerList' }));
             });
 
             socket.addEventListener('message', (event) => {
-                console.log("Received data type:", event.data.constructor.name);
-
                 if (event.data instanceof ArrayBuffer) {
-                    console.log("Received PCM audio data:", event.data.byteLength, "bytes");
+                    console.log("Received audio data:", event.data.byteLength, "bytes");
                     audioQueue.push(event.data);
                     if (!playing) {
                         playFromQueue();
                     }
-                } else if (typeof event.data === 'string') {
+                } else {
                     try {
                         const data = JSON.parse(event.data);
-
                         if (data.type === 'playerList') {
                             updatePlayerSelect(data.players);
                         } else if (data.type === 'userList') {
                             updateUserList(data.users);
-                        } else if (data.type === 'voice') {
-                            console.warn("Received 'voice' message with string data. Expected ArrayBuffer.");
-                            logMessage("不正な音声データを受信しました。");
-                        } else if (data.type === 'log') {
-                            logMessage(data.message);
-                        } else {
-                            console.warn("Received unknown message type:", data.type);
                         }
                     } catch (error) {
-                        console.error('Error parsing message:', error);
-                        logMessage("メッセージのパース中にエラーが発生しました。");
+                        console.error("Error parsing JSON:", error);
                     }
-                } else {
-                    console.error("Received unexpected data type:", typeof event.data);
-                    logMessage("予期しないデータ型を受信しました。");
                 }
             });
 
@@ -186,7 +144,6 @@
                 connectBtn.disabled = false;
                 disconnectBtn.disabled = true;
                 userList.innerHTML = '';
-                stopRecording();
             });
 
             socket.addEventListener('error', (error) => {
@@ -198,7 +155,7 @@
         async function startRecording() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=pcm' });
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
 
                 mediaRecorder.addEventListener('dataavailable', (event) => {
                     if (event.data.size > 0) {
@@ -206,7 +163,7 @@
                     }
                 });
 
-                mediaRecorder.start(20); // 20msごとにデータを送信
+                mediaRecorder.start(20); // 20msごとにデータを送信 (Opusのフレームサイズに合わせる)
             } catch (error) {
                 console.error('マイクアクセスエラー:', error);
                 if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
@@ -226,11 +183,9 @@
         }
 
         function sendAudio(audioBlob) {
-            audioBlob.arrayBuffer().then(arrayBuffer => {
-                if (socket && socket.readyState === WebSocket.OPEN) {
-                    socket.send(arrayBuffer);
-                }
-            });
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(audioBlob);
+            }
         }
 
         function playFromQueue() {
@@ -238,36 +193,25 @@
                 playing = true;
                 let audioData = audioQueue.shift();
 
-                // バイト数が2の倍数でない場合の処理
-                const remainder = audioData.byteLength % 2;
-                if (remainder !== 0) {
-                    console.warn("Received audio data with odd byte length. Truncating last byte.");
-                    const truncatedData = audioData.slice(0, audioData.byteLength - remainder); // 余分なバイトを切り捨て
-                    audioData = truncatedData; // audioData を更新
-                }
+                // Opusデータをデコード
+                audioContext.decodeAudioData(audioData.slice()) // audioDataをコピーして渡す
+                    .then(audioBuffer => {
+                        const source = audioContext.createBufferSource();
+                        source.buffer = audioBuffer;
+                        source.connect(audioContext.destination);
+                        source.start();
 
-
-
-                const buffer = audioContext.createBuffer(1, audioData.byteLength / 2, audioContext.sampleRate);
-                const pcmSamples = new Int16Array(audioData); // ここでのエラーを回避
-                const floatSamples = new Float32Array(pcmSamples.length);
-
-                for (let i = 0; i < pcmSamples.length; i++) {
-                    floatSamples[i] = pcmSamples[i] / 32768;
-                }
-
-                buffer.copyToChannel(floatSamples, 0);
-
-
-                const source = audioContext.createBufferSource();
-                source.buffer = buffer;
-                source.connect(audioContext.destination);
-                source.start();
-
-                source.onended = () => {
-                    playing = false;
-                    playFromQueue();
-                };
+                        source.onended = () => {
+                            playing = false;
+                            playFromQueue();
+                        };
+                    })
+                    .catch(error => {
+                        console.error('Error decoding audio data:', error);
+                        logMessage('音声データのデコード中にエラーが発生しました');
+                        playing = false;
+                        playFromQueue();
+                    });
             }
         }
     </script>

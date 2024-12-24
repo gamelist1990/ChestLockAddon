@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mic Recording</title>
+</head>
+
+<body>
+    <button id="recordButton">Record</button>
+    <audio id="audioPlayer" controls></audio>
+    <script>
+        const recordButton = document.getElementById('recordButton');
+        const audioPlayer = document.getElementById('audioPlayer');
+        let mediaRecorder;
+        let audioChunks = [];
+
+        recordButton.addEventListener('click', async () => {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                recordButton.textContent = 'Record';
+            } else {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+                audioChunks = [];
+
+                mediaRecorder.addEventListener('dataavailable', event => {
+                    audioChunks.push(event.data);
+                });
+
+                mediaRecorder.addEventListener('stop', () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
+                    sendAudioToServer(audioBlob);
+                });
+
+                mediaRecorder.start();
+                recordButton.textContent = 'Stop';
+
+                // 3秒後に自動停止
+                setTimeout(() => {
+                    if (mediaRecorder.state === "recording") {
+                        mediaRecorder.stop();
+                        recordButton.textContent = 'Record';
+                    }
+                }, 3000);
+            }
+        });
+
+        function blobToBase64(blob) {
+            return new Promise((resolve, _) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        async function sendAudioToServer(audioBlob) {
+            const base64Audio = await blobToBase64(audioBlob);
+
+            const response = await fetch('/audio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ audio: base64Audio })
+            });
+
+            if (response.ok) {
+                const responseData = await response.json();
+                const adjustedBase64Audio = responseData.audio;
+
+                // Base64エンコードされた音声データを再生
+                audioPlayer.src = adjustedBase64Audio;
+                audioPlayer.play();
+            } else {
+                console.error('Error sending audio:', response.status);
+            }
+        }
+    </script>
+</body>
+
+</html>
