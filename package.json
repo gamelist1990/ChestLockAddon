@@ -11,6 +11,7 @@
         "build2": "cd tool/ErrorCheck && bun build index.ts --compile --outfile ErrorCheck"
     },
     "dependencies": {
+        "@discordjs/opus": "^0.9.0",
         "@evan/opus": "^1.0.3",
         "@minecraft/server": "^1.17.0-beta.1.21.50-stable",
         "@minecraft/server-admin": "^1.0.0-beta.1.21.51-stable",

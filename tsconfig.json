@@ -2,6 +2,7 @@
     "include": [
         "devFolder/src/**/*.ts",
         "lbAddon/BH/src/**/*.ts",
+       // "tool/WebSocket/vcSystem/**/*.ts",
         "gobal.d.ts"
     ],
     "exclude": [

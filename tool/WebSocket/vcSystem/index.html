@@ -5,7 +5,46 @@
     <title>WebVC</title>
     <meta charset="utf-8">
     <style>
-        /* ... (スタイルは変更なし) ... */
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        button {
+            margin: 10px 5px;
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: default;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        #log {
+            border: 1px solid #ccc;
+            height: 200px;
+            overflow-y: scroll;
+            padding: 10px;
+        }
     </style>
 </head>
 
@@ -39,8 +78,13 @@
         let socket;
         let mediaRecorder;
         let audioContext;
-        let audioQueue = [];
-        let playing = false;
+        let sendAudioQueue = [];
+        let receiveAudioQueue = [];
+        let isSending = false;
+        // let isPlaying = false;
+        let intervalId;
+        // ユーザー名とボリュームを保持するオブジェクトは不要
+        // let userVolumes = {};
 
         window.addEventListener('load', async () => {
             await fetchPlayerList();
@@ -49,11 +93,7 @@
         connectBtn.addEventListener('click', () => {
             const username = usernameSelect.value;
             if (username) {
-                if (!audioContext) {
-                    audioContext = new AudioContext({ sampleRate: 48000 }); // Opusは48kHzを推奨
-                }
                 connectWebSocket(username);
-                startRecording();
                 connectBtn.disabled = true;
                 disconnectBtn.disabled = false;
             } else {
@@ -62,10 +102,28 @@
         });
 
         disconnectBtn.addEventListener('click', () => {
-            if (socket) {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.addEventListener('close', () => {
+                    stopRecording();
+                    disconnectBtn.disabled = true;
+                    connectBtn.disabled = false;
+                    logMessage('サーバーから切断しました');
+                    userList.innerHTML = '';
+                    sendAudioQueue = [];
+                    receiveAudioQueue = [];
+                    isSending = false;
+                    // isPlaying = false;
+                }, { once: true });
                 socket.close();
+            } else {
+                stopRecording();
+                disconnectBtn.disabled = true;
+                connectBtn.disabled = false;
+                sendAudioQueue = [];
+                receiveAudioQueue = [];
+                isSending = false;
+                // isPlaying = false;
             }
-            stopRecording(); // 録音を停止
         });
 
         async function fetchPlayerList() {
@@ -96,8 +154,29 @@
             userList.innerHTML = '';
             users.forEach(user => {
                 const li = document.createElement('li');
-                li.textContent = `${user.username} (距離: ${user.distance.toFixed(2)})`;
+
+                // data-* 属性を使って、ユーザー名とボリュームを要素に格納
+                li.dataset.username = user.username;
+                li.dataset.volume = user.volume;
+
+                const usernameSpan = document.createElement('span');
+                usernameSpan.textContent = `${user.username} `;
+                li.appendChild(usernameSpan);
+
+                // ユーザー名の後に距離を括弧で追加
+                const distanceSpan = document.createElement('span');
+                distanceSpan.textContent = `(距離: ${user.distance.toFixed(2)})`;
+                li.appendChild(distanceSpan);
+
+                // 距離の後に音量を表示
+                const volumeSpan = document.createElement('span');
+                volumeSpan.textContent = `, 音量: ${user.volume.toFixed(2)}`;
+                li.appendChild(volumeSpan);
+
                 userList.appendChild(li);
+
+                // グローバルオブジェクトにユーザー名とボリュームを格納(不要な処理なのでコメントアウト)
+                // userVolumes[user.username] = user.volume;
             });
         }
 
@@ -110,24 +189,25 @@
 
         function connectWebSocket(username) {
             const serverUrl = `ws://localhost:19134/?username=${username}`;
-            socket = new WebSocket(serverUrl);
+            socket = new WebSocket(serverUrl, "binary");
             socket.binaryType = 'arraybuffer';
 
-            socket.addEventListener('open', () => {
-                logMessage('サーバーに接続しました');
-                socket.send(JSON.stringify({ type: 'getPlayerList' }));
+            socket.addEventListener('open', (event) => {
+                logMessage(`${username}でサーバーに接続しました`);
+                startRecording();
             });
 
             socket.addEventListener('message', (event) => {
                 if (event.data instanceof ArrayBuffer) {
-                    console.log("Received audio data:", event.data.byteLength, "bytes");
-                    audioQueue.push(event.data);
-                    if (!playing) {
-                        playFromQueue();
-                    }
+                    // event.data をそのまま receiveAudioQueue に追加
+                    const messageData = { username: null, audioData: event.data }; // ユーザー名は後で設定
+                    receiveAudioQueue.push(messageData);
                 } else {
                     try {
                         const data = JSON.parse(event.data);
+
+                        // サーバーからのメッセージをログに表示
+
                         if (data.type === 'playerList') {
                             updatePlayerSelect(data.players);
                         } else if (data.type === 'userList') {
@@ -139,79 +219,193 @@
                 }
             });
 
-            socket.addEventListener('close', () => {
+            socket.addEventListener('close', (event) => {
                 logMessage('サーバーから切断しました');
+                if (event.code === 1008) {
+                    if (event.reason === "Username is required") {
+                        logMessage("エラー: ユーザー名が指定されていません。");
+                    } else if (event.reason === "Username already connected") {
+                        logMessage("エラー: このユーザー名は既に使用されています。");
+                    } else {
+                        logMessage("エラー: サーバーとの接続に問題があります。(ユーザー名関連)")
+                    }
+                } else if (event.code === 1000) {
+                    logMessage("正常に切断しました。");
+                }
                 connectBtn.disabled = false;
                 disconnectBtn.disabled = true;
                 userList.innerHTML = '';
+                sendAudioQueue = [];
+                receiveAudioQueue = [];
+                isSending = false;
+                // isPlaying = false;
             });
 
             socket.addEventListener('error', (error) => {
                 console.error('WebSocket エラー:', error);
                 logMessage('エラーが発生しました');
+                stopRecording();
             });
         }
 
         async function startRecording() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true } });
+                if (!audioContext) {
+                    audioContext = new AudioContext();
+                }
 
-                mediaRecorder.addEventListener('dataavailable', (event) => {
-                    if (event.data.size > 0) {
-                        sendAudio(event.data);
-                    }
+                const mimeType = "audio/webm;codecs=opus";
+                if (!MediaRecorder.isTypeSupported(mimeType)) {
+                    console.error("audio/webm;codecs=opus is not supported");
+                    return;
+                }
+
+                if (mediaRecorder) {
+                    mediaRecorder.stop();
+                    mediaRecorder.ondataavailable = null;
+                }
+
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: mimeType,
+                    audioBitsPerSecond: 128000
                 });
 
-                mediaRecorder.start(20); // 20msごとにデータを送信 (Opusのフレームサイズに合わせる)
+                mediaRecorder.ondataavailable = async (event) => {
+                    handleLocalAudioData(event);
+                };
+
+                mediaRecorder.start(1000);
+
+                intervalId = setInterval(restartRecording, 1000);
+
             } catch (error) {
-                console.error('マイクアクセスエラー:', error);
-                if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-                    logMessage('マイクへのアクセスが拒否されました。ブラウザの設定を確認してください。');
-                } else if (error.name === 'NotFoundError') {
-                    logMessage('マイクが見つかりません。');
-                } else {
-                    logMessage('マイクへのアクセス中にエラーが発生しました。');
+                console.error('Error accessing media devices:', error);
+                logMessage('マイクへのアクセス中にエラーが発生しました。');
+            }
+        }
+
+        const restartRecording = () => {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
+
+            mediaRecorder = new MediaRecorder(mediaRecorder.stream, {
+                mimeType: mediaRecorder.mimeType,
+                audioBitsPerSecond: mediaRecorder.audioBitsPerSecond
+            });
+            mediaRecorder.ondataavailable = handleLocalAudioData;
+            mediaRecorder.start(1000);
+        };
+
+        async function handleLocalAudioData(event) {
+            const minDataSize = 1000;
+            if (event.data.size > minDataSize) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const arrayBuffer = reader.result;
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                };
+                reader.readAsArrayBuffer(event.data);
+
+                sendAudioQueue.push(event.data);
+            }
+        }
+
+        async function processReceiveAudioQueue() {
+            if (receiveAudioQueue.length === 0) {
+                return;
+            }
+
+            const messageData = receiveAudioQueue.shift(); // キューからユーザー名と音声データを取り出す
+            const audioData = messageData.audioData;
+
+            // ここで userList から data-username と data-volume を探す
+            let matchedUser = null;
+            for (const li of userList.children) {
+                if (li.dataset.username) {
+                    matchedUser = li;
+                    break;
+                }
+            }
+
+            //マッチしたユーザーを探す
+            if (matchedUser) {
+                const username = matchedUser.dataset.username;
+                const volume = parseFloat(matchedUser.dataset.volume);
+
+                try {
+                    // オーディオを再生（ボリュームを渡す）
+                    console.log("ユーザー名とボリューム", username, volume);
+                    await playAudio(audioData, volume);
+                } catch (error) {
+                    console.error("Error playing audio:", error);
                 }
             }
         }
+
+        async function sendAudioData(eventData) {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                const arrayBuffer = await eventData.arrayBuffer();
+                socket.send(arrayBuffer);
+            } else {
+                console.warn("WebSocket is not open. Unable to send audio data.");
+            }
+        }
+
+        async function processSendAudioQueue() {
+            if (isSending || sendAudioQueue.length === 0) {
+                return;
+            }
+
+            isSending = true;
+            const audioData = sendAudioQueue.shift();
+
+            try {
+                await sendAudioData(audioData);
+            } catch (error) {
+                console.error("Error sending audio:", error);
+            } finally {
+                isSending = false;
+            }
+        }
+
+        setInterval(processSendAudioQueue, 100);
+        setInterval(processReceiveAudioQueue, 100);
 
         function stopRecording() {
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                 mediaRecorder.stop();
             }
-        }
-
-        function sendAudio(audioBlob) {
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(audioBlob);
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
             }
         }
 
-        function playFromQueue() {
-            if (!playing && audioQueue.length > 0) {
-                playing = true;
-                let audioData = audioQueue.shift();
+        async function playAudio(arrayBuffer, volume) {
+            try {
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                const gainNode = audioContext.createGain();
 
-                // Opusデータをデコード
-                audioContext.decodeAudioData(audioData.slice()) // audioDataをコピーして渡す
-                    .then(audioBuffer => {
-                        const source = audioContext.createBufferSource();
-                        source.buffer = audioBuffer;
-                        source.connect(audioContext.destination);
-                        source.start();
+                // ボリューム情報をログに出力
+                console.log("Playing audio with volume:", volume);
 
-                        source.onended = () => {
-                            playing = false;
-                            playFromQueue();
-                        };
-                    })
-                    .catch(error => {
-                        console.error('Error decoding audio data:', error);
-                        logMessage('音声データのデコード中にエラーが発生しました');
-                        playing = false;
-                        playFromQueue();
-                    });
+                gainNode.gain.value = volume;
+
+                source.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                source.onended = () => {
+                    // ここで必要ならば isPlaying を false に設定できますが、
+                    // 現在の実装ではこの変数は使用されていません。
+                };
+
+                source.start();
+            } catch (e) {
+                console.error('Error decoding or playing audio data:', e.message, e);
             }
         }
     </script>

@@ -6,19 +6,26 @@
 </head>
 
 <body>
-    <button id="recordButton">Record</button>
+    <button id="recordButton">Start Recording</button>
     <audio id="audioPlayer" controls></audio>
+
     <script>
         const recordButton = document.getElementById('recordButton');
         const audioPlayer = document.getElementById('audioPlayer');
         let mediaRecorder;
         let audioChunks = [];
+        let recording = false;
 
         recordButton.addEventListener('click', async () => {
-            if (mediaRecorder && mediaRecorder.state === "recording") {
-                mediaRecorder.stop();
-                recordButton.textContent = 'Record';
+            if (!recording) {
+                startRecording();
             } else {
+                stopRecording();
+            }
+        });
+
+        async function startRecording() {
+            try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
                 audioChunks = [];
@@ -27,52 +34,62 @@
                     audioChunks.push(event.data);
                 });
 
-                mediaRecorder.addEventListener('stop', () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
-                    sendAudioToServer(audioBlob);
-                });
+                mediaRecorder.addEventListener('stop', handleStop);
 
                 mediaRecorder.start();
-                recordButton.textContent = 'Stop';
+                recordButton.textContent = 'Stop Recording';
+                recording = true;
 
-                // 3秒後に自動停止
                 setTimeout(() => {
-                    if (mediaRecorder.state === "recording") {
-                        mediaRecorder.stop();
-                        recordButton.textContent = 'Record';
+                    if (recording) {
+                        stopRecording();
                     }
                 }, 3000);
-            }
-        });
 
-        function blobToBase64(blob) {
-            return new Promise((resolve, _) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.readAsDataURL(blob);
-            });
+            } catch (err) {
+                console.error('Error accessing microphone:', err);
+            }
         }
 
-        async function sendAudioToServer(audioBlob) {
-            const base64Audio = await blobToBase64(audioBlob);
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            recordButton.textContent = 'Start Recording';
+            recording = false;
+        }
 
-            const response = await fetch('/audio', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ audio: base64Audio })
-            });
+        async function handleStop() {
+            try {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
+                const arrayBuffer = await audioBlob.arrayBuffer();
+                sendAudioToServer(arrayBuffer);
+            } catch (error) {
+                console.error('Error handling stop event:', error);
+            }
+        }
 
-            if (response.ok) {
-                const responseData = await response.json();
-                const adjustedBase64Audio = responseData.audio;
+        async function sendAudioToServer(arrayBuffer) {
+            try {
+                const response = await fetch('/audio', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/octet-stream'
+                    },
+                    body: arrayBuffer
+                });
 
-                // Base64エンコードされた音声データを再生
-                audioPlayer.src = adjustedBase64Audio;
-                audioPlayer.play();
-            } else {
-                console.error('Error sending audio:', response.status);
+                if (response.ok) {
+                    const adjustedAudioData = await response.arrayBuffer();
+                    const adjustedAudioBlob = new Blob([adjustedAudioData], { type: 'audio/ogg; codecs=opus' });
+                    const adjustedAudioUrl = URL.createObjectURL(adjustedAudioBlob);
+                    audioPlayer.src = adjustedAudioUrl;
+                    audioPlayer.play();
+                } else {
+                    console.error('Error sending audio:', response.status, await response.text());
+                }
+            } catch (error) {
+                console.error('Error sending audio:', error);
             }
         }
     </script>
