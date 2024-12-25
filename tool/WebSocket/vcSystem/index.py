@@ -130,7 +130,7 @@ async def handle_websocket(websocket):
         async for message in websocket:
             if isinstance(message, websockets.Data):
               try:
-                  if isinstance(message, str) :
+                if isinstance(message, str):
                     data = json.loads(message)
                     if data["type"] == "setPosition":
                         position = data["position"]
@@ -146,11 +146,10 @@ async def handle_websocket(websocket):
                                 await broadcast_user_list()
                         else:
                             print(f"Invalid position data received from {username}:", position)
-                  else: 
-                     await broadcast_audio_data(username, message) 
-                     print("音声データを送りました。")
-                     
-                     
+                else:
+                    # 音声データの場合は、送信者と受信者を特定して送信
+                    await send_audio_to_nearby_users(username, message)
+
               except json.JSONDecodeError:
                  print("Failed to parse message")
             else:
@@ -176,26 +175,18 @@ async def broadcast_user_list():
 
 
 
-async def broadcast_audio_data(sender, audio_data):
-    global user_positions
-    sender_position = next((u["position"] for u in user_positions if u["username"] == sender), None)
-
-    if sender_position:
-        nearby_users = get_nearby_users(sender) #修正 nearby_usersを取得
-        for user in nearby_users:
-            user_socket = find_socket_by_username(user["username"])
-            if user_socket:
-                try:                    
-                    await user_socket.send(audio_data) 
-
-                except Exception as e:
-                    print(f"Error sending audio data to {user['username']}: {e}")
-            else:
-                print(f"Could not find socket for user: {user['username']}")
-    else:
-        print(f"Could not find position for user: {sender}")
-
-
+async def send_audio_to_nearby_users(sender_username, audio_data):
+    """
+    指定されたユーザーの近くにいるユーザーに音声データを送信します。
+    """
+    nearby_users = get_nearby_users(sender_username)
+    for user in nearby_users:
+        user_socket = find_socket_by_username(user["username"])
+        if user_socket:
+            try:
+                await user_socket.send(audio_data)
+            except Exception as e:
+                print(f"Error sending audio data to {user['username']}: {e}")
 
 def find_socket_by_username(username):
     for ws in connected_websockets:

@@ -102,7 +102,8 @@
         let receiveAudioQueue = [];
         let isSending = false;
         let intervalId;
-        let isMuted = false; 
+        let isMuted = false;
+        let myUsername = null;
 
         // ミュートボタンのイベントリスナー
         muteBtn.addEventListener('click', () => {
@@ -117,6 +118,7 @@
 
         connectBtn.addEventListener('click', () => {
             const username = usernameSelect.value;
+            myUsername = username; // 自分のユーザー名を保存
             if (username) {
                 connectWebSocket(username);
                 connectBtn.disabled = true;
@@ -137,7 +139,7 @@
                     sendAudioQueue = [];
                     receiveAudioQueue = [];
                     isSending = false;
-                    // isPlaying = false;
+                    myUsername = null; // 自分のユーザー名をクリア
                 }, { once: true });
                 socket.close();
             } else {
@@ -147,7 +149,7 @@
                 sendAudioQueue = [];
                 receiveAudioQueue = [];
                 isSending = false;
-                // isPlaying = false;
+                myUsername = null; // 自分のユーザー名をクリア
             }
         });
 
@@ -179,27 +181,10 @@
             userList.innerHTML = '';
             users.forEach(user => {
                 const li = document.createElement('li');
-
-                // data-* 属性を使って、ユーザー名とボリュームを要素に格納
                 li.dataset.username = user.username;
                 li.dataset.volume = user.volume;
-
-                const usernameSpan = document.createElement('span');
-                usernameSpan.textContent = `${user.username} `;
-                li.appendChild(usernameSpan);
-
-                // ユーザー名の後に距離を括弧で追加
-                const distanceSpan = document.createElement('span');
-                distanceSpan.textContent = `(距離: ${user.distance.toFixed(2)})`;
-                li.appendChild(distanceSpan);
-
-                // 距離の後に音量を表示
-                const volumeSpan = document.createElement('span');
-                volumeSpan.textContent = `, 音量: ${user.volume.toFixed(2)}`;
-                li.appendChild(volumeSpan);
-
+                li.textContent = `${user.username} (距離: ${user.distance.toFixed(2)}, 音量: ${user.volume.toFixed(2)})`;
                 userList.appendChild(li);
-
             });
         }
 
@@ -211,7 +196,8 @@
         }
 
         function connectWebSocket(username) {
-            const serverUrl = `wss://bfxmknk4-19133.asse.devtunnels.ms/?username=${username}`;
+            // バックエンドに合わせて修正
+            const serverUrl = `ws://localhost:19133/?username=${username}`;
             socket = new WebSocket(serverUrl, "binary");
             socket.binaryType = 'arraybuffer';
 
@@ -222,15 +208,11 @@
 
             socket.addEventListener('message', (event) => {
                 if (event.data instanceof ArrayBuffer) {
-                    // event.data をそのまま receiveAudioQueue に追加
-                    const messageData = { username: null, audioData: event.data };
+                    const messageData = { audioData: event.data };
                     receiveAudioQueue.push(messageData);
                 } else {
                     try {
                         const data = JSON.parse(event.data);
-
-                        // サーバーからのメッセージをログに表示
-
                         if (data.type === 'playerList') {
                             updatePlayerSelect(data.players);
                         } else if (data.type === 'userList') {
@@ -261,7 +243,6 @@
                 sendAudioQueue = [];
                 receiveAudioQueue = [];
                 isSending = false;
-                // isPlaying = false;
             });
 
             socket.addEventListener('error', (error) => {
@@ -286,7 +267,6 @@
                     audioContext = new AudioContext();
                 }
 
-                // 型付き配列のテストとmediaRecorderの設定(型付き配列は意味がないと思うので消去)
                 const mimeType = "audio/webm;codecs=opus";
                 if (!MediaRecorder.isTypeSupported(mimeType)) {
                     console.error("audio/webm;codecs=opus is not supported");
@@ -302,9 +282,6 @@
                     mimeType: mimeType,
                     audioBitsPerSecond: 64000
                 });
-
-                //128000 高
-                //64000 通常
 
                 // mediaRecorderのスタートと再スタートの設定
                 mediaRecorder.ondataavailable = async (event) => {
@@ -344,7 +321,6 @@
                     const uint8Array = new Uint8Array(arrayBuffer);
                 };
                 reader.readAsArrayBuffer(event.data);
-
                 sendAudioQueue.push(event.data);
             }
         }
@@ -354,30 +330,22 @@
                 return;
             }
 
-            const messageData = receiveAudioQueue.shift(); // キューからユーザー名と音声データを取り出す
+            const messageData = receiveAudioQueue.shift();
             const audioData = messageData.audioData;
 
-            // ここで userList から data-username と data-volume を探す
-            let matchedUser = null;
-            for (const li of userList.children) {
-                if (li.dataset.username) {
-                    matchedUser = li;
-                    break;
+            try {
+                // ユーザーリストからボリューム情報を取得
+                let volume = 1.0; // デフォルトの音量
+                for (const li of userList.children) {
+                    if (li.dataset.username) {
+                        volume = parseFloat(li.dataset.volume);
+                        break;
+                    }
                 }
-            }
-
-            //マッチしたユーザーを探す
-            if (matchedUser) {
-                const username = matchedUser.dataset.username;
-                const volume = parseFloat(matchedUser.dataset.volume);
-
-                try {
-                    // オーディオを再生（ボリュームを渡す）
-                    console.log("ユーザー名とボリューム", username, volume);
-                    await playAudio(audioData, volume);
-                } catch (error) {
-                    console.error("Error playing audio:", error);
-                }
+                // オーディオを再生（ボリュームを渡す）
+                await playAudio(audioData, volume);
+            } catch (error) {
+                console.error("Error playing audio:", error);
             }
         }
 
@@ -425,17 +393,15 @@
                 const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
                 const source = audioContext.createBufferSource();
                 source.buffer = audioBuffer;
+
                 const gainNode = audioContext.createGain();
-
-                // ボリューム情報をログに出力
-                console.log("Playing audio with volume:", volume);
-
                 gainNode.gain.value = volume;
 
                 source.connect(gainNode);
                 gainNode.connect(audioContext.destination);
 
                 source.onended = () => {
+                    // 必要に応じて、ここでリソースのクリーンアップを行う
                 };
 
                 source.start();
