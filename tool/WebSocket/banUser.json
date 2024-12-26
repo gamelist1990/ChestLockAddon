@@ -1,13 +1,5 @@
 [
   {
-    "uuid": "64f1ede9-24d6-3047-93e6-b6ecb6b45933",
-    "name": "おいしいにく",
-    "reason": "§e5回§c警告を受けたため",
-    "bannedBy": "Server",
-    "bannedAt": 1734093933456,
-    "expiresAt": 1734180333456
-  },
-  {
     "uuid": "e2de04ca-2f99-3029-970b-cef96184b963",
     "name": "PickedTax877",
     "reason": "BAN",
@@ -29,6 +21,14 @@
     "reason": "荒らし",
     "bannedBy": "PEXkurann",
     "bannedAt": 1734936908827,
+    "expiresAt": null
+  },
+  {
+    "uuid": "64f1ede9-24d6-3047-93e6-b6ecb6b45933",
+    "name": "おいしいにく",
+    "reason": "じゃああああああなあああああ",
+    "bannedBy": "PEXkurann",
+    "bannedAt": 1735215393936,
     "expiresAt": null
   }
 ]

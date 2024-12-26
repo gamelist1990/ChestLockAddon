@@ -216,15 +216,22 @@ class ChestForm {
 function main(player: Player) {
     const chestUI = new ChestForm()
         .title('Sub Menu')
-        .location("0 -60 0")
-        .button(0, 'Back to Main', ['Click to go back'], 'minecraft:diamond', 1);
+        .location("272 63 721")
+        .button(12, 'Give Command 1', ['Click To Give Apple'], 'minecraft:apple', 1)
+        .button(14, 'Give Command 2', ['Click To Give Diamond'], 'minecraft:diamond', 1);
 
     chestUI
         .then((response) => {
-            if (!response.canceled && response.selection === 0) {
-                console.warn('Target item action triggered!');
-                player.runCommand('tp @s ~ ~1 ~');
-                player.runCommand('give @s apple');
+            if (!response.canceled) {
+                if (response.selection === 12) {
+                    player.sendMessage('コマンドを実行しました');
+                    player.runCommand('give @s apple');
+                }
+                if (response.selection === 14) {
+                    player.sendMessage('コマンドを実行しました');
+                    player.runCommand('give @s diamond');
+                }
+                
             }
         })
 }
