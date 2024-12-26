@@ -186,5 +186,38 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
         } else {
             console.error("無効なサブコマンドです。 set を使用してください。");
         }
+
+    } 
+
+    // ランダム数値生成
+    if (event.id === "ch:number") {
+        const args = event.message.replace(/^\/ch:number\s+/, "").split(/\s*,\s*/);
+        const numbers: number[] = [];
+
+        for (const arg of args) {
+            const num = parseInt(arg);
+            if (isNaN(num)) {
+                console.error(`無効な数値: ${arg}`);
+                return;
+            }
+            numbers.push(num);
+        }
+
+        if (numbers.length === 0) {
+            console.error("数値を1つ以上指定してください。");
+            return;
+        }
+
+        const randomNumber = numbers[Math.floor(Math.random() * numbers.length)];
+
+        let objective = world.scoreboard.getObjective("ch:number");
+        if (!objective) {
+            objective = world.scoreboard.addObjective("ch:number", "ランダム数値");
+        }
+
+        objective.setScore("number", randomNumber);
     }
 });
+
+
+

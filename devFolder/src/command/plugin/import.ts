@@ -14,6 +14,7 @@ import './AntiCheat/import';
 import './AI';
 import './transfer';
 
+import './chestUI';
 
 
 

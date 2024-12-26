@@ -204,9 +204,12 @@
         const noiseThresholdValue = document.getElementById('noiseThresholdValue');
         const noiseSuppressionCheckbox = document.getElementById('noiseSuppression');
         const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+
         let socket;
         let mediaRecorder;
         let audioContext;
+        let gainNode; // GainNode をグローバルスコープで宣言
+        let analyserNode; // AnalyserNodeをグローバルスコープで宣言
         let sendAudioQueue = [];
         let receiveAudioQueue = [];
         let isSending = false;
@@ -218,52 +221,66 @@
         let volumeAmplification = 1.0;
         let noiseThreshold = 15;
         let noiseSuppression = true;
+
         // 設定ボタンのイベントリスナー
         settingsBtn.addEventListener('click', () => {
             settingsModal.style.display = 'block';
             loadSettings();
         });
+
         // モーダルを閉じるボタンのイベントリスナー
         closeBtn.addEventListener('click', () => {
             settingsModal.style.display = 'none';
         });
+
         // モーダルの外側をクリックしたときにモーダルを閉じる
         window.addEventListener('click', (event) => {
             if (event.target == settingsModal) {
                 settingsModal.style.display = 'none';
             }
         });
+
         // 保存ボタンのイベントリスナー
         saveSettingsBtn.addEventListener('click', () => {
             saveSettings();
             settingsModal.style.display = 'none';
             logMessage('設定を保存しました');
         });
+
         // マイク音声増幅の設定
         volumeAmplificationInput.addEventListener('input', () => {
             volumeAmplification = parseFloat(volumeAmplificationInput.value);
             volumeAmplificationValue.textContent = volumeAmplification.toFixed(1);
+            if (gainNode) {
+                gainNode.gain.value = volumeAmplification;
+            }
         });
+
         // ノイズ閾値の設定
         noiseThresholdInput.addEventListener('input', () => {
             noiseThreshold = parseFloat(noiseThresholdInput.value);
             noiseThresholdValue.textContent = noiseThreshold.toFixed(0);
         });
+
         // ノイズ抑制の設定
         noiseSuppressionCheckbox.addEventListener('change', () => {
             noiseSuppression = noiseSuppressionCheckbox.checked;
+            startRecording(); // ノイズ抑制の設定を反映させるために再起動
         });
+
         // ミュートボタンのイベントリスナー
         muteBtn.addEventListener('click', () => {
             isMuted = !isMuted;
             muteBtn.textContent = isMuted ? 'ミュート解除' : 'ミュート';
             logMessage(isMuted ? 'ミュートしました' : 'ミュート解除しました');
         });
+
         window.addEventListener('load', async () => {
             await fetchPlayerList();
             await initMicrophoneList();
             loadSettings();
         });
+
         connectBtn.addEventListener('click', () => {
             const username = usernameSelect.value;
             myUsername = username;
@@ -275,6 +292,7 @@
                 logMessage('ユーザー名を選択してください');
             }
         });
+
         disconnectBtn.addEventListener('click', () => {
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.addEventListener('close', () => {
@@ -299,6 +317,7 @@
                 myUsername = null;
             }
         });
+
         async function fetchPlayerList() {
             try {
                 const response = await fetch(`/playerList`);
@@ -312,6 +331,7 @@
                 logMessage('プレイヤーリストの取得に失敗しました');
             }
         }
+
         function updatePlayerSelect(players) {
             usernameSelect.innerHTML = '';
             players.forEach(player => {
@@ -321,6 +341,7 @@
                 usernameSelect.appendChild(option);
             });
         }
+
         function updateUserList(users) {
             userList.innerHTML = '';
             users.forEach(user => {
@@ -331,12 +352,14 @@
                 userList.appendChild(li);
             });
         }
+
         function logMessage(message) {
             const p = document.createElement('p');
             p.textContent = message;
             logDiv.appendChild(p);
             logDiv.scrollTop = logDiv.scrollHeight;
         }
+
         function connectWebSocket(username) {
             const serverUrl = `ws://localhost:19133/?username=${username}`;
             socket = new WebSocket(serverUrl, "binary");
@@ -345,6 +368,7 @@
                 logMessage(`${username}でサーバーに接続しました`);
                 startRecording();
             });
+
             socket.addEventListener('message', (event) => {
                 if (event.data instanceof ArrayBuffer) {
                     const messageData = { audioData: event.data };
@@ -362,6 +386,7 @@
                     }
                 }
             });
+
             socket.addEventListener('close', (event) => {
                 logMessage('サーバーから切断しました');
                 if (event.code === 1008) {
@@ -382,75 +407,97 @@
                 receiveAudioQueue = [];
                 isSending = false;
             });
+
             socket.addEventListener('error', (error) => {
                 console.error('WebSocket エラー:', error);
                 logMessage('エラーが発生しました');
                 stopRecording();
             });
         }
+
         async function getAudioStream(selectedMicId) {
             const constraints = {
                 audio: {
                     deviceId: selectedMicId ? { exact: selectedMicId } : undefined,
-                    echoCancellation: true
+                    echoCancellation: true,
+                    noiseSuppression: true
                 }
             };
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
             return stream;
         }
+
         async function startRecording() {
             try {
                 const stream = await getAudioStream(selectedMicId);
-                if (!audioContext) {
-                    audioContext = new AudioContext();
+
+                // 既存のAudioContextがあれば切断して閉じる
+                if (audioContext) {
+                    if (gainNode) {
+                        gainNode.disconnect();
+                    }
+                    if (analyserNode) {
+                        analyserNode.disconnect();
+                    }
+                    audioContext.close();
                 }
+
+                audioContext = new AudioContext();
+                const sourceNode = audioContext.createMediaStreamSource(stream);
+
+                // ゲインノードを作成してマイクの入力に接続
+                gainNode = audioContext.createGain();
+                gainNode.gain.value = volumeAmplification; // ユーザーが設定した増幅値を適用
+                sourceNode.connect(gainNode);
+
+                // アナライザーノードを作成してゲインノードに接続
+                analyserNode = audioContext.createAnalyser();
+                analyserNode.fftSize = 2048;
+                gainNode.connect(analyserNode);
+
+                // バンドパスフィルタを作成して適用（ノイズ抑制が有効な場合）
+                if (noiseSuppression) {
+                    const bandpassFilter = audioContext.createBiquadFilter();
+                    bandpassFilter.type = 'bandpass';
+                    bandpassFilter.frequency.setValueAtTime(350, audioContext.currentTime); //  付近
+                    bandpassFilter.Q.setValueAtTime(1, audioContext.currentTime); // フィルタの品質
+                    analyserNode.connect(bandpassFilter);
+                    console.log("ノイズ抑制が有効: バンドパスフィルタを適用しました。", bandpassFilter);
+                }
+
                 const mimeType = "audio/webm;codecs=opus";
                 if (!MediaRecorder.isTypeSupported(mimeType)) {
                     console.error("audio/webm;codecs=opus is not supported");
                     return;
                 }
+
+                // 既存のMediaRecorderがあれば停止
                 if (mediaRecorder) {
-                    mediaRecorder.stop();
                     mediaRecorder.ondataavailable = null;
+                    mediaRecorder.stop();
                 }
-                const analyserNode = audioContext.createAnalyser();
-                analyserNode.fftSize = 2048;
-                const sourceNode = audioContext.createMediaStreamSource(stream);
-                sourceNode.connect(analyserNode);
-                // ゲインノードを作成してマイクの入力に接続
-                const gainNode = audioContext.createGain();
-                gainNode.gain.value = volumeAmplification; // ユーザーが設定した増幅値を適用
-                sourceNode.connect(gainNode);
-                if (noiseSuppression) {
-                    // バンドパスフィルタを適用してノイズを軽減
-                    const bandpassFilter = audioContext.createBiquadFilter();
-                    bandpassFilter.type = 'bandpass';
-                    bandpassFilter.frequency.value = 350; // 人間の声の中心周波数付近
-                    bandpassFilter.Q.value = 100; // フィルタの品質
-                    gainNode.connect(bandpassFilter);
-                    bandpassFilter.connect(analyserNode);
-                    console.log("ノイズ抑制が有効: バンドパスフィルタを適用しました。", bandpassFilter);
-                } else {
-                    gainNode.connect(analyserNode);
-                    console.log("ノイズ抑制が無効: フィルタを適用していません。");
-                }
+
                 mediaRecorder = new MediaRecorder(stream, {
                     mimeType: mimeType,
                     audioBitsPerSecond: 64000
                 });
+
                 mediaRecorder.ondataavailable = (event) => {
                     const shouldSend = shouldSendData(analyserNode, event.data);
                     if (shouldSend) {
                         handleLocalAudioData(event);
                     }
                 };
+
                 mediaRecorder.start(micIntaval);
+                clearInterval(intervalId);
                 intervalId = setInterval(restartRecording, micIntaval);
             } catch (error) {
                 console.error('Error accessing media devices:', error);
                 logMessage('マイクへのアクセス中にエラーが発生しました。');
             }
         }
+
         const restartRecording = () => {
             if (mediaRecorder && mediaRecorder.state !== "inactive") {
                 mediaRecorder.stop();
@@ -462,6 +509,7 @@
             mediaRecorder.ondataavailable = handleLocalAudioData;
             mediaRecorder.start(micIntaval);
         };
+
         async function handleLocalAudioData(event) {
             if (isMuted) return;
             const minDataSize = micIntaval;
@@ -475,6 +523,7 @@
                 sendAudioQueue.push(event.data);
             }
         }
+
         async function processReceiveAudioQueue() {
             if (receiveAudioQueue.length === 0) {
                 return;
@@ -494,6 +543,7 @@
                 console.error("Error playing audio:", error);
             }
         }
+
         async function sendAudioData(eventData) {
             if (socket && socket.readyState === WebSocket.OPEN) {
                 const arrayBuffer = await eventData.arrayBuffer();
@@ -502,6 +552,7 @@
                 console.warn("WebSocket is not open. Unable to send audio data.");
             }
         }
+
         async function processSendAudioQueue() {
             if (isSending || sendAudioQueue.length === 0) {
                 return;
@@ -516,8 +567,10 @@
                 isSending = false;
             }
         }
+
         setInterval(processSendAudioQueue, 100);
         setInterval(processReceiveAudioQueue, 100);
+
         function stopRecording() {
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                 mediaRecorder.stop();
@@ -526,14 +579,28 @@
                 clearInterval(intervalId);
                 intervalId = null;
             }
+            // AudioContext をクローズ
+            if (audioContext) {
+                if (gainNode) {
+                    gainNode.disconnect();
+                }
+                if (analyserNode) {
+                    analyserNode.disconnect();
+                }
+                audioContext.close();
+                audioContext = null;
+            }
         }
+
         async function playAudio(arrayBuffer, volume) {
             try {
                 const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
                 const source = audioContext.createBufferSource();
                 source.buffer = audioBuffer;
+
                 const gainNode = audioContext.createGain();
                 gainNode.gain.value = volume;
+
                 source.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 source.onended = () => {
@@ -543,17 +610,20 @@
                 console.error('Error decoding or playing audio data:', e.message, e);
             }
         }
-        async function shouldSendData(analyserNode, data) {
+
+        function shouldSendData(analyserNode, data) {
             if (isMuted) {
                 return false;
             }
             const bufferLength = analyserNode.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
             analyserNode.getByteFrequencyData(dataArray);
+
             let sum = dataArray.reduce((a, b) => a + b, 0);
             let average = sum / bufferLength;
             return average > noiseThreshold;
         }
+
         // マイクのリストを取得し、選択肢に設定する関数
         async function initMicrophoneList() {
             try {
@@ -580,12 +650,14 @@
                 micSelect.addEventListener('change', () => {
                     selectedMicId = micSelect.value;
                     logMessage(`マイクを ${micSelect.options[micSelect.selectedIndex].text} に変更しました`);
+                    startRecording(); // マイク変更を反映させるために再起動
                 });
             } catch (error) {
                 console.error('マイクへのアクセス中にエラーが発生しました。:', error);
                 logMessage('マイクへのアクセス中にエラーが発生しました。');
             }
         }
+
         // 設定を保存する関数
         function saveSettings() {
             localStorage.setItem('selectedMicId', selectedMicId);
@@ -593,12 +665,14 @@
             localStorage.setItem('noiseThreshold', noiseThreshold);
             localStorage.setItem('noiseSuppression', noiseSuppression);
         }
+
         // 設定を読み込む関数
         function loadSettings() {
             selectedMicId = localStorage.getItem('selectedMicId');
             volumeAmplification = parseFloat(localStorage.getItem('volumeAmplification')) || 1.0;
             noiseThreshold = parseInt(localStorage.getItem('noiseThreshold')) || 15;
             noiseSuppression = localStorage.getItem('noiseSuppression') === 'true';
+
             if (selectedMicId) {
                 micSelect.value = selectedMicId;
             }
