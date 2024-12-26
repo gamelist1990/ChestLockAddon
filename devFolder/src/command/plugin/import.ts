@@ -13,8 +13,7 @@ import './sumo';
 import './AntiCheat/import';
 import './AI';
 import './transfer';
-
-import './chestUI';
+import './UI';
 
 
 
