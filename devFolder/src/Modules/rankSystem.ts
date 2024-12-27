@@ -1,11 +1,36 @@
-import { Player, ScoreboardIdentity, ScoreboardIdentityType, ScriptEventCommandMessageAfterEvent, world } from "@minecraft/server";
-
+import {
+    Player,
+    ScoreboardIdentity,
+    ScoreboardIdentityType,
+    ScriptEventCommandMessageAfterEvent,
+    system,
+    world,
+} from "@minecraft/server";
 
 export class RankSystem {
     public title: string;
     public scoreboardName: string;
     public rankTiers: string[];
     public rankThresholds: { [key: string]: number };
+    private lastKnownScores: { [participant: string]: number };
+
+    /**
+     * 指定された参加者の最後の既知のスコアを取得します。
+     * @param {string} participant - 参加者の名前（または displayName）
+     * @returns {number | undefined} 最後の既知のスコア。参加者が存在しない場合は undefined。
+     */
+    public getLastKnownScore(participant: string): number | undefined {
+        return this.lastKnownScores[participant];
+    }
+
+    /**
+     * 指定された参加者の最後の既知のスコアを更新します。
+     * @param {string} participant - 参加者の名前（または displayName）
+     * @param {number} score - 新しいスコア
+     */
+    public updateLastKnownScore(participant: string, score: number): void {
+        this.lastKnownScores[participant] = score;
+    }
 
     /**
      * 新しいランクシステムを作成します。
@@ -19,6 +44,7 @@ export class RankSystem {
         this.scoreboardName = scoreboardName;
         this.rankTiers = rankTiers;
         this.rankThresholds = {};
+        this.lastKnownScores = {};
 
         if (rankTiers.length !== rankThresholds.length) {
             throw new Error("rankTiersとrankThresholdsの長さが一致しません。");
@@ -70,14 +96,13 @@ export class RankSystem {
         if (!objective) return 0;
 
         if (typeof player === "string") {
-            const score = objective.getScore(player)
+            const score = objective.getScore(player);
             return score !== undefined ? score : 0;
-
         } else if (player instanceof Player) {
-            const score = objective.getScore(player)
+            const score = objective.getScore(player);
             return score !== undefined ? score : 0;
         } else {
-            const score = objective.getScore(player)
+            const score = objective.getScore(player);
             return score !== undefined ? score : 0;
         }
     }
@@ -86,8 +111,9 @@ export class RankSystem {
      * プレイヤーのランクを更新します。
      * @param {Player | string | ScoreboardIdentity} player - プレイヤーオブジェクト、プレイヤー名、またはスコアボードID
      * @param {number} newRankScore - 新しいランクスコア
+     * @param {boolean} isFromRunInterval - system.runIntervalから呼ばれたかどうか
      */
-    updatePlayerRank(player: Player | string | ScoreboardIdentity, newRankScore: number) {
+    updatePlayerRank(player: Player | string | ScoreboardIdentity, newRankScore: number, isFromRunInterval: boolean = false) {
         const objective = world.scoreboard.getObjective(this.scoreboardName);
         const oldRankScore = this.getPlayerRankScore(player);
         const oldRankName = this.getRankNameFromScore(oldRankScore);
@@ -97,14 +123,19 @@ export class RankSystem {
         const minScore = this.getRankScoreFromName(newRankName);
         newRankScore = Math.max(minScore, newRankScore);
 
+        // スコアボードの参加者の表示名を取得
+        let participantName: string;
         if (player instanceof Player) {
-            if (newRankName) {
-                // プレイヤーがオンラインの場合は、タグを更新
-                // 以前のランクタグを削除
-                player.getTags().filter(tag => tag.startsWith(`${this.scoreboardName}:`)).forEach(tag => player.removeTag(tag));
-                // 新しいランクタグを追加
-                player.addTag(`${this.scoreboardName}:${newRankName}`);
-            }
+            participantName = player.name;
+        } else if (typeof player === "string") {
+            participantName = player;
+        } else {
+            participantName = player.displayName;
+        }
+
+        if (player instanceof Player) {
+            // プレイヤーがオンラインの場合は、タグを更新
+            this.updatePlayerRankTag(player, newRankName);
 
             if (objective) {
                 objective.setScore(player, newRankScore);
@@ -118,6 +149,22 @@ export class RankSystem {
             }
             // オフラインプレイヤーのタグ更新は、オンラインになった時に処理
         }
+        // 最後の既知のスコアを更新
+        if (!isFromRunInterval) {
+            this.updateLastKnownScore(participantName, newRankScore);
+        }
+    }
+
+    /**
+     * プレイヤーのランクタグを更新します。
+     * @param {Player} player - プレイヤーオブジェクト
+     * @param {string} newRankName - 新しいランク名
+     */
+    updatePlayerRankTag(player: Player, newRankName: string) {
+        // 以前のランクタグを削除
+        player.getTags().filter(tag => tag.startsWith(`${this.scoreboardName}:`)).forEach(tag => player.removeTag(tag));
+        // 新しいランクタグを追加
+        player.addTag(`${this.scoreboardName}:${newRankName}`);
     }
 
     /**
@@ -172,7 +219,7 @@ export function registerRank(rankSystem: RankSystem) {
     // スコアボードが既に存在するかどうかを確認
     const objective = world.scoreboard.getObjective(rankSystem.scoreboardName);
     if (objective) {
-        console.warn(`スコアボード '${rankSystem.scoreboardName}' は既に存在しています。`);
+        //  console.warn(`スコアボード '${rankSystem.scoreboardName}' は既に存在しています。`);
 
         // 既存のスコアを持つプレイヤーにランクを割り当てる
         for (const participant of objective.getParticipants()) {
@@ -190,7 +237,7 @@ export function registerRank(rankSystem: RankSystem) {
             }
         }
     } else {
-        console.warn(`スコアボード '${rankSystem.scoreboardName}' は新しく作成されました。`);
+        // console.warn(`スコアボード '${rankSystem.scoreboardName}' は新しく作成されました。`);
     }
 }
 
@@ -199,11 +246,11 @@ export function registerRank(rankSystem: RankSystem) {
  * @param {any} event - スクリプトイベント
  */
 export function handleRankCommand(event: ScriptEventCommandMessageAfterEvent) {
-    const args = event.message.replace(/^\/(ch:rank|registerRank)\s+/, "").split(/\s+/);
-    const command = event.message.split(/\s+/)[0].substring(1);
+    const args = event.message.replace(/^\/(ch:rank|ch:registerRank)\s+/, "").split(/\s+/);
+    const command = event.id;
     const initiator = event.sourceEntity as Player;
 
-    if (command === "registerRank") {
+    if (command === "ch:registerRank") {
         // registerRankコマンドの処理
         if (args.length < 4) {
             initiator.sendMessage("使用方法: registerRank <タイトル> <スコアボード名> <ランク名1,ランク名2,...> <閾値1,閾値2,...>");
@@ -226,7 +273,7 @@ export function handleRankCommand(event: ScriptEventCommandMessageAfterEvent) {
     } else if (command === "ch:rank") {
         // ch:rankコマンドの処理
         if (args.length < 2) {
-            initiator.sendMessage("使用方法: ch:rank <システム名> <join|reset|add|remove>");
+            initiator.sendMessage("使用方法: ch:rank <システム名> <join|reset|add|remove|list>");
             return;
         }
 
@@ -276,7 +323,7 @@ export function handleRankCommand(event: ScriptEventCommandMessageAfterEvent) {
                         if (participant) {
                             targetParticipants.push(participant);
                         } else {
-                            targetParticipants.push(targetPlayerName)
+                            targetParticipants.push(targetPlayerName);
                         }
                     }
                 }
@@ -291,21 +338,60 @@ export function handleRankCommand(event: ScriptEventCommandMessageAfterEvent) {
                 }
             }
         } else if (args[1] === "add" || args[1] === "remove") {
-            if (args.length < 3) {
-                initiator.sendMessage(`使用方法: ch:rank ${rankSystemName} ${args[1]} <値>`);
+            if (args.length < 4) {
+                initiator.sendMessage(`使用方法: ch:rank ${rankSystemName} ${args[1]} <プレイヤー名> <値>`);
                 return;
             }
 
-            const scoreChange = parseInt(args[2]);
+            const targetPlayerName = args[2];
+            const targetPlayer = world.getAllPlayers().find(p => p.name === targetPlayerName);
+
+            // セレクターの処理を追加
+            const targetParticipants: (Player | string | ScoreboardIdentity)[] = [];
+            if (targetPlayerName.startsWith("@")) {
+                const matchingPlayers = world.getPlayers({ name: targetPlayerName });
+                if (matchingPlayers.length > 0) {
+                    targetParticipants.push(...matchingPlayers);
+                } else {
+                    // セレクターに一致するプレイヤーがいない場合、スコアボードIDとして扱う
+                    const objective = world.scoreboard.getObjective(rankSystem.scoreboardName);
+                    const participant = objective?.getParticipants().find(p => p.displayName === targetPlayerName);
+                    if (participant) {
+                        targetParticipants.push(participant);
+                    }
+                }
+            } else {
+                if (targetPlayer) {
+                    targetParticipants.push(targetPlayer);
+                } else {
+                    // プレイヤー名に一致するプレイヤーがいない場合、スコアボードIDとして扱う
+                    const objective = world.scoreboard.getObjective(rankSystem.scoreboardName);
+                    const participant = objective?.getParticipants().find(p => p.displayName === targetPlayerName);
+                    if (participant) {
+                        targetParticipants.push(participant);
+                    } else {
+                        targetParticipants.push(targetPlayerName);
+                    }
+                }
+            }
+
+            if (targetParticipants.length === 0) {
+                initiator.sendMessage(`プレイヤーまたはスコアボードID '${targetPlayerName}' が見つかりません。`);
+                return;
+            }
+
+            const scoreChange = parseInt(args[3]);
             if (isNaN(scoreChange)) {
                 initiator.sendMessage("値は数値を指定してください。");
                 return;
             }
 
-            const currentScore = rankSystem.getPlayerRankScore(initiator);
-            let newScore = args[1] === "add" ? currentScore + scoreChange : currentScore - scoreChange;
-            rankSystem.updatePlayerRank(initiator, newScore);
-        } else {
+            for (const targetParticipant of targetParticipants) {
+                const currentScore = rankSystem.getPlayerRankScore(targetParticipant);
+                let newScore = args[1] === "add" ? currentScore + scoreChange : currentScore - scoreChange;
+                rankSystem.updatePlayerRank(targetParticipant, newScore);
+            }
+        } else if (args[1] === "list") {
             // ランク表示
             const rankScore = rankSystem.getPlayerRankScore(initiator);
             const currentRank = rankSystem.getRankNameFromScore(rankScore);
@@ -314,7 +400,51 @@ export function handleRankCommand(event: ScriptEventCommandMessageAfterEvent) {
     }
 }
 
+// タグとスコアの監視とランクの更新
+system.runInterval(() => {
+    for (const rankSystem of registeredRanks) {
+        const objective = world.scoreboard.getObjective(rankSystem.scoreboardName);
+        if (objective) {
+            // スコアの変更をチェック
+            for (const participant of objective.getParticipants()) {
+                const currentScore = objective.getScore(participant);
 
+                if (currentScore !== undefined) {
+                    const participantName = participant.displayName;
+                    const lastKnownScore = rankSystem.getLastKnownScore(participantName);
+
+                    if (currentScore !== lastKnownScore) {
+                        // system.runIntervalから呼ばれたことを明示
+                        rankSystem.updatePlayerRank(participant, currentScore, true);
+                        rankSystem.updateLastKnownScore(participantName, currentScore);
+                    }
+                }
+            }
+
+            // プレイヤーのタグをチェックして修正
+            for (const player of world.getAllPlayers()) {
+                const playerScore = rankSystem.getPlayerRankScore(player);
+                const correctRankName = rankSystem.getRankNameFromScore(playerScore);
+                const oldRankName = player.getTags().find(tag => tag.startsWith(`${rankSystem.scoreboardName}:`))?.split(":")[1] || "不明";
+
+                // 正しいランクのタグを持っているか確認
+                const hasCorrectRankTag = player.getTags().some(
+                    (tag) => tag === `${rankSystem.scoreboardName}:${correctRankName}`
+                );
+
+                if (!hasCorrectRankTag) {
+                    // 間違ったタグを削除
+                    player.getTags()
+                        .filter((tag) => tag.startsWith(`${rankSystem.scoreboardName}:`))
+                        .forEach((tag) => player.removeTag(tag));
+                    // 正しいタグを追加
+                    player.addTag(`${rankSystem.scoreboardName}:${correctRankName}`);
+                    player.sendMessage(`${rankSystem.title}のランクが ${oldRankName} から ${correctRankName} に変更されました！`);
+                }
+            }
+        }
+    }
+}, 20);
 
 world.afterEvents.playerSpawn.subscribe(event => {
     const player = event.player;

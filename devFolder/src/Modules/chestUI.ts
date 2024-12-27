@@ -10,7 +10,6 @@ import {
     EntityInventoryComponent,
     Dimension,
     PlayerCursorInventoryComponent,
-    ItemLockMode,
 } from '@minecraft/server';
 
 function locationToString(location: Vector3): string {
@@ -31,7 +30,7 @@ export interface ChestFormResponse {
 interface ChestForm {
     title(title: string): ChestForm;
     location(location: string): ChestForm;
-    button(slot: number, name: string, lore: string[], item: string, amount: number, keepOnClose?: boolean, rollback?: boolean, targetPage?: string, lockMode?: ItemLockMode): ChestForm;
+    button(slot: number, name: string, lore: string[], item: string, amount: number, keepOnClose?: boolean, rollback?: boolean, targetPage?: string): ChestForm;
     show(): ChestForm;
     rollback(enabled: boolean): ChestForm;
     then(callback: (response: ChestFormResponse) => void): ChestForm;
@@ -55,7 +54,6 @@ class ChestFormImpl implements ChestForm {
         rollback?: boolean;
         page?: string;
         targetPage?: string;
-        lockMode?: ItemLockMode;
     }[] = [];
     private isInitialized: boolean = false;
     private intervalId: number | undefined;
@@ -90,8 +88,7 @@ class ChestFormImpl implements ChestForm {
         amount: number = 1,
         keepOnClose: boolean | undefined = false,
         rollback: boolean | undefined = false,
-        targetPage: string | undefined = undefined,
-        lockMode: ItemLockMode = ItemLockMode.none
+        targetPage: string | undefined = undefined
     ): ChestForm {
         this.buttons.push({
             slot,
@@ -103,7 +100,6 @@ class ChestFormImpl implements ChestForm {
             rollback,
             page: this.currentPage,
             targetPage: targetPage,
-            lockMode,
         });
         return this;
     }
@@ -194,9 +190,6 @@ class ChestFormImpl implements ChestForm {
 
                 itemStack.nameTag = button.name;
                 itemStack.setLore(button.lore);
-                if (button.lockMode !== undefined) {
-                    itemStack.lockMode = button.lockMode;
-                }
 
                 this.chestContainer.setItem(button.slot, itemStack);
             }
@@ -258,8 +251,7 @@ class ChestFormImpl implements ChestForm {
             const isSameType = button.item === item.typeId;
             const isSameName = button.name === item.nameTag;
             const isSameLore = JSON.stringify(button.lore) === JSON.stringify(item.getLore());
-            const isSameLockMode = button.lockMode === item.lockMode
-            return isSameType && isSameName && isSameLore && isSameLockMode;
+            return isSameType && isSameName && isSameLore;
         });
     }
 
@@ -268,7 +260,6 @@ class ChestFormImpl implements ChestForm {
         chestContainer.setItem(slot, undefined);
 
         const button = this.buttons.find(b => b.slot === slot && b.page === this.currentPage);
-        // 以下の行を変更：フォーム全体で rollback が true の場合、またはボタン個別に rollback が true の場合に shouldRollback を true にする
         const shouldRollback = this.rollbackEnabled || button?.rollback === true;
 
         if (button?.targetPage) {
@@ -295,12 +286,13 @@ class ChestFormImpl implements ChestForm {
             y: originalLocation.y + 150,
             z: originalLocation.z,
         };
-
-        player.teleport(teleportLocation, { dimension });
+        system.runTimeout(() => {
+            player.teleport(teleportLocation, { dimension });
+        }, 1);
 
         system.runTimeout(() => {
             player.teleport(originalLocation, { dimension });
-        }, 1);
+        }, 2);
     }
 
     callback: ((response: ChestFormResponse) => void) | undefined;

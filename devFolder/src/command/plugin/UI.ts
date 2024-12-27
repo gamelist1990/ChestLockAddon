@@ -1,13 +1,8 @@
-import { ItemLockMode, Player, system, world } from "@minecraft/server";
+import { Player } from "@minecraft/server";
 import { ChestForm } from "../../Modules/chestUI"; // パスは適宜修正してください
 
-system.runTimeout(() => {
-    world.getPlayers().forEach((player) => {
-        main(player);
-        testMenuSystem(player);
-    });
-}); 
 
+//@ts-ignore
 function main(player: Player) {
     const chestUI = new ChestForm()
         .title('Sub Menu')
@@ -31,109 +26,47 @@ function main(player: Player) {
     });
 }
 
+//@ts-ignore
+function testPageFunction(player: Player) {
+    const pageChestUI = new ChestForm()
+        .title('Page Test')
+        .location("-229 13 64")
+        .page("page1")
+        .button(1, '天気: 晴れ', [], 'minecraft:sunflower', 1, true, true)
+        .button(3, '天気: 雨', [], 'minecraft:blue_orchid', 1, true, true)
+        .button(5, '天気: 雷雨', [], 'minecraft:wither_rose', 1, true, true)
+        .setPageButton("page1", 8, "page2", '次のページへ', ['時間変更'], 'minecraft:arrow', 1)
+        .page("page2")
+        .button(1, '時間: 日中', [], 'minecraft:clock', 1, true, true)
+        .button(3, '時間: 夜', [], 'minecraft:clock', 1, true, true)
+        .button(5, '時間: 深夜', [], 'minecraft:clock', 1, true, true)
+        .setPageButton("page2", 0, "page1", '前のページへ', ['天気変更'], 'minecraft:arrow', 1)
+        .rollback(false)
 
-/**
- * メインメニューとなるHome Menuを生成する関数
- * @param _player メニューを表示するプレイヤー
- */
-function createHomeMenu(_player: Player) {
-    const homeMenu = new ChestForm()
-        .title('Home Menu')
-        .location("-229 13 64") // ラージチェストを設置する座標
-        .page("home")
-        .button(12, '天気変更', [], 'minecraft:sunflower', 1, true, true)
-        .button(14, '時間変更', [], 'minecraft:clock', 1, true, true)
-        .button(11, 'X', [], 'minecraft:glass', 1, true, true,"",ItemLockMode.slot)
-        .button(15, 'X', [], 'minecraft:glass', 1, true, true, "", ItemLockMode.slot)
-        .setPageButton("home", 16, "weather", '天気変更メニューへ', ['天気変更の詳細'], 'minecraft:arrow', 1)
-        .setPageButton("home", 17, "time", '時間変更メニューへ', ['時間変更の詳細'], 'minecraft:arrow', 1)
-        .rollback(false);
+    pageChestUI.show()
 
-    return homeMenu;
-}
-
-/**
- * 天気変更メニューを生成する関数
- */
-function createWeatherMenu() {
-    const weatherMenu = new ChestForm()
-        .title('Weather Menu')
-        .location("-229 13 64") // ラージチェストを設置する座標
-        .page("weather")
-        .button(11, '天気: 晴れ', [], 'minecraft:sunflower', 1, true, true)
-        .button(13, '天気: 雨', [], 'minecraft:blue_orchid', 1, true, true)
-        .button(15, '天気: 雷雨', [], 'minecraft:wither_rose', 1, true, true)
-        .setPageButton("weather", 0, "home", '前のページへ', ['Home Menuに戻る'], 'minecraft:arrow', 1)
-        .rollback(false);
-
-    return weatherMenu;
-}
-
-/**
- * 時間変更メニューを生成する関数
- */
-function createTimeMenu() {
-    const timeMenu = new ChestForm()
-        .title('Time Menu')
-        .location("-229 13 64") // ラージチェストを設置する座標
-        .page("time")
-        .button(11, '時間: 日中', [], 'minecraft:clock', 1, true, true)
-        .button(13, '時間: 夜', [], 'minecraft:clock', 1, true, true)
-        .button(15, '時間: 深夜', [], 'minecraft:clock', 1, true, true)
-        .setPageButton("time", 0, "home", '前のページへ', ['Home Menuに戻る'], 'minecraft:arrow', 1)
-        .rollback(false);
-
-    return timeMenu;
-}
-
-/**
- * メニューを表示し、選択された項目に応じてコマンドを実行する関数
- * @param player メニューを表示するプレイヤー
- * @param menu 表示するメニュー (デフォルトはHome Menu)
- */
-function showMenu(player: Player, menu: ChestForm = createHomeMenu(player)) {
-    menu.show().then((response) => {
+    pageChestUI.then((response) => {
         if (response.canceled || !response.page) return;
 
         const { page, selection } = response;
         player.playSound('random.orb');
 
-        if (page === "home") {
-            if (selection === 12) {
-                // 天気変更ボタン
-                showMenu(player, createWeatherMenu());
-            } else if (selection === 14) {
-                // 時間変更ボタン
-                showMenu(player, createTimeMenu());
-            }
-        } else if (page === "weather") {
-            if (selection === 11) {
+        if (page === "page1") {
+            if (selection === 1) {
                 player.runCommandAsync('weather clear');
-            } else if (selection === 13) {
+            } else if (selection === 3) {
                 player.runCommandAsync('weather rain');
-            } else if (selection === 15) {
-                player.runCommandAsync('weather thunder');
+            } else if (selection === 5) {
+                player.sendMessage('雷雨にはしないよ？');
             }
-            // 天気変更後にHome Menuに戻る
-            showMenu(player, createHomeMenu(player));
-        } else if (page === "time") {
-            if (selection === 11) {
+        } else if (page === "page2") {
+            if (selection === 1) {
                 player.runCommandAsync('time set day');
-            } else if (selection === 13) {
+            } else if (selection === 3) {
                 player.runCommandAsync('time set night');
-            } else if (selection === 15) {
-                player.runCommandAsync('time set 18000');
+            } else if (selection === 5) {
+                player.runCommandAsync("time set 18000");
             }
-            // 時間変更後にHome Menuに戻る
-            showMenu(player, createHomeMenu(player));
         }
     });
-}
-
-/**
- * メニューシステムのテスト
- * @param player メニューを表示するプレイヤー
- */
-function testMenuSystem(player: Player) {
-    showMenu(player);
 }

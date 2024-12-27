@@ -1,4 +1,4 @@
-import { ScoreboardIdentity, ScriptEventCommandMessageAfterEvent, system, world } from "@minecraft/server";
+import { Player, ScoreboardIdentity, ScriptEventCommandMessageAfterEvent, ScriptEventSource, system, world } from "@minecraft/server";
 import { isPlayer } from "../../Modules/Handler";
 import { getServerUptime } from "../utility/server";
 import { ver } from "../../Modules/version";
@@ -121,13 +121,23 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
 
 
 
-system.afterEvents.scriptEventReceive.subscribe((event) => {
+system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessageAfterEvent) => {
     if (config().module.ScoreSystem.enabled === false) return;
-    const args = event.message.replace(/^\/ch:team\s+/, "").split(/\s+/);
 
     if (event.id === "ch:team") {
+        const args = event.message.replace(/^\/ch:team\s+/, "").split(/\s+/);
+        // コマンドブロックで実行された場合に備えてメッセージ送信関数を作成
+        const sendMessage = (message: string) => {
+            if (event.sourceType === ScriptEventSource.Entity) {
+                const player: Player = event.sourceEntity as Player;
+                system.run(() => player.sendMessage(message));
+            } else {
+                console.warn(message);
+            }
+        };
+
         if (args.length === 0) {
-            console.error("使用方法: /ch:team set <チーム数>:<チーム内上限人数> <タグ名> <スコアボードタイトル>");
+            sendMessage("使用方法: /ch:team set <チーム数>:<チーム内上限人数> <タグ名> <スコアボードタイトル>");
             return;
         }
 
@@ -135,7 +145,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
 
         if (subcommand === "set") {
             if (args.length < 4) {
-                console.error("引数が不足しています。使用方法: /ch:team set <チーム数>:<チーム内上限人数> <タグ名> <スコアボードタイトル>");
+                sendMessage("引数が不足しています。使用方法: /ch:team set <チーム数>:<チーム内上限人数> <タグ名> <スコアボードタイトル>");
                 return;
             }
             const teamParams = args[1].split(":");
@@ -145,67 +155,117 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
             const scoreTitle = args[3];
 
             if (isNaN(numTeams) || numTeams < 1) {
-                console.error("チーム数は1以上の整数で指定してください。");
+                sendMessage("チーム数は1以上の整数で指定してください。");
                 return;
             }
             if (isNaN(maxTeamSize) || maxTeamSize < 1) {
-                console.error("チーム内上限人数は1以上の整数で指定してください。");
+                sendMessage("チーム内上限人数は1以上の整数で指定してください。");
                 return;
             }
 
             const objective = world.scoreboard.getObjective(scoreTitle);
             if (!objective) {
-                console.error(`スコアボード '${scoreTitle}' が見つかりません。`);
+                sendMessage(`スコアボード '${scoreTitle}' が見つかりません。`);
                 return;
             }
 
-            const players = world.getPlayers().filter(player => player.hasTag(tagName));
+         
+            const players = world.getPlayers().filter((player) => player.hasTag(tagName));
             const teamAssignments: { [playerName: string]: number } = {};
             const teamSizes: { [teamNumber: number]: number } = {};
 
             // プレイヤーをシャッフル
             const shuffledPlayers = players.sort(() => Math.random() - 0.5);
 
+            // 各チームの人数を初期化
+            for (let i = 1; i <= numTeams; i++) {
+                teamSizes[i] = 0;
+            }
+
+            // シャッフルされたプレイヤーリストから順番に各チームに割り当て
+            let teamIndex = 1;
             for (const player of shuffledPlayers) {
-                let assigned = false;
-                for (let team = 1; team <= numTeams; team++) {
-                    if (teamSizes[team] === undefined || teamSizes[team] < maxTeamSize) {
-                        teamAssignments[player.name] = team;
-                        objective.setScore(player, team);
-                        teamSizes[team] = (teamSizes[team] || 0) + 1;
-                        assigned = true;
-                        break;
+                // 現在のチームが上限に達しているかチェック
+                while (teamSizes[teamIndex] >= maxTeamSize) {
+                    teamIndex++;
+                    if (teamIndex > numTeams) {
+                        teamIndex = 1; // 全チームが上限に達したら最初のチームに戻る
                     }
                 }
-                if (!assigned) {
-                    console.warn(`${player.name} のチーム割り当てに失敗しました。上限に達している可能性があります。`);
+
+                // プレイヤーをチームに割り当て
+                teamAssignments[player.name] = teamIndex;
+                objective.setScore(player, teamIndex);
+                teamSizes[teamIndex]++;
+
+                // 次のプレイヤーのためにチームインデックスを更新（必要に応じてローテーション）
+                teamIndex++;
+                if (teamIndex > numTeams) {
+                    teamIndex = 1;
                 }
             }
 
-            //console.log(`チーム分け完了: ${JSON.stringify(teamAssignments)}`);
-
+            sendMessage(`チーム分け完了: ${JSON.stringify(teamAssignments)}`);
         } else {
-            console.error("無効なサブコマンドです。 set を使用してください。");
+            sendMessage("無効なサブコマンドです。 set を使用してください。");
         }
 
     }
 
+    if (event.id === "ch:resetScore") {
+        const args = event.message.replace(/^\/ch:resetScore\s+/, "").split(/\s+/);
+
+        // コマンドブロックで実行された場合に備えてメッセージ送信関数を作成
+        const sendMessage = (message: string) => {
+            if (event.sourceType === ScriptEventSource.Entity) {
+                const player: Player = event.sourceEntity as Player;
+                system.run(() => player.sendMessage(message));
+            } else {
+                console.warn(message);
+            }
+        };
+
+        if (args.length < 1) {
+            sendMessage("引数が不足しています。使用方法: /ch:resetScore <スコアボード名>");
+            return;
+        }
+
+        const scoreboardName = args[0];
+        const objective = world.scoreboard.getObjective(scoreboardName);
+
+        if (!objective) {
+            sendMessage(`スコアボード '${scoreboardName}' が見つかりません。`);
+            return;
+        }
+
+        for (const participant of objective.getParticipants()) {
+            objective.removeParticipant(participant);
+        }
+
+        sendMessage(`スコアボード '${scoreboardName}' のスコアをリセットしました。`);
+    }
+
     // ランダム数値生成
     if (event.id === "ch:number") {
+        // コマンドブロックで実行された場合、コンソールに直接出力する
+        const consoleOutput = (message: string) => {
+            console.warn(message);
+        };
+
         const args = event.message.replace(/^\/ch:number\s+/, "").split(/\s*,\s*/);
         const numbers: number[] = [];
 
         for (const arg of args) {
             const num = parseInt(arg);
             if (isNaN(num)) {
-                console.error(`無効な数値: ${arg}`);
+                consoleOutput(`無効な数値: ${arg}`);
                 return;
             }
             numbers.push(num);
         }
 
         if (numbers.length === 0) {
-            console.error("数値を1つ以上指定してください。");
+            consoleOutput("数値を1つ以上指定してください。");
             return;
         }
 
@@ -217,8 +277,8 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
         }
 
         objective.setScore("number", randomNumber);
+        consoleOutput(`生成された数値: ${randomNumber}`);
     }
-
 
     if (event.id === "ch:rank") {
         handleRankCommand(event as ScriptEventCommandMessageAfterEvent);
@@ -228,7 +288,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
 
 
 const defaultRank = new RankSystem(
-    "メインランク",
+    "§bMini§aGame§r",
     "xp",
     ["ルーキー", "ブロンズ", "シルバー", "ゴールド", "プラチナ", "ダイヤ", "マスター", "プレデター"],
     [0, 500, 2000, 3000, 5000, 7000, 9000, 15000]

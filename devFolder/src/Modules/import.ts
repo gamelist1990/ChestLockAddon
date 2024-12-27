@@ -4,3 +4,4 @@ import './version';
 import './DataBase';
 import './inv';
 import './chestUI';
+import './rankSystem';

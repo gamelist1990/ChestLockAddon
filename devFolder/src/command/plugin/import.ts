@@ -14,6 +14,6 @@ import './AntiCheat/import';
 import './AI';
 import './transfer';
 import './UI';
-
+import './woolwars';
 
 
