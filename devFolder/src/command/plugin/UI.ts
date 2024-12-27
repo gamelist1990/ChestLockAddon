@@ -1,4 +1,4 @@
-import { Player, system, world } from "@minecraft/server";
+import { ItemLockMode, Player, system, world } from "@minecraft/server";
 import { ChestForm } from "../../Modules/chestUI"; // パスは適宜修正してください
 
 system.runTimeout(() => {
@@ -43,6 +43,8 @@ function createHomeMenu(_player: Player) {
         .page("home")
         .button(12, '天気変更', [], 'minecraft:sunflower', 1, true, true)
         .button(14, '時間変更', [], 'minecraft:clock', 1, true, true)
+        .button(11, 'X', [], 'minecraft:glass', 1, true, true,"",ItemLockMode.slot)
+        .button(15, 'X', [], 'minecraft:glass', 1, true, true, "", ItemLockMode.slot)
         .setPageButton("home", 16, "weather", '天気変更メニューへ', ['天気変更の詳細'], 'minecraft:arrow', 1)
         .setPageButton("home", 17, "time", '時間変更メニューへ', ['時間変更の詳細'], 'minecraft:arrow', 1)
         .rollback(false);

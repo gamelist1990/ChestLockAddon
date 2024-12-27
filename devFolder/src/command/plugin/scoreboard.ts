@@ -1,9 +1,10 @@
-import { ScoreboardIdentity, system, world } from "@minecraft/server";
+import { ScoreboardIdentity, ScriptEventCommandMessageAfterEvent, system, world } from "@minecraft/server";
 import { isPlayer } from "../../Modules/Handler";
 import { getServerUptime } from "../utility/server";
 import { ver } from "../../Modules/version";
 import { banPlayers } from "../../Modules/globalBan";
 import { config } from "../../Modules/Util";
+import { handleRankCommand, RankSystem, registerRank } from "../../Modules/rankSystem";
 
 
 const simpleReplacements: { [key: string]: string | (() => string) } = {
@@ -187,7 +188,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
             console.error("無効なサブコマンドです。 set を使用してください。");
         }
 
-    } 
+    }
 
     // ランダム数値生成
     if (event.id === "ch:number") {
@@ -217,7 +218,20 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
 
         objective.setScore("number", randomNumber);
     }
+
+
+    if (event.id === "ch:rank") {
+        handleRankCommand(event as ScriptEventCommandMessageAfterEvent);
+    }
 });
 
 
 
+const defaultRank = new RankSystem(
+    "メインランク",
+    "xp",
+    ["ルーキー", "ブロンズ", "シルバー", "ゴールド", "プラチナ", "ダイヤ", "マスター", "プレデター"],
+    [0, 500, 2000, 3000, 5000, 7000, 9000, 15000]
+);
+
+registerRank(defaultRank);
