@@ -30,7 +30,7 @@ interface CustomItem {
     notPlaceableOn: string[] | undefined;
     then(callback: (player: Player, itemStack: ItemStack) => void): CustomItem;
     get(): ItemStack;
-    give(player: Player): void;
+    give(player: Player, amount?: number): void;
 }
 
 class CustomItemImpl implements CustomItem {
@@ -79,10 +79,41 @@ class CustomItemImpl implements CustomItem {
         return itemStack;
     }
 
-    give(player: Player): void {
+    give(player: Player, amount?: number): void {
         const inventory = player.getComponent('inventory') as EntityInventoryComponent;
         if (inventory) {
-            inventory.container?.addItem(this.get());
+            const giveAmount = amount ?? this.amount; // amountが指定されていなければ、デフォルトのamountを使用
+            const itemStack = this.get();
+            itemStack.amount = giveAmount; // 付与する個数を設定
+
+            // スタック可能なアイテムの場合、空きスロットを探して追加、または新しいスロットに追加
+            if (itemStack.maxAmount > 1) {
+                let remainingAmount = giveAmount;
+                if (!inventory?.container) return;
+                for (let i = 0; i < inventory.container.size; i++) {
+                    const currentItem = inventory?.container?.getItem(i);
+                    if (currentItem && currentItem.typeId === itemStack.typeId && currentItem.nameTag === itemStack.nameTag && currentItem.amount < currentItem.maxAmount) {
+                        const addAmount = Math.min(remainingAmount, currentItem.maxAmount - currentItem.amount);
+                        currentItem.amount += addAmount;
+                        inventory?.container?.setItem(i, currentItem);
+                        remainingAmount -= addAmount;
+                        if (remainingAmount <= 0) break;
+                    }
+                }
+                if (remainingAmount > 0) {
+                    while (remainingAmount > 0) {
+                        const itemToAdd = itemStack.clone();
+                        itemToAdd.amount = Math.min(remainingAmount, itemToAdd.maxAmount);
+                        inventory?.container?.addItem(itemToAdd);
+                        remainingAmount -= itemToAdd.amount;
+                    }
+                }
+            } else {
+                // スタック不可のアイテムの場合、指定された個数分繰り返して追加
+                for (let i = 0; i < giveAmount; i++) {
+                    inventory?.container?.addItem(itemStack.clone());
+                }
+            }
         }
     }
 

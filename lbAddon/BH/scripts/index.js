@@ -2,6 +2,8 @@ import { world, system } from "@minecraft/server";
 import "./modules/commands";
 import { loadLeaderboards } from "./modules/Leaderboard";
 export const db_leaderboards = {};
+
+let flag = false;
 function updateLeaderboard(entity) {
     const objective = entity.getDynamicProperty("objective");
     if (!objective)
@@ -30,10 +32,13 @@ system.runInterval(() => {
         if (!xpObjective) {
             return;
         }
-        // プレイヤーのレベルを取得
-        const level = player.level;
-        // スコアボード "xp" にプレイヤーのレベルを保存
-        xpObjective.setScore(player.name, level); // xpObjective を使用 
+        if (flag) {
+            // プレイヤーのレベルを取得
+            const level = player.level;
+            // スコアボード "xp" にプレイヤーのレベルを保存
+            xpObjective.setScore(player.name, level); // xpObjective を使用 
+        }
+        
     }
 }, 20 * 5);
 system.runTimeout(() => {

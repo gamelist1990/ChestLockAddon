@@ -203,6 +203,60 @@ export class RankSystem {
         }
         console.warn(`${this.title}の全てのプレイヤーのランクをリセットしました。`);
     }
+
+    // ここから追加部分
+    /**
+    * プレイヤーの順位を取得します。
+    * @param {Player} player - 順位を取得するプレイヤー
+    * @returns {number} プレイヤーの順位
+    */
+    getRanking(player: Player): number {
+        const objective = world.scoreboard.getObjective(this.scoreboardName);
+        if (!objective) return 0;
+
+        // 全ての参加者のスコアを取得し、降順にソート
+        const scores = objective.getParticipants()
+            .map(participant => ({
+                participant,
+                score: objective.getScore(participant) || 0
+            }))
+            .sort((a, b) => b.score - a.score);
+
+        // プレイヤーの順位を見つける
+        const playerRank = scores.findIndex(s => s.participant.displayName === player.name) + 1;
+
+        return playerRank;
+    }
+
+    /**
+     * 上位 {count} 人のランキングを取得
+     * @param {number} count 上位何人まで表示するか
+     * @returns 上位 {count} 人のスコアボード情報。参加者名とスコアのオブジェクトの配列
+     */
+    getTopRanking(count: number): { participantName: string; score: number }[] {
+        const objective = world.scoreboard.getObjective(this.scoreboardName);
+        if (!objective) return [];
+        return objective
+            .getParticipants()
+            .map((participant) => ({
+                participantName: participant.displayName,
+                score: objective.getScore(participant) || 0,
+            }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, count);
+    }
+
+    /**
+    * スコアボードに登録されている全ての参加者のリストを取得
+    * @returns スコアボードに登録されている全ての参加者
+    */
+    getAllParticipants(): ScoreboardIdentity[] {
+        const objective = world.scoreboard.getObjective(this.scoreboardName);
+        if (!objective) return [];
+        return objective.getParticipants();
+    }
+    // ここまで追加部分
+
 }
 
 // 登録済みのランクシステムのインスタンスを保持する配列
@@ -392,10 +446,51 @@ export function handleRankCommand(event: ScriptEventCommandMessageAfterEvent) {
                 rankSystem.updatePlayerRank(targetParticipant, newScore);
             }
         } else if (args[1] === "list") {
-            // ランク表示
+            // プレイヤーの現在のランク情報を表示する部分を修正
+            if (!initiator) return;
             const rankScore = rankSystem.getPlayerRankScore(initiator);
             const currentRank = rankSystem.getRankNameFromScore(rankScore);
-            initiator.sendMessage(`あなたの${rankSystem.title}ランク: ${currentRank}  現在のランクポイント : ${rankScore}`);
+            const playerRank = rankSystem.getRanking(initiator);
+            initiator.sendMessage(
+                `§e§l== あなたのランク情報 ==\n§r§6${rankSystem.title}ランク: §a${currentRank}\n§6現在のランクポイント: §a${rankScore}\n§6順位: §a${playerRank}位\n§r`
+            );
+            if (args[2] === "rank") {
+                // 上位10人のランキングを表示
+                const topRanking = rankSystem.getTopRanking(10);
+
+                if (topRanking.length === 0) {
+                    initiator.sendMessage(`§c${rankSystem.title} にはまだ参加者がいません。`);
+                    return;
+                }
+                // リストの先頭にシステム名を追加
+                const rankTitle = `§b§l[${rankSystem.title} ランキング Top 10]`;
+
+                // ランキングリストをメッセージに追加 (装飾を施す)
+                const rankingMessages = [
+                    rankTitle,
+                    ...topRanking.map((entry, index) => {
+                        const rankColor =
+                            index === 0
+                                ? "§6§l" // 1位は金色
+                                : index === 1
+                                    ? "§7§l" // 2位は銀色
+                                    : index === 2
+                                        ? "§e" // 3位は銅色
+                                        : "§f"; // それ以外は白色
+                        return `§b${index + 1}位: ${rankColor}${entry.participantName} §r§7- §e${entry.score}`;
+                    }),
+                ];
+
+                // 一度に送信できるメッセージ数に分割
+                for (let i = 0; i < rankingMessages.length; i += 9) {
+                    const chunk = rankingMessages.slice(i, i + 9).join("\n");
+                    initiator.sendMessage(chunk);
+                }
+            }
+
+            // 全参加者数表示 (装飾)
+            const participantsCount = rankSystem.getAllParticipants().length;
+            initiator.sendMessage(`§9現在の参加者数: §a${participantsCount}人§r`);
         }
     }
 }

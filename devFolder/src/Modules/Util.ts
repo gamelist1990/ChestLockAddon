@@ -383,8 +383,14 @@ export function formatTimestamp(timestamp: string | number | Date, timezoneOffse
 }
 
 // JST でフォーマットする場合 (JSTはUTC+9)
-export function formatTimestampJST(timestamp: string | number | Date): string {
-  return formatTimestamp(timestamp, 9);
+export function formatTimestampJST(date: Date): string {
+  const jstOffset = 9 * 60; // JSTはUTC+9時間なので、分単位でオフセットを計算
+  const localDate = new Date(date.getTime() + jstOffset * 60 * 1000);
+
+  const hours = localDate.getUTCHours().toString().padStart(2, '0');
+  const minutes = localDate.getUTCMinutes().toString().padStart(2, '0');
+
+  return `${hours}:${minutes}`; // 秒を削除
 }
 
 // UTC でフォーマットする場合 (UTCはオフセット0)

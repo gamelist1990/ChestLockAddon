@@ -11,6 +11,8 @@ import {
     EntityComponentTypes,
     EffectTypes,
     EntityInventoryComponent,
+    PlayerSoundOptions,
+    EntityDamageCause,
 } from "@minecraft/server";
 import { CustomItem } from "../../Modules/customItem";
 
@@ -39,7 +41,10 @@ const SHEEP_SETTINGS = {
 const EXPLOSIVE_SHEEP = {
     name: "§cExplosive Sheep",
     color: 14, // Red
-    explosionRadius: 3,
+    explosionRadius: 5, // 爆発範囲
+    maxDamage: 25, // 最大ダメージ
+    knockbackMultiplier: 1.5, // ノックバック倍率
+    falloffFunction: (distance: number, radius: number) => (1 - distance / radius) ** 2, // ダメージ減衰関数(2次関数)
 };
 
 // 乗れる羊の設定
@@ -86,7 +91,10 @@ const HEAL_SHEEP = {
 const ORANGE_SHEEP = {
     name: "§6Orange Sheep",
     color: 1, // Orange
-    explosionRadius: 6, // 爆発範囲を拡大
+    explosionRadius: 15, // 爆発範囲
+    maxDamage: 40, // 最大ダメージ (かなり大きく)
+    knockbackMultiplier: 2.5, // ノックバック倍率 (かなり大きく)
+    falloffFunction: (distance: number, radius: number) => (1 - distance / radius) ** 3, // ダメージ減衰関数 (三次関数)
 };
 
 // カスタムアイテムの共通設定
@@ -203,7 +211,16 @@ async function launchExplosiveSheep(player: Player): Promise<void> {
                     }
 
                     // 爆発を発生させる
-                    createExplosion(player.dimension, explosionLoc, EXPLOSIVE_SHEEP.explosionRadius, player, 10);
+                    createExplosion(
+                        player.dimension,
+                        explosionLoc,
+                        EXPLOSIVE_SHEEP.explosionRadius,
+                        player,
+                        EXPLOSIVE_SHEEP.explosionRadius * 1.5, 
+                        EXPLOSIVE_SHEEP.knockbackMultiplier,
+                        EXPLOSIVE_SHEEP.maxDamage,
+                        EXPLOSIVE_SHEEP.falloffFunction
+                    );
 
                     // インターバルをクリア
                     system.clearRun(intervalId);
@@ -729,13 +746,14 @@ function healNearbyPlayers(sheep: Entity, radius: number, healedPlayers: string[
 }
 
 /**
- * 爆発を発生させ、プレイヤーにノックバックを与える共通関数
+ * 爆発を発生させ、プレイヤーにノックバックとダメージを与える共通関数
  * @param dimension 爆発を発生させるディメンション
  * @param location 爆発の座標
  * @param radius 爆発の半径
  * @param source 爆発の発生源（オプション）
  * @param knockbackRadius ノックバックの影響範囲（オプション、デフォルトは爆発半径と同じ）
  * @param knockbackMultiplier ノックバックの強さの倍率（オプション、デフォルトは1.0）
+ * @param damagePerDistance 爆発地点からの距離に応じたダメージ量 (1メートルあたりのダメージ) (オプション、デフォルトは5)
  */
 function createExplosion(
     dimension: Dimension,
@@ -743,7 +761,9 @@ function createExplosion(
     radius: number,
     source?: Entity,
     knockbackRadius: number = radius,
-    knockbackMultiplier: number = 1.0
+    knockbackMultiplier: number = 1.0,
+    maxDamage: number = 20,
+    falloffFunction: (distance: number, radius: number) => number = (distance, radius) => 1 - distance / radius
 ): void {
     const minX = -30000000;
     const maxX = 30000000;
@@ -809,8 +829,19 @@ function createExplosion(
                     direction.x,
                     direction.z,
                     knockbackStrength * 5, // ノックバックの水平方向の強さ
-                    0.5// ノックバックの垂直方向の強さ(固定値)
+                    0.5 // ノックバックの垂直方向の強さ(固定値)
                 );
+
+                // ダメージを計算 (減衰関数を適用)
+                const damage = Math.max(0, maxDamage * falloffFunction(distance, radius));
+
+                // ダメージを与える
+                if (damage > 0) {
+                    player.applyDamage(damage, {
+                        cause: EntityDamageCause.entityExplosion,
+                        damagingEntity: source,
+                    });
+                }
             }
         } catch (error) {
             console.error("Error in createExplosion:", error);
@@ -938,7 +969,16 @@ async function launchOrangeSheep(player: Player): Promise<void> {
                     }
 
                     // 爆発を発生させる (半径を大きくする)
-                    createExplosion(player.dimension, explosionLoc, ORANGE_SHEEP.explosionRadius, player,10,4);
+                    createExplosion(
+                        player.dimension,
+                        explosionLoc,
+                        ORANGE_SHEEP.explosionRadius,
+                        player,
+                        ORANGE_SHEEP.explosionRadius * 1.2, 
+                        ORANGE_SHEEP.knockbackMultiplier,
+                        ORANGE_SHEEP.maxDamage,
+                        ORANGE_SHEEP.falloffFunction
+                    );
 
                     // インターバルをクリア
                     system.clearRun(intervalId);
@@ -1058,7 +1098,7 @@ const healLimeWool = new CustomItem({
 // オレンジ羊のカスタムアイテム
 const explosiveOrangeWool = new CustomItem({
     ...CUSTOM_ITEM_SETTINGS,
-    name: "§6オレンジ羊",
+    name: "§6超爆発羊",
     lore: ["§7投げた場所に羊をスポーンさせ、", "§7着地、または何かに当たると大爆発する", "§c爆弾羊の上位互換", `§7爆発範囲: §a${ORANGE_SHEEP.explosionRadius}`],
     item: "minecraft:orange_wool",
     placeableOn: ["minecraft:allow"],
@@ -1068,7 +1108,98 @@ const explosiveOrangeWool = new CustomItem({
 
 });
 
+// 木の剣のカスタムアイテム (y座標が-64以下でのみ有効)
+const upBlowWoodenSword = new CustomItem({
+    name: "§bアッパーソード",
+    lore: ["§7使用すると上方向に吹き飛ばされる"],
+    item: "minecraft:wooden_sword",
+}).then((player: Player) => {
+    system.run(() => {
+        // プレイヤーの座標を取得
+        const playerLocation = player.location;
+
+        // y座標が-64以下の場合にのみ効果を発動
+        if (playerLocation.y <= -75) {
+            player.applyKnockback(0, 0, 0, 3);
+
+            // サウンドを再生 (複数のサウンドを組み合わせ、ディレイで立体感を出す)
+            const mainSoundOptions: PlayerSoundOptions = {
+                volume: 1.0,
+                pitch: 1.0,
+            };
+
+            const subSoundOptions: PlayerSoundOptions = {
+                volume: 0.6,
+                pitch: 1.2, // 少し高めにして変化をつける
+            };
+
+            // メインのサウンド (例: 突風のような音)
+            player.playSound("strong_wind", mainSoundOptions);
+
+            system.runTimeout(() => {
+                player.playSound("ambient.cave", subSoundOptions);
+                //3ティック目に
+            }, 3);
+            removeItem(player);
+        } else {
+            // y座標が-64より高い場合は、メッセージを表示 (オプション)
+            player.sendMessage("§cこの高さではアッパーソードは使用できません！");
+        }
+    });
+});
+
+
+const boostFeather = new CustomItem({
+    name: "§bHiveの羽",
+    lore: ["§7使用すると前方向にダッシュし", "§7一時的に移動速度が上昇する"],
+    item: "minecraft:feather",
+    amount: 1,
+}).then((player: Player) => {
+
+    system.run(() => {
+        const direction = player.getViewDirection();
+
+        // 前方向への力を適用 (水平方向の力を強化)
+        player.applyKnockback(direction.x, direction.z, 7, 0.6); // 水平方向4、垂直方向0.6
+
+        // サウンドを再生 (複数のサウンドを組み合わせ、ディレイで臨場感を出す)
+        const mainSoundOptions: PlayerSoundOptions = {
+            volume: 1.0,
+            pitch: 1.0,
+        };
+
+        const subSoundOptions: PlayerSoundOptions = {
+            volume: 0.7,
+            pitch: 1.2, // 少し高めにして変化をつける
+        };
+        const subSoundOptions2: PlayerSoundOptions = {
+            volume: 0.4,
+            pitch: 0.9, // 少し低めにして変化をつける
+        };
+
+        // メインのサウンド (例: 馬のジャンプ音)
+        player.playSound("mob.horse.jump", mainSoundOptions);
+
+        system.runTimeout(() => {
+            player.playSound("mob.blaze.shoot", subSoundOptions); // 例: ブレイズの発射音
+        }, 3); // 3 tick 後 (0.15秒) に再生
+
+        system.runTimeout(() => {
+            player.playSound("elytra.loop", subSoundOptions2);
+        }, 5);
+
+        system.runTimeout(() => {
+            player.playSound("mob.blaze.breathe", subSoundOptions2);
+        }, 7);
+
+        removeItem(player);
+
+    })
+
+});
+
 // ----- イベント ----- //
+
 
 system.afterEvents.scriptEventReceive.subscribe((event) => {
     if (event.id === "team:init") {
@@ -1087,41 +1218,60 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
         } catch (error) {
             console.error("Error in scriptEventReceive:", error);
         }
-    } else if (event.id === "ch:wool") { // カスタムイベント "ch:wool" を処理
+    } else if (event.id === "ch:wool") {
         const player = event.sourceEntity;
         if (!player || !(player instanceof Player)) return;
 
-        const message = event.message; // "give explosive" のようなメッセージを取得
-        const args = message.split(/\s+/); // メッセージを空白で分割して配列にする
+        const message = event.message;
+        const args = message.split(/\s+/);
 
         if (args.length >= 2 && args[0].toLowerCase() === "give") {
-            const itemName = args[1].toLowerCase(); // 与えるアイテムの名前を取得
+            const itemName = args[1].toLowerCase();
+            let amount = 1; // デフォルトの個数は1
+
+            // 個数が指定されている場合、それを取得
+            if (args.length >= 3) {
+                amount = parseInt(args[2]);
+                if (isNaN(amount) || amount <= 0) {
+                    player.sendMessage("§c個数は正の整数で指定してください");
+                    return;
+                }
+            }
 
             try {
                 switch (itemName) {
                     case "explosive":
-                        explosiveRedWool.give(player);
-                        player.sendMessage(`§a${explosiveRedWool.name} §7を入手しました`);
+                        explosiveRedWool.give(player, amount);
+                        player.sendMessage(`§a${explosiveRedWool.name} §7を ${amount} 個入手しました`);
                         break;
                     case "rideable":
-                        rideableWhiteWool.give(player);
-                        player.sendMessage(`§a${rideableWhiteWool.name} §7を入手しました`);
+                        rideableWhiteWool.give(player, amount);
+                        player.sendMessage(`§a${rideableWhiteWool.name} §7を ${amount} 個入手しました`);
                         break;
                     case "blackhole":
-                        blackHoleWool.give(player);
-                        player.sendMessage(`§a${blackHoleWool.name} §7を入手しました`);
+                        blackHoleWool.give(player, amount);
+                        player.sendMessage(`§a${blackHoleWool.name} §7を ${amount} 個入手しました`);
                         break;
                     case "earthquake":
-                        earthquakeBrownWool.give(player);
-                        player.sendMessage(`§a${earthquakeBrownWool.name} §7を入手しました`);
+                        earthquakeBrownWool.give(player, amount);
+                        player.sendMessage(`§a${earthquakeBrownWool.name} §7を ${amount} 個入手しました`);
                         break;
                     case "heal":
-                        healLimeWool.give(player);
-                        player.sendMessage(`§a${healLimeWool.name} §7を入手しました`);
+                        healLimeWool.give(player, amount);
+                        player.sendMessage(`§a${healLimeWool.name} §7を ${amount} 個入手しました`);
                         break;
                     case "orange":
-                        explosiveOrangeWool.give(player);
-                        player.sendMessage(`§a${explosiveOrangeWool.name} §7を入手しました`);
+                        explosiveOrangeWool.give(player, amount);
+                        player.sendMessage(`§a${explosiveOrangeWool.name} §7を ${amount} 個入手しました`);
+                        break;
+
+                    case "upblow":
+                        upBlowWoodenSword.give(player, amount);
+                        player.sendMessage(`§a${upBlowWoodenSword.name} §7を ${amount} 個入手しました`);
+                        break;
+                    case "boost":
+                        boostFeather.give(player, amount);
+                        player.sendMessage(`§a${boostFeather.name} §7を ${amount} 個入手しました`);
                         break;
                     default:
                         player.sendMessage(`§c不明なアイテム名: ${itemName}`);
@@ -1132,7 +1282,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
                 player.sendMessage(`§cアイテムの付与中にエラーが発生しました`);
             }
         } else {
-            player.sendMessage("§c無効なコマンドです。使用法: ch:wool give <アイテム名>");
+            player.sendMessage("§c無効なコマンドです。使用法: ch:wool give <アイテム名> [個数]");
         }
     }
 });
