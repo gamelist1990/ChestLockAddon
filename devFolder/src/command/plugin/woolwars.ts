@@ -92,9 +92,8 @@ const ORANGE_SHEEP = {
     name: "§6Orange Sheep",
     color: 1, // Orange
     explosionRadius: 15, // 爆発範囲
-    maxDamage: 40, // 最大ダメージ (かなり大きく)
+    maxDamage: 1, // 最大ダメージ (かなり大きく)
     knockbackMultiplier: 2.5, // ノックバック倍率 (かなり大きく)
-    falloffFunction: (distance: number, radius: number) => (1 - distance / radius) ** 3, // ダメージ減衰関数 (三次関数)
 };
 
 // カスタムアイテムの共通設定
@@ -977,7 +976,6 @@ async function launchOrangeSheep(player: Player): Promise<void> {
                         ORANGE_SHEEP.explosionRadius * 1.2, 
                         ORANGE_SHEEP.knockbackMultiplier,
                         ORANGE_SHEEP.maxDamage,
-                        ORANGE_SHEEP.falloffFunction
                     );
 
                     // インターバルをクリア

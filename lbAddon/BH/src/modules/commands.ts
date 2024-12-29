@@ -146,6 +146,7 @@ registerCommand(
         sender.sendMessage("§b.lb remove <名前>§r: リーダーボードを削除します。");
         sender.sendMessage("§b.lb list [ページ]§r: リーダーボードの一覧を表示します。");
         sender.sendMessage("§b.lb edit <名前>§r: 指定されたリーダーボードの設定を編集します。");
+        sender.sendMessage("§b.lb edit <名前> <パラメータ> <値>§r: 指定されたリーダーボードの設定を編集します。");
         sender.sendMessage("§b.lb help§r: このヘルプを表示します。");
       }, 20);
       return;
@@ -263,19 +264,13 @@ registerCommand(
           sender.sendMessage(
             "§b.lb list [ページ]§r: リーダーボードの一覧を表示します。"
           );
-          sender.sendMessage(
-            "§b.lb edit <名前>§r: 指定されたリーダーボードの設定を編集します。"
-          );
+          sender.sendMessage("§b.lb edit <名前>§r: 指定されたリーダーボードの設定を編集します。");
+          sender.sendMessage("§b.lb edit <名前> <パラメータ> <値>§r: 指定されたリーダーボードの設定を編集します。");
           sender.sendMessage("§b.lb help§r: このヘルプを表示します。");
         });
         break;
 
       case "edit":
-        if (args.length < 2) {
-          sender.sendMessage("§c使用法: .lb edit <名前>");
-          return;
-        }
-
         const nameToEdit = args[1];
         const leaderboardToEdit = db_leaderboards[nameToEdit];
 
@@ -284,10 +279,78 @@ registerCommand(
           return;
         }
 
-        system.runTimeout(() => {
-          showEditForm(sender, leaderboardToEdit);
-        }, 20 * 3)
+        // 引数が2つの場合（.lb edit <名前> のみ）、showEditFormを呼び出す
+        if (args.length === 2) {
+          system.runTimeout(() => {
+            showEditForm(sender, leaderboardToEdit);
+          }, 20 * 3);
+          return;
+        }
+
+        // 引数が4つ以上の場合（.lb edit <名前> <パラメータ> <値>）、チャット欄からパラメータを更新
+        if (args.length >= 4) {
+          const param = args[2];
+          const value = args.slice(3).join(" ");
+
+          system.runTimeout(() => {
+            switch (param) {
+              case "name":
+                if (value !== leaderboardToEdit.name) {
+                  delete db_leaderboards[leaderboardToEdit.name];
+                  leaderboardToEdit.name = value;
+                  db_leaderboards[value] = leaderboardToEdit;
+                }
+                break;
+              case "title":
+                leaderboardToEdit.title = value;
+                break;
+              case "objective":
+                leaderboardToEdit.objectiveSource = value;
+                break;
+              case "maxEntries":
+                const numValue = parseInt(value);
+                if (!isNaN(numValue) && [5, 10, 15, 20, 25, 30].includes(numValue)) {
+                  leaderboardToEdit.maxEntries = numValue;
+                } else {
+                  sender.sendMessage("§cmaxEntriesには5, 10, 15, 20, 25, 30のいずれかを指定してください。");
+                  return;
+                }
+                break;
+              case "ascending":
+                leaderboardToEdit.ascending = value.toLowerCase() === "true";
+                break;
+              case "format":
+                leaderboardToEdit.format = value;
+                break;
+              case "showDefault":
+                leaderboardToEdit.showDefault = value.toLowerCase() === "true";
+                break;
+              case "defaultText":
+                leaderboardToEdit.defaultText = value;
+                break;
+              case "recordOfflinePlayers":
+                leaderboardToEdit.recordOfflinePlayers = value.toLowerCase() === "true";
+                break;
+              case "filterOnline":
+                leaderboardToEdit.shouldFilterByWorldPlayers = value.toLowerCase() === "true";
+                break;
+              default:
+                sender.sendMessage("§c無効なパラメータです。");
+                return;
+            }
+
+            leaderboardToEdit.update();
+            leaderboardToEdit.saveDynamicProperties();
+            sender.sendMessage(`§aリーダーボード "${leaderboardToEdit.name}" のパラメータ "${param}" を "${value}" に更新しました。`);
+            sender.playSound("random.orb");
+          }, 20 * 3);
+        } else {
+          sender.sendMessage("§c使用法: .lb edit <名前> <パラメータ> <値>");
+          sender.sendMessage("§c<パラメータ>には以下のいずれかを指定してください:");
+          sender.sendMessage("§c  - name, title, objective, maxEntries, ascending, format, showDefault, defaultText, recordOfflinePlayers, filterOnline");
+        }
         break;
+
 
       default:
         sender.sendMessage(
