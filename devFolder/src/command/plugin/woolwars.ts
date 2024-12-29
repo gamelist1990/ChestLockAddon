@@ -215,7 +215,7 @@ async function launchExplosiveSheep(player: Player): Promise<void> {
                         explosionLoc,
                         EXPLOSIVE_SHEEP.explosionRadius,
                         player,
-                        EXPLOSIVE_SHEEP.explosionRadius * 1.5, 
+                        EXPLOSIVE_SHEEP.explosionRadius * 1.5,
                         EXPLOSIVE_SHEEP.knockbackMultiplier,
                         EXPLOSIVE_SHEEP.maxDamage,
                         EXPLOSIVE_SHEEP.falloffFunction
@@ -973,7 +973,7 @@ async function launchOrangeSheep(player: Player): Promise<void> {
                         explosionLoc,
                         ORANGE_SHEEP.explosionRadius,
                         player,
-                        ORANGE_SHEEP.explosionRadius * 1.2, 
+                        ORANGE_SHEEP.explosionRadius * 1.2,
                         ORANGE_SHEEP.knockbackMultiplier,
                         ORANGE_SHEEP.maxDamage,
                     );
@@ -1199,6 +1199,7 @@ const boostFeather = new CustomItem({
 // ----- イベント ----- //
 
 
+
 system.afterEvents.scriptEventReceive.subscribe((event) => {
     if (event.id === "team:init") {
         const player = event.sourceEntity;
@@ -1281,6 +1282,48 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
             }
         } else {
             player.sendMessage("§c無効なコマンドです。使用法: ch:wool give <アイテム名> [個数]");
+        }
+    }
+
+    if (event.id === "ch:custom") {
+        const player = event.sourceEntity;
+        if (!player || !(player instanceof Player)) return;
+
+        const message = event.message;
+        const args = message.split(";"); // ; 区切りに変更
+
+        if (args.length < 5) {
+            player.sendMessage("§c使用法: ch:custom <アイテム名>;<説明文>;<アイテムタイプ>;<個数>;<実行するコード>");
+            player.sendMessage("§c例: ch:custom §bTestSword;§7This is a test,§7and another line;diamond_sword;1;console.warn('Sword used!');");
+            return;
+        }
+
+        try {
+            const name = args[0];
+            const lore = args[1].split(",").map((line: string) => line.trim()); // 各行の先頭と末尾のスペースを削除
+            const item = args[2];
+            const amount = parseInt(args[3]);
+            const code = args[4];
+
+            if (isNaN(amount) || amount <= 0) {
+                player.sendMessage("§c個数は正の整数で指定してください");
+                return;
+            }
+
+            const customItem = new CustomItem({ name, lore, item, amount }).then((p: Player) => {
+                try {
+                    eval(code);
+                } catch (error) {
+                    console.error("Error in executing custom item code:", error);
+                    p.sendMessage("§cアイテム使用時のコード実行中にエラーが発生しました");
+                }
+            });
+
+            customItem.give(player);
+            player.sendMessage(`§a${name} §7を ${amount} 個入手しました`);
+        } catch (error) {
+            console.error("Error in ch:custom command:", error);
+            player.sendMessage("§cカスタムアイテムの作成中にエラーが発生しました");
         }
     }
 });

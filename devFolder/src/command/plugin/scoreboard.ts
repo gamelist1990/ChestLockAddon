@@ -580,11 +580,10 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
 
 
 const defaultRank = new RankSystem(
-    "§b宇宙§a人狼§r",
-    "rank",
+    "§bMini§aGame§r",
+    "xp",
     ["ルーキー", "ブロンズ", "シルバー", "ゴールド", "プラチナ", "ダイヤ", "マスター", "プレデター"],
-    [0, 500, 800, 1000, 1400, 1700, 2000, 10000],
-    
+    [0, 500, 2000, 3000, 5000, 7000, 9000, 15000]
 );
 
 registerRank(defaultRank);
