@@ -28,8 +28,8 @@ const configs = {
             speed: false,
             killAura: false,
             xray: false,
-            spam: true,
-            editionFake: true
+            spam: false,
+            editionFake: false
         }
     },
 };

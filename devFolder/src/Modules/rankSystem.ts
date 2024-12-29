@@ -7,6 +7,12 @@ import {
     world,
 } from "@minecraft/server";
 
+interface Participant {
+    name: string;
+    score: number;
+    scoreboardIdentity?: ScoreboardIdentity;
+}
+
 export class RankSystem {
     public title: string;
     public scoreboardName: string;
@@ -87,11 +93,11 @@ export class RankSystem {
     }
 
     /**
-     * プレイヤーのランクスコアを取得します。
-     * @param {Player | string | ScoreboardIdentity} player - プレイヤーオブジェクト、プレイヤー名、またはスコアボードID
-     * @returns {number} ランクスコア
-     */
-    getPlayerRankScore(player: Player | string | ScoreboardIdentity): number {
+ * プレイヤーのランクスコアを取得します。
+ * @param {Player | string | ScoreboardIdentity | Participant} player - プレイヤーオブジェクト、プレイヤー名、スコアボードID、または参加者オブジェクト
+ * @returns {number} ランクスコア
+ */
+    getPlayerRankScore(player: Player | string | ScoreboardIdentity | Participant): number {
         const objective = world.scoreboard.getObjective(this.scoreboardName);
         if (!objective) return 0;
 
@@ -101,11 +107,17 @@ export class RankSystem {
         } else if (player instanceof Player) {
             const score = objective.getScore(player);
             return score !== undefined ? score : 0;
-        } else {
+        } else if ("scoreboardIdentity" in player && player.scoreboardIdentity) {
+            const score = objective.getScore(player.scoreboardIdentity);
+            return score !== undefined ? score : 0;
+        } else if ("id" in player) { // playerがScoreboardIdentityの場合
             const score = objective.getScore(player);
             return score !== undefined ? score : 0;
+        } else { // Participant型の場合 
+            return 0; // スコアが取得できない場合は0を返す
         }
     }
+
 
     /**
      * プレイヤーのランクを更新します。
@@ -233,29 +245,47 @@ export class RankSystem {
      * @param {number} count 上位何人まで表示するか
      * @returns 上位 {count} 人のスコアボード情報。参加者名とスコアのオブジェクトの配列
      */
-    getTopRanking(count: number): { participantName: string; score: number }[] {
+    getTopRanking(count: number): Participant[] {
         const objective = world.scoreboard.getObjective(this.scoreboardName);
         if (!objective) return [];
         return objective
             .getParticipants()
             .map((participant) => ({
-                participantName: participant.displayName,
+                name: participant.displayName, // participantName から name に変更
                 score: objective.getScore(participant) || 0,
+                scoreboardIdentity: participant,
             }))
             .sort((a, b) => b.score - a.score)
             .slice(0, count);
     }
 
+
+
     /**
-    * スコアボードに登録されている全ての参加者のリストを取得
-    * @returns スコアボードに登録されている全ての参加者
-    */
-    getAllParticipants(): ScoreboardIdentity[] {
+   * スコアボードに登録されている全ての参加者のリストを取得
+   * @returns スコアボードに登録されている全ての参加者
+   */
+    getAllParticipants(): Participant[] {
         const objective = world.scoreboard.getObjective(this.scoreboardName);
         if (!objective) return [];
-        return objective.getParticipants();
+        return objective
+            .getParticipants()
+            .map((participant) => ({
+                name: participant.displayName, // participantName から name に変更
+                score: objective.getScore(participant) || 0,
+                scoreboardIdentity: participant,
+            }));
     }
-    // ここまで追加部分
+
+    /**
+     * 登録されているすべてのランク名を取得します。
+     * ランク名が登録されている順番で返します
+     * @returns {string[]} ランク名の配列
+     */
+    getAllRankNames(): string[] {
+        // スコアの昇順でランク名をソートして返す
+        return Object.keys(this.rankThresholds).sort((a, b) => this.rankThresholds[a] - this.rankThresholds[b]);
+    }
 
 }
 
@@ -446,26 +476,39 @@ export function handleRankCommand(event: ScriptEventCommandMessageAfterEvent) {
                 rankSystem.updatePlayerRank(targetParticipant, newScore);
             }
         } else if (args[1] === "list") {
-            // プレイヤーの現在のランク情報を表示する部分を修正
             if (!initiator) return;
             const rankScore = rankSystem.getPlayerRankScore(initiator);
             const currentRank = rankSystem.getRankNameFromScore(rankScore);
             const playerRank = rankSystem.getRanking(initiator);
-            initiator.sendMessage(
-                `§e§l== あなたのランク情報 ==\n§r§6${rankSystem.title}ランク: §a${currentRank}\n§6現在のランクポイント: §a${rankScore}\n§6順位: §a${playerRank}位\n§r`
-            );
+            initiator.sendMessage(`§e§l== あなたのランク情報 ==\n§r§6${rankSystem.title}ランク: §a${currentRank}\n§6現在のランクポイント: §a${rankScore}\n§6順位: §a${playerRank}位\n§r`);
+
             if (args[2] === "rank") {
-                // 上位10人のランキングを表示
-                const topRanking = rankSystem.getTopRanking(10);
+                // 表示するランキングの件数を取得 (デフォルトは10)
+                const limit = parseInt(args[3]) || 10;
+                // オンラインプレイヤーのみを表示するかどうか (デフォルトはfalse)
+                const onlineOnly = args[4] === "true";
+
+                // 上位 limit 人のランキングを表示
+                let topRanking = rankSystem.getTopRanking(limit);
+
+                // オンラインプレイヤーのみを表示する場合、フィルタリング処理を追加
+                if (onlineOnly) {
+                    topRanking = topRanking.filter(entry => entry.name !== "commands.scoreboard.players.offlinePlayerName");
+                }
 
                 if (topRanking.length === 0) {
-                    initiator.sendMessage(`§c${rankSystem.title} にはまだ参加者がいません。`);
+                    if (onlineOnly) {
+                        initiator.sendMessage(`§c${rankSystem.title} に参加しているオンラインプレイヤーはいません`);
+                    } else {
+                        initiator.sendMessage(`§c${rankSystem.title} にはまだ参加者がいません。`);
+                    }
                     return;
                 }
-                // リストの先頭にシステム名を追加
-                const rankTitle = `§b§l[${rankSystem.title} ランキング Top 10]`;
 
-                // ランキングリストをメッセージに追加 (装飾を施す)
+                // リストの先頭にシステム名と件数を追加 (オンラインのみかどうかも表示)
+                const rankTitle = `§b§l[${rankSystem.title} ランキング Top ${limit}${onlineOnly ? " (オンラインのみ)" : ""}]`;
+
+                // ランキングリストをメッセージに追加 (装飾と名前の置換を施す)
                 const rankingMessages = [
                     rankTitle,
                     ...topRanking.map((entry, index) => {
@@ -477,7 +520,11 @@ export function handleRankCommand(event: ScriptEventCommandMessageAfterEvent) {
                                     : index === 2
                                         ? "§e" // 3位は銅色
                                         : "§f"; // それ以外は白色
-                        return `§b${index + 1}位: ${rankColor}${entry.participantName} §r§7- §e${entry.score}`;
+
+                        // 名前の置換処理
+                        const displayName = entry.name === "commands.scoreboard.players.offlinePlayerName" ? "オフラインユーザー" : entry.name;
+
+                        return `§b${index + 1}位: ${rankColor}${displayName} §r§7- §e${entry.score}`;
                     }),
                 ];
 
@@ -486,6 +533,77 @@ export function handleRankCommand(event: ScriptEventCommandMessageAfterEvent) {
                     const chunk = rankingMessages.slice(i, i + 9).join("\n");
                     initiator.sendMessage(chunk);
                 }
+            } else if (args[2] === "check") {
+                // プレイヤーの現在のランクを取得
+                const playerRankName = rankSystem.getRankNameFromScore(rankSystem.getPlayerRankScore(initiator));
+
+                // 同じランクのプレイヤーを取得
+                const sameRankPlayers = rankSystem.getAllParticipants().filter(participant => {
+                    // 修正: participant.scoreboardIdentity が undefined の場合は false を返す
+                    if (!participant.scoreboardIdentity) return false;
+                    const participantRankName = rankSystem.getRankNameFromScore(rankSystem.getPlayerRankScore(participant.scoreboardIdentity));
+                    return participantRankName === playerRankName;
+                });
+
+                // 同じランクのプレイヤーがいない場合
+                if (sameRankPlayers.length === 0) {
+                    initiator.sendMessage(`§c現在、${playerRankName} ランクのプレイヤーはいません。`);
+                    return;
+                }
+
+                // 同じランクのプレイヤーをランクスコアでソート
+                sameRankPlayers.sort((a, b) => {
+                    // 修正: undefined チェックを追加
+                    if (!a.scoreboardIdentity || !b.scoreboardIdentity) return 0;
+                    return rankSystem.getPlayerRankScore(b.scoreboardIdentity) - rankSystem.getPlayerRankScore(a.scoreboardIdentity);
+                });
+
+                // 表示する件数を取得 (デフォルトは sameRankPlayers.length、つまり全員)
+                const limit = parseInt(args[3]) || sameRankPlayers.length;
+
+                // メッセージを作成
+                const rankCheckMessages = [
+                    `§b§l[${rankSystem.title} ${playerRankName} ランクのプレイヤー一覧 (上位 ${limit}人)]`,
+                    ...sameRankPlayers.slice(0, limit).map((entry, index) => {
+                        // 修正: undefined チェックを追加
+                        if (!entry.scoreboardIdentity) return "";
+                        const displayName = entry.name === "commands.scoreboard.players.offlinePlayerName" ? "オフラインユーザー" : entry.name;
+                        const isInitiator = entry.name === initiator.name;
+                        return `${isInitiator ? ">>" : ""}§b${index + 1}位: §f${displayName} §r§7- §e${rankSystem.getPlayerRankScore(entry.scoreboardIdentity)}`;
+                    }),
+                ];
+
+                // 一度に送信できるメッセージ数に分割
+                for (let i = 0; i < rankCheckMessages.length; i += 9) {
+                    const chunk = rankCheckMessages.slice(i, i + 9).join("\n");
+                    initiator.sendMessage(chunk);
+                }
+            } else if (args[2] === "all") {
+                // 全てのランク名を取得
+                const allRankNames = rankSystem.getAllRankNames();
+
+                // プレイヤーの現在のランク名を取得
+                const playerRankName = rankSystem.getRankNameFromScore(rankSystem.getPlayerRankScore(initiator));
+
+                // ランクの表示順序を決定 (デフォルトは昇順)
+                const sortOrder = args[3] === "true" ? "desc" : "asc";
+
+                // メッセージを作成
+                const rankAllMessages = [
+                    `§b§l[${rankSystem.title} 全ランク一覧 (${sortOrder === "asc" ? "昇順" : "降順"})]`,
+                    ...(sortOrder === "asc" ? allRankNames : allRankNames.slice().reverse()).map(rankName => { // 昇順か降順かに応じて allRankNames をソート
+                        const isPlayerRank = rankName === playerRankName;
+                        // ランク内の人数を取得
+                        const count = rankSystem.getAllParticipants().filter(participant => {
+                            if (!participant.scoreboardIdentity) return false;
+                            return rankSystem.getRankNameFromScore(rankSystem.getPlayerRankScore(participant.scoreboardIdentity)) === rankName;
+                        }).length;
+                        return `${isPlayerRank ? ">>" : ""}§b${rankName} §r§7(${count}人)`;
+                    }),
+                ];
+
+                // メッセージを送信
+                initiator.sendMessage(rankAllMessages.join("\n"));
             }
 
             // 全参加者数表示 (装飾)

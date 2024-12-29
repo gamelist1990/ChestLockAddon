@@ -4,6 +4,7 @@ import { ver } from "../../Modules/version";
 import { banPlayers } from "../../Modules/globalBan";
 import { config, formatTimestampJST } from "../../Modules/Util";
 import { handleRankCommand, RankSystem, registerRank } from "../../Modules/rankSystem";
+import { runCommand } from "../../Modules/Handler";
 
 
 const simpleReplacements: { [key: string]: string | (() => string) } = {
@@ -546,13 +547,41 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
             consoleOutput(`エラーが発生しました: ${error}`);
         }
     }
+
+    if (event.id === "ch:command") {
+        try {
+            const args = event.message.replace(/^\/ch:command\s+/, "").split(/\s+/);
+
+            if (args.length < 2) {
+                consoleOutput("使用方法: /ch:command <プレイヤー名> <コマンド名> [引数...]");
+                return;
+            }
+
+            const playerName = args[0];
+            const commandName = args[1];
+            const commandArgs = args.slice(2);
+
+            // プレイヤーが存在するか確認
+            const player = world.getAllPlayers().find(p => p.name === playerName);
+            if (!player) {
+                consoleOutput(`プレイヤー ${playerName} は存在しません。`);
+                return;
+            }
+
+            // runCommand を使用してコマンドを実行
+            runCommand(playerName, commandName, commandArgs);
+
+        } catch (error) {
+            consoleOutput(`エラーが発生しました: ${error}`);
+        }
+    }
 });
 
 
 
 const defaultRank = new RankSystem(
-    "§bMini§aGame§r",
-    "xp",
+    "§b宇宙§a人狼§r",
+    "rank",
     ["ルーキー", "ブロンズ", "シルバー", "ゴールド", "プラチナ", "ダイヤ", "マスター", "プレデター"],
     [0, 500, 800, 1000, 1400, 1700, 2000, 10000],
     
