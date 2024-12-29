@@ -6,6 +6,7 @@ import {
     world,
     ItemUseBeforeEvent,
     PlayerPlaceBlockBeforeEvent,
+    ItemLockMode,
 } from '@minecraft/server';
 
 interface CustomItemOptions {
@@ -17,6 +18,7 @@ interface CustomItemOptions {
     rollback?: boolean;
     placeableOn?: string[];  // 配置可能なブロックのリスト
     notPlaceableOn?: string[]; // 配置不可能なブロックのリスト
+    itemLock?: ItemLockMode;
 }
 
 interface CustomItem {
@@ -28,6 +30,7 @@ interface CustomItem {
     rollback: boolean;
     placeableOn: string[] | undefined;
     notPlaceableOn: string[] | undefined;
+    itemLock: ItemLockMode;
     then(callback: (player: Player, itemStack: ItemStack) => void): CustomItem;
     get(): ItemStack;
     give(player: Player, amount?: number): void;
@@ -42,6 +45,7 @@ class CustomItemImpl implements CustomItem {
     public rollback: boolean;
     public placeableOn: string[] | undefined;
     public notPlaceableOn: string[] | undefined;
+    public itemLock: ItemLockMode;
     private callback?: (player: Player, itemStack: ItemStack) => void;
 
     constructor(options: CustomItemOptions) {
@@ -53,6 +57,7 @@ class CustomItemImpl implements CustomItem {
         this.rollback = options.rollback ?? false;
         this.placeableOn = options.placeableOn;
         this.notPlaceableOn = options.notPlaceableOn;
+        this.itemLock = options.itemLock ?? ItemLockMode.none;
 
         world.beforeEvents.itemUse.subscribe((event: ItemUseBeforeEvent) => {
             this.handleItemUse(event);
@@ -76,6 +81,7 @@ class CustomItemImpl implements CustomItem {
         const itemStack = new ItemStack(itemType, this.amount);
         itemStack.nameTag = this.name;
         itemStack.setLore(this.lore);
+        itemStack.lockMode = (this.itemLock);
         return itemStack;
     }
 
