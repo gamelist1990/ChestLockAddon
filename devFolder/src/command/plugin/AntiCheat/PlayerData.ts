@@ -67,10 +67,62 @@ export interface PlayerData {
 }
 
 export class PlayerDataManager {
-    private playerData: { [playerId: string]: PlayerData } = {};
+    private playerDataMap: Map<string, PlayerData> = new Map();
 
     initialize(player: Player): void {
-        this.playerData[player.id] = {
+        this.playerDataMap.set(player.name, {
+            // Speed Module
+            speedData: {
+                lastSpeedCheck: 0,
+                speedViolationCount: 0,
+                lastPosition:null,
+                violationCount:0,
+            },
+            // KillAura Module
+            lastRotation: null,
+            aimbotTicks: 0,
+            throughBlockCount: 0,
+            attackFrequency: [],
+            pastPositions: [],
+            lastAttackTime: 0,
+            rotationChanges: [],
+            rotationSpeedChanges: [],
+            // Xray Module
+            xrayData: {
+                suspiciousBlocks: {},
+            },
+            // AirJump Module
+            lastGroundY: 0,
+            airJumpDetected: false,
+            jumpStartTime: 0,
+            positionHistory: [player.location],
+            isJumping: false,
+            jumpCounter: 0,
+            lastOnGroundTime: 0,
+            // Spam Module
+            mutedUntil: 0,
+            lastMessages: [],
+            lastMessageTimes: [],
+            badWordCount: 0,
+            // Common
+            isTeleporting: false,
+            recentlyUsedEnderPearl: false,
+            lastPosition: player.location,
+            lastTime: Date.now(),
+            violationCount: 0,
+            originalGamemode: GameMode.survival,
+            isFrozen: false,
+            freezeStartTime: 0,
+            enderPearlInterval: 0,
+        });
+    }
+
+    get(player: Player): PlayerData | undefined {
+        return this.playerDataMap.get(player.name);
+    }
+
+    update(player: Player, newData: Partial<PlayerData>): void {
+        const existingData = this.playerDataMap.get(player.name) || {
             // Speed Module
             speedData: {
                 lastSpeedCheck: 0,
@@ -115,36 +167,19 @@ export class PlayerDataManager {
             freezeStartTime: 0,
             enderPearlInterval: 0,
         };
-    }
-
-    getPlayerData(): { [playerId: string]: PlayerData } {
-        return this.playerData;
-    }
-
-    get(player: Player): PlayerData | undefined {
-        return this.playerData[player.id];
-    }
-
-    update(player: Player, newData: Partial<PlayerData>): void {
-        const data = this.get(player);
-        if (data) {
-            Object.assign(data, newData);
-        }
+        const updatedData = { ...existingData, ...newData };
+        this.playerDataMap.set(player.name, updatedData);
     }
 
     reset(player: Player): void {
-        const data = this.get(player);
-        if (data) {
-            data.positionHistory = [player.location];
-            data.lastTime = Date.now();
-        }
+        this.playerDataMap.delete(player.name);
     }
 
     remove(player: Player): void {
-        delete this.playerData[player.id];
+        this.playerDataMap.delete(player.name);
     }
 
     has(player: Player): boolean {
-        return this.playerData[player.id] !== undefined;
+        return this.playerDataMap.has(player.name);
     }
 }

@@ -1116,7 +1116,6 @@ const upBlowWoodenSword = new CustomItem({
         // プレイヤーの座標を取得
         const playerLocation = player.location;
 
-        // y座標が-64以下の場合にのみ効果を発動
         if (playerLocation.y <= -75) {
             player.applyKnockback(0, 0, 0, 3);
 
@@ -1160,6 +1159,12 @@ const boostFeather = new CustomItem({
         // 前方向への力を適用 (水平方向の力を強化)
         player.applyKnockback(direction.x, direction.z, 7, 0.6); // 水平方向4、垂直方向0.6
 
+        // 移動速度上昇のエフェクトを付与 (3秒間)
+        player.addEffect(EffectTypes.get("speed")!, 60, {
+            amplifier: 2,  
+            showParticles: false
+        });
+
         // サウンドを再生 (複数のサウンドを組み合わせ、ディレイで臨場感を出す)
         const mainSoundOptions: PlayerSoundOptions = {
             volume: 1.0,
@@ -1191,9 +1196,80 @@ const boostFeather = new CustomItem({
         }, 7);
 
         removeItem(player);
-
     })
+});
+// 氷雪玉のカスタムアイテム
 
+const freezeSnowball = new CustomItem({
+    ...CUSTOM_ITEM_SETTINGS,
+    name: "§b凍結の雪玉",
+    lore: ["§7投げると相手を凍りづけにする", "§7移動速度低下IV (3秒)", "§7採掘速度低下III (3秒)", "§7跳躍力低下III (3秒)"],
+    item: "minecraft:snowball",
+}).then((player: Player) => {
+    // 雪玉を投げる効果音
+    player.playSound("mob.snowgolem.shoot", { volume: 1.0, pitch: 1.2 });
+    
+    // プレイヤーの視線の方向に雪玉をスポーン
+    const snowball = player.dimension.spawnEntity("minecraft:snowball", player.getHeadLocation());
+    
+    // 雪玉に速度を設定 (applyImpulseを使用)
+    const direction = player.getViewDirection();
+    snowball.applyImpulse({
+        x: direction.x * 2,
+        y: direction.y * 2,
+        z: direction.z * 2
+    });
+
+    // 雪玉が他のプレイヤーに当たった時の処理
+    system.runInterval(() => {
+        if (!snowball.isValid()) {
+            const nearbyPlayers = player.dimension.getPlayers({
+                location: snowball.location,
+                maxDistance: 2
+            });
+
+            for (const target of nearbyPlayers) {
+                if (target.name !== player.name && !isSameTeam(player, target)) {
+                    // デバフを付与
+                    target.addEffect("slowness", 60, { amplifier: 3 });
+                    target.addEffect("mining_fatigue", 60, { amplifier: 2 });
+                    target.addEffect("jump_boost", 60, { amplifier: -3 });
+                    
+                    // 凍結エフェクト音
+                    target.playSound("random.glass", { volume: 1.0, pitch: 0.5 });
+                    player.playSound("random.successful_hit", { volume: 0.5, pitch: 1.0 });
+                }
+            }
+            return;
+        }
+    }, 1);
+    
+    removeItem(player);
+});
+
+// グラップリングフックのカスタムアイテム
+const grapplingHook = new CustomItem({
+    name: "§eグラップリングフック",
+    lore: ["§7使用すると視線方向に引っ張られる", "§7壁や天井にも使用可能"],
+    item: "minecraft:fishing_rod",
+    amount: 3,
+}).then((player: Player) => {
+    const direction = player.getViewDirection();
+    // 前方向への強い引っ張り
+    player.applyKnockback(
+        direction.x,
+        direction.z,
+        4, // 水平方向の力
+        1.2  // 垂直方向の力
+    );
+    
+    // フックを投げる音とチェーンの音を組み合わせる
+    player.playSound("item.trident.throw", { volume: 0.8, pitch: 1.2 });
+    system.runTimeout(() => {
+        player.playSound("block.chain.break", { volume: 0.6, pitch: 0.8 });
+    }, 2);
+    
+    removeItem(player);
 });
 
 // ----- イベント ----- //
@@ -1238,6 +1314,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
 
             try {
                 switch (itemName) {
+                    //ここにアイテムのやつ
                     case "explosive":
                         explosiveRedWool.give(player, amount);
                         player.sendMessage(`§a${explosiveRedWool.name} §7を ${amount} 個入手しました`);
@@ -1268,8 +1345,17 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
                         player.sendMessage(`§a${upBlowWoodenSword.name} §7を ${amount} 個入手しました`);
                         break;
                     case "boost":
+                        //boostFeatherはHiveの羽
                         boostFeather.give(player, amount);
                         player.sendMessage(`§a${boostFeather.name} §7を ${amount} 個入手しました`);
+                        break;
+                    case "grappling":
+                        grapplingHook.give(player, amount);
+                        player.sendMessage(`§a${grapplingHook.name} §7を ${amount} 個入手しました`);
+                        break;
+                    case "snow":
+                        freezeSnowball.give(player, amount);
+                        player.sendMessage(`§a${freezeSnowball.name} §7を ${amount} 個入手しました`);
                         break;
                     default:
                         player.sendMessage(`§c不明なアイテム名: ${itemName}`);
