@@ -13,7 +13,6 @@ export function detectEditionFake(player: Player, playerDataManager: PlayerDataM
     let cheatType = 'EditionFake';
     let details = '';
 
-
     if (device === 0) { // Desktop (PC)
         if (input === 1) return null; // gamepadだけは除外
 
@@ -24,7 +23,6 @@ export function detectEditionFake(player: Player, playerDataManager: PlayerDataM
         } else {
             return null; // PCで有効な入力と描画距離の場合
         }
-
 
     } else if (device === 1) { // Mobile
         if (input !== 3 && input !== 1) { // Touch と Gamepad以外
@@ -47,21 +45,14 @@ export function detectEditionFake(player: Player, playerDataManager: PlayerDataM
         } else { // PS4/PS5, Xbox/Xbox Series S/X
             if (input !== 1 && input !== 0) { // コントローラーとキーボード以外
                 details = 'Invalid input type on PS/Xbox';
-
             } else if (maxRenderDistance > 28) {
                 details = 'Invalid render distance on PS/Xbox';
             } else {
                 return null; // PS/Xboxで有効な入力と描画距離の場合
             }
-
         }
-        if (maxRenderDistance < 6 || maxRenderDistance > 96) {
-            details = 'Invalid render distance on Client';
-        } else {
-            return null; // コンソールで有効な描画距離の場合
-        }
-
     }
+
     if (details) {
         return { cheatType, details };
     }

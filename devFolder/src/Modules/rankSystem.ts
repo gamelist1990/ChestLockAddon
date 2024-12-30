@@ -109,22 +109,55 @@ export class RankSystem {
         const objective = world.scoreboard.getObjective(this.scoreboardName);
         if (!objective) return 0;
 
-        if (typeof player === 'string') {
-            const score = objective.getScore(player);
-            return score !== undefined ? score : 0;
+        if (typeof player === "string") {
+            // 文字列でプレイヤーを扱う場合
+            console.warn("文字列でスコアを扱うことは非推奨です");
+
+            let targetScore: number | undefined;
+            for (const p of world.getAllPlayers()) {
+                if (p.name === player) {
+                    if (!p.scoreboardIdentity) {
+                    } else if (objective.hasParticipant(p.scoreboardIdentity)) { // プレイヤーがスコアボードに存在するか確認
+                        targetScore = objective.getScore(p.scoreboardIdentity);
+                        break;
+                    }
+                }
+            }
+            return targetScore ?? 0; // スコアが取得できない、またはプレイヤーがスコアボードに存在しない場合は 0 を返す
+
         } else if (player instanceof Player) {
-            const score = objective.getScore(player);
-            return score !== undefined ? score : 0;
-        } else if ('scoreboardIdentity' in player && player.scoreboardIdentity) {
-            const score = objective.getScore(player.scoreboardIdentity);
-            return score !== undefined ? score : 0;
-        } else if ('id' in player) {
-            // playerがScoreboardIdentityの場合
-            const score = objective.getScore(player);
-            return score !== undefined ? score : 0;
-        } else {
-            // Participant型の場合
-            return 0; // スコアが取得できない場合は0を返す
+            // Player オブジェクトを直接扱う場合
+
+            if (!player.scoreboardIdentity) {
+                return 0;
+            }
+            // プレイヤーがスコアボードに存在するか確認
+            if (objective.hasParticipant(player.scoreboardIdentity)) {
+                return objective.getScore(player.scoreboardIdentity) ?? 0;
+            } else {
+                return 0;
+            }
+
+        } else if ("scoreboardIdentity" in player && player.scoreboardIdentity) {
+            // ScoreboardIdentity を直接扱う場合
+            // プレイヤーがスコアボードに存在するか確認
+            if (objective.hasParticipant(player.scoreboardIdentity)) {
+                const score = objective.getScore(player.scoreboardIdentity);
+                return score !== undefined ? score : 0;
+            } else {
+                return 0;
+            }
+
+        } else if ("id" in player) {
+            // "id" プロパティを持つオブジェクト(Participant) を扱う場合
+            if (objective.hasParticipant(player)) {
+                const score = objective.getScore(player);
+                return score !== undefined ? score : 0;
+            } else {
+                return 0;
+            }
+        } else { // Participant型の場合(到達しないはず)
+            return 0;
         }
     }
 
@@ -234,7 +267,6 @@ export class RankSystem {
         console.warn(`${this.title}の全てのプレイヤーのランクをリセットしました。`);
     }
 
-    // ここから追加部分
     /**
      * プレイヤーの順位を取得します。
      * @param {Player} player - 順位を取得するプレイヤー
