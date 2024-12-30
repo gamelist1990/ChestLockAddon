@@ -19,6 +19,7 @@ let playerServerData: { [key: string]: ServerInfo[] } = {};
 const defaultServers: ServerInfo[] = [
     { name: "Zepa Server", ip: "zeqa.net", port: 19132, texturePath: 'textures/blocks/grass_side_carried' },
     { name: "Hive Server", ip: "sg.hivebedrock.network", port: 19132, texturePath: 'textures/ui/csb_faq_bee' },
+    { name: "Hesu Server", ip: "hesu.org", port: 19132, texturePath: 'textures/blocks/grass_side_carried' },
 ];
 
 function saveTransFerData(): void {

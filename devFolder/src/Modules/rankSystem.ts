@@ -380,9 +380,14 @@ export function registerRank(rankSystem: RankSystem) {
  * @param {RankSystem} rankSystem - 対象のランクシステム
  */
 async function showRankListUI(player: Player, rankSystem: RankSystem) {
+    // 現在のランクと順位を取得
+    const playerScore = rankSystem.getPlayerRankScore(player);
+    const playerRankName = rankSystem.getRankNameFromScore(playerScore);
+    const playerRank = rankSystem.getRanking(player);
+
     const form = new ActionFormData();
     form.title(rankSystem.title);
-    form.body('ランクシステムの情報\nメインメニュー');
+    form.body(`現在のランク: ${playerRankName}\n現在の順位: ${playerRank}位`); // 変更
     form.button('ランク帯にいるプレイヤーを表示', 'textures/ui/FriendsDiversity');
     form.button('プレイヤーを検索', 'textures/ui/magnifying_glass');
     form.button(
@@ -442,12 +447,27 @@ async function showTopRankingUI(player: Player, rankSystem: RankSystem) {
         "silver", "cyan" // Minecraftの羊毛の色IDリスト(10位まで)
     ];
 
+    const rankColors = [
+        "§6", // 1位 (ゴールド)
+        "§7", // 2位 (シルバー)
+        "§e", // 3位 (イエロー/ブロンズ)
+        "§f", // 4位以降 (ホワイト)
+        "§b", // 5位(水色)
+        "§d", //6位（ピンク）
+        "§a", //7位（黄緑）
+        "§7", //8位(灰色)
+        "§b", //9位(シアン)
+        "§c" //10位（赤）
+
+    ];
+
     topRanking.forEach((entry, index) => {
-        const rankColor = index === 0 ? '§6' : index === 1 ? '§7' : index === 2 ? '§e' : '§f';
+        // const rankColor = index === 0 ? '§6' : index === 1 ? '§7' : index === 2 ? '§e' : '§f';
+        const rankColor = rankColors[index] ?? '§f'; // rankColors の範囲外の場合は '§f' を使う
         // 上位10位までは羊毛のアイコンを使用、それ以降はデフォルトのアイコン
         const iconPath = index < woolColors.length
             ? `textures/blocks/wool_colored_${woolColors[index]}`
-            : 'textures/ui/FriendsDiversity';
+            : 'textures/ui/FriendsDiversity'; // 代替のアイコンパスを設定
         form.button(
             `${rankColor}${index + 1}位: ${entry.name}§r\nスコア: §e${entry.score}`,
             iconPath
@@ -481,6 +501,7 @@ async function showTopRankingUI(player: Player, rankSystem: RankSystem) {
         }
     }
 }
+
 
 // 他のプレイヤーのランクを変更するためのUIを表示する関数
 async function showChangeRankUI(player: Player, rankSystem: RankSystem) {
@@ -1047,11 +1068,52 @@ export function handleRankCommand(event: ScriptEventCommandMessageAfterEvent) {
             }
         } else if (args[1] === 'list') {
             if (!initiator) return;
-            // 引数が "ui" の場合、UIを表示
+            if (args[2] === 'show') {
+                // プレイヤーが見ているエンティティを取得
+                const viewDirectionEntities = initiator.getEntitiesFromViewDirection();
+
+                // 見ている先にエンティティがいない場合、またはプレイヤーではない場合
+                if (
+                    !viewDirectionEntities ||
+                    viewDirectionEntities.length === 0 ||
+                    !viewDirectionEntities[0].entity
+                ) {
+                    initiator.sendMessage(`§c見ている先にプレイヤーがいません。`);
+                    return;
+                }
+
+                const targetEntityRaycastHit: EntityRaycastHit = viewDirectionEntities[0];
+
+                const targetEntity: Entity = targetEntityRaycastHit.entity;
+                //もしターゲットしているのがプレイヤーじゃなかった場合
+                if (targetEntity.typeId !== 'minecraft:player') {
+                    initiator.sendMessage(`§c見ている先にプレイヤーがいません。`);
+                    return;
+                }
+                // ターゲットがプレイヤーでない場合はエラーを返す(型を絞る)
+                if (!(targetEntity instanceof Player)) {
+                    throw new Error('Invalid target type.');
+                }
+
+                // ターゲットプレイヤーの情報を取得
+                const targetScore = rankSystem.getPlayerRankScore(targetEntity);
+                const targetRank = rankSystem.getRankNameFromScore(targetScore);
+                const targetPlayerRank = rankSystem.getRanking(targetEntity);
+
+                // メッセージを作成
+                const rankShowMessage = `§e§l== ${targetEntity.name} のランク情報 ==\n§r§6${rankSystem.title}ランク: §a${targetRank}\n§6現在のランクポイント: §a${targetScore}\n§6順位: §a${targetPlayerRank}位\n§r`;
+
+                // メッセージを送信
+                initiator.sendMessage(rankShowMessage);
+                return; 
+            }
+
             if (args[2] === 'ui') {
                 showRankListUI(initiator, rankSystem);
                 return;
             }
+
+            // 以下は、list コマンドの他のオプション（rank, check, all）用の処理
             const rankScore = rankSystem.getPlayerRankScore(initiator);
             const currentRank = rankSystem.getRankNameFromScore(rankScore);
             const playerRank = rankSystem.getRanking(initiator);
@@ -1207,43 +1269,6 @@ export function handleRankCommand(event: ScriptEventCommandMessageAfterEvent) {
 
                 // メッセージを送信
                 initiator.sendMessage(rankAllMessages.join('\n'));
-            } else if (args[2] === 'show') {
-                // プレイヤーが見ているエンティティを取得
-                const viewDirectionEntities = initiator.getEntitiesFromViewDirection();
-
-                // 見ている先にエンティティがいない場合、またはプレイヤーではない場合
-                if (
-                    !viewDirectionEntities ||
-                    viewDirectionEntities.length === 0 ||
-                    !viewDirectionEntities[0].entity
-                ) {
-                    initiator.sendMessage(`§c見ている先にプレイヤーがいません。`);
-                    return;
-                }
-
-                const targetEntityRaycastHit: EntityRaycastHit = viewDirectionEntities[0];
-
-                const targetEntity: Entity = targetEntityRaycastHit.entity;
-                //もしターゲットしているのがプレイヤーじゃなかった場合
-                if (targetEntity.typeId !== 'minecraft:player') {
-                    initiator.sendMessage(`§c見ている先にプレイヤーがいません。`);
-                    return;
-                }
-                // ターゲットがプレイヤーでない場合はエラーを返す(型を絞る)
-                if (!(targetEntity instanceof Player)) {
-                    throw new Error('Invalid target type.');
-                }
-
-                // ターゲットプレイヤーの情報を取得
-                const targetScore = rankSystem.getPlayerRankScore(targetEntity);
-                const targetRank = rankSystem.getRankNameFromScore(targetScore);
-                const targetPlayerRank = rankSystem.getRanking(targetEntity);
-
-                // メッセージを作成
-                const rankShowMessage = `§e§l== ${targetEntity.name} のランク情報 ==\n§r§6${rankSystem.title}ランク: §a${targetRank}\n§6現在のランクポイント: §a${targetScore}\n§6順位: §a${targetPlayerRank}位\n§r`;
-
-                // メッセージを送信
-                initiator.sendMessage(rankShowMessage);
             }
 
             // 全参加者数表示 (装飾)
@@ -1253,7 +1278,103 @@ export function handleRankCommand(event: ScriptEventCommandMessageAfterEvent) {
     }
 }
 
-// タグとスコアの監視とランクの更新
+const previousRankScores: { [playerName: string]: { [scoreboardName: string]: number } } = {};
+
+system.runInterval(() => {
+    for (const rankSystem of registeredRanks) {
+        const objective = world.scoreboard.getObjective(rankSystem.scoreboardName);
+        if (objective) {
+            // スコアの変更をチェック & プレイヤーのタグをチェックして修正
+            for (const player of world.getAllPlayers()) {
+                const playerScore = rankSystem.getPlayerRankScore(player);
+                const correctRankName = rankSystem.getRankNameFromScore(playerScore);
+
+                // プレイヤーごとの前回のランクスコアを保存するためのマップを初期化
+                if (!previousRankScores[player.name]) {
+                    previousRankScores[player.name] = {};
+                }
+
+                // 変更前のランク名とスコアを取得 (タグ更新前に取得する)
+                const oldRankTag = player.getTags().find((tag) => tag.startsWith(`${rankSystem.scoreboardName}:`));
+                const oldRankName = oldRankTag ? oldRankTag.split(':')[1] : '不明';
+
+                // ★★★ 変更前のスコアを取得 (タグ更新前に取得する) ★★★
+                let oldRankScore = previousRankScores[player.name][rankSystem.scoreboardName];
+
+                // 正しいランクのタグを持っているか確認
+                const hasCorrectRankTag = player
+                    .getTags()
+                    .some((tag) => tag === `${rankSystem.scoreboardName}:${correctRankName}`);
+
+                // objective.getParticipants() にプレイヤーが含まれているか確認
+                const isParticipant = objective.getParticipants().some(p => p.displayName === player.name);
+
+                // スコアが変更されたかどうかをチェック (オンライン/オフラインを問わず)
+                const participant = objective.getParticipants().find(p => p.displayName === player.name);
+                if (participant) {
+                    const currentScore = objective.getScore(participant);
+                    if (currentScore !== undefined) {
+                        const lastKnownScore = rankSystem.getLastKnownScore(player.name);
+
+                        if (currentScore !== lastKnownScore || lastKnownScore === undefined) {
+                            if (oldRankScore === undefined) {
+                                oldRankScore = lastKnownScore ?? currentScore;
+                            }
+                            rankSystem.updatePlayerRank(participant, currentScore, true);
+                            rankSystem.updateLastKnownScore(player.name, currentScore);
+                        }
+                    }
+                }
+
+                if (!hasCorrectRankTag && isParticipant) {
+                    if (oldRankScore === undefined) {
+                        oldRankScore = playerScore;
+                    }
+
+                    // 間違ったタグを削除
+                    player
+                        .getTags()
+                        .filter((tag) => tag.startsWith(`${rankSystem.scoreboardName}:`))
+                        .forEach((tag) => player.removeTag(tag));
+                    // 正しいタグを追加
+                    player.addTag(`${rankSystem.scoreboardName}:${correctRankName}`);
+
+                    // 同じランク帯のプレイヤー数を取得
+                    const sameRankPlayersCount = rankSystem.getAllParticipants().filter(p => {
+                        return rankSystem.getRankNameFromScore(rankSystem.getPlayerRankScore(p)) === correctRankName;
+                    }).length;
+
+                    // 同じランク帯のプレイヤー内での順位を取得
+                    const sameRankPlayers = rankSystem.getAllParticipants().filter(p => {
+                        return rankSystem.getRankNameFromScore(rankSystem.getPlayerRankScore(p)) === correctRankName;
+                    });
+                    const playerRankInSameRank = sameRankPlayers.filter(p => {
+                        return rankSystem.getPlayerRankScore(p) > playerScore;
+                    }).length + 1;
+
+                    // 変更前のスコアが存在する場合のみメッセージを送信
+                    if (oldRankScore !== undefined) {
+                        player.sendMessage(
+                            `§6§l>>><<<§r §e§l[ランク更新通知]§6 §l>>><<<§r\n` +
+                            `§e§l${rankSystem.title}§rでのランクが更新されました。\n` +
+                            `§a変更前: §f${oldRankName} §7(${oldRankScore}ポイント)\n` +
+                            `§6変更後: §f${correctRankName} §7(${playerScore}ポイント)\n` +
+                            `§b現在のランク帯: §f${correctRankName} §7(ランク内順位: ${playerRankInSameRank}位/${sameRankPlayersCount}人中)\n` +
+                            `§6§l>>><<<>>><<<>>><<<>>><<<>>><§r`
+                        );
+                    }
+
+                    // ★★★ 前回のスコアを更新 ★★★
+                    previousRankScores[player.name][rankSystem.scoreboardName] = playerScore;
+                } else if (isParticipant) {
+                    // ★★★ タグが正しい場合でも、前回のスコアを更新 ★★★
+                    previousRankScores[player.name][rankSystem.scoreboardName] = playerScore;
+                }
+            }
+        }
+    }
+}, 1);
+
 system.runInterval(() => {
     for (const rankSystem of registeredRanks) {
         const objective = world.scoreboard.getObjective(rankSystem.scoreboardName);
@@ -1267,9 +1388,12 @@ system.runInterval(() => {
                     const lastKnownScore = rankSystem.getLastKnownScore(participantName);
 
                     if (currentScore !== lastKnownScore) {
-                        // system.runIntervalから呼ばれたことを明示
-                        rankSystem.updatePlayerRank(participant, currentScore, true);
-                        rankSystem.updateLastKnownScore(participantName, currentScore);
+                        // プレイヤーが実際に参加しているか(スコアを持っているか)確認
+                        if (objective.hasParticipant(participant)) {
+                            // system.runIntervalから呼ばれたことを明示
+                            rankSystem.updatePlayerRank(participant, currentScore, true);
+                            rankSystem.updateLastKnownScore(participantName, currentScore);
+                        }
                     }
                 }
             }
@@ -1278,18 +1402,21 @@ system.runInterval(() => {
             for (const player of world.getAllPlayers()) {
                 const playerScore = rankSystem.getPlayerRankScore(player);
                 const correctRankName = rankSystem.getRankNameFromScore(playerScore);
-                const oldRankName =
-                    player
-                        .getTags()
-                        .find((tag) => tag.startsWith(`${rankSystem.scoreboardName}:`))
-                        ?.split(':')[1] || '不明';
+
+                // 以前のランク名とスコアを取得 (タグ更新前に取得する)
+                const oldRankTag = player.getTags().find((tag) => tag.startsWith(`${rankSystem.scoreboardName}:`));
+                const oldRankName = oldRankTag ? oldRankTag.split(':')[1] : '不明';
+                const oldRankScore = oldRankName !== '不明' ? rankSystem.getLastKnownScore(player.name) : undefined; // 変更前のスコアを取得
 
                 // 正しいランクのタグを持っているか確認
                 const hasCorrectRankTag = player
                     .getTags()
                     .some((tag) => tag === `${rankSystem.scoreboardName}:${correctRankName}`);
 
-                if (!hasCorrectRankTag) {
+                // objective.getParticipants() にプレイヤーが含まれているか確認(追加)
+                const isParticipant = objective.getParticipants().some(p => p.displayName === player.name);
+
+                if (!hasCorrectRankTag && isParticipant) { // プレイヤーが参加している場合のみタグを更新
                     // 間違ったタグを削除
                     player
                         .getTags()
@@ -1297,14 +1424,36 @@ system.runInterval(() => {
                         .forEach((tag) => player.removeTag(tag));
                     // 正しいタグを追加
                     player.addTag(`${rankSystem.scoreboardName}:${correctRankName}`);
-                    player.sendMessage(
-                        `${rankSystem.title}のランクが ${oldRankName} から ${correctRankName} に変更されました！`,
-                    );
+
+                    // 同じランク帯のプレイヤー数を取得
+                    const sameRankPlayersCount = rankSystem.getAllParticipants().filter(p => {
+                        return rankSystem.getRankNameFromScore(rankSystem.getPlayerRankScore(p)) === correctRankName;
+                    }).length;
+
+                    // 同じランク帯のプレイヤー内での順位を取得
+                    const sameRankPlayers = rankSystem.getAllParticipants().filter(p => {
+                        return rankSystem.getRankNameFromScore(rankSystem.getPlayerRankScore(p)) === correctRankName;
+                    });
+                    const playerRankInSameRank = sameRankPlayers.filter(p => {
+                        return rankSystem.getPlayerRankScore(p) > playerScore;
+                    }).length + 1;
+
+                    // 変更前のスコアが存在する場合のみメッセージを送信
+                    if (oldRankScore !== undefined) {
+                        player.sendMessage(
+                            `§6§l>>><<<§r §e§l[ランク更新通知]§6 §l>>><<<§r\n` +
+                            `§e§l${rankSystem.title}§rでのランクが更新されました。\n` +
+                            `§a変更前: §f${oldRankName} §7(${oldRankScore}ポイント)\n` + // 変更前のスコアを表示
+                            `§6変更後: §f${correctRankName} §7(${playerScore}ポイント)\n` +
+                            `§b現在のランク帯: §f${correctRankName} §7(ランク内順位: ${playerRankInSameRank}位/${sameRankPlayersCount}人中)\n` +
+                            `§6§l>>><<<>>><<<>>><<<>>><<<>>><<<>>>§r`
+                        );
+                    }
                 }
             }
         }
     }
-}, 20);
+}, 1);
 
 world.afterEvents.playerSpawn.subscribe((event) => {
     const player = event.player;

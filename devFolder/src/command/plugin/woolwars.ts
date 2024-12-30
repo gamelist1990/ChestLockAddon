@@ -32,9 +32,9 @@ const TAGS = {
 
 // 羊の共通設定
 const SHEEP_SETTINGS = {
-    impulseMultiplier: 5,
+    impulseMultiplier: 7,
     impulseMultiplierY: 2,
-    gravity: 0.30,
+    gravity: 0.50,
 };
 
 // 爆発羊の設定
@@ -84,7 +84,7 @@ const HEAL_SHEEP = {
     color: 5, // Lime
     effectRadius: 5,
     effectAmplifier: 0,
-    lifeTime: 10,
+    lifeTime: 5,
 };
 
 // オレンジ羊の設定 (赤色羊の上位互換)
@@ -1116,7 +1116,7 @@ const upBlowWoodenSword = new CustomItem({
         // プレイヤーの座標を取得
         const playerLocation = player.location;
 
-        if (playerLocation.y <= -75) {
+        if (playerLocation.y <= -60) {
             player.applyKnockback(0, 0, 0, 3);
 
             // サウンドを再生 (複数のサウンドを組み合わせ、ディレイで立体感を出す)

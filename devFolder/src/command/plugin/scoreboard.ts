@@ -360,7 +360,7 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
                         const sameCommandObj = commandList.find(obj => obj["same"]);
                         if (sameCommandObj) {
                             const sameCommand = sameCommandObj["same"];
-                         //   consoleOutput(`チーム人数が同数のため、コマンド「${sameCommand}」を実行します。`);
+                            //   consoleOutput(`チーム人数が同数のため、コマンド「${sameCommand}」を実行します。`);
                             system.run(() => {
                                 try {
                                     world.getDimension("overworld").runCommandAsync(sameCommand);
@@ -397,7 +397,7 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
                             const commandObj = commandList.find(obj => obj[teamTag]);
                             if (commandObj) {
                                 const command = commandObj[teamTag];
-                            //    consoleOutput(`チーム ${teamTag} の人数が0になったため、コマンド「${command}」を実行します。`);
+                                //    consoleOutput(`チーム ${teamTag} の人数が0になったため、コマンド「${command}」を実行します。`);
                                 system.run(() => {
                                     try {
                                         world.getDimension("overworld").runCommandAsync(command);
@@ -579,11 +579,14 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
 
 
 
-const defaultRank = new RankSystem(
-    "§bMini§aGame§r",
-    "xp",
-    ["ルーキー", "ブロンズ", "シルバー", "ゴールド", "プラチナ", "ダイヤ", "マスター", "プレデター"],
-    [0, 500, 2000, 3000, 5000, 7000, 9000, 15000]
-);
-
+const defaultRank = new RankSystem
+    ("§bCombat§aCube!§r",
+        "xp", ["ルーキー", "ブロンズI", "ブロンズII", "ブロンズIII", "シルバーI", "シルバーII", "シルバーIII", "シルバーIV", "ゴールドI", "ゴールドII",
+        "ゴールドIII", "プラチナI", "プラチナII", "プラチナIII", "プラチナIV", "プラチナV", "エメラルドI", "エメラルドII", "エメラルドIII", "ダイヤI",
+        "ダイヤII", "ダイヤIII", "ダイヤIV", "マスターI", "マスターII", "マスターIII", "プレデターI", "プレデターII", "プレデターIII", "プレデターIV",
+        "伝説I", "伝説II", "伝説III", "伝説IV", "伝説V", "伝説VI"],
+        [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500,
+            5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500,
+            10000, 10500, 11000, 11500, 12000, 12500, 13000, 13500, 14000, 14500,
+            15000, 15500, 16000, 16500, 17000, 17500]);
 registerRank(defaultRank);
