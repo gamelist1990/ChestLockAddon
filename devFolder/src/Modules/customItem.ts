@@ -7,6 +7,7 @@ import {
     ItemUseBeforeEvent,
     PlayerPlaceBlockBeforeEvent,
     ItemLockMode,
+    system,
 } from '@minecraft/server';
 
 interface CustomItemOptions {
@@ -19,6 +20,7 @@ interface CustomItemOptions {
     placeableOn?: string[];  // 配置可能なブロックのリスト
     notPlaceableOn?: string[]; // 配置不可能なブロックのリスト
     itemLock?: ItemLockMode;
+    remove?: boolean; // アイテム使用時に削除するかどうか
 }
 
 interface CustomItem {
@@ -31,9 +33,11 @@ interface CustomItem {
     placeableOn: string[] | undefined;
     notPlaceableOn: string[] | undefined;
     itemLock: ItemLockMode;
+    remove: boolean;
     then(callback: (player: Player, itemStack: ItemStack) => void): CustomItem;
     get(): ItemStack;
     give(player: Player, amount?: number): void;
+    removeItem(player: Player, itemStack: ItemStack): void;
 }
 
 class CustomItemImpl implements CustomItem {
@@ -46,6 +50,7 @@ class CustomItemImpl implements CustomItem {
     public placeableOn: string[] | undefined;
     public notPlaceableOn: string[] | undefined;
     public itemLock: ItemLockMode;
+    public remove: boolean;
     private callback?: (player: Player, itemStack: ItemStack) => void;
 
     constructor(options: CustomItemOptions) {
@@ -58,6 +63,7 @@ class CustomItemImpl implements CustomItem {
         this.placeableOn = options.placeableOn;
         this.notPlaceableOn = options.notPlaceableOn;
         this.itemLock = options.itemLock ?? ItemLockMode.none;
+        this.remove = options.remove ?? false;
 
         world.beforeEvents.itemUse.subscribe((event: ItemUseBeforeEvent) => {
             this.handleItemUse(event);
@@ -125,13 +131,16 @@ class CustomItemImpl implements CustomItem {
 
     private handleItemUse(event: ItemUseBeforeEvent): void {
         const player = event.source;
-        const itemStack = event.itemStack;
+        const usedItemStack = event.itemStack; // 使用されたアイテムのItemStack
 
-        // 自身のカスタムアイテムが使用されたか確認
-        if (itemStack.typeId === this.item && itemStack.nameTag === this.name) {
+        if (usedItemStack.typeId === this.item && usedItemStack.nameTag === this.name) {
             if (this.callback) {
                 event.cancel = true;
-                this.callback(player, itemStack);
+                this.callback(player, usedItemStack);
+
+                if (this.remove) {
+                    this.removeItem(player, usedItemStack); // 使用されたItemStackを渡す
+                }
             }
         }
     }
@@ -152,6 +161,33 @@ class CustomItemImpl implements CustomItem {
             event.cancel = true; // 配置不可
             player.sendMessage("そこには配置できません。(notPlaceableOn)");
         }
+    }
+
+    public removeItem(player: Player, usedItemStack: ItemStack): void {
+        const inventory = player.getComponent("inventory") as EntityInventoryComponent;
+        if (!inventory || !inventory.container) return;
+
+        system.run(() => {
+            if (inventory.container) {
+                for (let i = 0; i < inventory.container.size; i++) {
+                    const currentItem = inventory.container.getItem(i);
+
+                    if (currentItem && currentItem.typeId === usedItemStack.typeId && currentItem.nameTag === usedItemStack.nameTag) {
+                        if (currentItem.amount <= 1) {
+                            system.run(() => {
+                                inventory.container?.setItem(i, undefined);
+                            });
+                        } else {
+                            system.run(() => {
+                                currentItem.amount -= 1;
+                                inventory.container?.setItem(i, currentItem);
+                            });
+                        }
+                        return;
+                    }
+                }
+            }
+        });
     }
 }
 

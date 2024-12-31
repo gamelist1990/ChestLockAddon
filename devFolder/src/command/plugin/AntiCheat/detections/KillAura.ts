@@ -14,7 +14,7 @@ class KillAuraDetector {
     }
 
     private detectReach(attackingPlayer: Player, attackedEntity: Player): boolean {
-        const maxReach = 7;
+        const maxReach = 8;
         const distanceToTarget = calculateDistance(attackingPlayer.location, attackedEntity.location);
         return distanceToTarget > maxReach;
     }
@@ -30,34 +30,38 @@ class KillAuraDetector {
 
         data.rotationChanges.push({ rotationChangeX, rotationChangeY, time: now });
 
-        if (data.rotationChanges.length > 2) {
+        if (data.rotationChanges.length > 4) {
             const diffX1 = data.rotationChanges[data.rotationChanges.length - 1].rotationChangeX - data.rotationChanges[data.rotationChanges.length - 2].rotationChangeX;
             const diffX2 = data.rotationChanges[data.rotationChanges.length - 2].rotationChangeX - data.rotationChanges[data.rotationChanges.length - 3].rotationChangeX;
             const diffY1 = data.rotationChanges[data.rotationChanges.length - 1].rotationChangeY - data.rotationChanges[data.rotationChanges.length - 2].rotationChangeY;
             const diffY2 = data.rotationChanges[data.rotationChanges.length - 2].rotationChangeY - data.rotationChanges[data.rotationChanges.length - 3].rotationChangeY;
 
             data.rotationSpeedChanges.push({ rotationSpeedChangeX: diffX1 - diffX2, rotationSpeedChangeY: diffY1 - diffY2, time: now });
-            if (data.rotationSpeedChanges.length > 4) {
+            if (data.rotationSpeedChanges.length > 8) {
                 data.rotationSpeedChanges.shift();
             }
         }
 
-        if (data.rotationSpeedChanges.length > 2) {
+        if (data.rotationSpeedChanges.length > 3) {
             const averageSpeedChangeX = data.rotationSpeedChanges.reduce((sum, obj) => sum + obj.rotationSpeedChangeX, 0) / data.rotationSpeedChanges.length;
             const averageSpeedChangeY = data.rotationSpeedChanges.reduce((sum, obj) => sum + obj.rotationSpeedChangeY, 0) / data.rotationSpeedChanges.length;
 
-            if (Math.abs(averageSpeedChangeX) > 50 || Math.abs(averageSpeedChangeY) > 50) {
+            // 変更点1: 平均速度変化の閾値を大きくする
+            if (Math.abs(averageSpeedChangeX) > 75 || Math.abs(averageSpeedChangeY) > 75) {
                 data.aimbotTicks++;
-                if (data.aimbotTicks >= 3) {
+                // 変更点2: エイムボットと判断するまでの猶予ティック数を増やす
+                if (data.aimbotTicks >= 5) {
                     data.aimbotTicks = 0;
                     return true;
                 }
             }
         }
 
-        if ((rotationDiffX > 170 && rotationDiffX <= 190) || (rotationDiffY > 170 && rotationDiffY <= 190)) {
+        // 変更点3: 180度付近の回転差の範囲を狭くする
+        if ((rotationDiffX > 175 && rotationDiffX <= 185) || (rotationDiffY > 175 && rotationDiffY <= 185)) {
             data.aimbotTicks++;
-            if (data.aimbotTicks >= 3) {
+            // 変更点4: エイムボットと判断するまでの猶予ティック数を増やす
+            if (data.aimbotTicks >= 5) {
                 data.aimbotTicks = 0;
                 return true;
             }
@@ -77,7 +81,7 @@ class KillAuraDetector {
         const raycastResult = attackingPlayer.getBlockFromViewDirection({ maxDistance: distanceToEntity });
         if (raycastResult && raycastResult.block && raycastResult.block.location && distanceToEntity > calculateDistance(attackingPlayer.location, raycastResult.block.location)) {
             data.throughBlockCount++;
-            if (data.throughBlockCount > 1) {
+            if (data.throughBlockCount > 4) {
                 data.throughBlockCount = 0;
                 return true;
             }

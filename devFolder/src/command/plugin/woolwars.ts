@@ -10,9 +10,9 @@ import {
     Dimension,
     EntityComponentTypes,
     EffectTypes,
-    EntityInventoryComponent,
     PlayerSoundOptions,
     EntityDamageCause,
+    EntityQueryOptions,
 } from "@minecraft/server";
 import { CustomItem } from "../../Modules/customItem";
 
@@ -457,7 +457,7 @@ function pullNearbyEntities(
                 const distance = distanceTo(sheepLocation, player.location);
                 if (distance > range) continue;
 
-                pullEntity(player, sheep, strength, distance);
+                pullEntity(player, sheep, strength);
             } catch (error) {
                 console.error("Error in pullNearbyEntities for player:", player.name, error);
             }
@@ -468,13 +468,12 @@ function pullNearbyEntities(
 }
 
 /**
- * エンティティを吸い込む共通処理
+ * エンティティを吸い込む共通処理 (一定の力で引き寄せるバージョン)
  * @param entity 吸い込まれるエンティティ
  * @param sheep 羊
  * @param strength 吸い込む力
- * @param distance エンティティと羊の間の距離
  */
-function pullEntity(entity: Entity, sheep: Entity, strength: number, distance: number): void {
+function pullEntity(entity: Entity, sheep: Entity, strength: number): void {
     try {
         const entityLocation = entity.location;
         const sheepLocation = sheep.location;
@@ -485,16 +484,23 @@ function pullEntity(entity: Entity, sheep: Entity, strength: number, distance: n
             z: sheepLocation.z - entityLocation.z,
         };
 
-        // プレイヤーがブラックホールに近すぎる場合はテレポートで吸い込む
-        if (distance < 1) {
-            entity.teleport(sheepLocation);
-            return;
-        }
+        // ベクトルを正規化して方向のみを抽出
+        const magnitude = Math.sqrt(
+            directionVector.x * directionVector.x +
+            directionVector.y * directionVector.y +
+            directionVector.z * directionVector.z
+        );
+        const normalizedDirection = {
+            x: directionVector.x / magnitude,
+            y: directionVector.y / magnitude,
+            z: directionVector.z / magnitude,
+        };
 
+        // 距離に関係なく一定の強さでノックバックを適用
         entity.applyKnockback(
-            directionVector.x,
-            directionVector.z,
-            strength / (distance * distance), // 距離に応じて調整
+            normalizedDirection.x,
+            normalizedDirection.z,
+            strength, // 距離で除算しない
             0.5
         );
     } catch (error) {
@@ -991,32 +997,6 @@ async function launchOrangeSheep(player: Player): Promise<void> {
     }
 }
 
-/**
- * プレイヤーのインベントリからアイテムを1つ削除する
- * @param player プレイヤー
- */
-function removeItem(player: Player): void {
-    const inventory = player.getComponent("minecraft:inventory") as EntityInventoryComponent;
-    if (inventory) {
-        system.run(() => {
-            const itemStack = inventory?.container?.getItem(player.selectedSlotIndex);
-            if (itemStack) {
-                // 数量が1の場合はアイテムを削除
-                if (itemStack.amount <= 1) {
-                    system.run(() => {
-                        inventory?.container?.setItem(player.selectedSlotIndex, undefined);
-                    });
-                } else {
-                    // 数量が2以上の場合は数量を1つ減らす
-                    system.run(() => {
-                        itemStack.amount -= 1;
-                        inventory?.container?.setItem(player.selectedSlotIndex, itemStack);
-                    });
-                }
-            }
-        });
-    }
-}
 
 
 // ----- カスタムアイテム ----- //
@@ -1027,9 +1007,9 @@ const explosiveRedWool = new CustomItem({
     lore: ["§7投げた場所に羊をスポーンさせ、", "§7着地、または何かに当たると爆発する", `§7爆発範囲: §a${EXPLOSIVE_SHEEP.explosionRadius}`],
     item: "minecraft:red_wool",
     placeableOn: ["minecraft:allow"],
+    remove:true,
 }).then((player: Player) => {
     launchExplosiveSheep(player);
-    removeItem(player);
 
 });
 
@@ -1039,9 +1019,9 @@ const rideableWhiteWool = new CustomItem({
     lore: ["§7投げた場所に羊をスポーンさせ、", "§7羊の上に乗って移動することができる", `§7最大飛距離: §a${RIDEABLE_SHEEP.maxRideDistance}`],
     item: "minecraft:white_wool",
     placeableOn: ["minecraft:allow"],
+    remove: true,
 }).then((player: Player) => {
     launchRideableSheep(player);
-    removeItem(player);
 });
 
 const blackHoleWool = new CustomItem({
@@ -1050,9 +1030,9 @@ const blackHoleWool = new CustomItem({
     lore: ["§7投げた場所に羊をスポーンさせ、", "§7着地すると周囲のプレイヤーを引き寄せる", `§7効果範囲: §a${BLACK_HOLE_SHEEP.range}`, `§7効果時間: §a${BLACK_HOLE_SHEEP.duration}秒`, `§7誘引間隔: §a${BLACK_HOLE_SHEEP.pullInterval / 20}秒`, "§7(敵チームにのみ効果あり)"],
     item: "minecraft:black_wool",
     placeableOn: ["minecraft:allow"],
+    remove: true,
 }).then((player: Player) => {
     launchBlackHoleSheep(player);
-    removeItem(player);
 });
 
 const earthquakeBrownWool = new CustomItem({
@@ -1069,9 +1049,9 @@ const earthquakeBrownWool = new CustomItem({
     ],
     item: "minecraft:brown_wool",
     placeableOn: ["minecraft:allow"],
+    remove: true,
 }).then((player: Player) => {
     launchEarthquakeSheep(player);
-    removeItem(player);
 });
 
 // ヒール羊のカスタムアイテム
@@ -1088,9 +1068,9 @@ const healLimeWool = new CustomItem({
     ],
     item: "minecraft:lime_wool",
     placeableOn: ["minecraft:allow"],
+    remove: true,
 }).then((player: Player) => {
     launchHealSheep(player);
-    removeItem(player);
 });
 
 // オレンジ羊のカスタムアイテム
@@ -1100,9 +1080,9 @@ const explosiveOrangeWool = new CustomItem({
     lore: ["§7投げた場所に羊をスポーンさせ、", "§7着地、または何かに当たると大爆発する", "§c爆弾羊の上位互換", `§7爆発範囲: §a${ORANGE_SHEEP.explosionRadius}`],
     item: "minecraft:orange_wool",
     placeableOn: ["minecraft:allow"],
+    remove: true,
 }).then((player: Player) => {
     launchOrangeSheep(player);
-    removeItem(player);
 
 });
 
@@ -1116,7 +1096,7 @@ const upBlowWoodenSword = new CustomItem({
         // プレイヤーの座標を取得
         const playerLocation = player.location;
 
-        if (playerLocation.y <= -60) {
+        if (playerLocation.y <= -40) {
             player.applyKnockback(0, 0, 0, 3);
 
             // サウンドを再生 (複数のサウンドを組み合わせ、ディレイで立体感を出す)
@@ -1137,7 +1117,7 @@ const upBlowWoodenSword = new CustomItem({
                 player.playSound("ambient.cave", subSoundOptions);
                 //3ティック目に
             }, 3);
-            removeItem(player);
+            upBlowWoodenSword.removeItem(player, upBlowWoodenSword.get())
         } else {
             // y座標が-64より高い場合は、メッセージを表示 (オプション)
             player.sendMessage("§cこの高さではアッパーソードは使用できません！");
@@ -1151,6 +1131,7 @@ const boostFeather = new CustomItem({
     lore: ["§7使用すると前方向にダッシュし", "§7一時的に移動速度が上昇する"],
     item: "minecraft:feather",
     amount: 1,
+    remove: true,
 }).then((player: Player) => {
 
     system.run(() => {
@@ -1195,82 +1176,156 @@ const boostFeather = new CustomItem({
             player.playSound("mob.blaze.breathe", subSoundOptions2);
         }, 7);
 
-        removeItem(player);
     })
 });
-// 氷雪玉のカスタムアイテム
 
-const freezeSnowball = new CustomItem({
-    ...CUSTOM_ITEM_SETTINGS,
-    name: "§b凍結の雪玉",
-    lore: ["§7投げると相手を凍りづけにする", "§7移動速度低下IV (3秒)", "§7採掘速度低下III (3秒)", "§7跳躍力低下III (3秒)"],
-    item: "minecraft:snowball",
+
+
+
+const barrierItem = new CustomItem({
+    name: "§bバリア展開",
+    lore: ["§7使用するとバリアを展開し", "§7周囲のエンティティを吹き飛ばす"],
+    item: "minecraft:barrier", // バリアブロックのアイテムを使用
+    amount: 1,
+    placeableOn: ["minecraft:allow"],
+    remove: true,
 }).then((player: Player) => {
-    // 雪玉を投げる効果音
-    player.playSound("mob.snowgolem.shoot", { volume: 1.0, pitch: 1.2 });
-    
-    // プレイヤーの視線の方向に雪玉をスポーン
-    const snowball = player.dimension.spawnEntity("minecraft:snowball", player.getHeadLocation());
-    
-    // 雪玉に速度を設定 (applyImpulseを使用)
-    const direction = player.getViewDirection();
-    snowball.applyImpulse({
-        x: direction.x * 2,
-        y: direction.y * 2,
-        z: direction.z * 2
-    });
+    system.run(() => {
+        const location = player.location;
+        const dimension = player.dimension;
+        const radius = 5;
 
-    // 雪玉が他のプレイヤーに当たった時の処理
-    system.runInterval(() => {
-        if (!snowball.isValid()) {
-            const nearbyPlayers = player.dimension.getPlayers({
-                location: snowball.location,
-                maxDistance: 2
-            });
+        // 世界の境界
+        const minX = -30000000;
+        const maxX = 30000000;
+        const minY = -64; // Bedrock Edition の場合。Java Edition は -2048
+        const maxY = 320;
+        const minZ = -30000000;
+        const maxZ = 30000000;
 
-            for (const target of nearbyPlayers) {
-                if (target.name !== player.name && !isSameTeam(player, target)) {
-                    // デバフを付与
-                    target.addEffect("slowness", 60, { amplifier: 3 });
-                    target.addEffect("mining_fatigue", 60, { amplifier: 2 });
-                    target.addEffect("jump_boost", 60, { amplifier: -3 });
-                    
-                    // 凍結エフェクト音
-                    target.playSound("random.glass", { volume: 1.0, pitch: 0.5 });
-                    player.playSound("random.successful_hit", { volume: 0.5, pitch: 1.0 });
-                }
-            }
+        // プレイヤーが境界の外にいるか確認
+        if (
+            location.x < minX ||
+            location.x > maxX ||
+            location.y < minY ||
+            location.y > maxY ||
+            location.z < minZ ||
+            location.z > maxZ
+        ) {
+            // 境界外の場合は使用できないメッセージを表示して処理を終了
+            player.sendMessage("§c[警告] 境界の外では使用できません！");
             return;
         }
-    }, 1);
-    
-    removeItem(player);
+
+        // 使用者のタグを確認
+        const userTags = player.getTags();
+        const isRedTeam = userTags.includes("red");
+        const isBlueTeam = userTags.includes("blue");
+
+        // バリア展開のエフェクト (パーティクル)
+        dimension.spawnParticle("minecraft:breeze_wind_explosion_emitter", {
+            x: player.location.x,
+            y: player.location.y + 1,
+            z: player.location.z,
+        });
+
+        // サウンドを再生
+        player.playSound("random.explode", { volume: 0.5, pitch: 1.2 });
+        player.playSound("mob.guardian.curse", { volume: 1, pitch: 0.8 });
+        system.runTimeout(() => {
+            player.playSound("mob.warden.sonic_boom", { volume: 1, pitch: 1 });
+        }, 1);
+
+        // 周囲のエンティティを検索
+        const options: EntityQueryOptions = {
+            location: location,
+            maxDistance: radius,
+            excludeNames: [player.name],
+        };
+
+        const nearbyEntities = Array.from(dimension.getEntities(options));
+
+        // 近くのプレイヤーやエンティティを吹き飛ばす
+        for (const entity of nearbyEntities) {
+            // エンティティがプレイヤーかどうか確認
+            if (entity.typeId === "minecraft:player") {
+                const targetPlayer = entity as Player;
+                const targetTags = targetPlayer.getTags();
+
+                // 同じチームのプレイヤーには効果を適用しない
+                if (
+                    (isRedTeam && targetTags.includes("red")) ||
+                    (isBlueTeam && targetTags.includes("blue"))
+                ) {
+                    continue; // 次のエンティティへ
+                }
+
+                // 継続ダメージを与える (4秒間、2秒ごとにダメージ)
+                let damageTicks = 0;
+                const damageInterval = system.runInterval(() => {
+                    if (damageTicks < 10) {
+                        targetPlayer.applyDamage(2, { // 2のダメージ (ハート1個分)
+                            cause: EntityDamageCause.contact,
+                            damagingEntity: player,
+                        });
+                        damageTicks += 1;
+                    } else {
+                        system.clearRun(damageInterval); // 4秒経過したらIntervalをクリア
+                    }
+                }, 20); 
+            }
+
+            const direction = {
+                x: entity.location.x - location.x,
+                y: entity.location.y - location.y,
+                z: entity.location.z - location.z,
+            };
+
+            // ベクトルを正規化
+            const length = Math.sqrt(
+                direction.x ** 2 + direction.y ** 2 + direction.z ** 2
+            );
+            const normalizedDirection = {
+                x: direction.x / length,
+                y: direction.y / length,
+                z: direction.z / length,
+            };
+
+            if (entity.typeId === "minecraft:player") {
+                // プレイヤーにはノックバックを適用
+                const player = entity as Player;
+                player.applyKnockback(
+                    normalizedDirection.x,
+                    normalizedDirection.z,
+                    10, // 水平方向の強さ
+                    0.5 // 垂直方向の強さ
+                );
+
+                // 鈍化のステータスを付与
+                player.addEffect(EffectTypes.get("slowness")!, 60, {
+                    amplifier: 5, // レベル III
+                    showParticles: false,
+                });
+
+                // 吹き飛ばされたプレイヤーにメッセージとサウンドを送信
+                player.sendMessage("§cバリアによって吹き飛ばされました！");
+                player.sendMessage("§6現在継続ダメージを食らっています！！");
+                player.playSound("mob.warden.sonic_boom", { volume: 1, pitch: 1 });
+            } else {
+                // プレイヤー以外のエンティティにはインパルスを適用
+                const impulseVector: Vector3 = {
+                    x: normalizedDirection.x * 2, // 水平方向の強さを調整
+                    y: 0.5, // 垂直方向の強さを調整 (浮かせたい場合は適宜変更)
+                    z: normalizedDirection.z * 2, // 水平方向の強さを調整
+                };
+                entity.applyImpulse(impulseVector);
+            }
+        }
+    });
 });
 
-// グラップリングフックのカスタムアイテム
-const grapplingHook = new CustomItem({
-    name: "§eグラップリングフック",
-    lore: ["§7使用すると視線方向に引っ張られる", "§7壁や天井にも使用可能"],
-    item: "minecraft:fishing_rod",
-    amount: 3,
-}).then((player: Player) => {
-    const direction = player.getViewDirection();
-    // 前方向への強い引っ張り
-    player.applyKnockback(
-        direction.x,
-        direction.z,
-        4, // 水平方向の力
-        1.2  // 垂直方向の力
-    );
-    
-    // フックを投げる音とチェーンの音を組み合わせる
-    player.playSound("item.trident.throw", { volume: 0.8, pitch: 1.2 });
-    system.runTimeout(() => {
-        player.playSound("block.chain.break", { volume: 0.6, pitch: 0.8 });
-    }, 2);
-    
-    removeItem(player);
-});
+
+
 
 // ----- イベント ----- //
 
@@ -1350,13 +1405,9 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
                         boostFeather.give(player, amount);
                         player.sendMessage(`§a${boostFeather.name} §7を ${amount} 個入手しました`);
                         break;
-                    case "grappling":
-                        grapplingHook.give(player, amount);
-                        player.sendMessage(`§a${grapplingHook.name} §7を ${amount} 個入手しました`);
-                        break;
-                    case "snow":
-                        freezeSnowball.give(player, amount);
-                        player.sendMessage(`§a${freezeSnowball.name} §7を ${amount} 個入手しました`);
+                    case "barrier":
+                        barrierItem.give(player, amount);
+                        player.sendMessage(`§a${barrierItem.name} §7を ${amount} 個入手しました`);
                         break;
                     default:
                         player.sendMessage(`§c不明なアイテム名: ${itemName}`);

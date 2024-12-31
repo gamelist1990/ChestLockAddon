@@ -575,7 +575,13 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
             consoleOutput(`エラーが発生しました: ${error}`);
         }
     }
+
+
+    
 });
+
+
+
 
 
 
