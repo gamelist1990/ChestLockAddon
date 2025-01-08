@@ -6,5 +6,6 @@
     "typescript.suggest.paths": false,
     "files.autoSave": "afterDelay",
     "files.autoSaveDelay": 1000,
-    "commentTranslate.hover.enabled": true
+    "commentTranslate.hover.enabled": true,
+    "commentTranslate.multiLineMerge": true
 }
