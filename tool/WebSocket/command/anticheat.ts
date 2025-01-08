@@ -4,7 +4,6 @@ import {
     MINECRAFT_COMMAND_PREFIX,
 } from '../index';
 
-// アンチチートの状態を管理するオブジェクト
 interface AnticheatState {
     v1: { enabled: boolean; noclip: boolean };
     v2: { enabled: boolean };
@@ -15,7 +14,7 @@ let anticheatState: AnticheatState = {
     v2: { enabled: false },
 };
 
-// アンチチート v1 のコマンドを格納する配列
+// v1 commands
 const anticheatV1Commands = [
     `/execute as @a[tag=ac:speed] at @s positioned ~ ~ ~ run summon armor_stand ac:speed_check_B ~ 1000 ~`,
     `/execute as @a[tag=ac:speed,m=c] at @s positioned ~ ~ ~ run execute as @e[type=armor_stand,name=ac:speed_check_B] at @s positioned ~ ~ ~ run execute as @e[type=armor_stand,name=ac:speed_check_A,rm=3.27] at @s positioned ~ ~ ~ run /tag @a[tag=ac:speed,tag=!ac:nsc] add ac:speed_out`,
@@ -52,7 +51,7 @@ const anticheatV1Commands = [
     `/execute as @a[rxm=0,rx=0] at @s positioned ~ ~ ~ run /tp @s ~~~~ 1`,
 ];
 
-// Noclip で検知するブロックのリスト
+
 const noclipDetectionBlocks = [
     "grass",
     "dirt",
@@ -60,7 +59,6 @@ const noclipDetectionBlocks = [
     "bedrock",
 ];
 
-// Noclip 検知用のコマンドを生成する関数 (v1, v2 共通)
 function generateNoclipDetectionCommands(blocks: string[]): string[] {
     const commands: string[] = [];
     blocks.forEach(block => {
@@ -69,7 +67,6 @@ function generateNoclipDetectionCommands(blocks: string[]): string[] {
     return commands;
 }
 
-// アンチチート v1 の Noclip 検知コマンド (オプション)
 const anticheatV1NoclipCommands = [
     `/execute as @a[tag=ac:noclip] at @s run /spreadplayers ~~ 0 1 @s`,
     `/execute as @a[tag=ac:noclip] at @s run /tp @s ~~~`,
@@ -78,7 +75,6 @@ const anticheatV1NoclipCommands = [
     ...generateNoclipDetectionCommands(noclipDetectionBlocks),
 ];
 
-// アンチチート v2 の Noclip 検知コマンド (独立モード)
 const anticheatV2Commands = [
     `/execute as @a[tag=ac:noclip] at @s run /spreadplayers ~~ 0 1 @s`,
     `/execute as @a[tag=ac:noclip] at @s run /tp @s ~~~`,
@@ -87,10 +83,8 @@ const anticheatV2Commands = [
     ...generateNoclipDetectionCommands(noclipDetectionBlocks),
 ];
 
-// アンチチートモードを切り替える関数
 async function switchAnticheatMode(world: World, mode: "v1" | "v2" | "v1noclip", enabled?: boolean): Promise<string> {
     if (enabled === undefined) {
-        // トグル処理
         if (mode === "v1") {
             anticheatState.v1.enabled = !anticheatState.v1.enabled;
         } else if (mode === "v2") {
@@ -99,7 +93,6 @@ async function switchAnticheatMode(world: World, mode: "v1" | "v2" | "v1noclip",
             anticheatState.v1.noclip = !anticheatState.v1.noclip;
         }
     } else {
-        // 有効/無効を直接設定
         if (mode === "v1") {
             anticheatState.v1.enabled = enabled;
         } else if (mode === "v2") {
@@ -109,17 +102,15 @@ async function switchAnticheatMode(world: World, mode: "v1" | "v2" | "v1noclip",
         }
     }
 
-    // v1 と v2 の排他制御
     if (anticheatState.v1.enabled && anticheatState.v2.enabled) {
         if (mode === "v1") {
             anticheatState.v2.enabled = false;
         } else if (mode === "v2") {
             anticheatState.v1.enabled = false;
-            anticheatState.v1.noclip = false; // v2 有効化時は v1 の Noclip も無効化
+            anticheatState.v1.noclip = false; 
         }
     }
 
-    // アンチチート v1 のコマンドを実行/停止
     if (mode === "v1" || mode === "v1noclip") {
         if (anticheatState.v1.enabled) {
             world.sendMessage(`アンチチート v1 を実行しています...`);
@@ -130,7 +121,6 @@ async function switchAnticheatMode(world: World, mode: "v1" | "v2" | "v1noclip",
                     console.error(`コマンド実行エラー: ${command}`, error);
                 }
             }
-            // Noclip オプションが有効な場合のみ実行
             if (anticheatState.v1.noclip) {
                 world.sendMessage(`アンチチート v1 Noclip オプションを有効化しています...`);
                 for (const command of anticheatV1NoclipCommands) {
@@ -142,6 +132,7 @@ async function switchAnticheatMode(world: World, mode: "v1" | "v2" | "v1noclip",
                 }
             }
         } else {
+            //一応停止処理をする
             world.sendMessage(`アンチチート v1 を停止しています...`);
             try {
                 await world.runCommand(`/tag @a remove ac:speed`);
@@ -165,7 +156,6 @@ async function switchAnticheatMode(world: World, mode: "v1" | "v2" | "v1noclip",
         }
     }
 
-    // アンチチート v2 のコマンドを実行/停止
     if (mode === "v2") {
         if (anticheatState.v2.enabled) {
             world.sendMessage(`アンチチート v2 (Noclip) を実行しています...`);
@@ -186,7 +176,7 @@ async function switchAnticheatMode(world: World, mode: "v1" | "v2" | "v1noclip",
         }
     }
 
-    // メッセージ生成
+
     let message = "";
     if (mode === "v1") {
         message = `アンチチートモード 'v1' を ${anticheatState.v1.enabled ? '有効' : '無効'} にしました。`;
@@ -202,12 +192,11 @@ async function switchAnticheatMode(world: World, mode: "v1" | "v2" | "v1noclip",
     return message;
 }
 
-// 現在有効なアンチチートモードとオプションを取得する関数
 function getActiveAnticheatMode(): { mode: "v1" | "v2" | null; noclip: boolean } {
     if (anticheatState.v1.enabled) {
         return { mode: "v1", noclip: anticheatState.v1.noclip };
     } else if (anticheatState.v2.enabled) {
-        return { mode: "v2", noclip: true }; // v2 は常に Noclip 有効
+        return { mode: "v2", noclip: true };
     } else {
         return { mode: null, noclip: false };
     }
