@@ -28,7 +28,7 @@ const configs = {
             speed: false,
             killAura: false,
             xray: false,
-            spam: false,
+            spam: true,
             editionFake: false
         }
     },

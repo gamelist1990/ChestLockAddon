@@ -3,4 +3,5 @@ export const banPlayers = [
     { name: "baranokishi3605"},
     { name: "beastieB77"},
     { id: "-1404454304539"},
+    { id: "EVA1thGen" },
 ];

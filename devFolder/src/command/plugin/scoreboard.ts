@@ -1,4 +1,4 @@
-import { Player, ScoreboardIdentity, ScriptEventCommandMessageAfterEvent, ScriptEventSource, system, world } from "@minecraft/server";
+import { Entity, EntityDieAfterEvent, EntityHurtAfterEvent, Player, PlayerSoundOptions, ScoreboardIdentity, ScriptEventCommandMessageAfterEvent, ScriptEventSource, system, world } from "@minecraft/server";
 import { getServerUptime } from "../utility/server";
 import { ver } from "../../Modules/version";
 import { banPlayers } from "../../Modules/globalBan";
@@ -421,12 +421,12 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
         }
     }
 
-    if (event.id === "ch:randomCom") {
+    if (event.id === "ch:checkBlock") {
         try {
-            const args = event.message.replace(/^\/ch:randomCom\s+/, "").split(/\s+/);
+            const args = event.message.replace(/^\/ch:checkBlock\s+/, "").split(/\s+/);
 
-            if (args.length < 5) {
-                consoleOutput("使用方法: /ch:randomCom <x1> <y1> <z1> <x2> <y2> <z2> [{\"command\":\"command1\"},{\"command\":\"command2\"},...]");
+            if (args.length < 7) {
+                consoleOutput("使用方法: /ch:checkBlock <x1> <y1> <z1> <x2> <y2> <z2> {\"name\":[\"minecraft:sand\",\"minecraft:stone\",...]}");
                 return;
             }
 
@@ -437,43 +437,54 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
             const y2 = parseInt(args[4]);
             const z2 = parseInt(args[5]);
 
-            // JSON文字列全体をコマンドリストとして扱う
-            const matchResult = event.message.match(/\[.*\]/);
+            // ブロック名リストをパース
+            const matchResult = event.message.match(/\{.*\}/);
             if (!matchResult) {
-                consoleOutput("コマンドリストが見つかりませんでした。");
+                consoleOutput("ブロック名リストが見つかりませんでした。");
                 return;
             }
-            const commandListStr = matchResult[0];
-            const commandList = JSON.parse(commandListStr);
+            const blockListStr = matchResult[0];
+            const blockList = JSON.parse(blockListStr);
 
-            if (!Array.isArray(commandList)) {
-                consoleOutput("コマンドリストは配列形式で指定してください。例: [{\"command\":\"command1\"},{\"command\":\"command2\"}]");
+            if (!blockList.name || !Array.isArray(blockList.name)) {
+                consoleOutput("ブロック名リストは \"name\" キーと配列形式で指定してください。例: {\"name\":[\"minecraft:sand\",\"minecraft:stone\"]}");
                 return;
             }
 
-            // ランダムな座標を生成
-            const randomX = Math.floor(Math.random() * (Math.max(x1, x2) - Math.min(x1, x2) + 1)) + Math.min(x1, x2);
-            const randomY = Math.floor(Math.random() * (Math.max(y1, y2) - Math.min(y1, y2) + 1)) + Math.min(y1, y2);
-            const randomZ = Math.floor(Math.random() * (Math.max(z1, z2) - Math.min(z1, z2) + 1)) + Math.min(z1, z2);
+            // ブロックの数をカウント
+            const blockCounts = {};
+            for (const blockName of blockList.name) {
+                blockCounts[blockName] = 0;
+            }
 
-            // ランダムなコマンドを選択
-            const randomIndex = Math.floor(Math.random() * commandList.length);
-            const selectedCommand = commandList[randomIndex].command;
+            const overworld = world.getDimension("overworld");
+            let blockType, blockID;
 
-            if (selectedCommand) {
-                const command = selectedCommand.replace(/\$x/g, randomX).replace(/\$y/g, randomY).replace(/\$z/g, randomZ);
-                consoleOutput(`座標 (${randomX}, ${randomY}, ${randomZ}) でコマンド「${command}」を実行します。`);
-
-                system.run(() => {
-                    try {
-                        world.getDimension("overworld").runCommandAsync(command);
-                    } catch (commandError) {
-                        consoleOutput(`コマンド実行中にエラーが発生しました: ${commandError}`);
+            for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
+                for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
+                    for (let z = Math.min(z1, z2); z <= Math.max(z1, z2); z++) {
+                        blockType = overworld.getBlock({ x: x, y: y, z: z });
+                        if (!blockType) { continue }
+                        blockID = blockType.permutation.type.id;
+                        if (blockCounts.hasOwnProperty(blockID)) {
+                            blockCounts[blockID]++;
+                        }
                     }
-                });
-            } else {
-                consoleOutput("選択されたコマンドが不正です。");
+                }
             }
+
+            // スコアボードに結果を書き込む
+            system.run(() => {
+                try {
+                    const objective = world.scoreboard.getObjective("ch:checkBlock") || world.scoreboard.addObjective("ch:checkBlock", "Block Counts");
+                    for (const blockName in blockCounts) {
+                        objective.setScore(blockName, blockCounts[blockName]);
+                        consoleOutput(`${blockName}: ${blockCounts[blockName]}`);
+                    }
+                } catch (scoreboardError) {
+                    consoleOutput(`スコアボード操作中にエラーが発生しました: ${scoreboardError}`);
+                }
+            });
 
         } catch (error) {
             consoleOutput(`エラーが発生しました: ${error}`);
@@ -577,10 +588,270 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
     }
 
 
-    
+
+    if (event.id === "ch:actionScore") {
+        try {
+            const args = event.message.replace(/^\/ch:actionScore\s+/, "").split(/\s+/);
+
+            if (args.length < 3) {
+                consoleOutput("使用方法: /ch:actionScore <スコアボード名> <スコア名1> <スコア名2> [設定(JSON形式)]");
+                return;
+            }
+
+            const scoreboardName = args[0];
+            const scoreName1 = args[1];
+            const scoreName2 = args[2];
+            let settings: any = {};
+
+            // 引数でJSON設定が渡された場合
+            if (args[3]) {
+                try {
+                    settings = JSON.parse(args[3]);
+                } catch (error) {
+                    consoleOutput(`JSON設定のパースエラー: ${error}`);
+                    return;
+                }
+            } else {
+                // デフォルト設定
+                settings = {
+                    fullBar1: "§d|",
+                    fullBar2: "§b|",
+                    emptyBar: "§f|",
+                    maxBars: 10,
+                    showScore: false,
+                    showName: false,
+                    delay: 100, // デフォルトの遅延時間(ミリ秒)
+                    targetTag: "", // ターゲットタグの設定（デフォルトは空）
+                    maxScore: 0, // 割合を計算する基準(maxScore)
+                    sortThreshold: 100 // ソート機能の割合ハードル（デフォルトは100%）
+                };
+            }
+
+            // 設定のバリデーション
+            if (!settings.fullBar1 || typeof settings.fullBar1 !== "string") {
+                settings.fullBar1 = "§d|";
+            }
+            if (!settings.fullBar2 || typeof settings.fullBar2 !== "string") {
+                settings.fullBar2 = "§b|";
+            }
+            if (!settings.emptyBar || typeof settings.emptyBar !== "string") {
+                settings.emptyBar = "§f|";
+            }
+            if (!settings.maxBars || typeof settings.maxBars !== "number") {
+                settings.maxBars = 10;
+            }
+            if (typeof settings.showScore !== "boolean") {
+                settings.showScore = false;
+            }
+            if (typeof settings.showName !== "boolean") {
+                settings.showName = false;
+            }
+            if (!settings.delay || typeof settings.delay !== "number") {
+                settings.delay = 100;
+            }
+            if (!settings.targetTag || typeof settings.targetTag !== "string") {
+                settings.targetTag = "";
+            }
+            if (!settings.maxScore || typeof settings.maxScore !== "number") {
+                settings.maxScore = 0; // デフォルトは0
+            }
+            if (!settings.sortThreshold || typeof settings.sortThreshold !== "number") {
+                settings.sortThreshold = 100; // デフォルトは100%
+            }
+
+            // スコアボードからスコアを取得
+            let score1: number | undefined;
+            let score2: number | undefined;
+            try {
+                const objective = world.scoreboard.getObjective(scoreboardName);
+
+                if (!objective) {
+                    consoleOutput(`スコアボード ${scoreboardName} が見つかりません`);
+                    return;
+                }
+
+                // スコア名に完全一致するスコアを取得
+                const participant1 = objective.getParticipants().find(p => p.displayName === scoreName1);
+                const participant2 = objective.getParticipants().find(p => p.displayName === scoreName2);
+
+                if (participant1) {
+                    score1 = objective.getScore(participant1);
+                }
+                if (participant2) {
+                    score2 = objective.getScore(participant2);
+                }
+
+            } catch (error) {
+                consoleOutput(`スコアボードの読み込みエラー: ${error}`);
+                return;
+            }
+
+            // スコアが取得できなかった場合のエラーハンドリング
+            if (score1 === undefined) {
+                consoleOutput(`${scoreboardName} に ${scoreName1} というスコア名のスコアが見つかりません`);
+                return;
+            }
+            if (score2 === undefined) {
+                consoleOutput(`${scoreboardName} に ${scoreName2} というスコア名のスコアが見つかりません`);
+                return;
+            }
+
+            // アクションバーの表示とサウンドの再生 (遅延付き)
+            system.run(async () => {
+                try {
+                    // 割合を計算する基準
+                    const maxScore = settings.maxScore > 0 ? settings.maxScore : (score1 ?? 0) + (score2 ?? 0);
+                    // ソート機能の割合ハードル（%）を適用
+                    const threshold = settings.sortThreshold / 100;
+
+                    // 徐々にバーを増やして表示
+                    for (let i = 0; i <= settings.maxBars; i++) {
+                        // score1の割合に基づくバーの数（ハードルを適用）
+                        const numBars1 = Math.min(settings.maxBars, Math.round((score1 / maxScore) * settings.maxBars * (i / settings.maxBars) / threshold));
+                        // score2の割合に基づくバーの数（ハードルを適用）
+                        const numBars2 = Math.min(settings.maxBars, Math.round((score2 / maxScore) * settings.maxBars * (i / settings.maxBars) / threshold));
+
+                        // バーの生成
+                        const fullBars1 = settings.fullBar1.repeat(Math.max(0, numBars1));
+                        const fullBars2 = settings.fullBar2.repeat(Math.max(0, numBars2));
+                        const emptyBars = settings.emptyBar.repeat(Math.max(0, settings.maxBars - Math.max(numBars1, numBars2)));
+
+                        let actionBarMessage = "";
+
+                        if (settings.showName) {
+                            actionBarMessage += `${scoreName1}: `;
+                        }
+                        actionBarMessage += `${fullBars1}`;
+
+                        actionBarMessage += `${emptyBars}`; // 空のバーを追加
+
+                        if (settings.showName) {
+                            actionBarMessage += ` :${scoreName2}`;
+                        }
+
+                        actionBarMessage += `${fullBars2}`;
+
+                        if (settings.showScore) {
+                            // ハードルを考慮した割合を表示
+                            actionBarMessage += ` (${Math.min(100, Math.round((score1 / maxScore) * 100 * (i / settings.maxBars) / threshold))}%, ${Math.min(100, Math.round((score2 / maxScore) * 100 * (i / settings.maxBars) / threshold))}%)`;
+                        }
+
+                        for (const player of world.getAllPlayers()) {
+                            // 指定されたタグを持つプレイヤーにのみアクションバーを表示
+                            if (settings.targetTag === "" || player.hasTag(settings.targetTag)) {
+                                player.onScreenDisplay.setActionBar(actionBarMessage);
+
+                                // サウンドを再生
+                                const soundOptions: PlayerSoundOptions = {
+                                    location: player.location,
+                                    pitch: 1,
+                                    volume: 0.5,
+                                };
+                                // どちらかのバーが半分以上の場合に "random.orb" サウンドを再生
+                                if (numBars1 >= settings.maxBars / 2 || numBars2 >= settings.maxBars / 2) {
+                                    player.playSound("random.orb", soundOptions);
+                                } else {
+                                    player.playSound("random.click", soundOptions);
+                                }
+                            }
+                        }
+
+                        await new Promise<void>((resolve) => {
+                            system.runTimeout(() => {
+                                resolve();
+                            }, settings.delay / 20);
+                        });
+                    }
+
+                    // 計算結果を "ch:actionScore" スコアボードに書き込む
+                    let resultObjective = world.scoreboard.getObjective("ch:actionScore");
+                    if (!resultObjective) {
+                        resultObjective = world.scoreboard.addObjective("ch:actionScore", "ActionScore Results");
+                    }
+
+                    if (settings.sortThreshold !== 100) {
+                        resultObjective.setScore(`${scoreName1}%`, Math.min(100, Math.round((score1 / maxScore) * 100 / threshold)));
+                        resultObjective.setScore(`${scoreName2}%`, Math.min(100, Math.round((score2 / maxScore) * 100 / threshold)));
+                    } else {
+                        resultObjective.setScore(`${scoreName1}%`, Math.round((score1 / maxScore) * 100));
+                        resultObjective.setScore(`${scoreName2}%`, Math.round((score2 / maxScore) * 100));
+                    }
+
+                } catch (error) {
+                    consoleOutput(`アクションバー表示中またはスコアボード書き込み中にエラーが発生しました: ${error}`);
+                }
+            });
+
+        } catch (error) {
+            consoleOutput(`エラーが発生しました: ${error}`);
+        }
+    }
 });
 
 
+
+const playerAttackMap = new Map<string, string>();
+const tagTimeout = 40;
+
+world.afterEvents.entityHurt.subscribe((event: EntityHurtAfterEvent) => {
+    const attacked = event.hurtEntity;
+    const damageSource = event.damageSource;
+    if (config().module.ScoreSystem.enabled === false) return;
+    if (!(attacked instanceof Player)) {
+        //  console.log(`[EntityHurt] ${attacked.typeId} is not a player, skipping.`);
+        return;
+    }
+    let attacker: Entity | undefined = damageSource.damagingEntity;
+
+    if (!attacker && damageSource.damagingProjectile) {
+        attacker = damageSource.damagingProjectile;
+    }
+
+    if (attacker && attacker instanceof Player) {
+        playerAttackMap.set(attacked.id, attacker.id);
+    } else if (attacker) {
+    }
+});
+
+world.afterEvents.entityDie.subscribe((event: EntityDieAfterEvent) => {
+    const deadEntity = event.deadEntity;
+    if (config().module.ScoreSystem.enabled === false) return;
+
+    if (!(deadEntity instanceof Player)) {
+        return;
+    }
+
+    //const damageSource = event.damageSource;
+    //if (damageSource.cause === 'suicide' || damageSource.cause === 'void') {
+    //    playerAttackMap.delete(deadEntity.id);
+    //    return;
+    //}
+
+    const lastAttackerId = playerAttackMap.get(deadEntity.id);
+
+    // 攻撃者と死亡者が同一でないことを確認
+    if (lastAttackerId && lastAttackerId !== deadEntity.id) {
+        const lastAttacker = Array.from(world.getAllPlayers()).find(p => p.id === lastAttackerId);
+
+        if (lastAttacker) {
+            lastAttacker.addTag('lasta');
+            deadEntity.addTag('lastb');
+
+            system.runTimeout(() => {
+                if (lastAttacker.hasTag('lasta')) {
+                    lastAttacker.removeTag('lasta');
+                }
+            }, tagTimeout);
+
+            system.runTimeout(() => {
+                if (deadEntity.hasTag('lastb')) {
+                    deadEntity.removeTag('lastb');
+                }
+            }, tagTimeout);
+        }
+    }
+    playerAttackMap.delete(deadEntity.id);
+});
 
 
 

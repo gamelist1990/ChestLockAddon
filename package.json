@@ -2,6 +2,7 @@
     "name": "chestlock",
     "version": "1.5.0",
     "productName": "chestLock",
+    
     "description": "The best chestlock",
     "type": "module",
     "scripts": {

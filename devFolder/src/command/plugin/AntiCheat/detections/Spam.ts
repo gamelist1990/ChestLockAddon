@@ -157,7 +157,7 @@ class SpamDetector {
 
         if (message.length > maxMessageLength) {
             event.cancel = true;
-            this.handleLongMessage(player, data, playerDataManager, message, configs);
+            this.handleLongMessage(player, data, playerDataManager, "x", configs);
             return;
         }
 

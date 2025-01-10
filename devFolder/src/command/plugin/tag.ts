@@ -80,11 +80,13 @@ system.runInterval(() => {
         // Team
         if (isTeamTrackingEnable) {
             let teamColor = "§f";
+            
+
 
             if (player.hasTag("team1")) {
-                teamColor = "§c";
-            } else if (player.hasTag("team2")) {
                 teamColor = "§b";
+            } else if (player.hasTag("team2")) {
+                teamColor = "§c";
             } else if (player.hasTag("team3")) {
                 teamColor = "§a";
             } else if (player.hasTag("team4")) {

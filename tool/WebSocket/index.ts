@@ -886,9 +886,14 @@ server.events.on('playerJoin', async (event) => {
             const realPlayerName = playerInfo.name;
             const uuid = playerInfo.uuid;
 
+            playerListCache[realPlayerName] = playerInfo;
+
             if (!userData[realPlayerName]) {
-                userData[realPlayerName] = { lastJoin: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) };
-            } else if (!playerListCache[realPlayerName]) {
+                userData[realPlayerName] = {
+                    lastJoin: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+                    lastLeave: null 
+                };
+            } else {
                 userData[realPlayerName].lastJoin = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
             }
             await saveUserData();

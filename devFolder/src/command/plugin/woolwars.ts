@@ -1193,7 +1193,7 @@ const barrierItem = new CustomItem({
     system.run(() => {
         const location = player.location;
         const dimension = player.dimension;
-        const radius = 5;
+        const radius = 4;
 
         // 世界の境界
         const minX = -30000000;
@@ -1270,9 +1270,10 @@ const barrierItem = new CustomItem({
                         });
                         damageTicks += 1;
                     } else {
-                        system.clearRun(damageInterval); // 4秒経過したらIntervalをクリア
+                        system.clearRun(damageInterval); 
                     }
                 }, 20); 
+
             }
 
             const direction = {
@@ -1303,7 +1304,7 @@ const barrierItem = new CustomItem({
 
                 // 鈍化のステータスを付与
                 player.addEffect(EffectTypes.get("slowness")!, 60, {
-                    amplifier: 5, // レベル III
+                    amplifier: 6, // レベル III
                     showParticles: false,
                 });
 

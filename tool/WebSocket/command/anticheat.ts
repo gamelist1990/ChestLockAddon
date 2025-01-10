@@ -17,8 +17,8 @@ let anticheatState: AnticheatState = {
 // v1 commands
 const anticheatV1Commands = [
     `/execute as @a[tag=ac:speed] at @s positioned ~ ~ ~ run summon armor_stand ac:speed_check_B ~ 1000 ~`,
-    `/execute as @a[tag=ac:speed,m=c] at @s positioned ~ ~ ~ run execute as @e[type=armor_stand,name=ac:speed_check_B] at @s positioned ~ ~ ~ run execute as @e[type=armor_stand,name=ac:speed_check_A,rm=3.27] at @s positioned ~ ~ ~ run /tag @a[tag=ac:speed,tag=!ac:nsc] add ac:speed_out`,
-    `/execute as @a[tag=ac:speed,m=!c] at @s positioned ~ ~ ~ run execute as @e[type=armor_stand,name=ac:speed_check_B] at @s positioned ~ ~ ~ run execute as @e[type=armor_stand,name=ac:speed_check_A,rm=1.21] at @s positioned ~ ~ ~ run /tag @a[tag=ac:speed,tag=!ac:nsc] add ac:speed_out`,
+    `/execute as @a[tag=ac:speed,m=c] at @s positioned ~ ~ ~ run execute as @e[type=armor_stand,name=ac:speed_check_B] at @s positioned ~ ~ ~ run execute as @e[type=armor_stand,name=ac:speed_check_A,rm=5.27] at @s positioned ~ ~ ~ run /tag @a[tag=ac:speed,tag=!ac:nsc] add ac:speed_out`,
+    `/execute as @a[tag=ac:speed,m=!c] at @s positioned ~ ~ ~ run execute as @e[type=armor_stand,name=ac:speed_check_B] at @s positioned ~ ~ ~ run execute as @e[type=armor_stand,name=ac:speed_check_A,rm=3.21] at @s positioned ~ ~ ~ run /tag @a[tag=ac:speed,tag=!ac:nsc] add ac:speed_out`,
     `/execute as @a[tag=ac:speed_out] at @s positioned ~ ~ ~ run /tellraw @a {"rawtext":[
     {"text":"§4§l===[ 警告: AntiCheat ]===\n\n"},
     {"text":"§cプレイヤー: §e"},
@@ -51,7 +51,6 @@ const anticheatV1Commands = [
     `/execute as @a[rxm=0,rx=0] at @s positioned ~ ~ ~ run /tp @s ~~~~ 1`,
 ];
 
-
 const noclipDetectionBlocks = [
     "grass",
     "dirt",
@@ -83,6 +82,10 @@ const anticheatV2Commands = [
     ...generateNoclipDetectionCommands(noclipDetectionBlocks),
 ];
 
+let v1IntervalId: NodeJS.Timeout | null = null;
+let v1NoclipIntervalId: NodeJS.Timeout | null = null;
+let v2IntervalId: NodeJS.Timeout | null = null;
+
 async function switchAnticheatMode(world: World, mode: "v1" | "v2" | "v1noclip", enabled?: boolean): Promise<string> {
     if (enabled === undefined) {
         if (mode === "v1") {
@@ -107,75 +110,54 @@ async function switchAnticheatMode(world: World, mode: "v1" | "v2" | "v1noclip",
             anticheatState.v2.enabled = false;
         } else if (mode === "v2") {
             anticheatState.v1.enabled = false;
-            anticheatState.v1.noclip = false; 
+            anticheatState.v1.noclip = false;
         }
     }
 
+    clearIntervals();
+
     if (mode === "v1" || mode === "v1noclip") {
         if (anticheatState.v1.enabled) {
-            world.sendMessage(`アンチチート v1 を実行しています...`);
-            for (const command of anticheatV1Commands) {
-                try {
-                    await world.runCommand(command);
-                } catch (error) {
-                    console.error(`コマンド実行エラー: ${command}`, error);
-                }
-            }
-            if (anticheatState.v1.noclip) {
-                world.sendMessage(`アンチチート v1 Noclip オプションを有効化しています...`);
-                for (const command of anticheatV1NoclipCommands) {
-                    try {
-                        await world.runCommand(command);
-                    } catch (error) {
+            v1IntervalId = setInterval(() => {
+                anticheatV1Commands.forEach(command => {
+                    world.runCommand(command).catch(error => {
                         console.error(`コマンド実行エラー: ${command}`, error);
-                    }
-                }
+                    });
+                });
+            }, 1); // 5秒ごとに実行
+
+            if (anticheatState.v1.noclip) {
+                v1NoclipIntervalId = setInterval(() => {
+                    anticheatV1NoclipCommands.forEach(command => {
+                        world.runCommand(command).catch(error => {
+                            console.error(`コマンド実行エラー: ${command}`, error);
+                        });
+                    });
+                }, 1); // 5秒ごとに実行
             }
         } else {
-            //一応停止処理をする
             world.sendMessage(`アンチチート v1 を停止しています...`);
-            try {
-                await world.runCommand(`/tag @a remove ac:speed`);
-                await world.runCommand(`/kill @e[type=armor_stand,name=ac:speed_check_A]`);
-                await world.runCommand(`/kill @e[type=armor_stand,name=ac:speed_check_B]`);
-                await world.runCommand(`/kill @e[type=armor_stand,name=ac:speed_check_C]`);
-                await world.runCommand(`/kill @e[type=armor_stand,name=ac:speed_check_D]`);
-                await world.runCommand(`/kill @e[type=armor_stand,name=ac:speed_check_E]`);
-                await world.runCommand(`/kill @e[type=armor_stand,name=ac:speed_check_F]`);
-            } catch (error) {
-                console.error(`コマンド実行エラー:`, error);
-            }
+            //停止処理は間隔設定を消すだけで良くなった
             if (!anticheatState.v1.enabled) {
                 anticheatState.v1.noclip = false;
-                try {
-                    await world.runCommand(`/tag @a remove ac:noclip`);
-                } catch (error) {
-                    console.error(`コマンド実行エラー:`, error);
-                }
             }
         }
     }
 
     if (mode === "v2") {
         if (anticheatState.v2.enabled) {
-            world.sendMessage(`アンチチート v2 (Noclip) を実行しています...`);
-            for (const command of anticheatV2Commands) {
-                try {
-                    await world.runCommand(command);
-                } catch (error) {
-                    console.error(`コマンド実行エラー: ${command}`, error);
-                }
-            }
+            v2IntervalId = setInterval(() => {
+                anticheatV2Commands.forEach(command => {
+                    world.runCommand(command).catch(error => {
+                        console.error(`コマンド実行エラー: ${command}`, error);
+                    });
+                });
+            }, 1); // 5秒ごとに実行
         } else {
             world.sendMessage(`アンチチート v2 (Noclip) を停止しています...`);
-            try {
-                await world.runCommand(`/tag @a remove ac:noclip`);
-            } catch (error) {
-                console.error(`コマンド実行エラー:`, error);
-            }
+            //停止処理は間隔設定を消すだけで良くなった
         }
     }
-
 
     let message = "";
     if (mode === "v1") {
@@ -199,6 +181,21 @@ function getActiveAnticheatMode(): { mode: "v1" | "v2" | null; noclip: boolean }
         return { mode: "v2", noclip: true };
     } else {
         return { mode: null, noclip: false };
+    }
+}
+
+function clearIntervals() {
+    if (v1IntervalId !== null) {
+        clearInterval(v1IntervalId);
+        v1IntervalId = null;
+    }
+    if (v1NoclipIntervalId !== null) {
+        clearInterval(v1NoclipIntervalId);
+        v1NoclipIntervalId = null;
+    }
+    if (v2IntervalId !== null) {
+        clearInterval(v2IntervalId);
+        v2IntervalId = null;
     }
 }
 

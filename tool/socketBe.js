@@ -12,7 +12,7 @@ server.events.on('serverOpen', async () => {
 
 
 });
-const NAME = "StartWorld"
+const NAME = "PlayerDied"
 
 server.events.on('worldAdd', async (event) => {
     console.log('worldと接続完了!');
@@ -49,10 +49,12 @@ server.events.on('packetReceive', async (event) => {
 
 server.events.on(`${NAME}`, async (event) => {
     console.log("発火");
- //   console.log(safeStringify(event))
+    console.log(safeStringify(event))
 });
 
 server.events.on('playerChat', async (event) => {
+
+    console.log(safeStringify(event))
     const message = event.message.trim();
     const args = message.split(' ');
     const command = args[0];

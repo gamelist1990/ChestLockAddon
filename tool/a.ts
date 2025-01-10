@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Guild, GuildMember, PermissionsBitField, Snowflake, TextChannel, VoiceChannel, ChannelType, Locale, CategoryChannelResolvable, } from 'discord.js';
+import { Client, GatewayIntentBits, Guild, PermissionsBitField, Snowflake, TextChannel, VoiceChannel, ChannelType, Locale, CategoryChannelResolvable, } from 'discord.js';
 import fs from 'fs';
 
 interface RoleData {
@@ -338,4 +338,4 @@ async function restoreChannel(guild: Guild, channelData: ChannelData, existingCh
     }
 }
 
-client.login('YOUR_BOT_TOKEN');
+client.login('MTE5Njc2OTM1NDQzNjU3NTMyMw.GBkyLL.psnqRlPEWjmr7ER9MZ7Wr79QIlNSXPQey7uGUk');

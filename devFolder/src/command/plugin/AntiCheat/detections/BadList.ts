@@ -475,7 +475,6 @@ export const badWords = [
     "fucc",
     "sh1t",
     "b!tch",
-    "a$$",
     "d1ck",
     "c0ck",
     "puss",

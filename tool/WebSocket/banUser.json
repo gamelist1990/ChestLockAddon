@@ -8,19 +8,35 @@
     "expiresAt": null
   },
   {
-    "uuid": "b80b482c-b052-3d5f-9aad-e49370db5b7e",
-    "name": "gold-byroad53",
-    "reason": "Hello",
-    "bannedBy": "PEXkurann",
-    "bannedAt": 1734871159330,
-    "expiresAt": 1734957559239
-  },
-  {
     "uuid": "30ae996e-9e24-3048-85aa-b7a285c1ab15",
     "name": "アタル",
     "reason": "荒らし",
     "bannedBy": "PEXkurann",
     "bannedAt": 1734936908827,
+    "expiresAt": null
+  },
+  {
+    "uuid": "357bbc48-c38d-3ae1-b418-7cf69937ced4",
+    "name": "Z x 1 r L s",
+    "reason": "またな！！",
+    "bannedBy": "PEXkurann",
+    "bannedAt": 1735888435549,
+    "expiresAt": null
+  },
+  {
+    "uuid": "f596ce78-ff39-3775-b1b7-2a506c9ae698",
+    "name": "LividCrane82022",
+    "reason": "無差別の為1dayBAN",
+    "bannedBy": "PEXkurann",
+    "bannedAt": 1735903897628,
+    "expiresAt": 1735990297567
+  },
+  {
+    "uuid": "21fc6e7b-ec3d-3077-bda2-cdf711ee3d7a",
+    "name": "EVA1thGen",
+    "reason": "BAN 13333333day",
+    "bannedBy": "PEXkurann",
+    "bannedAt": 1736148990348,
     "expiresAt": null
   }
 ]
