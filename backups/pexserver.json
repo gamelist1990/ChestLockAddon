@@ -1,0 +1,2914 @@
+{
+  "timestamp": 1736402101873,
+  "name": "PEX鯖byこう君！",
+  "icon": "https://cdn.discordapp.com/icons/890315487962095637/1ec92108d674708c7a07550311dea63a.webp",
+  "preferredLocale": "ja",
+  "afkTimeout": 300,
+  "afkChannel": null,
+  "systemChannel": null,
+  "systemChannelFlags": 0,
+  "rulesChannel": "1111939471231942837",
+  "publicUpdatesChannel": "1099973068941692988",
+  "verificationLevel": 3,
+  "defaultMessageNotifications": 1,
+  "explicitContentFilter": 2,
+  "roles": [
+    {
+      "id": "890315487962095637",
+      "name": "@everyone",
+      "color": 0,
+      "hoist": false,
+      "position": 0,
+      "permissions": "2222085186637377",
+      "mentionable": false
+    },
+    {
+      "id": "901374758099226625",
+      "name": "【要注意人物】",
+      "color": 15158332,
+      "hoist": true,
+      "position": 22,
+      "permissions": "0",
+      "mentionable": true
+    },
+    {
+      "id": "1012722760474169456",
+      "name": "koukunn",
+      "color": 0,
+      "hoist": false,
+      "position": 23,
+      "permissions": "8",
+      "mentionable": false
+    },
+    {
+      "id": "1069502375863259146",
+      "name": "WidgetBot",
+      "color": 0,
+      "hoist": false,
+      "position": 26,
+      "permissions": "537218112",
+      "mentionable": false
+    },
+    {
+      "id": "1099972508624625754",
+      "name": "Vortex",
+      "color": 0,
+      "hoist": false,
+      "position": 28,
+      "permissions": "500559086",
+      "mentionable": false
+    },
+    {
+      "id": "1099973828484022272",
+      "name": "Muted",
+      "color": 1,
+      "hoist": false,
+      "position": 7,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1111938717213523982",
+      "name": "Zira",
+      "color": 0,
+      "hoist": false,
+      "position": 27,
+      "permissions": "268790848",
+      "mentionable": false
+    },
+    {
+      "id": "1111940388261986374",
+      "name": "認証済み！！",
+      "color": 3447003,
+      "hoist": true,
+      "position": 16,
+      "permissions": "110404532952896",
+      "mentionable": false
+    },
+    {
+      "id": "1111944859423625257",
+      "name": "管理者",
+      "color": 3447003,
+      "hoist": true,
+      "position": 30,
+      "permissions": "8",
+      "mentionable": true
+    },
+    {
+      "id": "1113503317650313266",
+      "name": "カスタム主催者",
+      "color": 16056577,
+      "hoist": false,
+      "position": 18,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1125129095001419799",
+      "name": "Dyno",
+      "color": 0,
+      "hoist": false,
+      "position": 11,
+      "permissions": "1513962695871",
+      "mentionable": false
+    },
+    {
+      "id": "1181893751749226520",
+      "name": "Jockie Music (1)",
+      "color": 0,
+      "hoist": false,
+      "position": 10,
+      "permissions": "8",
+      "mentionable": false
+    },
+    {
+      "id": "1182231200803336224",
+      "name": "carl-bot",
+      "color": 0,
+      "hoist": false,
+      "position": 9,
+      "permissions": "2088234230",
+      "mentionable": false
+    },
+    {
+      "id": "1182233812294447154",
+      "name": "Fortnite",
+      "color": 3447003,
+      "hoist": true,
+      "position": 15,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1182233949016162374",
+      "name": "Minecraft",
+      "color": 7419530,
+      "hoist": true,
+      "position": 14,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1182234093614813225",
+      "name": "APEX",
+      "color": 15158332,
+      "hoist": true,
+      "position": 12,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1182234454614360124",
+      "name": "Genshin",
+      "color": 7400407,
+      "hoist": false,
+      "position": 13,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1182238800450170890",
+      "name": "新しいロール",
+      "color": 0,
+      "hoist": false,
+      "position": 8,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1182239038850203648",
+      "name": "エンジョイ勢！！",
+      "color": 5889977,
+      "hoist": false,
+      "position": 17,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1189494164476395604",
+      "name": "Picsart",
+      "color": 0,
+      "hoist": false,
+      "position": 6,
+      "permissions": "313344",
+      "mentionable": false
+    },
+    {
+      "id": "1189533513817530399",
+      "name": "原神ステータスBot",
+      "color": 0,
+      "hoist": false,
+      "position": 5,
+      "permissions": "414464854080",
+      "mentionable": false
+    },
+    {
+      "id": "1202321160206037016",
+      "name": "AI君",
+      "color": 0,
+      "hoist": false,
+      "position": 4,
+      "permissions": "8",
+      "mentionable": false
+    },
+    {
+      "id": "1208039136657936498",
+      "name": "BedrockBridge",
+      "color": 0,
+      "hoist": false,
+      "position": 3,
+      "permissions": "2684357632",
+      "mentionable": false
+    },
+    {
+      "id": "1224613804155994116",
+      "name": "フォートナイト アイテムショップ",
+      "color": 0,
+      "hoist": false,
+      "position": 2,
+      "permissions": "8",
+      "mentionable": false
+    },
+    {
+      "id": "1287442177898582032",
+      "name": "Server Booster",
+      "color": 16023551,
+      "hoist": true,
+      "position": 21,
+      "permissions": "2222085186637377",
+      "mentionable": true
+    },
+    {
+      "id": "1296378637410504715",
+      "name": "Bot達🤖",
+      "color": 10181046,
+      "hoist": true,
+      "position": 29,
+      "permissions": "1721826619162615",
+      "mentionable": false
+    },
+    {
+      "id": "1296393628662628392",
+      "name": "🍣 Sushi!!",
+      "color": 15105570,
+      "hoist": false,
+      "position": 20,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1305022019670380626",
+      "name": "Bedrock APIs",
+      "color": 0,
+      "hoist": false,
+      "position": 25,
+      "permissions": "309237688384",
+      "mentionable": false
+    },
+    {
+      "id": "1305022334771400759",
+      "name": "JaylyBot",
+      "color": 0,
+      "hoist": false,
+      "position": 24,
+      "permissions": "277025516544",
+      "mentionable": false
+    },
+    {
+      "id": "1325155283059740773",
+      "name": "Minecraft_BAN",
+      "color": 10038562,
+      "hoist": true,
+      "position": 19,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1326735820211748989",
+      "name": "Sasa",
+      "color": 0,
+      "hoist": false,
+      "position": 1,
+      "permissions": "274877933568",
+      "mentionable": false
+    }
+  ],
+  "channels": [
+    {
+      "id": "926152739552120972",
+      "type": 2,
+      "name": "Minecraft",
+      "position": 1,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1111945450199728168",
+      "rtcRegion": null
+    },
+    {
+      "id": "1113453925597712385",
+      "type": 2,
+      "name": "5部隊✨",
+      "position": 5,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "1113453841174765648",
+      "type": 2,
+      "name": "4部隊✨",
+      "position": 4,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "890315922844295169",
+      "type": 2,
+      "name": "APEX",
+      "position": 0,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1111945496563552286",
+      "rtcRegion": null
+    },
+    {
+      "id": "1113501517614428230",
+      "type": 2,
+      "name": "13部隊✨",
+      "position": 13,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "1113454073258201168",
+      "type": 2,
+      "name": "6部隊✨",
+      "position": 6,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "1111946233720864859",
+      "type": 4,
+      "name": "𝐞𝐭𝐜...",
+      "position": 7,
+      "children": [
+        "1119317335724015687"
+      ]
+    },
+    {
+      "id": "1152788267910049893",
+      "type": 2,
+      "name": "ロビー",
+      "position": 0,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1111945450199728168",
+      "rtcRegion": null
+    },
+    {
+      "id": "1113455119770591232",
+      "type": 2,
+      "name": "8部隊✨",
+      "position": 8,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "1123585369879875666",
+      "type": 0,
+      "name": "📄｜取扱説明書",
+      "position": 1,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945544538001498"
+    },
+    {
+      "id": "1111945450199728168",
+      "type": 4,
+      "name": "＝＝＝マイクラ＝＝＝",
+      "position": 1,
+      "children": [
+        "926152739552120972",
+        "1152788267910049893",
+        "1292439666766647400",
+        "901362694563721257",
+        "1273231581502378088",
+        "1107594393466179635",
+        "1111936613132537896",
+        "1111947504351723610",
+        "1305020898188984330",
+        "913903447907110912",
+        "1272588224837189662",
+        "1067458372531671131"
+      ]
+    },
+    {
+      "id": "1176529550864285727",
+      "type": 0,
+      "name": "📖｜english-chat",
+      "position": 4,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945342913609808"
+    },
+    {
+      "id": "1296388374751608872",
+      "type": 2,
+      "name": "Sleep...",
+      "position": 3,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1111946329644601385",
+      "rtcRegion": null
+    },
+    {
+      "id": "1111947939661754439",
+      "type": 0,
+      "name": "宣伝ok",
+      "position": 5,
+      "nsfw": false,
+      "rateLimitPerUser": 3600,
+      "parentId": null
+    },
+    {
+      "id": "1157257600455426058",
+      "type": 0,
+      "name": "質問チャンネル",
+      "position": 3,
+      "nsfw": false,
+      "rateLimitPerUser": 5,
+      "parentId": null
+    },
+    {
+      "id": "1292439666766647400",
+      "type": 0,
+      "name": "色々鯖用",
+      "position": 9,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945450199728168"
+    },
+    {
+      "id": "1113455257096298577",
+      "type": 2,
+      "name": "9部隊✨",
+      "position": 9,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "1113453788834046102",
+      "type": 2,
+      "name": "3部隊✨",
+      "position": 3,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "1274356831866585239",
+      "type": 0,
+      "name": "github-changelog",
+      "position": 6,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1118668078121754624",
+      "type": 0,
+      "name": "join",
+      "position": 2,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1099973068941692988",
+      "type": 0,
+      "name": "bot",
+      "position": 1,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "901362694563721257",
+      "type": 0,
+      "name": "🚪｜参加はこちら",
+      "position": 3,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945450199728168"
+    },
+    {
+      "id": "1261112457435418708",
+      "type": 4,
+      "name": "===FileUpload===",
+      "position": 8,
+      "children": [
+        "1261112639589716072"
+      ]
+    },
+    {
+      "id": "1148749910825504888",
+      "type": 0,
+      "name": "💬｜雑談",
+      "position": 0,
+      "topic": "雑談してねゲームの招待とかもok",
+      "nsfw": false,
+      "rateLimitPerUser": 1,
+      "parentId": "1111945342913609808"
+    },
+    {
+      "id": "1113452710885347408",
+      "type": 2,
+      "name": "2部隊✨",
+      "position": 2,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "1113439035206160456",
+      "type": 4,
+      "name": "＝＝カスタム＝＝",
+      "position": 6,
+      "children": [
+        "1113453925597712385",
+        "1113453841174765648",
+        "1113501517614428230",
+        "1113454073258201168",
+        "1113455119770591232",
+        "1113455257096298577",
+        "1113453788834046102",
+        "1113452710885347408",
+        "1113454394726424659",
+        "1113455323957698610",
+        "1113775432471433216",
+        "1113502136899219557",
+        "1149605547386077285",
+        "1113474393914486794",
+        "1113501431480205454",
+        "1113775359431815209",
+        "1113452141131083889",
+        "1113445677767327744"
+      ]
+    },
+    {
+      "id": "1111945496563552286",
+      "type": 4,
+      "name": "＝＝＝APEX＝＝＝",
+      "position": 3,
+      "children": [
+        "890315922844295169",
+        "1182235805146677258",
+        "1111947657888419852"
+      ]
+    },
+    {
+      "id": "1273231581502378088",
+      "type": 0,
+      "name": "📢｜minecraft-update",
+      "position": 7,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945450199728168"
+    },
+    {
+      "id": "1111945632723247184",
+      "type": 4,
+      "name": "＝＝＝原神＝＝＝",
+      "position": 4,
+      "children": [
+        "1296387794188505130",
+        "1111947756840431727",
+        "1296293028440309801",
+        "1296028691318575165",
+        "1111947867511337030"
+      ]
+    },
+    {
+      "id": "1111939471231942837",
+      "type": 0,
+      "name": "ロール付与してね！！",
+      "position": 0,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1182235805146677258",
+      "type": 13,
+      "name": "サブカスタム用",
+      "position": 1
+    },
+    {
+      "id": "1326735750036848802",
+      "type": 0,
+      "name": "🎲｜賽子遊び",
+      "position": 5,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945342913609808"
+    },
+    {
+      "id": "1107594393466179635",
+      "type": 0,
+      "name": "🗺｜マイクラ座標",
+      "position": 1,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945450199728168"
+    },
+    {
+      "id": "1111936613132537896",
+      "type": 15,
+      "name": "🗽｜ショップ",
+      "position": 2
+    },
+    {
+      "id": "1296388012552355852",
+      "type": 2,
+      "name": "暇な人用(128)",
+      "position": 1,
+      "bitrate": 96000,
+      "userLimit": 0,
+      "parentId": "1111946329644601385",
+      "rtcRegion": null
+    },
+    {
+      "id": "1296393091514634260",
+      "type": 15,
+      "name": "質問フォーム",
+      "position": 7
+    },
+    {
+      "id": "1113454394726424659",
+      "type": 2,
+      "name": "7部隊✨",
+      "position": 7,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "1111947504351723610",
+      "type": 0,
+      "name": "⛏｜マイクラ雑談",
+      "position": 0,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945450199728168"
+    },
+    {
+      "id": "1296387794188505130",
+      "type": 2,
+      "name": "Genshin vc2",
+      "position": 1,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1111945632723247184",
+      "rtcRegion": null
+    },
+    {
+      "id": "1305020898188984330",
+      "type": 0,
+      "name": "📖｜script-api",
+      "position": 5,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945450199728168"
+    },
+    {
+      "id": "1311184107761438740",
+      "type": 4,
+      "name": "vcsystem",
+      "position": 9,
+      "children": []
+    },
+    {
+      "id": "1296389727871565854",
+      "type": 2,
+      "name": "FortniteVc2",
+      "position": 1,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1111945544538001498",
+      "rtcRegion": null
+    },
+    {
+      "id": "913902906112106526",
+      "type": 2,
+      "name": "なんでもVC",
+      "position": 0,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1111946329644601385",
+      "rtcRegion": null
+    },
+    {
+      "id": "1113455323957698610",
+      "type": 2,
+      "name": "10部隊✨",
+      "position": 10,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "1111947657888419852",
+      "type": 0,
+      "name": "🔫｜apex雑談",
+      "position": 0,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945496563552286"
+    },
+    {
+      "id": "1113775432471433216",
+      "type": 2,
+      "name": "15部隊✨",
+      "position": 15,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "1113502136899219557",
+      "type": 5,
+      "name": "カスタムの開始報告などや日付等の連絡【鯖民も使えるよ】",
+      "position": 0
+    },
+    {
+      "id": "1111947710556278875",
+      "type": 0,
+      "name": "🔫｜フォトナ雑談",
+      "position": 0,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945544538001498"
+    },
+    {
+      "id": "913903447907110912",
+      "type": 0,
+      "name": "📖｜マイクラid",
+      "position": 4,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945450199728168"
+    },
+    {
+      "id": "1111947756840431727",
+      "type": 0,
+      "name": "👻｜原神雑談",
+      "position": 0,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945632723247184"
+    },
+    {
+      "id": "1296293028440309801",
+      "type": 0,
+      "name": "🔔-更新通知",
+      "position": 2,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945632723247184"
+    },
+    {
+      "id": "1261112639589716072",
+      "type": 0,
+      "name": "filechannel",
+      "position": 0,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1261112457435418708"
+    },
+    {
+      "id": "1149605547386077285",
+      "type": 13,
+      "name": "カスタムVC",
+      "position": 0
+    },
+    {
+      "id": "1113474393914486794",
+      "type": 2,
+      "name": "11部隊✨",
+      "position": 11,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "912313462976286720",
+      "type": 2,
+      "name": "FortniteVc1",
+      "position": 0,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1111945544538001498",
+      "rtcRegion": null
+    },
+    {
+      "id": "1119317335724015687",
+      "type": 0,
+      "name": "✨こう君のウェブ！！✨",
+      "position": 0,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111946233720864859"
+    },
+    {
+      "id": "1182231440109359194",
+      "type": 0,
+      "name": "ロール付与して",
+      "position": 4,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1113501431480205454",
+      "type": 2,
+      "name": "12部隊✨",
+      "position": 12,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "1119320648448213043",
+      "type": 5,
+      "name": "📣｜お知らせ",
+      "position": 2
+    },
+    {
+      "id": "1125754259523239957",
+      "type": 0,
+      "name": "💁｜相談所",
+      "position": 1,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945342913609808"
+    },
+    {
+      "id": "926152881332158474",
+      "type": 2,
+      "name": "配信中",
+      "position": 2,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1111946329644601385",
+      "rtcRegion": null
+    },
+    {
+      "id": "1272588224837189662",
+      "type": 0,
+      "name": "⚒｜鯖ステータス",
+      "position": 6,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945450199728168"
+    },
+    {
+      "id": "1067458372531671131",
+      "type": 0,
+      "name": "⚠ban者報告-見かけたら報告よろ",
+      "position": 8,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945450199728168"
+    },
+    {
+      "id": "1111946329644601385",
+      "type": 4,
+      "name": "＝＝＝通話＝＝＝",
+      "position": 5,
+      "children": [
+        "1296388374751608872",
+        "1296388012552355852",
+        "913902906112106526",
+        "926152881332158474"
+      ]
+    },
+    {
+      "id": "1113775359431815209",
+      "type": 2,
+      "name": "14部隊✨",
+      "position": 14,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "1111945544538001498",
+      "type": 4,
+      "name": "＝＝＝フォトナ関連＝＝＝",
+      "position": 2,
+      "children": [
+        "1123585369879875666",
+        "1296389727871565854",
+        "1111947710556278875",
+        "912313462976286720",
+        "1224616173463670835"
+      ]
+    },
+    {
+      "id": "1111945342913609808",
+      "type": 4,
+      "name": "＝＝＝チャット＝＝＝",
+      "position": 0,
+      "children": [
+        "1176529550864285727",
+        "1148749910825504888",
+        "1326735750036848802",
+        "1119320648448213043",
+        "1125754259523239957",
+        "901361525728608277"
+      ]
+    },
+    {
+      "id": "1296028691318575165",
+      "type": 0,
+      "name": "📄｜原神コード",
+      "position": 1,
+      "topic": "原神のコード貼り付けます 基本 HoyoLabから",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945632723247184"
+    },
+    {
+      "id": "1111947867511337030",
+      "type": 2,
+      "name": "Genshin vc1",
+      "position": 0,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1111945632723247184",
+      "rtcRegion": null
+    },
+    {
+      "id": "1113452141131083889",
+      "type": 0,
+      "name": "🔥カスタム🔥【apexやfortnite用です】・a・🤘",
+      "position": 1,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1113439035206160456"
+    },
+    {
+      "id": "1113445677767327744",
+      "type": 2,
+      "name": "1部隊✨",
+      "position": 1,
+      "bitrate": 64000,
+      "userLimit": 4,
+      "parentId": "1113439035206160456",
+      "rtcRegion": null
+    },
+    {
+      "id": "901361525728608277",
+      "type": 0,
+      "name": "⚙｜チャット欄",
+      "position": 3,
+      "topic": "サーバーはオフラインです | 接続したプレイヤーの総数 11",
+      "nsfw": false,
+      "rateLimitPerUser": 1,
+      "parentId": "1111945342913609808"
+    },
+    {
+      "id": "1224616173463670835",
+      "type": 0,
+      "name": "🛒-｜ショップ",
+      "position": 2,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1111945544538001498"
+    }
+  ],
+  "emojis": [
+    {
+      "id": "1048548496229269534",
+      "name": "sakebaka",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1048548496229269534.webp"
+    },
+    {
+      "id": "1048548585471488130",
+      "name": "mona",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1048548585471488130.webp"
+    },
+    {
+      "id": "1048549431663931402",
+      "name": "tabemono",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1048549431663931402.webp"
+    },
+    {
+      "id": "1048549720374661160",
+      "name": "tarutaru",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1048549720374661160.webp"
+    },
+    {
+      "id": "1048549871369592832",
+      "name": "bakuhama",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1048549871369592832.webp"
+    },
+    {
+      "id": "1048549992199114773",
+      "name": "samurai",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1048549992199114773.webp"
+    },
+    {
+      "id": "1048550587505049620",
+      "name": "jigakitanai",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1048550587505049620.webp"
+    },
+    {
+      "id": "1048551126859006012",
+      "name": "arutyuu",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1048551126859006012.webp"
+    },
+    {
+      "id": "1048551152184205405",
+      "name": "hijyousyoju",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1048551152184205405.webp"
+    },
+    {
+      "id": "1048551177157083176",
+      "name": "paimonn_ver10",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1048551177157083176.webp"
+    },
+    {
+      "id": "1174607061217185802",
+      "name": "__",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1174607061217185802.webp"
+    },
+    {
+      "id": "1177873104945545236",
+      "name": "Girl2",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1177873104945545236.webp"
+    },
+    {
+      "id": "1182233185648656384",
+      "name": "f_",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1182233185648656384.webp"
+    },
+    {
+      "id": "1182233227931435008",
+      "name": "A_",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1182233227931435008.webp"
+    },
+    {
+      "id": "1182233272768540702",
+      "name": "Minecraft",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1182233272768540702.webp"
+    },
+    {
+      "id": "1182233316439633920",
+      "name": "gensin",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1182233316439633920.webp"
+    },
+    {
+      "id": "1296031155031773227",
+      "name": "mora",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1296031155031773227.webp"
+    },
+    {
+      "id": "1296032192887001149",
+      "name": "xpLev2",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1296032192887001149.webp"
+    },
+    {
+      "id": "1296032194560655432",
+      "name": "xpLev3",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1296032194560655432.webp"
+    },
+    {
+      "id": "1296032196485971989",
+      "name": "honLev3",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1296032196485971989.webp"
+    },
+    {
+      "id": "1296032198075482134",
+      "name": "honLev2",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1296032198075482134.webp"
+    },
+    {
+      "id": "1296040310799073303",
+      "name": "Genseki",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1296040310799073303.webp"
+    },
+    {
+      "id": "1296042068682211348",
+      "name": "404",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1296042068682211348.webp"
+    }
+  ],
+  "members": [
+    {
+      "id": "1196769354436575323",
+      "nickname": null,
+      "roles": [
+        "1111944859423625257",
+        "1202321160206037016",
+        "890315487962095637"
+      ],
+      "joinedAt": 1706726102713
+    },
+    {
+      "id": "735854461636837389",
+      "nickname": "こう君@鯖主",
+      "roles": [
+        "1111940388261986374",
+        "1111944859423625257",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1632338153652
+    },
+    {
+      "id": "886108148404998215",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1684138913421
+    },
+    {
+      "id": "1199889504027283500",
+      "nickname": "野獣帝(始祖)",
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1706146493637
+    },
+    {
+      "id": "975007492356587570",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182234093614813225",
+        "890315487962095637"
+      ],
+      "joinedAt": 1667892547822
+    },
+    {
+      "id": "1054683121511043072",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "890315487962095637"
+      ],
+      "joinedAt": 1721039925539
+    },
+    {
+      "id": "901426040465920031",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1642254368581
+    },
+    {
+      "id": "901058288681099304",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1733035043028
+    },
+    {
+      "id": "1001426137051840523",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1717211205333
+    },
+    {
+      "id": "1148211655038218310",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1694157469630
+    },
+    {
+      "id": "1034390801515556864",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1685515932477
+    },
+    {
+      "id": "1065606847073095692",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1727075923215
+    },
+    {
+      "id": "1025736421836853299",
+      "nickname": "YouTube最弱くんCH",
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1667292356996
+    },
+    {
+      "id": "930502935580909638",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1659489968917
+    },
+    {
+      "id": "1205356851835703297",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "890315487962095637"
+      ],
+      "joinedAt": 1707449909787
+    },
+    {
+      "id": "1254057078713221131",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1735911026453
+    },
+    {
+      "id": "1156462669302345728",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1695795903975
+    },
+    {
+      "id": "1201095961687097465",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1706434052433
+    },
+    {
+      "id": "1205509585612443648",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1730540016610
+    },
+    {
+      "id": "829519596192530472",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1657281058785
+    },
+    {
+      "id": "962316269221203998",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1650102978896
+    },
+    {
+      "id": "235148962103951360",
+      "nickname": null,
+      "roles": [
+        "1182231200803336224",
+        "1296378637410504715",
+        "890315487962095637"
+      ],
+      "joinedAt": 1701936283105
+    },
+    {
+      "id": "1002185835099209769",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1659010318957
+    },
+    {
+      "id": "1217069621585252382",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "890315487962095637"
+      ],
+      "joinedAt": 1727010299989
+    },
+    {
+      "id": "1112290572582010965",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "890315487962095637"
+      ],
+      "joinedAt": 1700569144895
+    },
+    {
+      "id": "1045904291405242469",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1723523342441
+    },
+    {
+      "id": "1012720409797459969",
+      "nickname": "PEXserver",
+      "roles": [
+        "1012722760474169456",
+        "1111940388261986374",
+        "1296378637410504715",
+        "890315487962095637"
+      ],
+      "joinedAt": 1661522321626
+    },
+    {
+      "id": "1276076277195079680",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1727261403843
+    },
+    {
+      "id": "1138548338745147592",
+      "nickname": null,
+      "roles": [
+        "1296378637410504715",
+        "1305022019670380626",
+        "890315487962095637"
+      ],
+      "joinedAt": 1731211895667
+    },
+    {
+      "id": "812249138775326742",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1634889326408
+    },
+    {
+      "id": "813385004389761067",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1637818052908
+    },
+    {
+      "id": "913415686687187024",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1670144276073
+    },
+    {
+      "id": "1229381612324520026",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1713180328156
+    },
+    {
+      "id": "1279137512685568013",
+      "nickname": "デュフデュフフフフフ",
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1734863463638
+    },
+    {
+      "id": "1160722492718075985",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1733654906899
+    },
+    {
+      "id": "1059317763539214496",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1707475865228
+    },
+    {
+      "id": "1124626809422618687",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1694241910701
+    },
+    {
+      "id": "1023463503325052988",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1723718050812
+    },
+    {
+      "id": "1233684235857035305",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1730882309129
+    },
+    {
+      "id": "906839340443926568",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1636277973820
+    },
+    {
+      "id": "1016794326115823708",
+      "nickname": null,
+      "roles": [
+        "1296378637410504715",
+        "1326735820211748989",
+        "890315487962095637"
+      ],
+      "joinedAt": 1736388869193
+    },
+    {
+      "id": "1270957588993019968",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1723090372873
+    },
+    {
+      "id": "1057912581949489223",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1733728071135
+    },
+    {
+      "id": "1135754272538120272",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1695748241250
+    },
+    {
+      "id": "1287402265228869648",
+      "nickname": null,
+      "roles": [
+        "1182233949016162374",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1727343078837
+    },
+    {
+      "id": "1152784876123197550",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1694915831493
+    },
+    {
+      "id": "1195268388696633354",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1708927184257
+    },
+    {
+      "id": "1059452484088778843",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1714177772238
+    },
+    {
+      "id": "1243517847729340559",
+      "nickname": "マイクラ依存症",
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1733128157239
+    },
+    {
+      "id": "1198906309437816914",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1705912035490
+    },
+    {
+      "id": "1102601838504718386",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1711291451118
+    },
+    {
+      "id": "1189127100309975133",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1723535670076
+    },
+    {
+      "id": "940927191124955178",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1669563388427
+    },
+    {
+      "id": "991990628399448064",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1671883865984
+    },
+    {
+      "id": "1129765379921694842",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1691388456581
+    },
+    {
+      "id": "1160443100150382674",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1730794008372
+    },
+    {
+      "id": "884275071676448778",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1632373183017
+    },
+    {
+      "id": "945554351034884157",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1645508931215
+    },
+    {
+      "id": "1202763519041339466",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1706835473619
+    },
+    {
+      "id": "907953708837531648",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1657462833771
+    },
+    {
+      "id": "1215898531165110354",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1733836548023
+    },
+    {
+      "id": "613914318320435203",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1638536077120
+    },
+    {
+      "id": "1249207085149720667",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1723110894450
+    },
+    {
+      "id": "883636661299314718",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1632603779353
+    },
+    {
+      "id": "891489642308849716",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1729906296197
+    },
+    {
+      "id": "1233652117433225218",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1723548323227
+    },
+    {
+      "id": "935090541832581180",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1672535892664
+    },
+    {
+      "id": "890060164902821979",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1673920928392
+    },
+    {
+      "id": "1014120722404220998",
+      "nickname": null,
+      "roles": [
+        "1189533513817530399",
+        "1296378637410504715",
+        "890315487962095637"
+      ],
+      "joinedAt": 1703677290176
+    },
+    {
+      "id": "789427508360904725",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1632376579539
+    },
+    {
+      "id": "1195996282280493118",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1732890231956
+    },
+    {
+      "id": "1149340069660999691",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1694244299925
+    },
+    {
+      "id": "807561038928019467",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1636361612387
+    },
+    {
+      "id": "1195222214258196612",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1705033608978
+    },
+    {
+      "id": "938037721916653578",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1643716444969
+    },
+    {
+      "id": "810507097107202098",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1643535746368
+    },
+    {
+      "id": "969168914867183626",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1667984882615
+    },
+    {
+      "id": "1208012870542032907",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1709803819967
+    },
+    {
+      "id": "1269036158244094034",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1723519129104
+    },
+    {
+      "id": "957140924234870824",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1111944859423625257",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1682665873699
+    },
+    {
+      "id": "155149108183695360",
+      "nickname": "PEX鯖管理人",
+      "roles": [
+        "1111940388261986374",
+        "1111944859423625257",
+        "1125129095001419799",
+        "1296378637410504715",
+        "890315487962095637"
+      ],
+      "joinedAt": 1688322080183
+    },
+    {
+      "id": "1109133309184835656",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1685004763017
+    },
+    {
+      "id": "827837437756702732",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1685250447989
+    },
+    {
+      "id": "1070834228004130847",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1685686117536
+    },
+    {
+      "id": "814893060243849287",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1650776817771
+    },
+    {
+      "id": "969110753682534410",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1655857797026
+    },
+    {
+      "id": "1226836732054474846",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1713180335710
+    },
+    {
+      "id": "885046694872494119",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1656225136331
+    },
+    {
+      "id": "580706430965776394",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1685249126495
+    },
+    {
+      "id": "1143803715011219506",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1695795066484
+    },
+    {
+      "id": "1186300968250384424",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1722940250119
+    },
+    {
+      "id": "275813801792634880",
+      "nickname": null,
+      "roles": [
+        "1111938717213523982",
+        "1111944859423625257",
+        "1296378637410504715",
+        "890315487962095637"
+      ],
+      "joinedAt": 1685177249129
+    },
+    {
+      "id": "978938593236099093",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1653467659490
+    },
+    {
+      "id": "1193161735293648897",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1736155140431
+    },
+    {
+      "id": "846350629555535892",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1654865054005
+    },
+    {
+      "id": "543225764036870167",
+      "nickname": null,
+      "roles": [
+        "1069502375863259146",
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1675059636837
+    },
+    {
+      "id": "240254129333731328",
+      "nickname": null,
+      "roles": [
+        "1099972508624625754",
+        "1111944859423625257",
+        "1296378637410504715",
+        "890315487962095637"
+      ],
+      "joinedAt": 1682324282576
+    },
+    {
+      "id": "1325258278254542870",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1736315740168
+    },
+    {
+      "id": "1041838898843762769",
+      "nickname": null,
+      "roles": [
+        "1208039136657936498",
+        "1296378637410504715",
+        "890315487962095637"
+      ],
+      "joinedAt": 1708089374640
+    },
+    {
+      "id": "1210110048366370896",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1727074079175
+    },
+    {
+      "id": "412347257233604609",
+      "nickname": "音楽Bot君",
+      "roles": [
+        "1181893751749226520",
+        "1296378637410504715",
+        "890315487962095637"
+      ],
+      "joinedAt": 1701855829024
+    },
+    {
+      "id": "1165099572876546049",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1704074670014
+    },
+    {
+      "id": "1204978184517591152",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1713608747137
+    },
+    {
+      "id": "1270883180051959880",
+      "nickname": "わかめいん",
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1731153345497
+    },
+    {
+      "id": "1276236603836207179",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1732679318359
+    },
+    {
+      "id": "1235807295770853428",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1723350694479
+    },
+    {
+      "id": "1005267731425267743",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "890315487962095637"
+      ],
+      "joinedAt": 1695795109519
+    },
+    {
+      "id": "948874962024923137",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1651280333630
+    },
+    {
+      "id": "1089811020219944970",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1680564874167
+    },
+    {
+      "id": "1012419466031792188",
+      "nickname": "画像系Bot",
+      "roles": [
+        "1189494164476395604",
+        "1296378637410504715",
+        "890315487962095637"
+      ],
+      "joinedAt": 1703667908623
+    },
+    {
+      "id": "1096339986820903012",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182234093614813225",
+        "890315487962095637"
+      ],
+      "joinedAt": 1695796064000
+    },
+    {
+      "id": "1320046534703972434",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1111944859423625257",
+        "890315487962095637"
+      ],
+      "joinedAt": 1734794160779
+    },
+    {
+      "id": "1071291618646298694",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1736346167334
+    },
+    {
+      "id": "1122824200177061898",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "1182234093614813225",
+        "890315487962095637"
+      ],
+      "joinedAt": 1702042218160
+    },
+    {
+      "id": "678267969813348403",
+      "nickname": "構造のフラーレン",
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1721967091011
+    },
+    {
+      "id": "917742028601827368",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1693952008244
+    },
+    {
+      "id": "1323673169814622279",
+      "nickname": "ぴすくん",
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1735727137605
+    },
+    {
+      "id": "1304720654733541377",
+      "nickname": "ヨッシー",
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1731315345339
+    },
+    {
+      "id": "880733566168879104",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1700037845865
+    },
+    {
+      "id": "1069102051168096266",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1729154365673
+    },
+    {
+      "id": "1324197102343159861",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1735784657344
+    },
+    {
+      "id": "756820667294416998",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1632393228180
+    },
+    {
+      "id": "948686094986264716",
+      "nickname": null,
+      "roles": [
+        "1296378637410504715",
+        "1305022334771400759",
+        "890315487962095637"
+      ],
+      "joinedAt": 1731211970855
+    },
+    {
+      "id": "895257453732696074",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1633593648626
+    },
+    {
+      "id": "1012174481332125790",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1724059899343
+    },
+    {
+      "id": "896418330322292796",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1633793466279
+    },
+    {
+      "id": "1315989656759963720",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1733827008169
+    },
+    {
+      "id": "1001283506741194803",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1714655327629
+    },
+    {
+      "id": "829693905481760799",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1632490065453
+    },
+    {
+      "id": "1218526981700845629",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1732198882181
+    },
+    {
+      "id": "1116232101679861800",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1690671580307
+    },
+    {
+      "id": "1227903879178358854",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1729834579963
+    },
+    {
+      "id": "901605130997202975",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1653169154287
+    },
+    {
+      "id": "1280482289385734186",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1735734568113
+    },
+    {
+      "id": "970931503284486144",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1723727949814
+    },
+    {
+      "id": "1223652762772963532",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1712113419372
+    },
+    {
+      "id": "1086531055252684870",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1730032375139
+    },
+    {
+      "id": "806187239071678484",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1732301998357
+    },
+    {
+      "id": "985107149334138891",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1654938330218
+    },
+    {
+      "id": "859374709929279499",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1706542607344
+    },
+    {
+      "id": "971220558639431740",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1651627614612
+    },
+    {
+      "id": "1001350050628255764",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1658814047389
+    },
+    {
+      "id": "1279557891120169014",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1735030651973
+    },
+    {
+      "id": "1061946803915849748",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "890315487962095637"
+      ],
+      "joinedAt": 1724847815985
+    },
+    {
+      "id": "1117842055771738122",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1736180573714
+    },
+    {
+      "id": "1175379374539821098",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1715993723419
+    },
+    {
+      "id": "911613264499208302",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1659869872338
+    },
+    {
+      "id": "1081195625619652619",
+      "nickname": null,
+      "roles": [
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1715462881956
+    },
+    {
+      "id": "946756117415989258",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1654934396130
+    },
+    {
+      "id": "1227927073167773758",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1731811976900
+    },
+    {
+      "id": "1257320765003530383",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1723540655201
+    },
+    {
+      "id": "1213654262031327306",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1709625972046
+    },
+    {
+      "id": "1092289087320379482",
+      "nickname": "ityu-n",
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "1182234093614813225",
+        "890315487962095637"
+      ],
+      "joinedAt": 1723369499891
+    },
+    {
+      "id": "1216695704328605740",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1735274099660
+    },
+    {
+      "id": "868463617262112811",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1633871972320
+    },
+    {
+      "id": "1040235629616840734",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1673262116893
+    },
+    {
+      "id": "1205756074087555092",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1733666817628
+    },
+    {
+      "id": "1180467616482086945",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1702105586975
+    },
+    {
+      "id": "1275759080815722611",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1724235618737
+    },
+    {
+      "id": "1224916107996168283",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1712113210018
+    },
+    {
+      "id": "1169194272550035546",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1698844173133
+    },
+    {
+      "id": "1144996109131976775",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1735383969782
+    },
+    {
+      "id": "1056875652369895435",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "890315487962095637"
+      ],
+      "joinedAt": 1710322179575
+    },
+    {
+      "id": "1104748488157315123",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1730543919613
+    },
+    {
+      "id": "998826608368570369",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1658209252991
+    },
+    {
+      "id": "1166666482743267429",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1698225726793
+    },
+    {
+      "id": "1178491509801230406",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1736150594501
+    },
+    {
+      "id": "1095553584088764467",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "1182234454614360124",
+        "890315487962095637"
+      ],
+      "joinedAt": 1735545313944
+    },
+    {
+      "id": "1272436615158960153",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1723526385518
+    },
+    {
+      "id": "683553082457849916",
+      "nickname": null,
+      "roles": [
+        "1224613804155994116",
+        "1296378637410504715",
+        "890315487962095637"
+      ],
+      "joinedAt": 1712041083206
+    },
+    {
+      "id": "1094495287835369542",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "1182233949016162374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1723129142207
+    },
+    {
+      "id": "903710236781719583",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1654265651802
+    },
+    {
+      "id": "1138781761057325166",
+      "nickname": "ゆあ",
+      "roles": [
+        "1111940388261986374",
+        "1182233812294447154",
+        "1182233949016162374",
+        "1182234093614813225",
+        "1182234454614360124",
+        "1182239038850203648",
+        "890315487962095637"
+      ],
+      "joinedAt": 1733461303409
+    },
+    {
+      "id": "1003846381036896297",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1659406095566
+    },
+    {
+      "id": "883706283260268544",
+      "nickname": null,
+      "roles": [
+        "1111940388261986374",
+        "890315487962095637"
+      ],
+      "joinedAt": 1666441014602
+    },
+    {
+      "id": "1055051814518669362",
+      "nickname": null,
+      "roles": [
+        "890315487962095637"
+      ],
+      "joinedAt": 1671614472972
+    }
+  ]
+}

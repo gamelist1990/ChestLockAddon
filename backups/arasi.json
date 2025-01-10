@@ -1,0 +1,2424 @@
+{
+  "timestamp": 1736396100236,
+  "name": "おぜうの植民地",
+  "icon": "https://cdn.discordapp.com/icons/817674350688731166/04860f0d3ea6f123d852575622fb5899.webp",
+  "preferredLocale": "en-US",
+  "afkTimeout": 300,
+  "afkChannel": null,
+  "systemChannel": null,
+  "systemChannelFlags": 0,
+  "rulesChannel": null,
+  "publicUpdatesChannel": null,
+  "verificationLevel": 0,
+  "defaultMessageNotifications": 0,
+  "explicitContentFilter": 0,
+  "roles": [
+    {
+      "id": "1326184913808003127",
+      "name": "pussy bro 145",
+      "color": 2893934,
+      "hoist": false,
+      "position": 72,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918015021057",
+      "name": "pussy bro 195",
+      "color": 11167936,
+      "hoist": false,
+      "position": 43,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849004105739",
+      "name": "pussy bro 234",
+      "color": 11420466,
+      "hoist": false,
+      "position": 145,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849268482090",
+      "name": "pussy bro 124",
+      "color": 9219375,
+      "hoist": false,
+      "position": 123,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849276866641",
+      "name": "pussy bro 131",
+      "color": 15865919,
+      "hoist": false,
+      "position": 117,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918002438256",
+      "name": "pussy bro 249",
+      "color": 16457540,
+      "hoist": false,
+      "position": 46,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918081863713",
+      "name": "pussy bro 198",
+      "color": 995635,
+      "hoist": false,
+      "position": 40,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841441775648",
+      "name": "pussy bro 109",
+      "color": 13556096,
+      "hoist": false,
+      "position": 159,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841404289066",
+      "name": "pussy bro 10",
+      "color": 16351938,
+      "hoist": false,
+      "position": 172,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849247510588",
+      "name": "pussy bro 141",
+      "color": 14052487,
+      "hoist": false,
+      "position": 133,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918249897984",
+      "name": "pussy bro 210",
+      "color": 1026646,
+      "hoist": false,
+      "position": 22,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184914609111120",
+      "name": "pussy bro 158",
+      "color": 14129146,
+      "hoist": false,
+      "position": 69,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841374666866",
+      "name": "pussy bro 56",
+      "color": 5451096,
+      "hoist": false,
+      "position": 182,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841118814240",
+      "name": "pussy bro 54",
+      "color": 11247039,
+      "hoist": false,
+      "position": 199,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918388183183",
+      "name": "pussy bro 193",
+      "color": 564425,
+      "hoist": false,
+      "position": 6,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183846181470220",
+      "name": "pussy bro 178",
+      "color": 7169978,
+      "hoist": false,
+      "position": 151,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918245576905",
+      "name": "pussy bro 120",
+      "color": 1386918,
+      "hoist": false,
+      "position": 24,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184913778511924",
+      "name": "pussy bro 139",
+      "color": 13091494,
+      "hoist": false,
+      "position": 74,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841228132485",
+      "name": "pussy bro 36",
+      "color": 1038508,
+      "hoist": false,
+      "position": 188,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911803121757",
+      "name": "pussy bro 94",
+      "color": 13879149,
+      "hoist": false,
+      "position": 81,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911366914101",
+      "name": "pussy bro 81",
+      "color": 16329439,
+      "hoist": false,
+      "position": 92,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841177800755",
+      "name": "pussy bro 13",
+      "color": 8194987,
+      "hoist": false,
+      "position": 192,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849276735521",
+      "name": "pussy bro 179",
+      "color": 14280479,
+      "hoist": false,
+      "position": 118,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849256030282",
+      "name": "pussy bro 188",
+      "color": 8201830,
+      "hoist": false,
+      "position": 127,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184915078746223",
+      "name": "pussy bro 173",
+      "color": 10661928,
+      "hoist": false,
+      "position": 66,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911320907840",
+      "name": "pussy bro 34",
+      "color": 13745430,
+      "hoist": false,
+      "position": 94,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918216212551",
+      "name": "pussy bro 214",
+      "color": 1276782,
+      "hoist": false,
+      "position": 31,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918266417152",
+      "name": "pussy bro 233",
+      "color": 13004264,
+      "hoist": false,
+      "position": 15,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841395642429",
+      "name": "pussy bro 5",
+      "color": 963069,
+      "hoist": false,
+      "position": 175,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849331523585",
+      "name": "pussy bro 122",
+      "color": 2377476,
+      "hoist": false,
+      "position": 105,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911731949598",
+      "name": "pussy bro 26",
+      "color": 16262030,
+      "hoist": false,
+      "position": 84,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183136295391252",
+      "name": "新しいロール",
+      "color": 3447003,
+      "hoist": false,
+      "position": 205,
+      "permissions": "8",
+      "mentionable": false
+    },
+    {
+      "id": "1326184917960495105",
+      "name": "pussy bro 236",
+      "color": 9158881,
+      "hoist": false,
+      "position": 49,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911547404390",
+      "name": "pussy bro 96",
+      "color": 12201881,
+      "hoist": false,
+      "position": 90,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184917914226822",
+      "name": "pussy bro 164",
+      "color": 783477,
+      "hoist": false,
+      "position": 52,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911916236911",
+      "name": "pussy bro 6",
+      "color": 12985796,
+      "hoist": false,
+      "position": 79,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184916685164544",
+      "name": "pussy bro 207",
+      "color": 1504621,
+      "hoist": false,
+      "position": 62,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849281196042",
+      "name": "pussy bro 112",
+      "color": 303613,
+      "hoist": false,
+      "position": 112,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849633517638",
+      "name": "pussy bro 210",
+      "color": 2231086,
+      "hoist": false,
+      "position": 96,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849335459870",
+      "name": "pussy bro 219",
+      "color": 16561023,
+      "hoist": false,
+      "position": 104,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849390248116",
+      "name": "pussy bro 123",
+      "color": 12219444,
+      "hoist": false,
+      "position": 101,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918274937016",
+      "name": "pussy bro 150",
+      "color": 7520417,
+      "hoist": false,
+      "position": 11,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841395900416",
+      "name": "pussy bro 110",
+      "color": 7160710,
+      "hoist": false,
+      "position": 174,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326766019917778959",
+      "name": "AI君",
+      "color": 0,
+      "hoist": false,
+      "position": 1,
+      "permissions": "40671259392832",
+      "mentionable": false
+    },
+    {
+      "id": "1326183848954040362",
+      "name": "pussy bro 245",
+      "color": 9193703,
+      "hoist": false,
+      "position": 147,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918195372054",
+      "name": "pussy bro 152",
+      "color": 12126299,
+      "hoist": false,
+      "position": 33,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841345306655",
+      "name": "pussy bro 76",
+      "color": 1253160,
+      "hoist": false,
+      "position": 184,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849281064960",
+      "name": "pussy bro 202",
+      "color": 6632852,
+      "hoist": false,
+      "position": 113,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918602088542",
+      "name": "pussy bro 184",
+      "color": 14636907,
+      "hoist": false,
+      "position": 4,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849285255168",
+      "name": "pussy bro 152",
+      "color": 8597068,
+      "hoist": false,
+      "position": 111,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184914672029770",
+      "name": "pussy bro 172",
+      "color": 7681095,
+      "hoist": false,
+      "position": 67,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918325268550",
+      "name": "pussy bro 142",
+      "color": 2321745,
+      "hoist": false,
+      "position": 8,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918145040486",
+      "name": "pussy bro 213",
+      "color": 12085862,
+      "hoist": false,
+      "position": 39,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849109225474",
+      "name": "pussy bro 216",
+      "color": 7708952,
+      "hoist": false,
+      "position": 141,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918274801805",
+      "name": "pussy bro 165",
+      "color": 1585857,
+      "hoist": false,
+      "position": 12,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849260220507",
+      "name": "pussy bro 137",
+      "color": 14680690,
+      "hoist": false,
+      "position": 125,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184915238129664",
+      "name": "pussy bro 175",
+      "color": 4902037,
+      "hoist": false,
+      "position": 65,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849184592018",
+      "name": "pussy bro 148",
+      "color": 11417947,
+      "hoist": false,
+      "position": 137,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849042116733",
+      "name": "pussy bro 247",
+      "color": 572916,
+      "hoist": false,
+      "position": 142,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184913975902211",
+      "name": "pussy bro 149",
+      "color": 990805,
+      "hoist": false,
+      "position": 70,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183842062532649",
+      "name": "pussy bro 4",
+      "color": 14608697,
+      "hoist": false,
+      "position": 156,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841387253841",
+      "name": "pussy bro 14",
+      "color": 15656374,
+      "hoist": false,
+      "position": 179,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918178598943",
+      "name": "pussy bro 162",
+      "color": 15665052,
+      "hoist": false,
+      "position": 38,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184917813432454",
+      "name": "pussy bro 246",
+      "color": 5606980,
+      "hoist": false,
+      "position": 57,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184917901770785",
+      "name": "pussy bro 131",
+      "color": 3978359,
+      "hoist": false,
+      "position": 53,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841165217916",
+      "name": "pussy bro 107",
+      "color": 6806319,
+      "hoist": false,
+      "position": 194,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841433649233",
+      "name": "pussy bro 55",
+      "color": 13219648,
+      "hoist": false,
+      "position": 161,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918320943257",
+      "name": "pussy bro 235",
+      "color": 837518,
+      "hoist": false,
+      "position": 9,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918002171957",
+      "name": "pussy bro 155",
+      "color": 1362662,
+      "hoist": false,
+      "position": 47,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184916836290561",
+      "name": "pussy bro 218",
+      "color": 7908833,
+      "hoist": false,
+      "position": 61,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918258028615",
+      "name": "pussy bro 225",
+      "color": 1285897,
+      "hoist": false,
+      "position": 17,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918253961420",
+      "name": "pussy bro 177",
+      "color": 3180562,
+      "hoist": false,
+      "position": 19,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841185923116",
+      "name": "pussy bro 44",
+      "color": 3712578,
+      "hoist": false,
+      "position": 191,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184917947777227",
+      "name": "pussy bro 205",
+      "color": 13659763,
+      "hoist": false,
+      "position": 50,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849297973288",
+      "name": "pussy bro 138",
+      "color": 775607,
+      "hoist": false,
+      "position": 107,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841387384915",
+      "name": "pussy bro 106",
+      "color": 15504605,
+      "hoist": false,
+      "position": 178,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918228668478",
+      "name": "pussy bro 118",
+      "color": 8357335,
+      "hoist": false,
+      "position": 29,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918946021516",
+      "name": "pussy bro 189",
+      "color": 16463221,
+      "hoist": false,
+      "position": 3,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184912113504409",
+      "name": "pussy bro 8",
+      "color": 6346788,
+      "hoist": false,
+      "position": 77,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849264287784",
+      "name": "pussy bro 195",
+      "color": 4467302,
+      "hoist": false,
+      "position": 124,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918266679306",
+      "name": "pussy bro 171",
+      "color": 9431953,
+      "hoist": false,
+      "position": 14,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918237319179",
+      "name": "pussy bro 144",
+      "color": 5488132,
+      "hoist": false,
+      "position": 27,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "817674350688731166",
+      "name": "@everyone",
+      "color": 0,
+      "hoist": false,
+      "position": 0,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183845179162747",
+      "name": "pussy bro 159",
+      "color": 5457862,
+      "hoist": false,
+      "position": 152,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849515946077",
+      "name": "pussy bro 158",
+      "color": 16001199,
+      "hoist": false,
+      "position": 97,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911794606150",
+      "name": "pussy bro 108",
+      "color": 4174146,
+      "hoist": false,
+      "position": 82,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918245572719",
+      "name": "pussy bro 126",
+      "color": 16356769,
+      "hoist": false,
+      "position": 25,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918182793287",
+      "name": "pussy bro 128",
+      "color": 11528635,
+      "hoist": false,
+      "position": 36,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911677423750",
+      "name": "pussy bro 9",
+      "color": 972028,
+      "hoist": false,
+      "position": 87,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918253961330",
+      "name": "pussy bro 196",
+      "color": 14727184,
+      "hoist": false,
+      "position": 20,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841081196556",
+      "name": "pussy bro 23",
+      "color": 15823082,
+      "hoist": false,
+      "position": 200,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918010826852",
+      "name": "pussy bro 203",
+      "color": 12859627,
+      "hoist": false,
+      "position": 44,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849276870706",
+      "name": "pussy bro 139",
+      "color": 3942334,
+      "hoist": false,
+      "position": 116,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841366278167",
+      "name": "pussy bro 103",
+      "color": 14240191,
+      "hoist": false,
+      "position": 183,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918249639936",
+      "name": "pussy bro 226",
+      "color": 293271,
+      "hoist": false,
+      "position": 23,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918421733447",
+      "name": "pussy bro 156",
+      "color": 7927471,
+      "hoist": false,
+      "position": 5,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183840992989258",
+      "name": "pussy bro 27",
+      "color": 4840824,
+      "hoist": false,
+      "position": 203,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849251835996",
+      "name": "pussy bro 196",
+      "color": 7144719,
+      "hoist": false,
+      "position": 130,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841441775617",
+      "name": "pussy bro 29",
+      "color": 15495026,
+      "hoist": false,
+      "position": 160,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184919021392022",
+      "name": "pussy bro 127",
+      "color": 1488483,
+      "hoist": false,
+      "position": 2,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841408356372",
+      "name": "pussy bro 15",
+      "color": 12855295,
+      "hoist": false,
+      "position": 170,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184913925308446",
+      "name": "pussy bro 140",
+      "color": 10801413,
+      "hoist": false,
+      "position": 71,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849251835904",
+      "name": "pussy bro 147",
+      "color": 12138940,
+      "hoist": false,
+      "position": 131,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918069542934",
+      "name": "pussy bro 130",
+      "color": 10301643,
+      "hoist": false,
+      "position": 41,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841408225322",
+      "name": "pussy bro 63",
+      "color": 7518176,
+      "hoist": false,
+      "position": 171,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918308491406",
+      "name": "pussy bro 209",
+      "color": 1413717,
+      "hoist": false,
+      "position": 10,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184913778770100",
+      "name": "pussy bro 133",
+      "color": 8759576,
+      "hoist": false,
+      "position": 73,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911752925275",
+      "name": "pussy bro 15",
+      "color": 11500545,
+      "hoist": false,
+      "position": 83,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849276997722",
+      "name": "pussy bro 118",
+      "color": 16085224,
+      "hoist": false,
+      "position": 115,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841412677783",
+      "name": "pussy bro 35",
+      "color": 11028810,
+      "hoist": false,
+      "position": 168,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841152499814",
+      "name": "pussy bro 78",
+      "color": 13671702,
+      "hoist": false,
+      "position": 195,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841186054307",
+      "name": "pussy bro 20",
+      "color": 12042099,
+      "hoist": false,
+      "position": 190,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918254092378",
+      "name": "pussy bro 204",
+      "color": 3652351,
+      "hoist": false,
+      "position": 18,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184917742256159",
+      "name": "pussy bro 244",
+      "color": 4364006,
+      "hoist": false,
+      "position": 58,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184916529971201",
+      "name": "pussy bro 202",
+      "color": 2448304,
+      "hoist": false,
+      "position": 63,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841269809213",
+      "name": "pussy bro 25",
+      "color": 3440834,
+      "hoist": false,
+      "position": 186,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911668777021",
+      "name": "pussy bro 58",
+      "color": 5028143,
+      "hoist": false,
+      "position": 89,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849255899137",
+      "name": "pussy bro 168",
+      "color": 8273771,
+      "hoist": false,
+      "position": 129,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918216343675",
+      "name": "pussy bro 119",
+      "color": 279956,
+      "hoist": false,
+      "position": 30,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849335590914",
+      "name": "pussy bro 198",
+      "color": 12240536,
+      "hoist": false,
+      "position": 103,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184913296424980",
+      "name": "pussy bro 121",
+      "color": 12718796,
+      "hoist": false,
+      "position": 76,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918237315123",
+      "name": "pussy bro 178",
+      "color": 7456002,
+      "hoist": false,
+      "position": 28,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849234792562",
+      "name": "pussy bro 173",
+      "color": 14278898,
+      "hoist": false,
+      "position": 135,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911417380926",
+      "name": "pussy bro 111",
+      "color": 11365462,
+      "hoist": false,
+      "position": 91,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841315946679",
+      "name": "pussy bro 30",
+      "color": 8248468,
+      "hoist": false,
+      "position": 185,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841517404210",
+      "name": "pussy bro 70",
+      "color": 5725392,
+      "hoist": false,
+      "position": 157,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183844918984746",
+      "name": "pussy bro 151",
+      "color": 11783691,
+      "hoist": false,
+      "position": 154,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849390116894",
+      "name": "pussy bro 217",
+      "color": 10369533,
+      "hoist": false,
+      "position": 102,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849931046983",
+      "name": "pussy bro 197",
+      "color": 14978167,
+      "hoist": false,
+      "position": 95,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849251700809",
+      "name": "pussy bro 174",
+      "color": 1503892,
+      "hoist": false,
+      "position": 132,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184917603975189",
+      "name": "pussy bro 232",
+      "color": 12435789,
+      "hoist": false,
+      "position": 59,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184912101048461",
+      "name": "pussy bro 88",
+      "color": 15092904,
+      "hoist": false,
+      "position": 78,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918371274843",
+      "name": "pussy bro 157",
+      "color": 16250131,
+      "hoist": false,
+      "position": 7,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849008304276",
+      "name": "pussy bro 183",
+      "color": 8815888,
+      "hoist": false,
+      "position": 143,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841215549531",
+      "name": "pussy bro 95",
+      "color": 7013554,
+      "hoist": false,
+      "position": 189,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849293643897",
+      "name": "pussy bro 132",
+      "color": 724920,
+      "hoist": false,
+      "position": 108,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184917432008734",
+      "name": "pussy bro 227",
+      "color": 5356996,
+      "hoist": false,
+      "position": 60,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841433649152",
+      "name": "pussy bro 17",
+      "color": 15456335,
+      "hoist": false,
+      "position": 162,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841391448156",
+      "name": "pussy bro 99",
+      "color": 12132665,
+      "hoist": false,
+      "position": 176,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184917851181189",
+      "name": "pussy bro 169",
+      "color": 12227625,
+      "hoist": false,
+      "position": 56,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918274801674",
+      "name": "pussy bro 138",
+      "color": 8842232,
+      "hoist": false,
+      "position": 13,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918203764889",
+      "name": "pussy bro 161",
+      "color": 2934374,
+      "hoist": false,
+      "position": 32,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849255899228",
+      "name": "pussy bro 220",
+      "color": 12270256,
+      "hoist": false,
+      "position": 128,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184913325527084",
+      "name": "pussy bro 123",
+      "color": 9771606,
+      "hoist": false,
+      "position": 75,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849167949835",
+      "name": "pussy bro 244",
+      "color": 14297179,
+      "hoist": false,
+      "position": 139,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918258290780",
+      "name": "pussy bro 220",
+      "color": 16160352,
+      "hoist": false,
+      "position": 16,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849159561328",
+      "name": "pussy bro 129",
+      "color": 16560709,
+      "hoist": false,
+      "position": 140,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849432186881",
+      "name": "pussy bro 115",
+      "color": 16361422,
+      "hoist": false,
+      "position": 98,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918182793317",
+      "name": "pussy bro 124",
+      "color": 4665253,
+      "hoist": false,
+      "position": 35,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849008304274",
+      "name": "pussy bro 145",
+      "color": 14051062,
+      "hoist": false,
+      "position": 144,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841412681789",
+      "name": "pussy bro 60",
+      "color": 16148309,
+      "hoist": false,
+      "position": 167,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841148440608",
+      "name": "pussy bro 52",
+      "color": 6514662,
+      "hoist": false,
+      "position": 196,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183848962297868",
+      "name": "pussy bro 126",
+      "color": 13248785,
+      "hoist": false,
+      "position": 146,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849268613122",
+      "name": "pussy bro 142",
+      "color": 15506260,
+      "hoist": false,
+      "position": 121,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911710982164",
+      "name": "pussy bro 99",
+      "color": 3079114,
+      "hoist": false,
+      "position": 85,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911366787135",
+      "name": "pussy bro 57",
+      "color": 432340,
+      "hoist": false,
+      "position": 93,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849289318441",
+      "name": "pussy bro 117",
+      "color": 2199375,
+      "hoist": false,
+      "position": 109,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911710978129",
+      "name": "pussy bro 17",
+      "color": 13193504,
+      "hoist": false,
+      "position": 86,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841425133619",
+      "name": "pussy bro 41",
+      "color": 3803980,
+      "hoist": false,
+      "position": 163,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918182789203",
+      "name": "pussy bro 129",
+      "color": 16471693,
+      "hoist": false,
+      "position": 37,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184917985398900",
+      "name": "pussy bro 136",
+      "color": 13177798,
+      "hoist": false,
+      "position": 48,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849272541184",
+      "name": "pussy bro 192",
+      "color": 1304945,
+      "hoist": false,
+      "position": 120,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841261686868",
+      "name": "pussy bro 87",
+      "color": 8207586,
+      "hoist": false,
+      "position": 187,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849238986813",
+      "name": "pussy bro 135",
+      "color": 12450098,
+      "hoist": false,
+      "position": 134,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841450299525",
+      "name": "pussy bro 33",
+      "color": 11374963,
+      "hoist": false,
+      "position": 158,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918186852415",
+      "name": "pussy bro 247",
+      "color": 14478871,
+      "hoist": false,
+      "position": 34,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849281060995",
+      "name": "pussy bro 143",
+      "color": 10678387,
+      "hoist": false,
+      "position": 114,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918249902150",
+      "name": "pussy bro 176",
+      "color": 7772817,
+      "hoist": false,
+      "position": 21,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841416609835",
+      "name": "pussy bro 49",
+      "color": 3437792,
+      "hoist": false,
+      "position": 166,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841387384956",
+      "name": "pussy bro 11",
+      "color": 3634061,
+      "hoist": false,
+      "position": 177,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849285386240",
+      "name": "pussy bro 221",
+      "color": 3253608,
+      "hoist": false,
+      "position": 110,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184917863895233",
+      "name": "pussy bro 183",
+      "color": 4618532,
+      "hoist": false,
+      "position": 54,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841378865162",
+      "name": "pussy bro 3",
+      "color": 6148297,
+      "hoist": false,
+      "position": 180,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183847913586721",
+      "name": "pussy bro 211",
+      "color": 871248,
+      "hoist": false,
+      "position": 149,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911677161563",
+      "name": "pussy bro 14",
+      "color": 1502414,
+      "hoist": false,
+      "position": 88,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849394311259",
+      "name": "pussy bro 206",
+      "color": 6647130,
+      "hoist": false,
+      "position": 100,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841140052053",
+      "name": "pussy bro 16",
+      "color": 15555920,
+      "hoist": false,
+      "position": 198,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183848559640596",
+      "name": "pussy bro 230",
+      "color": 11433849,
+      "hoist": false,
+      "position": 148,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183846466687026",
+      "name": "pussy bro 185",
+      "color": 4744870,
+      "hoist": false,
+      "position": 150,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849268482120",
+      "name": "pussy bro 208",
+      "color": 15805058,
+      "hoist": false,
+      "position": 122,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184917863891047",
+      "name": "pussy bro 201",
+      "color": 1212654,
+      "hoist": false,
+      "position": 55,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841039388745",
+      "name": "pussy bro 85",
+      "color": 9116377,
+      "hoist": false,
+      "position": 202,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849310556243",
+      "name": "pussy bro 166",
+      "color": 14047964,
+      "hoist": false,
+      "position": 106,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184915263295539",
+      "name": "pussy bro 167",
+      "color": 7414247,
+      "hoist": false,
+      "position": 64,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849272545280",
+      "name": "pussy bro 155",
+      "color": 8260345,
+      "hoist": false,
+      "position": 119,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849214087270",
+      "name": "pussy bro 121",
+      "color": 15476861,
+      "hoist": false,
+      "position": 136,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841043579084",
+      "name": "pussy bro 40",
+      "color": 11207360,
+      "hoist": false,
+      "position": 201,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841399836763",
+      "name": "pussy bro 108",
+      "color": 6531703,
+      "hoist": false,
+      "position": 173,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849180528671",
+      "name": "pussy bro 111",
+      "color": 5030876,
+      "hoist": false,
+      "position": 138,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184917918548009",
+      "name": "pussy bro 237",
+      "color": 15263968,
+      "hoist": false,
+      "position": 51,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918241251408",
+      "name": "pussy bro 185",
+      "color": 8574625,
+      "hoist": false,
+      "position": 26,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183842234630268",
+      "name": "pussy bro 8",
+      "color": 6135116,
+      "hoist": false,
+      "position": 155,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841148440578",
+      "name": "pussy bro 43",
+      "color": 12755057,
+      "hoist": false,
+      "position": 197,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841173471323",
+      "name": "pussy bro 26",
+      "color": 4191302,
+      "hoist": false,
+      "position": 193,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841424998401",
+      "name": "pussy bro 64",
+      "color": 1336454,
+      "hoist": false,
+      "position": 165,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849406894141",
+      "name": "pussy bro 172",
+      "color": 12205081,
+      "hoist": false,
+      "position": 99,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841412419706",
+      "name": "pussy bro 101",
+      "color": 3764273,
+      "hoist": false,
+      "position": 169,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918006501377",
+      "name": "pussy bro 170",
+      "color": 9228134,
+      "hoist": false,
+      "position": 45,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184911815573614",
+      "name": "pussy bro 51",
+      "color": 4964926,
+      "hoist": false,
+      "position": 80,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183617977909282",
+      "name": "我奪奪還独島bot v2",
+      "color": 0,
+      "hoist": false,
+      "position": 204,
+      "permissions": "8",
+      "mentionable": false
+    },
+    {
+      "id": "1326183845145481226",
+      "name": "pussy bro 150",
+      "color": 14414,
+      "hoist": false,
+      "position": 153,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841425002598",
+      "name": "pussy bro 59",
+      "color": 4947629,
+      "hoist": false,
+      "position": 164,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183849260093450",
+      "name": "pussy bro 164",
+      "color": 1928570,
+      "hoist": false,
+      "position": 126,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184918052769985",
+      "name": "pussy bro 200",
+      "color": 14871947,
+      "hoist": false,
+      "position": 42,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326183841374670901",
+      "name": "pussy bro 39",
+      "color": 2878513,
+      "hoist": false,
+      "position": 181,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1326184914634407958",
+      "name": "pussy bro 159",
+      "color": 16584955,
+      "hoist": false,
+      "position": 68,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    }
+  ],
+  "channels": [
+    {
+      "id": "1326184756651626541",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754793545728",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326183667596529786",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756022607912",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754738892912",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754810195969",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326183667999051867",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756525793394",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756466946059",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184755745783911",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754869043310",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754755801139",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754709790813",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326183667122569279",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756643102785",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754420252747",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754575577172",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326183667608977469",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756794228818",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754382635042",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754860658761",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756093911120",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184755837796383",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754512400406",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326183667466240000",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756483981362",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756618199091",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756408352859",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756337180786",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754856333383",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754751733802",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326183667667566643",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326183667151798305",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756488044615",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756752154656",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756832112763",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326183667352997910",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754676240468",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756425265254",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754751737876",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184755917754368",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754734829588",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326183667487342672",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754630103053",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756450430977",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754751602810",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754948739135",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184755611303996",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754709794838",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754659332189",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754785161267",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754755928126",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754717917206",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184755863097376",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756639174736",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326183667420237864",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754390761643",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326183667420364841",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326183667227295827",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754927898706",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184761546248242",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184756647432312",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326183667311181827",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    },
+    {
+      "id": "1326184754739154944",
+      "type": 0,
+      "name": "おぜう攻撃",
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": null
+    }
+  ],
+  "emojis": [],
+  "members": [
+    {
+      "id": "1196769354436575323",
+      "nickname": null,
+      "roles": [
+        "1326183136295391252",
+        "1326766019917778959",
+        "817674350688731166"
+      ],
+      "joinedAt": 1736396069425
+    },
+    {
+      "id": "735854461636837389",
+      "nickname": null,
+      "roles": [
+        "817674350688731166"
+      ],
+      "joinedAt": 1615019156887
+    },
+    {
+      "id": "1275917302440656977",
+      "nickname": null,
+      "roles": [
+        "1326183617977909282",
+        "817674350688731166"
+      ],
+      "joinedAt": 1736257213996
+    },
+    {
+      "id": "1300329093698682900",
+      "nickname": null,
+      "roles": [
+        "1326183136295391252",
+        "817674350688731166"
+      ],
+      "joinedAt": 1736257062914
+    }
+  ]
+}

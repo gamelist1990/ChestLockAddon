@@ -1,0 +1,249 @@
+{
+  "timestamp": 1736472396982,
+  "name": "色々鯖",
+  "icon": "https://cdn.discordapp.com/icons/1069498529866842173/bce93d565373969d4dc503f1f0907283.webp",
+  "preferredLocale": "en-US",
+  "afkTimeout": 300,
+  "afkChannel": null,
+  "systemChannel": "1069498532068872197",
+  "systemChannelFlags": 0,
+  "rulesChannel": null,
+  "publicUpdatesChannel": null,
+  "verificationLevel": 0,
+  "defaultMessageNotifications": 0,
+  "explicitContentFilter": 0,
+  "roles": [
+    {
+      "id": "1069498529866842173",
+      "name": "@everyone",
+      "color": 0,
+      "hoist": false,
+      "position": 0,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1069498529866842174",
+      "name": "officers (example)",
+      "color": 3066993,
+      "hoist": true,
+      "position": 6,
+      "permissions": "9869268090463",
+      "mentionable": true
+    },
+    {
+      "id": "1069498904074276977",
+      "name": "WidgetBot",
+      "color": 0,
+      "hoist": false,
+      "position": 5,
+      "permissions": "537218112",
+      "mentionable": false
+    },
+    {
+      "id": "1092124626248802359",
+      "name": "お喋り君！",
+      "color": 0,
+      "hoist": false,
+      "position": 4,
+      "permissions": "8",
+      "mentionable": false
+    },
+    {
+      "id": "1092257778606821407",
+      "name": "お喋り君",
+      "color": 10181046,
+      "hoist": false,
+      "position": 3,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1189493388962177099",
+      "name": "Picsart",
+      "color": 0,
+      "hoist": false,
+      "position": 2,
+      "permissions": "313344",
+      "mentionable": false
+    },
+    {
+      "id": "1326417052638117991",
+      "name": "AI君",
+      "color": 0,
+      "hoist": false,
+      "position": 1,
+      "permissions": "40671259392832",
+      "mentionable": false
+    }
+  ],
+  "channels": [
+    {
+      "id": "1069498532068872192",
+      "type": 4,
+      "name": "インフォメーション",
+      "position": 0,
+      "children": []
+    },
+    {
+      "id": "1069498532068872193",
+      "type": 0,
+      "name": "会話欄",
+      "position": 0,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1069498532068872196"
+    },
+    {
+      "id": "1069498532068872196",
+      "type": 4,
+      "name": "テキストチャンネル",
+      "position": 1,
+      "children": [
+        "1069498532068872193",
+        "1069498532068872197"
+      ]
+    },
+    {
+      "id": "1069498532068872197",
+      "type": 0,
+      "name": "join",
+      "position": 1,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1069498532068872196"
+    },
+    {
+      "id": "1069498532068872200",
+      "type": 4,
+      "name": "ボイスチャンネル",
+      "position": 2,
+      "children": [
+        "1069498532068872201",
+        "1069498532337303602",
+        "1069498532337303603",
+        "1071645879401992263"
+      ]
+    },
+    {
+      "id": "1069498532068872201",
+      "type": 2,
+      "name": "ラウンジ",
+      "position": 0,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1069498532068872200",
+      "rtcRegion": null
+    },
+    {
+      "id": "1069498532337303602",
+      "type": 2,
+      "name": "ミーティングルーム 1",
+      "position": 1,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1069498532068872200",
+      "rtcRegion": null
+    },
+    {
+      "id": "1069498532337303603",
+      "type": 2,
+      "name": "ミーティングルーム 2",
+      "position": 2,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1069498532068872200",
+      "rtcRegion": null
+    },
+    {
+      "id": "1071645879401992263",
+      "type": 2,
+      "name": "nanaananaa",
+      "position": 3,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1069498532068872200",
+      "rtcRegion": null
+    }
+  ],
+  "emojis": [],
+  "members": [
+    {
+      "id": "1196769354436575323",
+      "nickname": null,
+      "roles": [
+        "1069498529866842174",
+        "1326417052638117991",
+        "1069498529866842173"
+      ],
+      "joinedAt": 1736312869083
+    },
+    {
+      "id": "735854461636837389",
+      "nickname": null,
+      "roles": [
+        "1069498529866842173"
+      ],
+      "joinedAt": 1675058720119
+    },
+    {
+      "id": "543225764036870167",
+      "nickname": null,
+      "roles": [
+        "1069498904074276977",
+        "1069498529866842173"
+      ],
+      "joinedAt": 1675058809124
+    },
+    {
+      "id": "810507097107202098",
+      "nickname": null,
+      "roles": [
+        "1069498529866842173"
+      ],
+      "joinedAt": 1678553314720
+    },
+    {
+      "id": "917742028601827368",
+      "nickname": null,
+      "roles": [
+        "1069498529866842173"
+      ],
+      "joinedAt": 1676614640705
+    },
+    {
+      "id": "1012419466031792188",
+      "nickname": null,
+      "roles": [
+        "1189493388962177099",
+        "1069498529866842173"
+      ],
+      "joinedAt": 1703667723699
+    },
+    {
+      "id": "1092103672709775450",
+      "nickname": null,
+      "roles": [
+        "1092124626248802359",
+        "1069498529866842173"
+      ],
+      "joinedAt": 1680453201698
+    },
+    {
+      "id": "1199889504027283500",
+      "nickname": null,
+      "roles": [
+        "1069498529866842173"
+      ],
+      "joinedAt": 1714193592713
+    },
+    {
+      "id": "1205756074087555092",
+      "nickname": null,
+      "roles": [
+        "1069498529866842173"
+      ],
+      "joinedAt": 1714192710717
+    }
+  ]
+}
