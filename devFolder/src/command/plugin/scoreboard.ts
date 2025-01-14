@@ -5,6 +5,7 @@ import { banPlayers } from "../../Modules/globalBan";
 import { config, formatTimestampJST } from "../../Modules/Util";
 import { handleRankCommand, RankSystem, registerRank } from "../../Modules/rankSystem";
 import { runCommand } from "../../Modules/Handler";
+import { MatchingOptions, MatchingSystem } from "../../Modules/matchSystem";
 
 
 const simpleReplacements: { [key: string]: string | (() => string) } = {
@@ -786,6 +787,12 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
             consoleOutput(`エラーが発生しました: ${error}`);
         }
     }
+
+
+    if (event.id === "ch:match_") {
+        pvpMatchingSystem.handleCommand(event);
+    }
+
 });
 
 
@@ -851,6 +858,7 @@ world.afterEvents.entityDie.subscribe((event: EntityDieAfterEvent) => {
         }
     }
     playerAttackMap.delete(deadEntity.id);
+    
 });
 
 
@@ -867,3 +875,26 @@ const defaultRank = new RankSystem
             10000, 10500, 11000, 11500, 12000, 12500, 13000, 13500, 14000, 14500,
             15000, 15500, 16000, 16500, 17000, 17500]);
 registerRank(defaultRank);
+
+
+// 使用例 (rankSystem は適切に初期化されているものとします)
+//  options: MatchingOptions
+const options: MatchingOptions = {
+    maxPlayersPerMatch: 16,
+    matchingInterval: 20,
+    rankSystem: defaultRank, // ここで rankSystem のインスタンスを渡す
+    rankRange: undefined,
+    allowCrossRankMatching: false,
+    minPlayersToStart: 8,
+    countdownDuration: 10,
+    rankMatchSettings: {
+        enabled: true, // ランクマッチを有効化
+        rankGroups: [
+            { name: 'Rookie-Bronze', startRank: 'Rookie', endRank: 'Bronze' },
+            { name: 'Bronze-Gold', startRank: 'Bronze', endRank: 'Gold' },
+            { name: 'Platinum-Diamond', startRank: 'Platinum', endRank: 'Diamond' },
+        ],
+    },
+};
+
+const pvpMatchingSystem = new MatchingSystem('PvP', options);

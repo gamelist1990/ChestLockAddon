@@ -155,7 +155,7 @@ client.on('messageCreate', async (message) => {
             console.error('チャンネル/カテゴリーの並び替え中にエラーが発生しました:', error);
             message.reply('チャンネル/カテゴリーの並び替え中にエラーが発生しました。');
         }
-    }
+    } 
 });
 
 async function createBackup(guild: Guild): Promise<BackupData> {
@@ -649,4 +649,4 @@ async function sortChannels(guild: Guild, backupData: BackupData): Promise<void>
         }
     }
 }
-client.login('');
+client.login('x');

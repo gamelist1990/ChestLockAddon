@@ -2,7 +2,7 @@
 
 
 function greet(name) {
-    console.log("Hello, " + namse); 
+    console.log("Hello, " + name); 
 }
 
 greet("world");

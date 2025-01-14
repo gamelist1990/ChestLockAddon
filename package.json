@@ -2,7 +2,6 @@
     "name": "chestlock",
     "version": "1.5.0",
     "productName": "chestLock",
-    
     "description": "The best chestlock",
     "type": "module",
     "scripts": {
@@ -18,6 +17,7 @@
         "@minecraft/server-admin": "^1.0.0-beta.1.21.51-stable",
         "@minecraft/server-ui": "^1.4.0-beta.1.21.50-stable",
         "adm-zip": "^0.5.16",
+        "axios": "^1.7.9",
         "bcrypt": "^5.1.1",
         "bun": "^1.1.38",
         "discord.js": "^14.16.3",
@@ -25,7 +25,9 @@
         "express": "^4.21.1",
         "fs": "^0.0.1-security",
         "gettext-parser": "^8.0.0",
+        "inquirer": "^12.3.0",
         "multer": "^1.4.5-lts.1",
+        "node-notifier": "^10.0.1",
         "node-os-utils": "^1.3.7",
         "node-record-lpcm16": "^1.0.1",
         "node-wav": "^0.0.2",

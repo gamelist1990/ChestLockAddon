@@ -38,5 +38,37 @@
     "bannedBy": "PEXkurann",
     "bannedAt": 1736148990348,
     "expiresAt": null
+  },
+  {
+    "uuid": "3c3f12b8-77c9-39e5-a727-a4c1ccc6e283",
+    "name": "ahahaman0113",
+    "reason": "下ネタ死ね",
+    "bannedBy": "PEXkurann",
+    "bannedAt": 1736513573879,
+    "expiresAt": 1736513633787
+  },
+  {
+    "uuid": "13c9b206-b712-3ff0-8e65-aafd04a48ffc",
+    "name": "SanePilot590429",
+    "reason": "静かにしようね1day Ban",
+    "bannedBy": "koukun_",
+    "bannedAt": 1736842665215,
+    "expiresAt": 1736929065131
+  },
+  {
+    "uuid": "72c8ff01-70e5-3113-87e6-4124dc2c95c3",
+    "name": "↑↑↑↑↑↑↑↑↑↑",
+    "reason": "透明文字(矢印でも見えないやつは禁止だよ) 1d",
+    "bannedBy": "koukun_",
+    "bannedAt": 1736843271224,
+    "expiresAt": 1736929671181
+  },
+  {
+    "uuid": "64f1ede9-24d6-3047-93e6-b6ecb6b45933",
+    "name": "おいしいにく",
+    "reason": "つまんない下ネタをスパムしたためBAN(一日) [せめて面白い文考えな)",
+    "bannedBy": "koukun_",
+    "bannedAt": 1736846677289,
+    "expiresAt": 1736933077228
   }
 ]
