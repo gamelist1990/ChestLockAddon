@@ -7,7 +7,7 @@ import {
     ItemUseBeforeEvent,
     PlayerPlaceBlockBeforeEvent,
     ItemLockMode,
-    system,
+    system
 } from '@minecraft/server';
 
 interface CustomItemOptions {
@@ -192,5 +192,4 @@ class CustomItemImpl implements CustomItem {
 }
 
 const CustomItem: new (options: CustomItemOptions) => CustomItem = CustomItemImpl;
-
 export { CustomItem };

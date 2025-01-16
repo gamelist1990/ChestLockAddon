@@ -33,7 +33,7 @@ type CommandExecutor = (player: Player, args: string[]) => void;
 export interface Command {
     name: string;
     description: string;
-    usage?: string; // 使用法の情報を追加
+    usage?: string;
     maxArgs?: number;
     minArgs?: number;
     config: CommandConfig;
@@ -456,6 +456,8 @@ export class WsServer {
                     setTimeout(async () => {
                         const playerJoin = await this.createPlayerObject(data.player);
                         const playerData = await this.loadPlayerData();
+                        let isNewPlayer = false;
+                        let isOnlineStatusChanged = false;
 
                         if (playerJoin) {
                             //console.log("Processing playerJoin for:", playerJoin.name);
@@ -467,19 +469,28 @@ export class WsServer {
                                 playerData[playerJoin.uuid] = {
                                     name: playerJoin.name,
                                     uuid: playerJoin.uuid,
-                                    join: timestamp, // 初回参加時刻を記録
-                                    left: '', // 退出時刻は空
+                                    join: timestamp, 
+                                    left: '',
                                     isOnline: true,
                                 };
                                 console.log("New player added to playerData:", playerJoin.name);
+                                isNewPlayer = true; 
                             } else {
                                 // 既存プレイヤーの場合、join は更新しない
-                                playerData[playerJoin.uuid].isOnline = true;
-                              //  console.log("Existing player updated in playerData:", playerJoin.name);
+                                if (!playerData[playerJoin.uuid].isOnline) {
+                                    playerData[playerJoin.uuid].isOnline = true;
+                                    console.log("Existing player updated in playerData:", playerJoin.name);
+                                    isOnlineStatusChanged = true; 
+                                } else {
+                                    console.log("Existing player already online:", playerJoin.name);
+                                }
                             }
 
                             await this.savePlayerData(playerData);
-                            this.broadcastToClients({ event: 'playerJoin', data: playerJoin });
+
+                            if (isNewPlayer || isOnlineStatusChanged) {
+                                this.broadcastToClients({ event: 'playerJoin', data: playerJoin });
+                            }
                         }
                     }, 2000)
                 } catch (error) {
@@ -519,7 +530,7 @@ export class WsServer {
                         }
                     }
 
-                   
+
                     setTimeout(async () => {
                         if (playerLeave.uuid && playerData[playerLeave.uuid]?.isOnline) {
                             await this.checkOnlineStatus(); // オンライン状態の確認

@@ -10,7 +10,7 @@ function main(player: Player) {
         .button(12, 'Join/参加', ['Click To Join Game'], 'minecraft:red_wool', 1)
         .button(14, 'Leave/待機', ['Click To Leave Game'], 'minecraft:green_wool', 1)
         .rollback(true);
-
+    chestUI.show(player);
     chestUI.then((response) => {
         if (!response.canceled) {
             player.playSound('random.orb');
@@ -43,7 +43,7 @@ function testPageFunction(player: Player) {
         .setPageButton("page2", 0, "page1", '前のページへ', ['天気変更'], 'minecraft:arrow', 1)
         .rollback(false)
 
-    pageChestUI.show()
+    pageChestUI.show(player)
 
     pageChestUI.then((response) => {
         if (response.canceled || !response.page) return;

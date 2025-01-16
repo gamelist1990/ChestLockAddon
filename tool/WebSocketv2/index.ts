@@ -168,7 +168,6 @@ const extractPlayerName = async (
 // --- UI Functions ---
 
 const displayMenu = async () => {
-    // *** 修正: ここで autoConnectOnStartup の値を最新の状態に更新 ***
     autoConnectOnStartup = process.env.AUTO_CONNECT_ON_STARTUP === 'true';
 
     const choices = [
@@ -250,6 +249,7 @@ const restartWss = async () => {
         log("red", `${COLOR_RED}エラー: WebSocket URLが設定されていません。${COLOR_RESET}`);
         return;
     }
+    await wss?.close()
     await connectToWss(webSocketUrl);
     console.log('メニューに戻るにはEnterキーを押してください...\n');
     await inquirer.prompt([
