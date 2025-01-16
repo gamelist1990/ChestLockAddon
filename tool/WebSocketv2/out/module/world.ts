@@ -1,16 +1,55 @@
 import { WsServer, Player } from '../backend';
 
+// ScoreboardObjective クラス
+export class ScoreboardObjective {
+    private world: World;
+    public id: string;
+    public displayName: string;
+
+    constructor(world: World, id: string, displayName: string) {
+        this.world = world;
+        this.id = id;
+        this.displayName = displayName;
+    }
+
+    // 修正後の getScore メソッド
+    async getScore(playerName: string): Promise<number | null> {
+        const res = await this.world.scoreboard.getScores(playerName);
+        return res[this.id] !== undefined ? res[this.id] : null;
+
+    }
+
+    async setScore(playerName: string, score: number): Promise<void> {
+        await this.world.runCommand(`scoreboard players set "${playerName}" "${this.id}" ${score}`);
+    }
+
+    async addScore(playerName: string, score: number): Promise<void> {
+        await this.world.runCommand(`scoreboard players add "${playerName}" "${this.id}" ${score}`);
+    }
+
+    async removeScore(playerName: string, score: number): Promise<void> {
+        await this.world.runCommand(`scoreboard players remove "${playerName}" "${this.id}" ${score}`);
+    }
+
+    async resetScore(playerName: string): Promise<void> {
+        await this.world.runCommand(`scoreboard players reset "${playerName}" "${this.id}"`);
+    }
+}
+
 export class World {
     public name: string;
     private eventListeners: { [event: string]: Function[] } = {};
     private wsServer: WsServer;
     public lastActivity: number;
     private playerCache: { [playerName: string]: Player | null } = {};
+    public scoreboard: ScoreboardManager;
+
 
     constructor(name: string, wsServer: WsServer) {
         this.name = name;
         this.wsServer = wsServer;
         this.lastActivity = Date.now();
+        this.scoreboard = new ScoreboardManager(this);
     }
 
     // 外部からのイベントリスナー登録を可能にする on メソッドを保持
@@ -101,5 +140,99 @@ export class World {
     public async isPlayer(playerName: string): Promise<boolean> {
         const player = await this.getEntityByName(playerName);
         return !!player; // player オブジェクトが存在すれば true, 存在しなければ false を返す
+    }
+}
+
+
+// ScoreboardManager クラス (World クラスの中に定義)
+class ScoreboardManager {
+    private world: World;
+    private objectivesCache: { [objectiveName: string]: ScoreboardObjective | null } = {};
+
+    constructor(world: World) {
+        this.world = world;
+    }
+
+    public async getObjective(objectiveId: string): Promise<ScoreboardObjective | null> {
+        // キャッシュにオブジェクトが存在するか確認
+        if (this.objectivesCache.hasOwnProperty(objectiveId)) {
+            return this.objectivesCache[objectiveId];
+        }
+
+        const objectives = await this.getObjectives();
+        const objective = objectives.find(objective => objective.id === objectiveId);
+        if (objective) {
+            this.objectivesCache[objectiveId] = objective
+            return objective;
+        }
+        this.objectivesCache[objectiveId] = null;
+        return null;
+    }
+
+    public async getObjectives(): Promise<ScoreboardObjective[]> {
+        // コマンド `scoreboard objectives list` を実行して、目的リストを取得します。
+        const res = await this.world.runCommand('scoreboard objectives list');
+
+        if (!res || res.statusCode !== 0 || !res.statusMessage) {
+            return []; // コマンド実行エラー、またはレスポンスがない場合は空の配列を返す
+        }
+
+
+        const objectives = res.statusMessage.split('\n').slice(1).map(entry => {
+            try {
+                const [id, displayName] = [...entry.matchAll(/- (.*):.*?'(.*?)'.*/g)][0].slice(1, 3);
+                return new ScoreboardObjective(this.world, id, displayName);
+            } catch (e) {
+                return null;
+            }
+
+        }).filter((v) => v) as ScoreboardObjective[];
+        return objectives;
+
+    }
+
+    public async addObjective(objectiveName: string, displayName: string, criteria: string = 'dummy'): Promise<ScoreboardObjective | null> {
+        const res = await this.world.runCommand(`scoreboard objectives add "${objectiveName}" ${criteria} "${displayName}"`)
+
+        if (!res || res.statusCode !== 0) {
+            return null; // コマンド実行エラー、またはレスポンスがない場合は null を返す
+        }
+
+        const newObjective = await this.getObjective(objectiveName);
+        return newObjective;
+    }
+
+    public async removeObjective(objectiveId: string): Promise<boolean> {
+        const objective = ScoreboardManager.resolveObjective(objectiveId);
+        const res = await this.world.runCommand(`scoreboard objectives remove ${objective}`)
+        if (!res || res.statusCode !== 0) {
+            return false; // コマンド実行エラー、またはレスポンスがない場合は null を返す
+        }
+        if (this.objectivesCache.hasOwnProperty(objectiveId)) {
+            this.objectivesCache[objectiveId] = null
+        }
+        return true;
+    }
+
+    // getScores メソッドを追加
+    public async getScores(player: string): Promise<{ [objective: string]: number | null }> {
+        const res = await this.world.runCommand(`scoreboard players list "${player}"`);
+        try {
+            return Object.fromEntries(
+                [...res.statusMessage.matchAll(/: (-*\d*) \((.*?)\)/g)]
+                    .map(data => [data[2], Number(data[1])])
+            );
+        } catch {
+            return {};
+        }
+    }
+
+    /**
+     * Returns an objective id.
+     * @param {string|ScoreboardObjective} objective Objective or its id to resolve.
+     * @returns {string} objectiveId The id of the objective.
+     */
+    static resolveObjective(objective: string | ScoreboardObjective): string {
+        return typeof objective === 'string' ? objective : objective.id;
     }
 }

@@ -10,6 +10,7 @@ import {
     EntityInventoryComponent,
     Dimension,
     PlayerCursorInventoryComponent,
+    PlayerInteractWithBlockBeforeEvent,
 } from '@minecraft/server';
 
 function locationToString(location: Vector3): string {
@@ -31,7 +32,7 @@ interface ChestForm {
     title(title: string): ChestForm;
     location(location: string): ChestForm;
     button(slot: number, name: string, lore: string[], item: string, amount: number, keepOnClose?: boolean, rollback?: boolean, targetPage?: string): ChestForm;
-    show(): ChestForm;
+    show(player: Player): ChestForm; // Modified to accept player
     rollback(enabled: boolean): ChestForm;
     then(callback: (response: ChestFormResponse) => void): ChestForm;
     transferChest(chestForm: ChestForm): void;
@@ -43,7 +44,6 @@ class ChestFormImpl implements ChestForm {
     //@ts-ignore
     private titleText: string = 'Chest UI';
     private locationString: string = '0 0 0';
-    private player: Player | undefined;
     private buttons: {
         slot: number;
         name: string;
@@ -59,7 +59,7 @@ class ChestFormImpl implements ChestForm {
     private intervalId: number | undefined;
     private processedSlots: Set<number> = new Set();
     private chestContainer: Container | undefined;
-    private activePlayer: Player | undefined;
+    private activePlayer: Player | undefined; // Track the currently active player
     private rollbackEnabled: boolean = false;
     private pages: { [key: string]: ChestForm } = {};
     private currentPage: string | undefined;
@@ -104,10 +104,19 @@ class ChestFormImpl implements ChestForm {
         return this;
     }
 
-    show(): ChestForm { // 戻り値の型を ChestForm にする
+    show(player: Player): ChestForm {
+        // Check if another player is already using the chest
+        if (this.activePlayer && this.activePlayer.isValid() && this.activePlayer !== player) {
+            player.sendMessage("§cThis chest is already in use by another player.");
+            return this;
+        }
+
+        this.activePlayer = player;
         this.currentPage = Object.keys(this.pages)[0];
-        this.placeItemsInChest();
-        return this; // this を返す
+        this.placeItemsInChest(player); // Pass the player to placeItemsInChest
+        this.detectItemSelection(player); // Pass the player to detectItemSelection
+        this.processedSlots.clear();
+        return this;
     }
 
     rollback(enabled: boolean): ChestForm {
@@ -129,7 +138,9 @@ class ChestFormImpl implements ChestForm {
         this.titleText = chestForm.titleText;
         this.currentPage = chestForm.currentPage;
 
-        this.placeItemsInChest();
+        if (this.activePlayer) {
+            this.placeItemsInChest(this.activePlayer);
+        }
     }
 
     page(pageName: string): ChestForm {
@@ -144,31 +155,27 @@ class ChestFormImpl implements ChestForm {
     }
 
     private initializeChestInteractionListener(): void {
-        world.afterEvents.playerInteractWithBlock.subscribe((event) => {
+        world.beforeEvents.playerInteractWithBlock.subscribe((event: PlayerInteractWithBlockBeforeEvent) => {
             const { block, player } = event;
 
             if (
                 locationToString(block.location) === this.locationString &&
                 block.typeId === 'minecraft:chest'
             ) {
+                // Check if another player is already using the chest
                 if (this.activePlayer && this.activePlayer.isValid() && this.activePlayer !== player) {
-                    player.sendMessage("§cこのチェストは他のプレイヤーが使用中です。");
+                    player.sendMessage("§cこのチェストUIを誰かが既に開いています");
+                    event.cancel = true; 
                     return;
                 }
-
-                this.player = player;
-                this.activePlayer = player;
-                this.show();
-                this.detectItemSelection();
-                this.processedSlots.clear();
+                this.show(player)
             }
         });
     }
 
-    private placeItemsInChest(): void {
-        if (!this.player) return;
+    private placeItemsInChest(player: Player): void {
         const loc = stringToLocation(this.locationString);
-        const dimension = this.player.dimension;
+        const dimension = player.dimension;
         const chestBlock = dimension.getBlock(loc);
         const chest = chestBlock?.getComponent('inventory') as BlockInventoryComponent;
         this.chestContainer = chest?.container;
@@ -196,19 +203,19 @@ class ChestFormImpl implements ChestForm {
         }
     }
 
-    private detectItemSelection(): void {
-        if (!this.player) return;
+    private detectItemSelection(player: Player): void {
+        this.clearInterval();
 
         this.intervalId = system.runInterval(() => {
-            if (!this.player || !this.player.isValid()) {
+            if (!this.activePlayer || !this.activePlayer.isValid()) {
                 this.clearInterval();
                 return;
             }
 
             const loc = stringToLocation(this.locationString);
-            const chestBlock = this.player.dimension.getBlock(loc);
+            const chestBlock = this.activePlayer.dimension.getBlock(loc);
 
-            if (!chestBlock || chestBlock.typeId !== 'minecraft:chest') {
+            if (!chestBlock || chestBlock.typeId !== 'minecraft:chest' || this.activePlayer !== player) {
                 this.clearInterval();
                 return;
             }
@@ -221,20 +228,20 @@ class ChestFormImpl implements ChestForm {
                 const chestItem = chestContainer.getItem(i);
 
                 if (!chestItem && this.buttons.some(button => button.slot === i && button.page === this.currentPage) && !this.processedSlots.has(i)) {
-                    this.handleItemSelection(i, chestContainer);
+                    this.handleItemSelection(i, chestContainer, player); // Pass player to handleItemSelection
                     this.processedSlots.add(i);
                     return;
                 }
             }
 
-            this.removeForbiddenItemsFromInventory();
+            this.removeForbiddenItemsFromInventory(player); // Pass player to removeForbiddenItemsFromInventory
         }, 8);
     }
 
-    private removeForbiddenItemsFromInventory(): void {
-        if (!this.player) return;
 
-        const inventoryComponent = this.player.getComponent('inventory') as EntityInventoryComponent;
+    private removeForbiddenItemsFromInventory(player: Player): void {
+
+        const inventoryComponent = player.getComponent('inventory') as EntityInventoryComponent;
         const container = inventoryComponent?.container;
         if (!container) return;
 
@@ -255,8 +262,7 @@ class ChestFormImpl implements ChestForm {
         });
     }
 
-    private handleItemSelection(slot: number, chestContainer: Container): void {
-        if (!this.player) return;
+    private handleItemSelection(slot: number, chestContainer: Container, player: Player): void {
         chestContainer.setItem(slot, undefined);
 
         const button = this.buttons.find(b => b.slot === slot && b.page === this.currentPage);
@@ -264,17 +270,17 @@ class ChestFormImpl implements ChestForm {
 
         if (button?.targetPage) {
             this.currentPage = button.targetPage;
-            this.placeItemsInChest();
+            this.placeItemsInChest(player); // Pass player to placeItemsInChest
         } else {
             this.triggerCallback(slot);
 
-            const cursorInventory = this.player.getComponent('cursor_inventory') as PlayerCursorInventoryComponent;
+            const cursorInventory = player.getComponent('cursor_inventory') as PlayerCursorInventoryComponent;
             if (cursorInventory) {
                 cursorInventory.clear();
             }
 
             if (shouldRollback) {
-                this.teleportPlayer(this.player, this.player.dimension);
+                this.teleportPlayer(player, player.dimension); // Use the correct player here
             }
         }
     }
