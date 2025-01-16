@@ -5,7 +5,7 @@ import { banPlayers } from "../../Modules/globalBan";
 import { config, formatTimestampJST } from "../../Modules/Util";
 import { handleRankCommand, RankSystem, registerRank } from "../../Modules/rankSystem";
 import { runCommand } from "../../Modules/Handler";
-import { MatchingOptions, MatchingSystem } from "../../Modules/matchSystem";
+//import { MatchingOptions, MatchingSystem } from "../../Modules/matchSystem";
 
 
 const simpleReplacements: { [key: string]: string | (() => string) } = {
@@ -789,9 +789,9 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
     }
 
 
-    if (event.id === "ch:match_") {
-        pvpMatchingSystem.handleCommand(event);
-    }
+   //if (event.id === "ch:match_") {
+   //    pvpMatchingSystem.handleCommand(event);
+   //}
 
 });
 
@@ -877,24 +877,22 @@ const defaultRank = new RankSystem
 registerRank(defaultRank);
 
 
-// 使用例 (rankSystem は適切に初期化されているものとします)
-//  options: MatchingOptions
-const options: MatchingOptions = {
-    maxPlayersPerMatch: 16,
-    matchingInterval: 20,
-    rankSystem: defaultRank, // ここで rankSystem のインスタンスを渡す
-    rankRange: undefined,
-    allowCrossRankMatching: false,
-    minPlayersToStart: 8,
-    countdownDuration: 10,
-    rankMatchSettings: {
-        enabled: true, // ランクマッチを有効化
-        rankGroups: [
-            { name: 'Rookie-Bronze', startRank: 'Rookie', endRank: 'Bronze' },
-            { name: 'Bronze-Gold', startRank: 'Bronze', endRank: 'Gold' },
-            { name: 'Platinum-Diamond', startRank: 'Platinum', endRank: 'Diamond' },
-        ],
-    },
-};
-
-const pvpMatchingSystem = new MatchingSystem('PvP', options);
+//const options: MatchingOptions = {
+//    maxPlayersPerMatch: 16,
+//    matchingInterval: 20,
+//    rankSystem: defaultRank, 
+//    rankRange: undefined,
+//    allowCrossRankMatching: false,
+//    minPlayersToStart: 8,
+//    countdownDuration: 10,
+//    rankMatchSettings: {
+//        enabled: true, 
+//        rankGroups: [
+//            { name: 'Rookie-Bronze', startRank: 'Rookie', endRank: 'Bronze' },
+//            { name: 'Bronze-Gold', startRank: 'Bronze', endRank: 'Gold' },
+//            { name: 'Platinum-Diamond', startRank: 'Platinum', endRank: 'Diamond' },
+//        ],
+//    },
+//};
+//
+//const pvpMatchingSystem = new MatchingSystem('PvP', options);
