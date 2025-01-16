@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server Manager</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .column {
+            flex: 1;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #3e8e41;
+        }
+
+        #websocketStatus {
+            color: red;
+        }
+
+        #websocketUrlInput {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Minecraft Server Manager</h1>
+
+    <div class="container">
+        <div class="column">
+            <h2>WebSocket Server</h2>
+            <p>Status: <span id="websocketStatus">Offline</span></p>
+            <p id="websocketUrlDisplay"></p>
+            <input type="text" id="websocketUrlInput" placeholder="WebSocket URL (e.g., ws://example.com)">
+            <button id="setWebsocketUrlButton">Set WebSocket URL</button>
+            <button id="reconnectButton">Reconnect</button>
+            <p>Auto-connect on startup: <span id="autoConnectStatus"></span></p>
+            <button id="toggleAutoConnectButton">Toggle Auto-connect</button>
+        </div>
+        <div class="column">
+            <h2>Server Status</h2>
+            <p>Uptime: <span id="serverUptime"></span></p>
+            <p>Player Count: <span id="serverPlayerCount"></span></p>
+            <p>CPU Usage: <span id="serverCpuUsage"></span></p>
+            <p>Memory Usage: <span id="serverMemoryUsage"></span></p>
+            <p>Used Memory: <span id="serverUsedMemory"></span></p>
+            <p>Load Status: <span id="serverLoadStatus"></span></p>
+            <p>WebSocket Ping: <span id="serverWsPing"></span></p>
+            <p>World Loaded: <span id="serverWorldLoaded"></span></p>
+        </div>
+        <div class="column">
+            <h2>Notifications</h2>
+            <ul id="notificationsList"></ul>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const websocketStatus = document.getElementById('websocketStatus');
+        const websocketUrlDisplay = document.getElementById('websocketUrlDisplay');
+        const websocketUrlInput = document.getElementById('websocketUrlInput');
+        const setWebsocketUrlButton = document.getElementById('setWebsocketUrlButton');
+        const reconnectButton = document.getElementById('reconnectButton');
+        const autoConnectStatus = document.getElementById('autoConnectStatus');
+        const toggleAutoConnectButton = document.getElementById('toggleAutoConnectButton');
+        const serverUptime = document.getElementById('serverUptime');
+        const serverPlayerCount = document.getElementById('serverPlayerCount');
+        const serverCpuUsage = document.getElementById('serverCpuUsage');
+        const serverMemoryUsage = document.getElementById('serverMemoryUsage');
+        const serverUsedMemory = document.getElementById('serverUsedMemory');
+        const serverLoadStatus = document.getElementById('serverLoadStatus');
+        const serverWsPing = document.getElementById('serverWsPing');
+        const serverWorldLoaded = document.getElementById('serverWorldLoaded');
+        const notificationsList = document.getElementById('notificationsList');
+
+        socket.on('initialNotifications', (initialNotifications) => {
+            initialNotifications.forEach(notification => {
+                const li = document.createElement('li');
+                li.textContent = notification;
+                notificationsList.appendChild(li);
+            });
+        });
+
+        socket.on('initialWebSocketStatus', (status) => {
+            websocketStatus.textContent = status ? 'Online' : 'Offline';
+            websocketStatus.style.color = status ? 'green' : 'red';
+        });
+
+        socket.on('initialAutoConnectStatus', (status) => {
+            autoConnectStatus.textContent = status ? 'Enabled' : 'Disabled';
+        });
+
+        socket.on('initialWebSocketUrl', (url) => {
+            if (url) {
+                websocketUrlDisplay.textContent = `Current WebSocket URL: ${url}`;
+                websocketUrlInput.value = url;
+            }
+        });
+
+        socket.on('notification', (message) => {
+            const li = document.createElement('li');
+            li.textContent = message;
+            notificationsList.appendChild(li);
+        });
+
+        socket.on('webSocketStatus', (status) => {
+            websocketStatus.textContent = status ? 'Online' : 'Offline';
+            websocketStatus.style.color = status ? 'green' : 'red';
+        });
+
+        socket.on('webSocketUrlUpdated', (url) => {
+            websocketUrlDisplay.textContent = `Current WebSocket URL: ${url}`;
+        });
+
+        socket.on('autoConnectStatus', (status) => {
+            autoConnectStatus.textContent = status ? 'Enabled' : 'Disabled';
+        });
+
+        socket.on('serverStatus', (statusData) => {
+            serverUptime.textContent = statusData.uptime;
+            serverPlayerCount.textContent = statusData.playerCount;
+            serverCpuUsage.textContent = statusData.cpuUsage + '%';
+            serverMemoryUsage.textContent = statusData.memoryUsage + '%';
+            serverUsedMemory.textContent = statusData.usedMemoryMB + ' MB';
+            serverLoadStatus.textContent = statusData.loadStatus;
+            serverWsPing.textContent = statusData.wsPing + ' ms';
+            serverWorldLoaded.textContent = statusData.isWorldLoaded ? 'Yes' : 'No';
+        });
+
+        setWebsocketUrlButton.addEventListener('click', () => {
+            const url = websocketUrlInput.value;
+            socket.emit('setWebSocketUrl', url);
+        });
+
+        reconnectButton.addEventListener('click', () => {
+            socket.emit('reconnect');
+        });
+
+        toggleAutoConnectButton.addEventListener('click', () => {
+            socket.emit('toggleAutoConnect');
+        });
+    </script>
+</body>
+
+</html>
