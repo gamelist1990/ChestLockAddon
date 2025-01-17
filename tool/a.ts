@@ -649,4 +649,4 @@ async function sortChannels(guild: Guild, backupData: BackupData): Promise<void>
         }
     }
 }
-client.login('x');
+client.login('');

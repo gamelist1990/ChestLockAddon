@@ -32,8 +32,9 @@ type ServerStatus = {
 // --- Global Variables ---
 let isWorldLoaded = false;
 let wss: WebSocket | null = null;
+// TimerからTimeoutに変更 (型定義)
 let serverStatusInterval: NodeJS.Timeout | null = null;
-let reconnectionInterval: NodeJS.Timeout | null = null;
+let reconnectionInterval: NodeJS.Timeout | null;
 let serverStartTime = Date.now();
 let envLoaded = false;
 let autoConnectOnStartup = false;

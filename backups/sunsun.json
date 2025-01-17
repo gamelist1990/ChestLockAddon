@@ -1,0 +1,793 @@
+{
+  "timestamp": 1737021468622,
+  "name": "Sunsun sever",
+  "icon": "https://cdn.discordapp.com/icons/1304404938138320926/c69633afdb1e43439534c4dcdc301e77.webp",
+  "preferredLocale": "en-US",
+  "afkTimeout": 300,
+  "afkChannel": null,
+  "systemChannel": "1304404938968928267",
+  "systemChannelFlags": 0,
+  "rulesChannel": null,
+  "publicUpdatesChannel": null,
+  "verificationLevel": 0,
+  "defaultMessageNotifications": 0,
+  "explicitContentFilter": 0,
+  "roles": [
+    {
+      "id": "1304404938138320926",
+      "name": "@everyone",
+      "color": 0,
+      "hoist": false,
+      "position": 0,
+      "permissions": "2248473465835073",
+      "mentionable": false
+    },
+    {
+      "id": "1327286399610654732",
+      "name": "スタッフ",
+      "color": 15277667,
+      "hoist": false,
+      "position": 17,
+      "permissions": "8",
+      "mentionable": false
+    },
+    {
+      "id": "1327286991405973537",
+      "name": "JaylyBot",
+      "color": 0,
+      "hoist": false,
+      "position": 15,
+      "permissions": "277025516544",
+      "mentionable": false
+    },
+    {
+      "id": "1327286993973018726",
+      "name": "sunsun",
+      "color": 1752220,
+      "hoist": false,
+      "position": 14,
+      "permissions": "8",
+      "mentionable": false
+    },
+    {
+      "id": "1327287068442886226",
+      "name": "Bot君達",
+      "color": 3447003,
+      "hoist": true,
+      "position": 13,
+      "permissions": "8",
+      "mentionable": false
+    },
+    {
+      "id": "1327287227553943562",
+      "name": "オーナー",
+      "color": 15844367,
+      "hoist": true,
+      "position": 12,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1327287410635051049",
+      "name": "管理者組",
+      "color": 3447003,
+      "hoist": true,
+      "position": 11,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1327287903289610291",
+      "name": "サポーター",
+      "color": 10181046,
+      "hoist": false,
+      "position": 10,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1327289554616455212",
+      "name": "carl-bot",
+      "color": 0,
+      "hoist": false,
+      "position": 9,
+      "permissions": "2088234230",
+      "mentionable": false
+    },
+    {
+      "id": "1327291921650946131",
+      "name": "Ticket Tool",
+      "color": 0,
+      "hoist": false,
+      "position": 8,
+      "permissions": "2416045072",
+      "mentionable": false
+    },
+    {
+      "id": "1327309665519931445",
+      "name": "えんだああああああああああああああああああ",
+      "color": 15277667,
+      "hoist": false,
+      "position": 7,
+      "permissions": "8",
+      "mentionable": false
+    },
+    {
+      "id": "1327309865038774282",
+      "name": "炎上勢",
+      "color": 10038562,
+      "hoist": false,
+      "position": 16,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1327310596957536308",
+      "name": "AI君",
+      "color": 0,
+      "hoist": false,
+      "position": 6,
+      "permissions": "40671259392832",
+      "mentionable": false
+    },
+    {
+      "id": "1327589472665210974",
+      "name": "Jockie Music (1)",
+      "color": 0,
+      "hoist": false,
+      "position": 5,
+      "permissions": "8",
+      "mentionable": false
+    },
+    {
+      "id": "1327591147618566185",
+      "name": "新しいロール",
+      "color": 0,
+      "hoist": false,
+      "position": 4,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1327591266657239040",
+      "name": "foooooooooooooooooooooooooooo",
+      "color": 0,
+      "hoist": false,
+      "position": 3,
+      "permissions": "1721826618638327",
+      "mentionable": false
+    },
+    {
+      "id": "1329373497331421235",
+      "name": "認証済 ╴メンバー",
+      "color": 0,
+      "hoist": false,
+      "position": 2,
+      "permissions": "0",
+      "mentionable": false
+    },
+    {
+      "id": "1329375427428614156",
+      "name": "web認証bot",
+      "color": 0,
+      "hoist": false,
+      "position": 1,
+      "permissions": "2416265280",
+      "mentionable": false
+    }
+  ],
+  "channels": [
+    {
+      "id": "1327289709382336595",
+      "type": 4,
+      "name": "＝＝＝┠管理者専用┨＝＝＝",
+      "position": 0,
+      "rawPosition": 0,
+      "children": [
+        {
+          "id": "1327289896108560425",
+          "type": 0,
+          "name": "🤖┠bot",
+          "position": 0,
+          "rawPosition": 1,
+          "nsfw": false,
+          "rateLimitPerUser": 0,
+          "parentId": "1327289709382336595"
+        }
+      ]
+    },
+    {
+      "id": "1329374803056005181",
+      "type": 4,
+      "name": "＝＝＝┠認証┨＝＝＝",
+      "position": 1,
+      "rawPosition": 1,
+      "children": [
+        {
+          "id": "1329374926989295657",
+          "type": 0,
+          "name": "✅┠認証",
+          "position": 0,
+          "rawPosition": 2,
+          "nsfw": false,
+          "rateLimitPerUser": 0,
+          "parentId": "1329374803056005181"
+        },
+        {
+          "id": "1329376022034124800",
+          "type": 0,
+          "name": "🔔┠お知らせ",
+          "position": 1,
+          "rawPosition": 3,
+          "nsfw": false,
+          "rateLimitPerUser": 0,
+          "parentId": "1329374803056005181"
+        }
+      ]
+    },
+    {
+      "id": "1327288805773938769",
+      "type": 4,
+      "name": "＝＝＝┠雑談部屋┨＝＝＝",
+      "position": 2,
+      "rawPosition": 2,
+      "children": [
+        {
+          "id": "1315126004368539648",
+          "type": 0,
+          "name": "💬┠雑談",
+          "position": 0,
+          "rawPosition": 4,
+          "nsfw": false,
+          "rateLimitPerUser": 0,
+          "parentId": "1327288805773938769"
+        },
+        {
+          "id": "1315127630210793523",
+          "type": 0,
+          "name": "☀┠アプデ情報",
+          "position": 1,
+          "rawPosition": 5,
+          "nsfw": false,
+          "rateLimitPerUser": 0,
+          "parentId": "1327288805773938769"
+        },
+        {
+          "id": "1327292502579085332",
+          "type": 0,
+          "name": "🎫┠チケット-サポート",
+          "position": 2,
+          "rawPosition": 6,
+          "nsfw": false,
+          "rateLimitPerUser": 0,
+          "parentId": "1327288805773938769"
+        },
+        {
+          "id": "1329379913953841203",
+          "type": 0,
+          "name": "🗣┠お話し合い",
+          "position": 3,
+          "rawPosition": 9,
+          "nsfw": false,
+          "rateLimitPerUser": 0,
+          "parentId": "1327288805773938769"
+        }
+      ]
+    },
+    {
+      "id": "1327288740430872576",
+      "type": 4,
+      "name": "＝＝＝┠ゲーム部屋┨＝＝＝",
+      "position": 3,
+      "rawPosition": 3,
+      "children": [
+        {
+          "id": "1327289024498630667",
+          "type": 0,
+          "name": "🎮┠ゲーム雑談",
+          "position": 0,
+          "rawPosition": 7,
+          "nsfw": false,
+          "rateLimitPerUser": 0,
+          "parentId": "1327288740430872576"
+        },
+        {
+          "id": "1304404938968928268",
+          "type": 0,
+          "name": "📎┠クリップ",
+          "position": 1,
+          "rawPosition": 8,
+          "nsfw": false,
+          "rateLimitPerUser": 0,
+          "parentId": "1327288740430872576"
+        }
+      ]
+    },
+    {
+      "id": "1304404938968928269",
+      "type": 4,
+      "name": "＝＝＝┠通話部屋┨＝＝＝",
+      "position": 4,
+      "rawPosition": 4,
+      "children": [
+        {
+          "id": "1304404938968928271",
+          "type": 2,
+          "name": "📢┠ボイチャ",
+          "position": 0,
+          "rawPosition": 0,
+          "bitrate": 64000,
+          "userLimit": 0,
+          "parentId": "1304404938968928269",
+          "rtcRegion": null
+        }
+      ]
+    },
+    {
+      "id": "1327292280922439681",
+      "type": 4,
+      "name": "サポート",
+      "position": 5,
+      "rawPosition": 5,
+      "children": []
+    },
+    {
+      "id": "1304404938968928267",
+      "type": 0,
+      "name": "join",
+      "position": 0,
+      "rawPosition": 0,
+      "nsfw": false,
+      "rateLimitPerUser": 21600,
+      "parentId": null
+    },
+    {
+      "id": "1304404938968928271",
+      "type": 2,
+      "name": "📢┠ボイチャ",
+      "position": 0,
+      "rawPosition": 0,
+      "bitrate": 64000,
+      "userLimit": 0,
+      "parentId": "1304404938968928269",
+      "rtcRegion": null
+    },
+    {
+      "id": "1315126004368539648",
+      "type": 0,
+      "name": "💬┠雑談",
+      "position": 0,
+      "rawPosition": 4,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1327288805773938769"
+    },
+    {
+      "id": "1327289024498630667",
+      "type": 0,
+      "name": "🎮┠ゲーム雑談",
+      "position": 0,
+      "rawPosition": 7,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1327288740430872576"
+    },
+    {
+      "id": "1327289896108560425",
+      "type": 0,
+      "name": "🤖┠bot",
+      "position": 0,
+      "rawPosition": 1,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1327289709382336595"
+    },
+    {
+      "id": "1329374926989295657",
+      "type": 0,
+      "name": "✅┠認証",
+      "position": 0,
+      "rawPosition": 2,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1329374803056005181"
+    },
+    {
+      "id": "1304404938968928268",
+      "type": 0,
+      "name": "📎┠クリップ",
+      "position": 1,
+      "rawPosition": 8,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1327288740430872576"
+    },
+    {
+      "id": "1315127630210793523",
+      "type": 0,
+      "name": "☀┠アプデ情報",
+      "position": 1,
+      "rawPosition": 5,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1327288805773938769"
+    },
+    {
+      "id": "1329376022034124800",
+      "type": 0,
+      "name": "🔔┠お知らせ",
+      "position": 1,
+      "rawPosition": 3,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1329374803056005181"
+    },
+    {
+      "id": "1327292502579085332",
+      "type": 0,
+      "name": "🎫┠チケット-サポート",
+      "position": 2,
+      "rawPosition": 6,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1327288805773938769"
+    },
+    {
+      "id": "1329379913953841203",
+      "type": 0,
+      "name": "🗣┠お話し合い",
+      "position": 3,
+      "rawPosition": 9,
+      "nsfw": false,
+      "rateLimitPerUser": 0,
+      "parentId": "1327288805773938769"
+    }
+  ],
+  "emojis": [
+    {
+      "id": "1329384516648701982",
+      "name": "1_",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1329384516648701982.webp"
+    },
+    {
+      "id": "1329384931415035956",
+      "name": "5_",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1329384931415035956.webp"
+    },
+    {
+      "id": "1329384938436431922",
+      "name": "4_",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1329384938436431922.webp"
+    },
+    {
+      "id": "1329384941523304539",
+      "name": "3_",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1329384941523304539.webp"
+    },
+    {
+      "id": "1329384943666593823",
+      "name": "2_",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1329384943666593823.webp"
+    },
+    {
+      "id": "1329385179336409120",
+      "name": "6_",
+      "animated": false,
+      "url": "https://cdn.discordapp.com/emojis/1329385179336409120.webp"
+    }
+  ],
+  "members": [
+    {
+      "id": "1196769354436575323",
+      "nickname": null,
+      "roles": [
+        "1327287068442886226",
+        "1327310596957536308",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1736525906594
+    },
+    {
+      "id": "735854461636837389",
+      "nickname": null,
+      "roles": [
+        "1327286399610654732",
+        "1327287410635051049",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1731065774712
+    },
+    {
+      "id": "1199889504027283500",
+      "nickname": "ヤジュストゥス・インムスウス",
+      "roles": [
+        "1327309665519931445",
+        "1327309865038774282",
+        "1329373497331421235",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1733300902935
+    },
+    {
+      "id": "901058288681099304",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1732889821715
+    },
+    {
+      "id": "235148962103951360",
+      "nickname": "かめぇえええええええええええええ",
+      "roles": [
+        "1327287068442886226",
+        "1327289554616455212",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1736520889756
+    },
+    {
+      "id": "557628352828014614",
+      "nickname": null,
+      "roles": [
+        "1327287068442886226",
+        "1327291921650946131",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1736521454079
+    },
+    {
+      "id": "1279137512685568013",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1732969701175
+    },
+    {
+      "id": "1233684235857035305",
+      "nickname": null,
+      "roles": [
+        "1327286993973018726",
+        "1327287227553943562",
+        "1327287410635051049",
+        "1327287903289610291",
+        "1327309665519931445",
+        "1329373497331421235",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1731064771937
+    },
+    {
+      "id": "1243517847729340559",
+      "nickname": null,
+      "roles": [
+        "1327309865038774282",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1735460205794
+    },
+    {
+      "id": "912994461380923424",
+      "nickname": null,
+      "roles": [
+        "1327287410635051049",
+        "1329375427428614156",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1737018200603
+    },
+    {
+      "id": "1195996282280493118",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1731064809994
+    },
+    {
+      "id": "957140924234870824",
+      "nickname": null,
+      "roles": [
+        "1327287068442886226",
+        "1327287410635051049",
+        "1327287903289610291",
+        "1327309665519931445",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1736525642900
+    },
+    {
+      "id": "1193161735293648897",
+      "nickname": null,
+      "roles": [
+        "1329373497331421235",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1735792985849
+    },
+    {
+      "id": "1325258278254542870",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1736315735763
+    },
+    {
+      "id": "412347257233604609",
+      "nickname": null,
+      "roles": [
+        "1327287068442886226",
+        "1327589472665210974",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1736592395738
+    },
+    {
+      "id": "1270883180051959880",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1731115414131
+    },
+    {
+      "id": "1323673169814622279",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1735727126415
+    },
+    {
+      "id": "1304720654733541377",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1731315393473
+    },
+    {
+      "id": "1069102051168096266",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1733393766101
+    },
+    {
+      "id": "1324197102343159861",
+      "nickname": null,
+      "roles": [
+        "1327309665519931445",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1735784632017
+    },
+    {
+      "id": "948686094986264716",
+      "nickname": null,
+      "roles": [
+        "1327286991405973537",
+        "1327287068442886226",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1736520278579
+    },
+    {
+      "id": "1218526981700845629",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1732958057654
+    },
+    {
+      "id": "1279557891120169014",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1735034345402
+    },
+    {
+      "id": "1117842055771738122",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1735837558840
+    },
+    {
+      "id": "1140188406022938644",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1732873146118
+    },
+    {
+      "id": "1227927073167773758",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1731811975801
+    },
+    {
+      "id": "1327242934470574120",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1736576959676
+    },
+    {
+      "id": "1216695704328605740",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1731065149024
+    },
+    {
+      "id": "1205756074087555092",
+      "nickname": null,
+      "roles": [
+        "1327287410635051049",
+        "1327287903289610291",
+        "1327309665519931445",
+        "1327591266657239040",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1731065281922
+    },
+    {
+      "id": "1144996109131976775",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1735383972700
+    },
+    {
+      "id": "1166666482743267429",
+      "nickname": null,
+      "roles": [
+        "1329373497331421235",
+        "1304404938138320926"
+      ],
+      "joinedAt": 1733479908474
+    },
+    {
+      "id": "1178491509801230406",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1736150655548
+    },
+    {
+      "id": "1095553584088764467",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1735543807827
+    },
+    {
+      "id": "1286864602067632179",
+      "nickname": null,
+      "roles": [
+        "1304404938138320926"
+      ],
+      "joinedAt": 1736753161397
+    }
+  ]
+}
