@@ -6,3 +6,4 @@ import './command/ban';
 import './command/ping';
 import './command/clear';
 import './command/test';
+import './command/time';

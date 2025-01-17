@@ -270,27 +270,48 @@ export class WsServer {
 
         return new Promise((resolve) => {
             const commandId = Math.random().toString(36).substring(2, 15);
+
+            // リスナー関数内で `resolve` を確実に一度だけ呼び出すための変数
+            let resolved = false;
             const listener = (data: any) => {
+                if (resolved) {
+                    return;
+                }
+
                 try {
                     const message = JSON.parse(data);
                     if (message.event === 'commandResult' && message.data.commandId === commandId) {
-                        // null チェックを追加
+                        resolved = true; // フラグを立てる
+
                         if (this.minecraftClient) {
                             this.minecraftClient.off('message', listener);
                         }
+
                         resolve(message.data.result);
+
                     }
+
                 } catch (error) {
                     console.error('Error processing command result:', error);
-                    resolve(null);
+
+                    resolved = true;
+                    if (this.minecraftClient) {
+                        this.minecraftClient.off('message', listener);
+                    }
+                    resolve(null)
                 }
             };
 
-            // null チェックを追加
             if (this.minecraftClient) {
                 this.minecraftClient.on('message', listener);
+            } else {
+                resolve(null);
+                return;
             }
+
             this.sendToMinecraft({ command, commandId });
+
+
         });
     }
 
