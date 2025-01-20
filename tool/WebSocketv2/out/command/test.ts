@@ -7,37 +7,30 @@ registerCommand({
     minArgs: 0,
     config: { enabled: true, adminOnly: false, requireTag: ['op'] },
     executor: async (player: Player) => {
-        player.sendMessage("Test Moduleです")
-        if (world) {
-            world.on("PlayerDied", async (event: any) => {
-                console.log(JSON.stringify(event));
-                const { cause, inRaid, killer, player } = event.event;
-                const players = await world.getName(player.name);
-                if (players) {
-                    // プレイヤーが死んだときにメッセージを送信する前にログを出力
-                    world.sendMessage(`PlayerDied Event - プレイヤー: ${players.name}, 死因: ${cause}, レイド中: ${inRaid}, キラータイプ: ${killer.type}`);
-                }
-            });
-            world.on("ItemUsed", async (event: any) => {
-                const eventCopy = JSON.parse(JSON.stringify(event));
-                const { count, item, useMethod } = eventCopy.event;
-               // console.log(JSON.stringify(eventCopy));
-                const player = await world.getName(eventCopy.event.player.name);
+        player.sendMessage("Test Moduleです");
 
-                if (player) {
-                    player.sendMessage(`プレイヤー: ${player.name}`);
-                    player.sendMessage(`アイテム: ${item.namespace}:${item.id}`);
-                    player.sendMessage(`使用個数: ${count}`);
-                    player.sendMessage(`使用方法: ${useMethod}`);
-                    if (item.id === "snowball" && useMethod === 4) {
-                        player.sendMessage(`${player.name} が雪玉を投げました！`);
-                    } else if (item.id === "fishing_rod") {
-                        player.sendMessage(`${player.name} が釣竿を使いました！`);
-                    }
-                }
-            });
+        // プレイヤーデータを取得
+        const playerData = await world.getPlayerData();
 
+        // プレイヤーデータを表示 (最大5人まで)
+        player.sendMessage("--- プレイヤーデータ (最大5人) ---");
+        let count = 0;
+        for (const uuid in playerData) {
+            if (count >= 5) break; // 5人を超えたらループを抜ける
 
+            const pData = playerData[uuid];
+            player.sendMessage(`  UUID: ${uuid}`);
+            player.sendMessage(`    名前: ${pData.name}`);
+            player.sendMessage(`    過去の名前: ${pData.oldNames.join(", ") || "なし"}`);
+            player.sendMessage(`    参加時刻: ${pData.join}`);
+            player.sendMessage(`    退出時刻: ${pData.left || "オンライン"}`);
+            player.sendMessage(`    オンライン: ${pData.isOnline ? "はい" : "いいえ"}`);
+
+            count++;
         }
+        if (Object.keys(playerData).length > 5) {
+            player.sendMessage(`  ... 他 ${Object.keys(playerData).length - 5} 人のプレイヤーデータは省略`);
+        }
+        player.sendMessage("-----------------------");
     },
 });

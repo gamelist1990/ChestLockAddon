@@ -1,4 +1,4 @@
-import { WsServer, Player } from '../backend';
+import { WsServer, Player, PlayerData } from '../backend';
 
 // ScoreboardObjective クラス
 export class ScoreboardObjective {
@@ -12,11 +12,10 @@ export class ScoreboardObjective {
         this.displayName = displayName;
     }
 
-    // 修正後の getScore メソッド
     async getScore(playerName: string): Promise<number | null> {
-        const res = await this.world.scoreboard.getScores(playerName);
-        return res[this.id] !== undefined ? res[this.id] : null;
-
+        const scores = await this.getScores();
+        const playerScore = scores.find(score => score.participant === playerName);
+        return playerScore ? playerScore.score : null;
     }
 
     async setScore(playerName: string, score: number): Promise<void> {
@@ -34,6 +33,29 @@ export class ScoreboardObjective {
     async resetScore(playerName: string): Promise<void> {
         await this.world.runCommand(`scoreboard players reset "${playerName}" "${this.id}"`);
     }
+
+    async getScores(): Promise<{ participant: string, score: number }[]> {
+        const res = await this.world.runCommand(`scoreboard players list`);
+        if (!res || res.statusCode !== 0) {
+            return [];
+        }
+
+        const scores: { participant: string, score: number }[] = [];
+        const lines = res.statusMessage.split('\n');
+        for (const line of lines) {
+            const match = line.match(/^(.*?)\s+のスコアは\s+(-?\d+)/);
+            if (match) {
+                const participant = match[1];
+                const score = parseInt(match[2]);
+                scores.push({ participant, score });
+            }
+        }
+        return scores;
+    }
+
+    async removeParticipant(playerName: string): Promise<void> {
+        await this.world.runCommand(`scoreboard players reset "${playerName}" "${this.id}"`);
+    }
 }
 
 export class World {
@@ -44,7 +66,6 @@ export class World {
     private playerCache: { [playerName: string]: Player | null } = {};
     public scoreboard: ScoreboardManager;
 
-
     constructor(name: string, wsServer: WsServer) {
         this.name = name;
         this.wsServer = wsServer;
@@ -52,7 +73,6 @@ export class World {
         this.scoreboard = new ScoreboardManager(this);
     }
 
-    // 外部からのイベントリスナー登録を可能にする on メソッドを保持
     public on(eventName: string, callback: Function): void {
         if (!this.eventListeners[eventName]) {
             this.eventListeners[eventName] = [];
@@ -60,13 +80,16 @@ export class World {
         this.eventListeners[eventName].push(callback);
     }
 
-    // 内部からイベントをトリガーするメソッドも保持
     public triggerEvent(eventName: string, ...args: any[]): void {
         this.lastActivity = Date.now();
         const listeners = this.eventListeners[eventName];
         if (listeners) {
             listeners.forEach((listener) => listener(...args));
         }
+    }
+
+    public async getPlayerData(): Promise<{ [key: string]: PlayerData }> {
+        return this.wsServer.loadPlayerData();
     }
 
     public sendMessage(message: string): void {
@@ -77,37 +100,27 @@ export class World {
         return this.wsServer.executeMinecraftCommand(command);
     }
 
-    // プレイヤーを名前で検索するメソッド
     public async getEntityByName(playerName: string): Promise<Player | null> {
-        // キャッシュにプレイヤーデータが存在するか確認
         if (this.playerCache.hasOwnProperty(playerName)) {
             return this.playerCache[playerName];
         }
 
-        // プレイヤーオブジェクトを生成 (createPlayerObject は WsServer のメソッド)
         const player = await this.wsServer.createPlayerObject(playerName);
 
-        // プレイヤーオブジェクトをキャッシュに保存
         this.playerCache[playerName] = player;
-
         return player;
     }
 
-    // ワールドにいる全てのプレイヤーを取得するメソッド
     public async getPlayers(): Promise<Player[]> {
         const queryResult = await this.wsServer.executeMinecraftCommand(`list`);
         if (queryResult === null || queryResult.statusCode !== 0 || !queryResult.statusMessage) {
-            return []; // エラーが発生した場合、または statusMessage がない場合は空の配列を返す
+            return [];
         }
 
-        // ログのパターンに応じて処理を分岐
         const players: Player[] = [];
 
         if (queryResult.statusMessage.includes("オンラインです:")) {
-            // "オンラインです:\n" 以降の文字列を取得
             const playerListString = queryResult.statusMessage.split("オンラインです:\n")[1];
-
-            // プレイヤー名をカンマとスペースで分割して配列にする
             const playerNames = playerListString.split(", ");
 
             for (const name of playerNames) {
@@ -121,14 +134,12 @@ export class World {
         return players;
     }
 
-    // 不完全な名前から完全な名前を取得するメソッド
     public async getName(partialName: string): Promise<Player | null> {
         const players = await this.getPlayers();
 
         for (let i = 0; i < players.length; i++) {
             const player = players[i];
 
-            // partialName の中に player.name が含まれているかチェック(大文字小文字を区別しない)
             if (partialName.toLowerCase().includes(player.name.toLowerCase())) {
                 return player;
             }
@@ -136,15 +147,75 @@ export class World {
         return null;
     }
 
-    // プレイヤーが存在するかどうかを確認するメソッド
     public async isPlayer(playerName: string): Promise<boolean> {
         const player = await this.getEntityByName(playerName);
-        return !!player; // player オブジェクトが存在すれば true, 存在しなければ false を返す
+        return !!player;
     }
+
+    public async getBlock(x: number, y: number, z: number): Promise<{ blockName: string, position: { x: number, y: number, z: number } } | null> {
+        // 1. gettopsolidblock で直下の固体ブロックを取得
+        const getTopSolidBlockRes = await this.runCommand(`gettopsolidblock ${x} ${y+1} ${z}`);
+        if (!getTopSolidBlockRes || getTopSolidBlockRes.statusCode !== 0) {
+            if (getTopSolidBlockRes) {
+                console.error(`Error getting top solid block at ${x} ${y} ${z}: ${getTopSolidBlockRes.statusMessage}`);
+            }
+            return null;
+        }
+
+        const topSolidBlockName = getTopSolidBlockRes.blockName;
+        const topSolidBlockPos = { x: getTopSolidBlockRes.position.x, y: getTopSolidBlockRes.position.y, z: getTopSolidBlockRes.position.z };
+
+        // 2. testforblock で、取得したブロックが指定座標に存在するか確認
+        const testForBlockRes = await this.runCommand(`testforblock ${x} ${y} ${z} ${topSolidBlockName}`);
+        if (testForBlockRes && testForBlockRes.statusCode === 0 && testForBlockRes.matches === true) {
+            return {
+                blockName: topSolidBlockName,
+                position: topSolidBlockPos
+            };
+        } else {
+            // エラーハンドリング: 必要に応じてログ出力やエラーメッセージの確認を行う
+            if (testForBlockRes && testForBlockRes.statusCode !== 0) {
+                console.error(`Error testing for block at ${x} ${y} ${z}: ${testForBlockRes.statusMessage}`);
+            }
+            return null;
+        }
+    }
+
+
+    public async getBlocksInArea(x1: number, z1: number, x2?: number, z2?: number, y: number = 64): Promise<{ [key: string]: string }> {
+        const startY = y + 100;
+        const blocks: { [key: string]: string } = {};
+
+        if (x2 !== undefined && z2 !== undefined) {
+            // 範囲指定の場合
+            for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
+                for (let z = Math.min(z1, z2); z <= Math.max(z1, z2); z++) {
+                    const res = await this.runCommand(`gettopsolidblock ${x} ${startY} ${z}`);
+                    if (res && res.statusCode === 0) {
+                        blocks[`${x},${z}`] = res.blockName;
+                    } else {
+                        console.warn(`Failed to get top solid block at ${x} ${startY} ${z}`);
+                        blocks[`${x},${z}`] = "unknown";
+                    }
+                }
+            }
+        } else {
+            // 単一座標指定の場合 (x2, z2 が undefined)
+            const res = await this.runCommand(`gettopsolidblock ${x1} ${startY} ${z1}`);
+            if (res && res.statusCode === 0) {
+                blocks[`${x1},${z1}`] = res.blockName;
+            } else {
+                console.warn(`Failed to get top solid block at ${x1} ${startY} ${z1}`);
+                blocks[`${x1},${z1}`] = "unknown";
+            }
+        }
+
+        return blocks;
+    }
+    
 }
 
-
-// ScoreboardManager クラス (World クラスの中に定義)
+// ScoreboardManager クラス
 class ScoreboardManager {
     private world: World;
     private objectivesCache: { [objectiveName: string]: ScoreboardObjective | null } = {};
@@ -154,7 +225,6 @@ class ScoreboardManager {
     }
 
     public async getObjective(objectiveId: string): Promise<ScoreboardObjective | null> {
-        // キャッシュにオブジェクトが存在するか確認
         if (this.objectivesCache.hasOwnProperty(objectiveId)) {
             return this.objectivesCache[objectiveId];
         }
@@ -162,7 +232,7 @@ class ScoreboardManager {
         const objectives = await this.getObjectives();
         const objective = objectives.find(objective => objective.id === objectiveId);
         if (objective) {
-            this.objectivesCache[objectiveId] = objective
+            this.objectivesCache[objectiveId] = objective;
             return objective;
         }
         this.objectivesCache[objectiveId] = null;
@@ -170,68 +240,64 @@ class ScoreboardManager {
     }
 
     public async getObjectives(): Promise<ScoreboardObjective[]> {
-        // コマンド `scoreboard objectives list` を実行して、目的リストを取得します。
         const res = await this.world.runCommand('scoreboard objectives list');
 
         if (!res || res.statusCode !== 0 || !res.statusMessage) {
-            return []; // コマンド実行エラー、またはレスポンスがない場合は空の配列を返す
+            return [];
         }
-
 
         const objectives = res.statusMessage.split('\n').slice(1).map(entry => {
             try {
-                const [id, displayName] = [...entry.matchAll(/- (.*):.*?'(.*?)'.*/g)][0].slice(1, 3);
-                return new ScoreboardObjective(this.world, id, displayName);
+                const match = entry.match(/- (.*?): '(.*?)' と表示され、型は '(.*?)' です$/);
+                if (match) {
+                    const [, id, displayName, criteria] = match;
+                    return new ScoreboardObjective(this.world, id, displayName);
+                } else {
+                    return null;
+                }
             } catch (e) {
                 return null;
             }
-
         }).filter((v) => v) as ScoreboardObjective[];
-        return objectives;
 
+        return objectives;
     }
 
     public async addObjective(objectiveName: string, displayName: string, criteria: string = 'dummy'): Promise<ScoreboardObjective | null> {
-        const res = await this.world.runCommand(`scoreboard objectives add "${objectiveName}" ${criteria} "${displayName}"`)
+        const command = `scoreboard objectives add "${objectiveName}" ${criteria} "${displayName}"`;
 
-        if (!res || res.statusCode !== 0) {
-            return null; // コマンド実行エラー、またはレスポンスがない場合は null を返す
+        try {
+            const res = await this.world.runCommand(command);
+
+            if (!res || res.statusCode !== 0) {
+                if (res && res.statusMessage && res.statusMessage.includes('というオブジェクトは既に存在します')) {
+                    return await this.getObjective(objectiveName);
+                } else {
+                    return null;
+                }
+            }
+
+            const newObjective = new ScoreboardObjective(this.world, objectiveName, displayName);
+            this.objectivesCache[objectiveName] = newObjective;
+            return newObjective;
+
+        } catch (error) {
+            return null;
         }
-
-        const newObjective = await this.getObjective(objectiveName);
-        return newObjective;
     }
 
     public async removeObjective(objectiveId: string): Promise<boolean> {
         const objective = ScoreboardManager.resolveObjective(objectiveId);
-        const res = await this.world.runCommand(`scoreboard objectives remove ${objective}`)
+        const res = await this.world.runCommand(`scoreboard objectives remove ${objective}`);
         if (!res || res.statusCode !== 0) {
-            return false; // コマンド実行エラー、またはレスポンスがない場合は null を返す
+            return false;
         }
         if (this.objectivesCache.hasOwnProperty(objectiveId)) {
-            this.objectivesCache[objectiveId] = null
+            this.objectivesCache[objectiveId] = null;
         }
         return true;
     }
 
-    // getScores メソッドを追加
-    public async getScores(player: string): Promise<{ [objective: string]: number | null }> {
-        const res = await this.world.runCommand(`scoreboard players list "${player}"`);
-        try {
-            return Object.fromEntries(
-                [...res.statusMessage.matchAll(/: (-*\d*) \((.*?)\)/g)]
-                    .map(data => [data[2], Number(data[1])])
-            );
-        } catch {
-            return {};
-        }
-    }
-
-    /**
-     * Returns an objective id.
-     * @param {string|ScoreboardObjective} objective Objective or its id to resolve.
-     * @returns {string} objectiveId The id of the objective.
-     */
     static resolveObjective(objective: string | ScoreboardObjective): string {
         return typeof objective === 'string' ? objective : objective.id;
     }

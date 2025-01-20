@@ -11,3 +11,4 @@ devFolder/src/command/langs/list/*.ts
 User.json
 wsData.json
 tool/WebSocket/WebSocket.exe
+tool/WebSocketv2/out/command/.env
