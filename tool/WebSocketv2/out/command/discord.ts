@@ -196,12 +196,64 @@ async function sendMinecraftToDiscord(playerName: string, message: string) {
 }
 
 /**
+ * 指定された数値を使って、結果が必ず114514に近づくようなより高度な計算を行う関数
+ * @param num 入力された数値 (小数点を許可)
+ * @param showCalculation 計算過程を表示するかどうかのフラグ
+ * @returns 計算結果と計算過程を含むオブジェクト
+ */
+function GenNumber(num: number, showCalculation: boolean = false): { result: number, calculation?: string } {
+    // 1. 入力値の絶対値を取得
+    const absNum = Math.abs(num);
+
+    // 2. 対数スケールでの変換
+    const logValue = Math.log10(absNum + 1); // 0 にならないように +1
+
+    // 3. 無理数を掛け合わせて複雑な計算をシミュレート
+    const complexValue = logValue * Math.PI * Math.E;
+
+    // 4. 114514に近づけるための調整係数を計算
+    const adjustmentFactor = 114514 / (complexValue === 0 ? 1 : complexValue); // ゼロ除算を回避
+
+    // 5. 最終結果を計算（小数点以下2桁に丸める）
+    const result = parseFloat((complexValue * adjustmentFactor).toFixed(2));
+
+    if (showCalculation) {
+        const calculation = `計算過程:\n` +
+            `1. 入力値の絶対値: ${absNum}\n` +
+            `2. 対数スケールでの変換: log10(${absNum} + 1) = ${logValue}\n` +
+            `3. 無理数を掛け合わせて複雑な計算をシミュレート: ${logValue} * π * e ≈ ${complexValue}\n` +
+            `4. 114514に近づけるための調整係数を計算: 114514 / ${complexValue} ≈ ${adjustmentFactor}\n` +
+            `5. 最終結果を計算: ${complexValue} * ${adjustmentFactor} ≈ ${result} (小数点以下2桁に丸める)\n`;
+        return { result, calculation };
+    } else {
+        return { result };
+    }
+}
+
+/**
  * DiscordからMinecraftへのメッセージ送信処理
  */
 async function sendDiscordToMinecraft(message: Message) {
     if (world && discordClient.user && message.member) {
         if (message.author.id !== discordClient.user.id && message.guild?.id === discordGuildId) {
             let content = message.content;
+
+            if (message.mentions.has(discordClient.user!) && !message.author.bot) {
+                const content = message.content;
+                const match = content.match(/<@!?\d+>\s*([\d.]+)(?:\s+(true))?/i); // 数値とオプション(true)を抽出
+                if (match) {
+                    const num = parseFloat(match[1]);
+                    const showCalculation = match[2] === 'true';
+
+                    const { result, calculation } = GenNumber(num, showCalculation);
+                    let replyMessage = `結果: ${result}`;
+                    if (showCalculation && calculation) {
+                        replyMessage += `\n${calculation}`;
+                    }
+
+                    message.reply(replyMessage).catch(console.error);
+                }
+            }
 
             // メンションを処理
             if (message.mentions.members) {
@@ -295,13 +347,13 @@ if (world) {
     });
 }
 
-/**
- * 
- * if (type === "tell") {
-                    const receivers = await world.getEntityByName(receiver);
-                    if (receivers) {
-                        formattedMessage = `*-> ${receivers.name}* | **${message}**`;
-                        sendMinecraftToDiscord(sender, formattedMessage);
-                    }
-                }
- */
+
+
+
+
+
+
+
+
+
+

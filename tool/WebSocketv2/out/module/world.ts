@@ -63,7 +63,8 @@ export class World {
     private eventListeners: { [event: string]: Function[] } = {};
     private wsServer: WsServer;
     public lastActivity: number;
-    private playerCache: { [playerName: string]: Player | null } = {};
+    // プレイヤーキャッシュを削除
+    // private playerCache: { [playerName: string]: Player | null } = {};
     public scoreboard: ScoreboardManager;
 
     constructor(name: string, wsServer: WsServer) {
@@ -100,14 +101,9 @@ export class World {
         return this.wsServer.executeMinecraftCommand(command);
     }
 
+    // プレイヤー情報を常に最新にするため、キャッシュを使用しないように変更
     public async getEntityByName(playerName: string): Promise<Player | null> {
-        if (this.playerCache.hasOwnProperty(playerName)) {
-            return this.playerCache[playerName];
-        }
-
         const player = await this.wsServer.createPlayerObject(playerName);
-
-        this.playerCache[playerName] = player;
         return player;
     }
 
@@ -124,6 +120,7 @@ export class World {
             const playerNames = playerListString.split(", ");
 
             for (const name of playerNames) {
+                // getEntityByNameを毎回呼び出して最新の情報を取得
                 const player = await this.getEntityByName(name.trim());
                 if (player) {
                     players.push(player);
@@ -154,7 +151,7 @@ export class World {
 
     public async getBlock(x: number, y: number, z: number): Promise<{ blockName: string, position: { x: number, y: number, z: number } } | null> {
         // 1. gettopsolidblock で直下の固体ブロックを取得
-        const getTopSolidBlockRes = await this.runCommand(`gettopsolidblock ${x} ${y+1} ${z}`);
+        const getTopSolidBlockRes = await this.runCommand(`gettopsolidblock ${x} ${y + 1} ${z}`);
         if (!getTopSolidBlockRes || getTopSolidBlockRes.statusCode !== 0) {
             if (getTopSolidBlockRes) {
                 console.error(`Error getting top solid block at ${x} ${y} ${z}: ${getTopSolidBlockRes.statusMessage}`);
@@ -180,7 +177,6 @@ export class World {
             return null;
         }
     }
-
 
     public async getBlocksInArea(x1: number, z1: number, x2?: number, z2?: number, y: number = 64): Promise<{ [key: string]: string }> {
         const startY = y + 100;
@@ -212,7 +208,7 @@ export class World {
 
         return blocks;
     }
-    
+
 }
 
 // ScoreboardManager クラス

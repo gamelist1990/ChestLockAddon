@@ -144,7 +144,7 @@ export class WsServer {
 
     // Minecraft サーバーとの接続処理
     private async handleMinecraftConnection(ws: WebSocket) {
-        console.log('Minecraft server connected.');
+        // console.log('Minecraft server connected.');
 
         const load = await import('./import');
         //Load Command
@@ -273,7 +273,7 @@ export class WsServer {
     // Minecraft コマンドを実行する (最適化)
     public async executeMinecraftCommand(command: string): Promise<any> {
         if (!this.minecraftClient || this.minecraftClient.readyState !== WebSocket.OPEN) {
-            console.error('Minecraft server is not connected.');
+            // console.error('Minecraft server is not connected.');
             return null;
         }
 
@@ -453,11 +453,35 @@ export class WsServer {
         }
     }
 
+    private async handleWorldRemoveEvent() {
+        try {
+            const playerData = await this.loadPlayerData();
+
+            for (const uuid in playerData) {
+                if (playerData[uuid].isOnline) {
+                    playerData[uuid].isOnline = false;
+                    playerData[uuid].left = this.formatTimestamp();
+                    console.log(`Player ${playerData[uuid].name} marked as offline due to worldRemove event.`);
+                }
+            }
+
+            await this.savePlayerData(playerData);
+            console.log('All players marked as offline due to worldRemove event.');
+        } catch (error) {
+            console.error('Error handling worldRemove event:', error);
+        }
+    }
+
     private async handleMinecraftServerData(event: string, data: any) {
         switch (event) {
             case 'worldAdd':
                 this.world.triggerEvent('worldAdd', 'add');
                 this.getWorld().triggerEvent('worldAdd', 'add');
+                break;
+            case 'worldRemove':
+                await this.handleWorldRemoveEvent();
+                this.world.triggerEvent('worldRemove', 'remove');
+                this.getWorld().triggerEvent('worldRemove', 'remove');
                 break;
             case 'worldLeave':
                 this.world.triggerEvent('worldLeave', 'leave');
@@ -558,6 +582,8 @@ export class WsServer {
                                         event: 'playerJoin',
                                         data: { name: playerName, uuid: uuid },
                                     });
+
+                                    this.getWorld().triggerEvent('playerJoin', playerName, uuid);
                                 }
                             } else {
                                 console.error(
@@ -613,14 +639,12 @@ export class WsServer {
 
                                 await this.savePlayerData(playerData);
                                 this.broadcastToClients({ event: 'playerLeave', data: playerLeave });
+                                this.getWorld().triggerEvent('playerLeave', playerName);
                             } else {
                                 console.log(`Player ${playerName} not found or was already offline.`);
                             }
 
-                            // 必要に応じて、オンライン状態の再確認を実行
-                            // setTimeout(async () => {
-                            //   await this.checkOnlineStatus();
-                            // }, 2000);
+
                         } else {
                             console.log(`Player ${playerName} is still online after ${maxRetries} retries. Aborting playerLeave event.`);
                         }
@@ -683,7 +707,7 @@ export class WsServer {
     // Minecraft サーバーにデータを送信する (最適化)
     public sendToMinecraft(data: any) {
         if (!this.minecraftClient || this.minecraftClient.readyState !== WebSocket.OPEN) {
-            console.error('Minecraft server is not connected.');
+            //   console.error('Minecraft server is not connected.');
             return;
         }
         this.minecraftClient.send(JSON.stringify(data));

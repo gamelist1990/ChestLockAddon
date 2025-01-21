@@ -1,4 +1,4 @@
-import { Player, world } from '../../backend';
+import { world, Player } from '../../backend';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
@@ -6,7 +6,8 @@ import express from 'express';
 import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import { calculateUptime } from '../../module/Data';
-import fetch from 'node-fetch'; // node-fetchをインポート
+import fetch from 'node-fetch';
+import { banListCache, loadBanList, PlayerBAN, PlayerUNBAN } from '../ban';
 
 // .envファイルのパスを現在のディレクトリに設定
 const serverEnvPath = path.resolve(__dirname, 'server.env');
@@ -41,7 +42,7 @@ interface AuthInfo {
     password: string;
 }
 
-// 認証情報を格納する変数 (簡易的な実装のため、本来はデータベース等を使用するべきです)
+// 認証情報を格納する変数
 const authorizedUsers: AuthInfo[] = [
     { username: 'PEXkoukunn', password: '@gamelist1990' },
 ];
@@ -134,6 +135,94 @@ app.get('/status', async (req, res) => {
     }
 });
 
+// BAN処理のエンドポイント
+//@ts-ignore
+app.post('/ban', async (req, res) => {
+    // 認証情報の確認
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        console.warn(`未認証のリクエストが拒否されました: ${req.ip}`);
+        return res.status(401).json({ success: false, error: '認証情報がありません' });
+    }
+
+    const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+    const user = authorizedUsers.find(u => u.username === auth[0] && u.password === auth[1]);
+
+    if (!user) {
+        console.warn(`認証に失敗しました: ${req.ip}`);
+        return res.status(403).json({ success: false, error: '認証に失敗しました' });
+    }
+
+    const { playerName, reason, duration } = req.body;
+    const bannedBy = "Server"; // BAN実行者を "Server" に設定
+
+    if (!playerName || !reason) {
+        res.status(400).json({ success: false, error: 'プレイヤー名と理由が必要です' });
+        return;
+    }
+
+    try {
+        if (world) {
+            // プレイヤー名からプレイヤーオブジェクトを取得
+            const playerToBan = await world.getEntityByName(playerName);
+            if (playerToBan) {
+                await PlayerBAN(bannedBy, playerName, reason, `[${duration}]`);
+                broadcast('banList', banListCache);
+                res.json({ success: true });
+            } else {
+                res.status(404).json({ success: false, error: 'プレイヤーが見つかりません' });
+            }
+        }
+    } catch (error) {
+        console.error('BAN処理エラー:', error);
+        res.status(500).json({ success: false, error: 'BAN処理エラー' });
+    }
+});
+
+// Unban処理のエンドポイント
+//@ts-ignore
+app.post('/unban', async (req, res) => {
+    // 認証情報の確認
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        console.warn(`未認証のリクエストが拒否されました: ${req.ip}`);
+        return res.status(401).json({ success: false, error: '認証情報がありません' });
+    }
+
+    const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+    const user = authorizedUsers.find(u => u.username === auth[0] && u.password === auth[1]);
+
+    if (!user) {
+        console.warn(`認証に失敗しました: ${req.ip}`);
+        return res.status(403).json({ success: false, error: '認証に失敗しました' });
+    }
+
+    const { playerName } = req.body;
+    const unbannedBy = "Server"; // Unban実行者を "Server" に設定
+
+    if (!playerName) {
+        res.status(400).json({ success: false, error: 'プレイヤー名が必要です' });
+        return;
+    }
+
+    try {
+        if (world) {
+            // プレイヤー名からプレイヤーオブジェクトを取得
+            const playerToUnban = await world.getEntityByName(playerName);
+            if (playerToUnban) {
+                await PlayerUNBAN(unbannedBy, playerName);
+                broadcast('banList', banListCache);
+                res.json({ success: true });
+            } else {
+                res.status(404).json({ success: false, error: 'プレイヤーが見つかりません' });
+            }
+        }
+    } catch (error) {
+        console.error('Unban処理エラー:', error);
+        res.status(500).json({ success: false, error: 'Unban処理エラー' });
+    }
+});
+
 // WebSocketの接続処理
 wss.on('connection', (ws: WebSocket) => {
     console.log('新しいクライアントが接続しました');
@@ -163,8 +252,6 @@ wss.on('connection', (ws: WebSocket) => {
             }
         }
 
-        
-
         // コマンドメッセージの処理 (認証済みの場合のみ)
         if (isAuthenticated && data.type === 'command') {
             console.log(`コマンドが実行されました: ${data.command}`);
@@ -179,6 +266,17 @@ wss.on('connection', (ws: WebSocket) => {
                 broadcast('console', logEntry);
             } else {
                 console.warn("サーバーが起動していないため、コマンドを送信できませんでした。");
+            }
+        }
+        // BANリスト取得リクエストの処理
+        if (isAuthenticated && data.type === 'getBanList') {
+            sendDataToClient(ws, 'banList', banListCache);
+        }
+        // プレイヤーリスト取得リクエストの処理
+        if (isAuthenticated && data.type === 'getPlayerList') {
+            if (world) {
+                const players = await world.getPlayers();
+                sendDataToClient(ws, 'playerList', players.map(player => player.name));
             }
         }
     });
@@ -197,27 +295,23 @@ function sendDataToClient(client: WebSocket, type: string, data: any) {
 
 async function getOnlinePlayersInfo() {
     if (!world) return [];
-    const players = await world.getPlayers();
-    const onlinePlayersInfo = await Promise.all(
-        players.map(async (player) => {
-            try {
+    try {
+        const players = await world.getPlayers();
+        const onlinePlayersInfo = await Promise.all(
+            players.map(async (player) => {
                 return {
                     name: player.name,
                     uuid: player.uuid,
                     position: player.position,
                 };
-            } catch (error) {
-                console.error(`プレイヤー ${player.name} の位置情報の取得に失敗しました:`, error);
-                return {
-                    name: player.name,
-                    uuid: player.uuid,
-                    position: null,
-                };
-            }
-        })
-    );
+            })
+        );
 
-    return onlinePlayersInfo;
+        return onlinePlayersInfo;
+    } catch (error) {
+        console.error('プレイヤー情報の取得に失敗しました:', error);
+        return [];
+    }
 }
 
 // worldイベントの監視
@@ -225,21 +319,26 @@ if (world) {
     let serverStartTime = new Date();
     setInterval(async () => {
         broadcast('uptime', calculateUptime(serverStartTime));
-
         const onlinePlayers = await getOnlinePlayersInfo();
         broadcast('onlinePlayers', onlinePlayers);
+        const load = await loadBanList();
+        if (load) {
+            broadcast('banList', banListCache);
+        }
     }, 1000);
 
     // プレイヤーが参加したときの処理
     world.on('playerJoin', async () => {
         const players = await world.getPlayers();
         broadcast('playerCount', players.length);
+        broadcast('playerList', players.map(player => player.name));
     });
 
     // プレイヤーが退出したときの処理
     world.on('playerLeave', async () => {
         const players = await world.getPlayers();
         broadcast('playerCount', players.length);
+        broadcast('playerList', players.map(player => player.name));
     });
 
     // サーバーからのメッセージをコンソールログに追加し、クライアントに送信
