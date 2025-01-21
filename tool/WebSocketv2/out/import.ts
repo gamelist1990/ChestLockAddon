@@ -7,3 +7,5 @@ import './command/ping';
 import './command/clear';
 import './command/test';
 import './command/time';
+import './command/discord';
+import './command/server/index';

@@ -1,105 +1,97 @@
-import { registerCommand, Player, world } from '../backend';
+import { world } from '../backend';
 
-const TIME_OBJECTIVE_NAME = 'TimeData';
-const TIME_SCORE_NAMES = {
-    SECONDS: 'time_s',
-    MINUTES: 'time_m',
-    HOURS: 'time_h',
-    DAYS: 'time_d'
-};
+const TIME_OBJECTIVE_NAME = 'JapanTime';
+
+let timerInterval: NodeJS.Timeout | null = null;
+
+// 外部からアクセス可能な JapanTime 変数
+export let JapanTime: boolean = false;
 
 
-let timerStartTime: number | null = null;
-
+startJapanTime()
 
 async function updateTimeScoreboard() {
-    if (!world) return;
+    if (!world || !JapanTime) return; // ワールドがないか、JapanTimeが無効なら終了
 
-    if (timerStartTime === null) return;
-
-    let objective = await world?.scoreboard.getObjective(TIME_OBJECTIVE_NAME);
+    // ScoreboardObjective を取得または作成
+    let objective = await world.scoreboard.getObjective(TIME_OBJECTIVE_NAME);
     if (!objective) {
-        objective = await world?.scoreboard.addObjective(TIME_OBJECTIVE_NAME, 'TimeData');
+        objective = await world.scoreboard.addObjective(TIME_OBJECTIVE_NAME, 'Japan Time');
+        if (!objective) return; // 作成も取得も失敗したら終了
     }
 
-    if (!objective) return;
+    // 現在の日本時間を取得
+    const japanTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
 
-    const elapsedSeconds = Math.floor((Date.now() - timerStartTime) / 1000);
-    const days = Math.floor(elapsedSeconds / (60 * 60 * 24));
-    const hours = Math.floor(elapsedSeconds / (60 * 60)) % 24;
-    const minutes = Math.floor(elapsedSeconds / 60) % 60;
-    const seconds = elapsedSeconds % 60;
-
-
-
-    await objective.setScore(TIME_SCORE_NAMES.SECONDS, seconds);
-    await objective.setScore(TIME_SCORE_NAMES.MINUTES, minutes);
-    await objective.setScore(TIME_SCORE_NAMES.HOURS, hours);
-    await objective.setScore(TIME_SCORE_NAMES.DAYS, days);
-
-
+    // スコアを設定 年、月、日、時、分、秒を個別のスコアとして設定
+    await objective.setScore('Time_y', japanTime.getFullYear());
+    await objective.setScore('Time_m', japanTime.getMonth() + 1); // 月は 0 から始まるため +1 する
+    await objective.setScore('Time_d', japanTime.getDate());
+    await objective.setScore('Time_h', japanTime.getHours());
+    await objective.setScore('Time_min', japanTime.getMinutes());
+    await objective.setScore('Time_s', japanTime.getSeconds());
 }
 
-async function resetScoreboardValues() {
-    if (!world) return;
-    let objective = await world?.scoreboard.getObjective(TIME_OBJECTIVE_NAME);
-
-    if (!objective) {
+// 日本時間の表示を開始する関数
+export async function startJapanTime() {
+    if (JapanTime) {
+        console.warn('日本時間の表示は既に有効です');
         return;
     }
-    await objective.setScore(TIME_SCORE_NAMES.SECONDS, 0);
-    await objective.setScore(TIME_SCORE_NAMES.MINUTES, 0);
-    await objective.setScore(TIME_SCORE_NAMES.HOURS, 0);
-    await objective.setScore(TIME_SCORE_NAMES.DAYS, 0);
-}
-if (world)
-    setInterval(async () => {
-        updateTimeScoreboard();
-    }, 1000)
 
-registerCommand({
-    name: 'time',
-    description: 'タイマーを操作します (#time start | stop | reset)',
-    maxArgs: 1,
-    minArgs: 1,
-    config: { enabled: true, adminOnly: false, requireTag: ['op'] },
-    executor: async (player: Player, args: string[]) => {
-        if (!world) {
-            player.sendMessage("ワールドオブジェクトがありません");
-            return;
-        }
+    JapanTime = true;
 
-        const command = args[0];
+    // 既存の objective があれば削除
+    await world.scoreboard.removeObjective(TIME_OBJECTIVE_NAME);
 
-        if (command === 'start') {
-            if (timerStartTime != null) return player.sendMessage('タイマーは既に開始しています');
-            timerStartTime = Date.now();
-
-            let objective: any | undefined = await world.scoreboard.getObjective(TIME_OBJECTIVE_NAME);
-            if (objective) await world.scoreboard.removeObjective(objective)
-            await resetScoreboardValues();
-            player.sendMessage("タイマーを開始しました");
-
-
-        } else if (command === "stop") {
-            if (timerStartTime == null) return player.sendMessage('タイマーは開始していません');
-
-            player.sendMessage(`タイマーを停止しました.   現在までの時間は以下に表示されます \nスコアボード名 : ${TIME_OBJECTIVE_NAME}  \n  目的名 : time_s , time_m , time_h , time_d   `)
-
-            timerStartTime = null;
-
-
-        } else if (command === 'reset') {
-            timerStartTime = null;
-            await resetScoreboardValues();
-            player.sendMessage(`タイマーをリセットしました。  スコアボードの値を0にしました`)
-
-
-        } else {
-            player.sendMessage(`不正な引数です.   #time start / stop / reset で操作`);
-
-        }
-
-
+    // タイマーを開始（1秒ごとに更新）
+    if (!timerInterval) {
+        timerInterval = setInterval(updateTimeScoreboard, 1000);
     }
-});
+
+    console.log("日本時間の表示を有効にしました");
+}
+
+// 日本時間の表示を停止する関数
+export async function stopJapanTime() {
+    if (!JapanTime) {
+        console.warn('日本時間の表示は既に無効です');
+        return;
+    }
+
+    JapanTime = false;
+
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    console.log("日本時間の表示を無効にしました");
+}
+
+// 日本時間スコアをリセットする関数
+export async function resetJapanTime() {
+    // ScoreboardObjective を取得
+    let objective = await world.scoreboard.getObjective(TIME_OBJECTIVE_NAME);
+    if (objective) {
+        // 既存のスコアを削除
+        (await objective.getScores()).forEach(score => objective?.removeParticipant(score.participant));
+    } else {
+        objective = await world.scoreboard.addObjective(TIME_OBJECTIVE_NAME, 'Japan Time');
+    }
+
+    // 現在の日本時間を取得してスコアをリセット
+    const japanTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+    // 年、月、日、時、分、秒を個別のスコアとして設定
+    await objective?.setScore('Time_y', japanTime.getFullYear());
+    await objective?.setScore('Time_m', japanTime.getMonth() + 1);
+    await objective?.setScore('Time_d', japanTime.getDate());
+    await objective?.setScore('Time_h', japanTime.getHours());
+    await objective?.setScore('Time_min', japanTime.getMinutes());
+    await objective?.setScore('Time_s', japanTime.getSeconds());
+
+    console.log("日本時間をリセットしました。スコアボードの値を現在の日本時間にしました");
+}
+
+// 初期化時にタイマーが動かないようにする (必要に応じて)
+// clearInterval(timerInterval);
+// timerInterval = null;

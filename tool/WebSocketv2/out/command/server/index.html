@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server Control Panel</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            /* 全体の背景色を明るいグレーに */
+            margin: 0;
+            padding: 0;
+            color: #333;
+            /* テキストカラーを濃いグレーに */
+        }
+
+        .container {
+            background-color: #e8e8e8;
+            /* コンテナの背景色を少し濃いグレーに */
+            border-radius: 8px;
+            /* 角丸を少し大きく */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            /* 影を強調 */
+            padding: 30px;
+            /* パディングを増加 */
+            margin: 30px auto;
+            /* マージンを増加 */
+            max-width: 900px;
+            /* コンテナの最大幅を増加 */
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            color: #444;
+            /* タイトルの色を少し明るいグレーに */
+            margin-bottom: 20px;
+            /* マージンを調整 */
+        }
+
+        h2 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h2 .login-icon,
+        h2 .server-icon,
+        h2.status-icon {
+            margin-right: 10px;
+            color: #666;
+            /* アイコンの色を少し明るく */
+        }
+
+        /* Navigation */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            cursor: pointer;
+            z-index: 100;
+            display: none;
+        }
+
+        .hamburger-menu div {
+            width: 30px;
+            height: 4px;
+            background-color: #fff;
+            /* 白色に変更 */
+            margin: 6px 0;
+            transition: 0.4s;
+        }
+
+        #main-nav {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #444;
+            /* ナビゲーションバーの背景色を濃いグレーに */
+            z-index: 99;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+        }
+
+        #main-nav.active {
+            left: 0;
+        }
+
+        #main-nav ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 60px;
+        }
+
+        #main-nav li {
+            padding: 15px;
+            color: #f5f5f5;
+            /* ナビゲーションのテキスト色を明るいグレーに */
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        #main-nav li:hover {
+            background-color: #666;
+            /* ホバー時の背景色を少し明るいグレーに */
+        }
+
+        .nav-icon {
+            margin-right: 10px;
+        }
+
+        /* Login Form */
+        #login-form {
+            text-align: center;
+        }
+
+        #login-form input[type="text"],
+        #login-form input[type="password"] {
+            padding: 12px;
+            /* パディングを増加 */
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            /* 角丸を調整 */
+            width: 95%;
+            /* inputの幅をコンテナーに */
+        }
+
+        #login-form button {
+            padding: 12px 25px;
+            /* パディングを調整 */
+            border: none;
+            border-radius: 6px;
+            background-color: #666;
+            /* ボタンの背景色を濃いグレーに */
+            color: #f5f5f5;
+            /* 明るいグレー */
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        #login-form button:hover {
+            background-color: #888;
+            /* ホバー時の背景色を少し明るいグレーに */
+        }
+
+        #login-error {
+            color: #d9534f;
+            /* エラーメッセージの色を調整 */
+            margin-top: 10px;
+        }
+
+        /* Info Box */
+        .info-box {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            /* マージンを調整 */
+        }
+
+        .info-box div {
+            text-align: center;
+            font-size: 1.1em;
+            color: #555;
+            /* テキストの色を調整 */
+        }
+
+        /* Console */
+        .console-input-area {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            /* 幅を最大限に使う */
+        }
+
+        .console-container {
+            flex-grow: 1;
+            margin-bottom: 15px;
+            /* マージンを調整 */
+        }
+
+        #console {
+            width: calc(100% - 40px);
+            /* パディングを考慮して幅を調整 */
+            height: 350px;
+            /* 高さを調整 */
+            background-color: #282c34;
+            /* コンソールの背景色を濃いグレーに */
+            color: #00FF00;
+            /* 緑のテキスト */
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+            /* パディングを調整 */
+            border: none;
+            /* 枠線を削除 */
+            border-radius: 6px;
+            /* 角丸を調整 */
+            overflow-y: scroll;
+            resize: none;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            /* 内側に影を追加 */
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        #commandInput {
+            flex-grow: 1;
+            padding: 12px;
+            /* パディングを増加 */
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            /* 角丸を調整 */
+        }
+
+        .console-input-area button {
+            padding: 12px 25px;
+            /* パディングを調整 */
+            border: none;
+            border-radius: 6px;
+            background-color: #666;
+            /* ボタンの背景色を濃いグレーに */
+            color: #f5f5f5;
+            /* 明るいグレー */
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .console-input-area button:hover {
+            background-color: #888;
+            /* ホバー時の背景色を少し明るいグレーに */
+        }
+
+        /* Server Status */
+        #server-status {
+            margin-top: 30px;
+            /* マージンを調整 */
+        }
+
+        .status-info {
+            padding: 15px;
+            /* パディングを調整 */
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+        }
+
+        .status-info p {
+            margin: 8px 0;
+            /* マージンを調整 */
+            color: #555;
+            /* テキストの色を調整 */
+        }
+
+        .status-icon {
+            color: #5cb85c;
+            /* ステータスアイコンの色を調整 */
+            margin-right: 5px;
+        }
+
+        .status-icon.offline {
+            color: #d9534f;
+        }
+
+        .status-icon.error {
+            color: #f0ad4e;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            right: -300px;
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background-color: #444;
+            /* サイドバーの背景色を濃いグレーに */
+            z-index: 100;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            color: #f5f5f5;
+            /* サイドバーのテキスト色を明るいグレーに */
+            padding-top: 20px;
+        }
+
+        .sidebar.active {
+            right: 0;
+        }
+
+        .sidebar .close-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            cursor: pointer;
+            font-size: 24px;
+            color: #f5f5f5;
+            /* 明るいグレー */
+        }
+
+        .sidebar h3 {
+            color: #f5f5f5;
+            /* 明るいグレー */
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .player-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .player-list li {
+            background-color: #e8e8e8;
+            /* プレイヤーリストの項目の背景色を明るいグレーに */
+            color: #333;
+            /* 濃いグレーのテキスト */
+            margin: 10px;
+            /* マージンを調整 */
+            padding: 15px;
+            /* パディングを調整 */
+            border-radius: 6px;
+            /* 角丸を調整 */
+            font-size: 0.9em;
+            border: 1px solid #ccc;
+        }
+
+        .player-list li strong {
+            font-weight: bold;
+        }
+
+        .player-list li+li {
+            margin-top: 10px;
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hamburger-menu" onclick="toggleNav()">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+
+    <nav id="main-nav">
+        <ul>
+            <li onclick="showPage('console-page')">
+                <span class="nav-icon">🎮</span> コンソール
+            </li>
+            <li onclick="showPage('players-page')">
+                <span class="nav-icon">👥</span> プレイヤー確認
+            </li>
+            <li onclick="showPage('status-page')">
+                <span class="nav-icon">📊</span> サーバーステータス
+            </li>
+        </ul>
+    </nav>
+
+    <div class="sidebar">
+        <span class="close-btn" onclick="toggleSidebar()">×</span>
+        <h3>オンラインプレイヤー</h3>
+        <ul class="player-list" id="player-list">
+            <!-- プレイヤー情報がここに追加される -->
+        </ul>
+    </div>
+
+    <div class="container" id="login-form">
+        <h2><span class="login-icon">🔒</span> ログイン</h2>
+        <input type="text" id="username" placeholder="ユーザー名" required>
+        <input type="password" id="password" placeholder="パスワード" required>
+        <button onclick="login()"><span class="login-icon">ログイン</span></button>
+        <div id="login-error"></div>
+    </div>
+
+    <div class="page" id="console-page">
+        <div class="container">
+            <h1><span class="server-icon">🖥️</span> Minecraft サーバーコントロールパネル</h1>
+            <div class="info-box">
+                <div id="playerCount"><span class="info-icon">👥</span> 現在のプレイヤー数: 0</div>
+                <div id="uptime"><span class="info-icon">⏱️</span> 起動時間: 不明</div>
+            </div>
+            <div class="console-input-area">
+                <div class="console-container">
+                    <textarea id="console" readonly></textarea>
+                </div>
+                <div class="input-container">
+                    <input type="text" id="commandInput" placeholder="コマンドを入力...">
+                    <button onclick="sendCommand()"> <span class="send-icon">送信</span> </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="players-page">
+        <div class="container">
+            <h2><span class="server-icon">👥</span> プレイヤー確認</h2>
+            <div class="info-box">
+                <div id="playerCount2"><span class="info-icon">👥</span> 現在のプレイヤー数: 0</div>
+                <div id="uptime2"><span class="info-icon">⏱️</span> 起動時間: 不明</div>
+            </div>
+            <ul class="player-list" id="player-list2">
+                <!-- プレイヤー情報がここに追加される -->
+            </ul>
+        </div>
+    </div>
+
+    <div class="page" id="status-page">
+        <div class="container">
+            <h2><span class="status-icon">📊</span> サーバー状態確認</h2>
+            <button onclick="checkServerStatus()"><span class="status-icon">🔄</span> 状態確認</button>
+            <div id="server-status" class="status-info"></div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let loggedIn = false;
+        // プレイヤーリストを管理する配列
+        let currentPlayers = [];
+
+        // ページを切り替える関数
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.style.display = 'none';
+            });
+            document.getElementById(pageId).style.display = 'block';
+
+            // ハンバーガーメニューを閉じる
+            const nav = document.getElementById('main-nav');
+            nav.classList.remove('active');
+        }
+
+        function toggleDisplay() {
+            const loginForm = document.getElementById('login-form');
+            const hamburgerMenu = document.querySelector('.hamburger-menu');
+            const nav = document.getElementById('main-nav');
+
+            if (loggedIn) {
+                loginForm.style.display = 'none';
+                hamburgerMenu.style.display = 'block';
+
+                // ログイン後、'console-page' をデフォルトで表示
+                showPage('console-page');
+            } else {
+                loginForm.style.display = 'block';
+                hamburgerMenu.style.display = 'none';
+                nav.classList.remove('active');
+
+                // ログアウト時、すべてのページを非表示にする
+                const pages = document.querySelectorAll('.page');
+                pages.forEach(page => {
+                    page.style.display = 'none';
+                });
+            }
+        }
+
+        // ハンバーガーメニューのトグル
+        function toggleNav() {
+            const nav = document.getElementById('main-nav');
+            nav.classList.toggle('active');
+        }
+
+        // ログイン処理
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        loggedIn = true;
+                        toggleDisplay();
+                        connectWebSocket(username, password);
+                    } else {
+                        document.getElementById('login-error').innerText = 'ログインに失敗しました。';
+                    }
+                })
+                .catch(error => {
+                    console.error('Login error:', error);
+                    document.getElementById('login-error').innerText = 'エラーが発生しました。';
+                });
+        }
+
+        function connectWebSocket(username, password) {
+            let wsUrl = 'wss://bfxmknk4-80.asse.devtunnels.ms/';
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log(`WebSocket connected to ${wsUrl}`);
+                ws.send(JSON.stringify({ type: 'authenticate', username, password }));
+            };
+
+            ws.onmessage = handleWebSocketMessage;
+
+            ws.onerror = (error) => {
+                console.error(`WebSocket error on ${wsUrl}:`, error);
+                ws.close();
+                connectLocalWebSocket(username, password);
+            };
+
+            ws.onclose = (event) => {
+                console.log(`WebSocket connection to ${wsUrl} closed`, event);
+            };
+        }
+
+        function connectLocalWebSocket(username, password) {
+            const localWsUrl = `ws://${window.location.host}`;
+            console.log(`Trying to connect to local WebSocket server: ${localWsUrl}`);
+            ws = new WebSocket(localWsUrl);
+
+            ws.onopen = () => {
+                console.log(`WebSocket connected to ${localWsUrl}`);
+                ws.send(JSON.stringify({ type: 'authenticate', username, password }));
+            };
+
+            ws.onmessage = handleWebSocketMessage;
+
+            ws.onerror = (error) => {
+                console.error(`WebSocket error on ${localWsUrl}:`, error);
+            };
+
+            ws.onclose = () => {
+                console.log(`WebSocket connection to ${localWsUrl} closed`);
+            };
+        }
+
+        // WebSocket メッセージを処理する共通関数
+        function handleWebSocketMessage(event) {
+            const data = JSON.parse(event.data);
+            switch (data.type) {
+                case 'playerCount':
+                    document.getElementById('playerCount').innerHTML = `<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data}`;
+                    document.getElementById('playerCount2').innerHTML = `<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data}`;
+                    break;
+                case 'console':
+                    const consoleElement = document.getElementById('console');
+                    consoleElement.value += data.data + '\n';
+                    consoleElement.scrollTop = consoleElement.scrollHeight;
+                    break;
+                case 'uptime':
+                    document.getElementById('uptime').innerHTML = `<span class="info-icon">⏱️</span> 起動時間: ${data.data}`;
+                    document.getElementById('uptime2').innerHTML = `<span class="info-icon">⏱️</span> 起動時間: ${data.data}`;
+                    break;
+                case 'onlinePlayers':
+                    // プレイヤーリストを更新
+                    updatePlayerLists(data.data);
+                    // 既存のプレイヤー情報を更新する
+                    updatePlayerPositions(data.data);
+                    break;
+                case 'error':
+                    console.error('WebSocket error:', data.message);
+                    if (data.message === '認証に失敗しました') {
+                        loggedIn = false;
+                        toggleDisplay();
+                        ws.close();
+                    }
+                    break;
+            }
+        }
+
+        // コマンド送信
+        function sendCommand() {
+            if (!loggedIn || !ws) {
+                alert('ログインしてください。');
+                return;
+            }
+            const command = document.getElementById('commandInput').value;
+            ws.send(JSON.stringify({ type: 'command', command }));
+            document.getElementById('commandInput').value = '';
+        }
+
+        // サーバーステータス確認
+        function checkServerStatus() {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    let statusHTML = '';
+                    Object.keys(data).forEach(address => {
+                        const serverData = data[address];
+                        if (serverData.status === 'online') {
+                            statusHTML += `<p><span class="status-icon">✔</span> ${address}: オンライン</p>`;
+                            statusHTML += `<p>プレイヤー数: ${serverData.players.online} / ${serverData.players.max}</p>`;
+                            statusHTML += `<p>MOTD: ${serverData.motd.clean.join('<br>')}</p>`;
+                            if (typeof serverData.ping !== 'undefined') {
+                                statusHTML += `<p>Ping: ${serverData.ping} ms</p>`;
+                            }
+                        } else if (serverData.status === 'offline') {
+                            statusHTML += `<p><span class="status-icon offline">✖</span> ${address}: オフライン</p>`;
+                        } else {
+                            statusHTML += `<p><span class="status-icon error">⚠</span> ${address}: 状態確認エラー</p>`;
+                            statusHTML += `<p>エラー詳細: ${serverData.error}</p>`;
+                        }
+                    });
+
+                    document.getElementById('server-status').innerHTML = statusHTML;
+                })
+                .catch(error => {
+                    console.error('Status check error:', error);
+                    document.getElementById('server-status').innerHTML = '<span class="status-icon error">⚠</span> 状態確認中にエラーが発生しました';
+                });
+        }
+
+        // プレイヤーリストを更新および、新規プレイヤーの追加、退出プレイヤーの削除
+        function updatePlayerLists(newPlayers) {
+            // 新しいプレイヤーを追加
+            newPlayers.forEach(newPlayer => {
+                if (!currentPlayers.some(p => p.uuid === newPlayer.uuid)) {
+                    currentPlayers.push(newPlayer);
+                }
+            });
+
+            // 退出したプレイヤーを削除
+            currentPlayers = currentPlayers.filter(p => newPlayers.some(np => np.uuid === p.uuid));
+
+            // ログインIDがある場合はそれも使用してソート
+            currentPlayers.sort((a, b) => {
+                // ログイン順で比較
+                if (a.loginOrder && b.loginOrder) {
+                    if (a.loginOrder < b.loginOrder) return -1;
+                    if (a.loginOrder > b.loginOrder) return 1;
+                }
+
+                // UUIDで比較
+                if (a.uuid < b.uuid) return -1;
+                if (a.uuid > b.uuid) return 1;
+
+                return 0;
+            });
+
+            // プレイヤーリストを更新
+            updatePlayerList(currentPlayers);
+        }
+
+        // プレイヤーの位置情報を更新する関数
+        function updatePlayerPositions(players) {
+            players.forEach(player => {
+                // 既存のプレイヤーを検索
+                const existingPlayer = currentPlayers.find(p => p.uuid === player.uuid);
+                if (existingPlayer) {
+                    // 位置情報だけを更新
+                    existingPlayer.position = player.position;
+                }
+            });
+
+            // リストの表示を更新
+            updatePlayerList(currentPlayers);
+        }
+
+        // プレイヤーリストを更新する関数
+        function updatePlayerList(players) {
+            const playerList = document.getElementById('player-list');
+            const playerList2 = document.getElementById('player-list2'); // player-list2 を取得
+            playerList.innerHTML = '';
+            playerList2.innerHTML = ''; // player-list2 の内容もクリア
+
+            if (players.length === 0) {
+                const emptyMessage = document.createElement('li');
+                emptyMessage.textContent = "現在オンラインのプレイヤーはいません";
+                playerList.appendChild(emptyMessage);
+                playerList2.appendChild(emptyMessage.cloneNode(true)); // 同じ要素を player-list2 にも追加
+            } else {
+                players.forEach(player => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>${player.name}</strong> (UUID: ${player.uuid})`;
+                    if (player.position) {
+                        li.innerHTML += `<br>位置: X=${player.position.x}, Y=${player.position.y}, Z=${player.position.z}`;
+                    } else {
+                        li.innerHTML += `<br>位置: 不明`;
+                    }
+
+                    playerList.appendChild(li);
+                    playerList2.appendChild(li.cloneNode(true)); // li のクローンを player-list2 にも追加
+                });
+            }
+        }
+
+        // サイドバーのトグル
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        // 初期表示
+        toggleDisplay();
+    </script>
+</body>
+
+</html>
