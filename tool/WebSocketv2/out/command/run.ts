@@ -9,5 +9,6 @@ registerCommand({
         const command = args.join(' ');
         const result = await player.runCommand(command);
         player.sendMessage(`Command Result: ${JSON.stringify(result)}`);
+        console.log(`Command Result: ${JSON.stringify(result)}`)
     },
 });
