@@ -1,9 +1,9 @@
 import { Entity, EntityDieAfterEvent, EntityHurtAfterEvent, Player, PlayerSoundOptions, ScoreboardIdentity, ScriptEventCommandMessageAfterEvent, ScriptEventSource, system, world } from "@minecraft/server";
-import { getServerUptime } from "../utility/server";
+import { getServerUptime, tps } from "../utility/server";
 import { ver } from "../../Modules/version";
 import { banPlayers } from "../../Modules/globalBan";
 import { config, formatTimestampJST } from "../../Modules/Util";
-import { handleRankCommand, RankSystem, registerRank } from "../../Modules/rankSystem";
+import { handleRankCommand } from "../../Modules/rankSystem";
 import { runCommand } from "../../Modules/Handler";
 //import { MatchingOptions, MatchingSystem } from "../../Modules/matchSystem";
 
@@ -792,7 +792,6 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
    //if (event.id === "ch:match_") {
    //    pvpMatchingSystem.handleCommand(event);
    //}
-
 });
 
 
@@ -816,7 +815,6 @@ world.afterEvents.entityHurt.subscribe((event: EntityHurtAfterEvent) => {
 
     if (attacker && attacker instanceof Player) {
         playerAttackMap.set(attacked.id, attacker.id);
-    } else if (attacker) {
     }
 });
 
@@ -863,19 +861,40 @@ world.afterEvents.entityDie.subscribe((event: EntityDieAfterEvent) => {
 
 
 
+function scoreboardData() {
+    // スコアボードの目的「TPSData」を取得または作成
+    let tpsObjective = world.scoreboard.getObjective('TPSData');
+    if (!tpsObjective) {
+        tpsObjective = world.scoreboard.addObjective('TPSData', 'TPS'); // 目的の名前と表示名を設定
+    }
 
-const defaultRank = new RankSystem
-    ("§bCombat§aCube!§r",
-        "xp", ["ルーキー", "ブロンズI", "ブロンズII", "ブロンズIII", "シルバーI", "シルバーII", "シルバーIII", "シルバーIV", "ゴールドI", "ゴールドII",
-        "ゴールドIII", "プラチナI", "プラチナII", "プラチナIII", "プラチナIV", "プラチナV", "エメラルドI", "エメラルドII", "エメラルドIII", "ダイヤI",
-        "ダイヤII", "ダイヤIII", "ダイヤIV", "マスターI", "マスターII", "マスターIII", "プレデターI", "プレデターII", "プレデターIII", "プレデターIV",
-        "伝説I", "伝説II", "伝説III", "伝説IV", "伝説V", "伝説VI"],
-        [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500,
-            5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500,
-            10000, 10500, 11000, 11500, 12000, 12500, 13000, 13500, 14000, 14500,
-            15000, 15500, 16000, 16500, 17000, 17500]);
-registerRank(defaultRank);
+    // TPSスコア「tps」を取得または作成
+    let tpsScore = tpsObjective.getScore('tps');
+    if (!tpsScore) {
+        tpsScore = tpsObjective.addScore('tps',0); // スコアの名前を設定
+    }
+    if (tpsScore) {
+        tpsObjective.setScore('tps', Math.round(tps));
+    }
+}
 
+scoreboardData();
+
+
+
+
+//const defaultRank = new RankSystem
+//    ("§bCombat§aCube!§r",
+//        "xp", ["ルーキー", "ブロンズI", "ブロンズII", "ブロンズIII", "シルバーI", "シルバーII", "シルバーIII", "シルバーIV", "ゴールドI", "ゴールドII",
+//        "ゴールドIII", "プラチナI", "プラチナII", "プラチナIII", "プラチナIV", "プラチナV", "エメラルドI", "エメラルドII", "エメラルドIII", "ダイヤI",
+//        "ダイヤII", "ダイヤIII", "ダイヤIV", "マスターI", "マスターII", "マスターIII", "プレデターI", "プレデターII", "プレデターIII", "プレデターIV",
+//        "伝説I", "伝説II", "伝説III", "伝説IV", "伝説V", "伝説VI"],
+//        [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500,
+//            5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500,
+//            10000, 10500, 11000, 11500, 12000, 12500, 13000, 13500, 14000, 14500,
+//            15000, 15500, 16000, 16500, 17000, 17500]);
+//registerRank(defaultRank);
+//
 
 //const options: MatchingOptions = {
 //    maxPlayersPerMatch: 16,

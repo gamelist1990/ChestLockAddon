@@ -102,7 +102,9 @@ async function checkAndKickBannedPlayer(player: Player): Promise<void> {
 §r§aあなたのBANは期限切れのため解除されました。
 §b§l========================================
 `;
-            player.sendMessage(unbanMessage);
+            setTimeout(() => {
+                player.sendMessage(unbanMessage);
+            }, 3000);
             return;
         }
 
@@ -217,10 +219,9 @@ registerCommand({
     },
 });
 
-if (world instanceof World) {
-    world.on("playerJoin", async (event: any) => {
-        const { playerName } = event;
-        const player = await world.getEntityByName(playerName);
+if (world) {
+    world.on("playerJoin", async (name: string) => {
+        const player = await world.getEntityByName(name);
         if (player) {
             await checkAndKickBannedPlayer(player);
         }

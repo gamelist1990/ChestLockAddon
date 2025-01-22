@@ -232,10 +232,13 @@ export class WsServer {
     // プレイヤー名から`Player`オブジェクトを生成する (最適化・軽量化)
     public async createPlayerObject(playerName: string): Promise<Player | null> {
         const queryResult = await this.executeMinecraftCommand(`querytarget @a[name=${playerName}]`);
+        const softData = await getData(playerName);
 
-        // queryResult が null の場合は null を返す
         if (queryResult === null) {
             return null;
+        }
+        if (softData === null) {
+            return null
         }
 
         if (queryResult.statusCode !== 0 || !queryResult.details) return null;
@@ -243,45 +246,13 @@ export class WsServer {
         const playerData = JSON.parse(queryResult.details.replace(/\\/g, ''))[0];
         if (!playerData || !playerData.uniqueId) return null;
 
-        // getData を使って ping を含む詳細なプレイヤー情報を取得
-        const detailedPlayerData = await getData({
-            name: playerName,
-            uuid: playerData.uniqueId,
-            id: playerData.id,
-            dimension: playerData.dimension,
-            position: { x: playerData.position.x, y: playerData.position.y - 2, z: playerData.position.z },
-            ping: 0,
-            sendMessage: (message: string) =>
-                this.sendToMinecraft({ command: `sendMessage`, message, playerName }),
-            runCommand: (command: string) => this.executeMinecraftCommand(command),
-            hasTag: async (tag: string) => {
-                const result = await this.executeMinecraftCommand(`tag ${playerName} list`);
-                return result && result.statusMessage
-                    ? new RegExp(`§a${tag}§r`).test(result.statusMessage)
-                    : false;
-            },
-            getTags: async () => {
-                const result = await this.executeMinecraftCommand(`tag ${playerName} list`);
-                if (!result || !result.statusMessage) return [];
-                const tagRegex = /§a([\w\d]+)§r/g;
-                const tags: string[] = [];
-                let match;
-                while ((match = tagRegex.exec(result.statusMessage)) !== null) {
-                    tags.push(match[1]);
-                }
-                return tags;
-            },
-        }, playerName);
-
-        if (!detailedPlayerData) return null;
-
         return {
             name: playerName,
             uuid: playerData.uniqueId,
             id: playerData.id,
             dimension: playerData.dimension,
+            ping: softData ? softData.ping || 0 : 0,
             position: { x: playerData.position.x, y: playerData.position.y - 2, z: playerData.position.z },
-            ping: detailedPlayerData.ping,
             sendMessage: (message: string) =>
                 this.sendToMinecraft({ command: `sendMessage`, message, playerName }),
             runCommand: (command: string) => this.executeMinecraftCommand(command),
@@ -304,6 +275,7 @@ export class WsServer {
             },
         };
     }
+
 
     // Minecraft コマンドを実行する (最適化)
     public async executeMinecraftCommand(command: string): Promise<any> {
@@ -595,11 +567,7 @@ export class WsServer {
                                     if (!existingPlayer.isOnline) {
                                         existingPlayer.isOnline = true;
                                         existingPlayer.join = timestamp; // joinの時間を更新
-                                        console.log(
-                                            'Existing player updated in playerData:',
-                                            playerName,
-                                            'Join time updated.',
-                                        );
+                                        this.getWorld().triggerEvent('playerJoin', playerName);
                                         isOnlineStatusChanged = true;
                                     } else {
                                         console.log('Existing player already online:', playerName);
@@ -618,7 +586,7 @@ export class WsServer {
                                         data: { name: playerName, uuid: uuid },
                                     });
 
-                                    this.getWorld().triggerEvent('playerJoin', playerName, uuid);
+                                    //this.getWorld().triggerEvent('playerJoin', playerName);
                                 }
                             } else {
                                 console.error(
@@ -691,7 +659,7 @@ export class WsServer {
 
             case 'playerChat':
                 const { sender, message, type, receiver } = data;
-                console.log(`Chat from ${sender}: ${message}`);
+               // console.log(`Chat from ${sender}: ${message}`);
                 if (sender !== 'External') this.onPlayerChat(sender, message, type, receiver);
                 break;
             case 'PlayerDied':

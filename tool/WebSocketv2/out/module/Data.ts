@@ -1,4 +1,4 @@
-import { Player } from "../backend";
+import { Player, world } from "../backend";
 import { PlayerData } from "../command/ping";
 
 /**
@@ -19,9 +19,9 @@ export function calculateUptime(startTime: Date): string {
 }
 
 
-export async function getData(player: Player, playerName?: string): Promise<PlayerData | undefined> {
+export async function getData(playerName?: string): Promise<PlayerData | undefined> {
     try {
-        const res = await player.runCommand('listd stats');
+        const res = await world.runCommand('listd stats');
         if (res.statusCode !== 0) {
             return undefined;
         }

@@ -209,14 +209,10 @@ app.post('/unban', async (req, res) => {
     try {
         if (world) {
             // プレイヤー名からプレイヤーオブジェクトを取得
-            const playerToUnban = await world.getEntityByName(playerName);
-            if (playerToUnban) {
-                await PlayerUNBAN(unbannedBy, playerName);
-                broadcast('banList', banListCache);
-                res.json({ success: true });
-            } else {
-                res.status(404).json({ success: false, error: 'プレイヤーが見つかりません' });
-            }
+            await PlayerUNBAN(unbannedBy, playerName);
+            broadcast('banList', banListCache);
+            res.json({ success: true });
+
         }
     } catch (error) {
         console.error('Unban処理エラー:', error);

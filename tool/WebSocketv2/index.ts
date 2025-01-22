@@ -107,11 +107,6 @@ const displayNotifications = async () => {
     if (notifications.length === 0) {
         console.log('通知はありません。\n');
         writeLog('通知はありません。');
-    } else {
-        //console.log('通知:\n');
-        //notifications.forEach((notification) => console.log(`${notification}\n`));
-        //writeLog('通知:');
-        //notifications.forEach((notification) => writeLog(notification));
     }
     await inquirer.prompt([
         {
@@ -134,7 +129,7 @@ const updateEnvFile = (key: string, value: string) => {
             envContent += `\n${key}="${value}"`;
         }
         fs.writeFileSync(envPath, envContent);
-        addNotification(`${COLOR_GREEN}.envファイルが更新されました。${COLOR_RESET}`, 'other'); 
+        addNotification(`${COLOR_GREEN}.envファイルが更新されました。${COLOR_RESET}`, 'other');
         log('green', '.envファイルが更新されました。');
     } catch (error) {
         // addNotification(`${COLOR_RED}.envファイルの更新中にエラーが発生しました: ${error}${COLOR_RESET}`); // 通知しない
@@ -227,7 +222,7 @@ const displayMenu = async () => {
         'サーバーに再接続',
         'WebSocketサーバーURLを設定',
         `起動時の自動接続を切り替え (現在: ${autoConnectOnStartup ? '有効' : '無効'})`,
-        '通知', 
+        '通知',
         '終了',
     ];
 
@@ -266,7 +261,7 @@ const handleMenuChoice = async (choice: number) => {
         case 3:
             await toggleAutoConnect();
             break;
-        case 4: 
+        case 4:
             await displayNotifications();
             break;
         case 5:
@@ -316,11 +311,11 @@ const restartWss = async () => {
 
     // WebSocket接続
     if (autoConnectOnStartup) {
-        await wss?.close();
+        if (wss) {
+            wss.close();
+        }
         await connectToWss(webSocketUrl);
     }
-
-    console.log('メニューに戻るにはEnterキーを押してください...\n');
     await inquirer.prompt([
         {
             type: 'input',
@@ -378,7 +373,7 @@ const setupWebSocketUrl = async () => {
                 );
 
                 await Promise.race([connectPromise, connectTimeoutPromise]);
-                log('green', 'WebSocketサーバーに接続しました。');
+                addNotification('WebSocketサーバーに接続しました。', "other");
             }
         } catch (error) {
             log('red', `WebSocketサーバーの状態確認または接続中にエラーが発生しました: ${error}`);
@@ -405,18 +400,26 @@ const toggleAutoConnect = async () => {
 
 // --- WebSocket Functions ---
 const connectToWss = async (url: string) => {
+    // 接続試行前に isWebSocketServerOnline を false に設定
+    isWebSocketServerOnline = false;
+
+    // `wss`が既に存在する場合は、既存の接続を削除してnullにする
     if (wss) {
         wss.removeAllListeners();
         wss.close();
         wss = null;
     }
 
+    // 新しいWebSocket接続を確立
     wss = new WebSocket(url);
 
+    // `open`イベント: 接続が開かれたとき
     wss.on('open', () => {
         clearInterval(reconnectionInterval!);
         reconnectionInterval = null;
         isWebSocketServerOnline = true;
+        writeLog(`WebSocketサーバーに接続しました。`); // 接続が確立されたときにログに記録
+        addNotification(`WebSocketサーバーに接続しました。`, 'connection'); // 接続が確立されたときに通知
     });
 
     wss.on('message', async (data: string) => {
@@ -481,24 +484,31 @@ const connectToWss = async (url: string) => {
                     }
             }
         } catch (error) {
-            log('red', `WSSからのメッセージ処理中にエラーが発生しました: ${error}`);
         }
     });
 
+    // `close`イベント: 接続が閉じられたとき
     wss.on('close', () => {
+        // `isWebSocketServerOnline`が`true`の場合にのみ切断通知を出す
+        // これにより、接続されていないときや切断通知が既に処理されたときに、誤った通知が表示されるのを防ぐ
         if (isWebSocketServerOnline) {
             addNotification(`WebSocketサーバーから切断されました。`, 'disconnection');
             writeLog('WebSocketサーバーから切断されました。');
             isWebSocketServerOnline = false;
         }
+
+        // 自動再接続が有効な場合に再接続を試みる
         if (webSocketUrl && autoConnectOnStartup) {
             reconnect();
         }
     });
 
+    // `error`イベント: エラーが発生したとき
     wss.on('error', (error) => {
+        // `isWebSocketServerOnline`が`true`の場合にのみエラーを記録
+        // 接続がまだ確立されていないか、既に切断されている場合にエラーが記録されるのを防ぐ
         if (isWebSocketServerOnline) {
-            log('red', `WebSocketエラー: ${error}`);
+            writeLog(`WebSocketエラー: ${error}`);
         }
     });
 };
@@ -533,7 +543,7 @@ const sendDataToWss = (event: string, data: any) => {
     if (wss && wss.readyState === WebSocket.OPEN) {
         wss.send(JSON.stringify({ event, data }));
     } else {
-        log('red', `WebSocketが接続されていません。`);
+        addNotification(`WebSocketが接続されていません。`, "other");
     }
 };
 
@@ -545,12 +555,23 @@ const server = new Server({
 });
 
 server.events.on('serverOpen', async () => {
-    if (autoConnectOnStartup) {
-        log('green', `MinecraftサーバーがWebSocket経由で接続されました!`);
-    }
-    if (webSocketUrl && autoConnectOnStartup) {
-        await connectToWss(webSocketUrl);
-    }
+    log('green', 'Minecraft server started.');
+
+    // worldAdd イベントをリッスン
+    server.events.on('worldAdd', async () => {
+        if (webSocketUrl) {
+            try {
+                isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
+                writeLog(`WebSocket server is ${isWebSocketServerOnline ? 'online' : 'offline'}.`);
+                if (autoConnectOnStartup && isWebSocketServerOnline) {
+                    writeLog('Attempting to connect to WebSocket server.');
+                    await connectToWss(webSocketUrl);
+                }
+            } catch (error) {
+                writeLog(`Error checking WebSocket server status: ${error}`);
+            }
+        }
+    });
 });
 
 server.events.on('worldAdd', async (event) => {
@@ -572,7 +593,7 @@ server.events.on('playerJoin', async (event) => {
             player: playerInfo?.name ?? event.players,
             uuid: playerInfo?.uuid ?? null,
         });
-    }, 4000);
+    }, 2000);
 });
 
 server.events.on('playerLeave', async (event) => {
@@ -726,18 +747,18 @@ const initEnv = async () => {
     }
 
     if (webSocketUrl) {
-        log('green', `WebSocket URLが検出されました: ${webSocketUrl}`);
+        writeLog( `WebSocket URLが検出されました: ${webSocketUrl}`);
         addNotification(`WebSocket URLが検出されました: ${webSocketUrl}`, 'other');
         try {
             // 初期化時にWebSocketサーバーの状態を確認
             isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
-            log('green', `WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`);
+            writeLog(`WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`);
             if (isWebSocketServerOnline && autoConnectOnStartup) {
-                log('green', `起動時の自動接続が有効です。WebSocketサーバーに接続します。`);
+                writeLog(`起動時の自動接続が有効です。WebSocketサーバーに接続します。`);
                 await connectToWss(webSocketUrl);
             }
         } catch (error) {
-            log('red', `WebSocketサーバーの状態確認中にエラーが発生しました: ${error}`);
+            writeLog(`WebSocketサーバーの状態確認中にエラーが発生しました: ${error}`);
         }
     }
 };

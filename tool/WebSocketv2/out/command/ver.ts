@@ -11,7 +11,7 @@ registerCommand({
     executor: async (player: Player) => {
         player.sendMessage(`§e§lバックエンドサーバーのバージョン情報§r`);
         player.sendMessage(`§7--------------------------------§r`);
-        player.sendMessage(`§6npmバージョン:§r ${process.env.npm_package_version}`);
+        player.sendMessage(`§6Nodeバージョン:§r ${process.version}`);
 
         if (os.platform() === 'win32') {
             player.sendMessage(`§6Windowsバージョン:§r ${os.release()}`);
