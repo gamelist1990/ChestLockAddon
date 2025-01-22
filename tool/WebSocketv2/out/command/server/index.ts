@@ -45,6 +45,7 @@ interface AuthInfo {
 // 認証情報を格納する変数
 const authorizedUsers: AuthInfo[] = [
     { username: 'PEXkoukunn', password: '@gamelist1990' },
+    { username: 'sunsun', password: '@admin_sunsun' },
 ];
 
 // ログイン状態を管理するマップ (ユーザー名とWebSocketの紐づけ)

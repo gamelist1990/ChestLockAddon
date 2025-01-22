@@ -1,509 +1,547 @@
-  /* General Styles */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-
-        .container {
-            background-color: #e8e8e8;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            margin: 30px auto;
-            max-width: 900px;
-        }
-
-        h1,
-        h2 {
-            text-align: center;
-            color: #444;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        h2 .login-icon,
-        h2 .server-icon,
-        h2.status-icon,
-        h2.ban-icon {
-            margin-right: 10px;
-            color: #666;
-        }
-
-        /* Navigation */
-        .hamburger-menu {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            cursor: pointer;
-            z-index: 100;
-            display: none;
-        }
-
-        .hamburger-menu div {
-            width: 30px;
-            height: 4px;
-            background-color: #2d2a2a;
-            margin: 6px 0;
-            transition: 0.4s;
-        }
-
-        #main-nav {
-            position: fixed;
-            top: 0;
-            left: -250px;
-            width: 250px;
-            height: 100%;
-            background-color: #444;
-            z-index: 99;
-            transition: left 0.3s ease;
-            overflow-y: auto;
-        }
-
-        #main-nav.active {
-            left: 0;
-        }
-
-        #main-nav ul {
-            list-style: none;
-            padding: 0;
-            margin-top: 60px;
-        }
-
-        #main-nav li {
-            padding: 15px;
-            color: #f5f5f5;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            display: flex;
-            align-items: center;
-        }
-
-        #main-nav li:hover {
-            background-color: #666;
-        }
-
-        .nav-icon {
-            margin-right: 10px;
-        }
-
-        /* Login Form */
-        #login-form {
-            text-align: center;
-        }
-
-        #login-form input[type="text"],
-        #login-form input[type="password"] {
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            width: 95%;
-        }
-
-        #login-form button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 6px;
-            background-color: #666;
-            color: #f5f5f5;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 10px;
-        }
-
-        #login-form button:hover {
-            background-color: #888;
-        }
-
-        #login-error {
-            color: #d9534f;
-            margin-top: 10px;
-        }
-
-        /* Auto Login Checkbox */
-        .autologin-container {
-            margin-top: 10px;
-            text-align: left;
-            display: inline-block;
-        }
-
-        .autologin-container input[type="checkbox"] {
-            margin: 0;
-            margin-right: 5px;
-            vertical-align: middle;
-        }
-
-        .autologin-container label {
-            font-size: 0.9em;
-            color: #555;
-            vertical-align: middle;
-        }
-
-        /* Logout Button */
-        #logout-button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            background-color: #d9534f;
-            color: #fff;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin: 15px;
-        }
-
-        #logout-button:hover {
-            background-color: #c9302c;
-        }
-
-        /* Info Box */
-        .info-box {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 30px;
-        }
-
-        .info-box div {
-            text-align: center;
-            font-size: 1.1em;
-            color: #555;
-        }
-
-        /* Console */
-        .console-input-area {
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .console-container {
-            flex-grow: 1;
-            margin-bottom: 15px;
-        }
-
-        #console {
-            width: calc(100% - 40px);
-            height: 350px;
-            background-color: #282c34;
-            color: #00FF00;
-            font-family: 'Courier New', Courier, monospace;
-            padding: 20px;
-            border: none;
-            border-radius: 6px;
-            overflow-y: scroll;
-            resize: none;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .input-container {
-            display: flex;
-            gap: 10px;
-        }
-
-        #commandInput {
-            flex-grow: 1;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-
-        .console-input-area button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 6px;
-            background-color: #666;
-            color: #f5f5f5;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .console-input-area button:hover {
-            background-color: #888;
-        }
-
-        /* Server Status */
-        #server-status {
-            margin-top: 30px;
-        }
-
-        .status-info {
-            padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            background-color: #f9f9f9;
-        }
-
-        .status-info p {
-            margin: 8px 0;
-            color: #555;
-        }
-
-        .status-icon {
-            color: #5cb85c;
-            margin-right: 5px;
-        }
-
-        .status-icon.offline {
-            color: #d9534f;
-        }
-
-        .status-icon.error {
-            color: #f0ad4e;
-        }
-
-        /* Player List */
-        .player-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .player-list li {
-            background-color: #e8e8e8;
-            color: #333;
-            margin: 10px;
-            padding: 15px;
-            border-radius: 6px;
-            font-size: 0.9em;
-            border: 1px solid #ccc;
-        }
-
-        .player-list li strong {
-            font-weight: bold;
-        }
-
-        .player-list li+li {
-            margin-top: 10px;
-        }
-
-        /* Pages */
-        .page {
-            display: none;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-
-        .page.active {
-            display: block;
-            opacity: 1;
-        }
-
-        /* Add padding to the right of the main-nav */
-        #main-nav.active+.container {
-            padding-left: 280px;
-            /* Adjust this value to match the width of your main-nav */
-            transition: padding-left 0.3s ease;
-        }
-
-        .container {
-            transition: padding-left 0.3s ease;
-        }
-
-        /* Style adjustments for better alignment */
-        #main-nav.active+.container .page {
-            margin-left: 0;
-        }
-
-        /* BAN Page Styles */
-        .ban-form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .ban-form input[type="text"] {
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            width: 100%;
-        }
-
-        .ban-form button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 6px;
-            background-color: #666;
-            color: #f5f5f5;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 10px;
-        }
-
-        .ban-form button:hover {
-            background-color: #888;
-        }
-
-        .ban-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .ban-list li {
-            background-color: #e8e8e8;
-            color: #333;
-            margin: 10px;
-            padding: 15px;
-            border-radius: 6px;
-            font-size: 0.9em;
-            border: 1px solid #ccc;
-            cursor: pointer;
-            /* 追加：クリック可能にするため */
-            position: relative;
-            /* 追加：ドロップダウンメニューの親要素にするため */
-        }
-
-        .ban-list li strong {
-            font-weight: bold;
-        }
-
-        .ban-list li+li {
-            margin-top: 10px;
-        }
-
-        /* Input Group */
-        .input-group {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .input-group label {
-            margin-right: 10px;
-            white-space: nowrap;
-        }
-
-        .input-group input[type="text"],
-        .input-group input[type="password"],
-        .input-group select {
-            flex-grow: 1;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-
-        /* Button Group */
-        .button-group {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-
-        .button-group button {
-            flex: 1;
-            margin: 0 5px;
-        }
-
-        /* プレイヤー選択 dropdown */
-        .player-select {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .player-select select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-color: #fff;
-            cursor: pointer;
-        }
-
-        .player-select select:focus {
-            outline: none;
-            border-color: #999;
-        }
-
-        /* Unban 確認メニュー */
-        .unban-confirm {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            padding: 10px;
-            z-index: 10;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            min-width: 200px;
-        }
-
-        .unban-confirm p {
-            margin: 5px 0;
-        }
-
-        .unban-confirm button {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            background-color: #5cb85c;
-            color: #fff;
-            cursor: pointer;
-            margin-right: 5px;
-        }
-
-        .unban-confirm button.cancel {
-            background-color: #d9534f;
-        }
-
-        /* BAN フォーム スタイル */
-        .ban-form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .ban-form .input-group {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .ban-form label {
-            margin-right: 10px;
-            white-space: nowrap;
-        }
-
-        .ban-form input[type="text"],
-        .ban-form select {
-            flex-grow: 1;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-
-        .ban-form button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 6px;
-            background-color: #666;
-            color: #f5f5f5;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 10px;
-        }
-
-        .ban-form button:hover {
-            background-color: #888;
-        }
-
-        /* Unban 入力フィールド */
-        #unbanPlayerName {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+.container {
+  background-color: #e8e8e8;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  margin: 30px auto;
+  max-width: 900px;
+}
+
+h1,
+h2 {
+  text-align: center;
+  color: #444;
+  margin-bottom: 20px;
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+h2 .login-icon,
+h2 .server-icon,
+h2.status-icon,
+h2.ban-icon {
+  margin-right: 10px;
+  color: #666;
+}
+
+/* Navigation */
+.hamburger-menu {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  cursor: pointer;
+  z-index: 100;
+  display: none;
+}
+
+.hamburger-menu div {
+  width: 30px;
+  height: 4px;
+  background-color: #2d2a2a;
+  margin: 6px 0;
+  transition: 0.4s;
+}
+
+#main-nav {
+  position: fixed;
+  top: 0;
+  left: -250px;
+  width: 250px;
+  height: 100%;
+  background-color: #444;
+  z-index: 99;
+  transition: left 0.3s ease;
+  overflow-y: auto;
+}
+
+#main-nav.active {
+  left: 0;
+}
+
+#main-nav ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 60px;
+}
+
+#main-nav li {
+  padding: 15px;
+  color: #f5f5f5;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+}
+
+#main-nav li:hover {
+  background-color: #666;
+}
+
+.nav-icon {
+  margin-right: 10px;
+}
+
+/* Login Form */
+#login-form {
+  text-align: center;
+}
+
+#login-form input[type='text'],
+#login-form input[type='password'] {
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 95%;
+}
+
+#login-form button {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 6px;
+  background-color: #666;
+  color: #f5f5f5;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+#login-form button:hover {
+  background-color: #888;
+}
+
+#login-error {
+  color: #d9534f;
+  margin-top: 10px;
+}
+
+/* Auto Login Checkbox */
+.autologin-container {
+  margin-top: 10px;
+  text-align: left;
+  display: inline-block;
+}
+
+.autologin-container input[type='checkbox'] {
+  margin: 0;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.autologin-container label {
+  font-size: 0.9em;
+  color: #555;
+  vertical-align: middle;
+}
+
+/* Logout Button */
+#logout-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #d9534f;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: 15px;
+}
+
+#logout-button:hover {
+  background-color: #c9302c;
+}
+
+/* Info Box */
+.info-box {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 30px;
+}
+
+.info-box div {
+  text-align: center;
+  font-size: 1.1em;
+  color: #555;
+}
+
+/* Console */
+.console-input-area {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.console-container {
+  flex-grow: 1;
+  margin-bottom: 15px;
+}
+
+#console {
+  width: calc(100% - 40px);
+  height: 350px;
+  background-color: #282c34;
+  color: #00ff00;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 20px;
+  border: none;
+  border-radius: 6px;
+  overflow-y: scroll;
+  resize: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.input-container {
+  display: flex;
+  gap: 10px;
+}
+
+#commandInput {
+  flex-grow: 1;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.console-input-area button {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 6px;
+  background-color: #666;
+  color: #f5f5f5;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.console-input-area button:hover {
+  background-color: #888;
+}
+
+/* Server Status */
+#server-status {
+  margin-top: 30px;
+}
+
+.status-info {
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+}
+
+.status-info p {
+  margin: 8px 0;
+  color: #555;
+}
+
+.status-icon {
+  color: #5cb85c;
+  margin-right: 5px;
+}
+
+.status-icon.offline {
+  color: #d9534f;
+}
+
+.status-icon.error {
+  color: #f0ad4e;
+}
+
+/* Player List */
+.player-list {
+  list-style: none;
+  padding: 0;
+}
+
+.player-list li {
+  background-color: #e8e8e8;
+  color: #333;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  border: 1px solid #ccc;
+}
+
+.player-list li strong {
+  font-weight: bold;
+}
+
+.player-list li + li {
+  margin-top: 10px;
+}
+
+/* Pages */
+.page {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.page.active {
+  display: block;
+  opacity: 1;
+}
+
+/* Add padding to the right of the main-nav */
+#main-nav.active + .container {
+  padding-left: 280px;
+  /* Adjust this value to match the width of your main-nav */
+  transition: padding-left 0.3s ease;
+}
+
+.container {
+  transition: padding-left 0.3s ease;
+}
+
+/* Style adjustments for better alignment */
+#main-nav.active + .container .page {
+  margin-left: 0;
+}
+
+/* BAN Page Styles */
+.ban-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.ban-form input[type='text'] {
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+}
+
+.ban-form button {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 6px;
+  background-color: #666;
+  color: #f5f5f5;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.ban-form button:hover {
+  background-color: #888;
+}
+
+.ban-list {
+  list-style: none;
+  padding: 0;
+}
+
+.ban-list li {
+  background-color: #e8e8e8;
+  color: #333;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  /* 追加：クリック可能にするため */
+  position: relative;
+  /* 追加：ドロップダウンメニューの親要素にするため */
+}
+
+.ban-list li strong {
+  font-weight: bold;
+}
+
+.ban-list li + li {
+  margin-top: 10px;
+}
+
+/* Input Group */
+.input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.input-group label {
+  margin-right: 10px;
+  white-space: nowrap;
+}
+
+.input-group input[type='text'],
+.input-group input[type='password'],
+.input-group select {
+  flex-grow: 1;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* Button Group */
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.button-group button {
+  flex: 1;
+  margin: 0 5px;
+}
+
+/* プレイヤー選択 dropdown */
+.player-select {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.player-select select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.player-select select:focus {
+  outline: none;
+  border-color: #999;
+}
+
+/* Unban 確認メニュー */
+.unban-confirm {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  min-width: 200px;
+}
+
+.unban-confirm p {
+  margin: 5px 0;
+}
+
+.unban-confirm button {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: #5cb85c;
+  color: #fff;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.unban-confirm button.cancel {
+  background-color: #d9534f;
+}
+
+/* BAN フォーム スタイル */
+.ban-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.ban-form .input-group {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.ban-form label {
+  margin-right: 10px;
+  white-space: nowrap;
+}
+
+.ban-form input[type='text'],
+.ban-form select {
+  flex-grow: 1;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.ban-form button {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 6px;
+  background-color: #666;
+  color: #f5f5f5;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.ban-form button:hover {
+  background-color: #888;
+}
+
+/* Unban 入力フィールド */
+#unbanPlayerName {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* Map Page Styles */
+#mapid {
+    height: 500px;
+    width: 100%;
+    margin-bottom: 20px;
+    background-color: #fff; /* マップの背景を白に */
+    border: 1px solid #000; /* 枠線を追加 */
+}
+
+/* Player List for Map */
+.player-list-map {
+  list-style: none;
+  padding: 0;
+}
+
+.player-list-map li {
+  background-color: #e8e8e8;
+  color: #333;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  border: 1px solid #ccc;
+}
+
+.player-list-map li strong {
+  font-weight: bold;
+}
+
+.player-list-map li a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.player-list-map li a:hover {
+  text-decoration: underline;
+}

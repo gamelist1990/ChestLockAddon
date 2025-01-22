@@ -178,9 +178,9 @@ export class World {
         }
     }
 
-    public async getBlocksInArea(x1: number, z1: number, x2?: number, z2?: number, y: number = 64): Promise<{ [key: string]: string }> {
+    public async getBlocksInArea(x1: number, z1: number, x2?: number, z2?: number, y: number = 64): Promise<{ [key: string]: { id: string, blockName: string } }> {
         const startY = y + 100;
-        const blocks: { [key: string]: string } = {};
+        const blocks: { [key: string]: { id: string, blockName: string } } = {};
 
         if (x2 !== undefined && z2 !== undefined) {
             // 範囲指定の場合
@@ -188,10 +188,14 @@ export class World {
                 for (let z = Math.min(z1, z2); z <= Math.max(z1, z2); z++) {
                     const res = await this.runCommand(`gettopsolidblock ${x} ${startY} ${z}`);
                     if (res && res.statusCode === 0) {
-                        blocks[`${x},${z}`] = res.blockName;
+                        // /testforblock コマンドを使ってブロックIDも取得 (例: /testforblock ~ ~ ~ grass_block)
+                        const testRes = await this.runCommand(`testforblock ${x} ${startY - 1} ${z} grass_block`);
+                        const blockId = testRes.statusCode === 0 ? 'minecraft:grass_block' : (res.blockName || 'unknown'); // ブロックIDを判定 (一例)
+
+                        blocks[`${x},${z}`] = { id: blockId, blockName: res.blockName }; // ブロック名に加えて、ブロックIDも格納
                     } else {
-                        console.warn(`Failed to get top solid block at ${x} ${startY} ${z}`);
-                        blocks[`${x},${z}`] = "unknown";
+                        // console.warn(`Failed to get top solid block at ${x} ${startY} ${z}`);
+                        blocks[`${x},${z}`] = { id: 'unknown', blockName: 'unknown' };
                     }
                 }
             }
@@ -199,10 +203,13 @@ export class World {
             // 単一座標指定の場合 (x2, z2 が undefined)
             const res = await this.runCommand(`gettopsolidblock ${x1} ${startY} ${z1}`);
             if (res && res.statusCode === 0) {
-                blocks[`${x1},${z1}`] = res.blockName;
+                const testRes = await this.runCommand(`testforblock ${x1} ${startY - 1} ${z1} grass_block`);
+                const blockId = testRes.statusCode === 0 ? 'minecraft:grass_block' : (res.blockName || 'unknown');
+
+                blocks[`${x1},${z1}`] = { id: blockId, blockName: res.blockName };
             } else {
-                console.warn(`Failed to get top solid block at ${x1} ${startY} ${z1}`);
-                blocks[`${x1},${z1}`] = "unknown";
+                // console.warn(`Failed to get top solid block at ${x1} ${startY} ${z1}`);
+                blocks[`${x1},${z1}`] = { id: 'unknown', blockName: 'unknown' };
             }
         }
 

@@ -25,6 +25,7 @@
     "fs": "^0.0.1-security",
     "gettext-parser": "^8.0.0",
     "inquirer": "^12.3.0",
+    "jimp": "^1.6.0",
     "js-yaml": "^4.1.0",
     "multer": "^1.4.5-lts.1",
     "node-notifier": "^10.0.1",

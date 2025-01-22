@@ -144,7 +144,7 @@ export class WsServer {
 
     // Minecraft サーバーとの接続処理
     private async handleMinecraftConnection(ws: WebSocket) {
-        // console.log('Minecraft server connected.');
+        console.log('Minecraft server connected.');
 
         const load = await import('./import');
         //Load Command
@@ -656,6 +656,7 @@ export class WsServer {
 
             case 'playerChat':
                 const { sender, message, type, receiver } = data;
+                console.log(`Chat from ${sender}: ${message}`);
                 if (sender !== 'External') this.onPlayerChat(sender, message, type, receiver);
                 break;
             case 'PlayerDied':

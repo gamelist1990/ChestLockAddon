@@ -2,7 +2,6 @@ import { Server } from 'socket-be';
 import { config } from 'dotenv';
 import path from 'path';
 import fs from 'fs';
-import os from 'os';
 import { WebSocket } from 'ws';
 import inquirer from 'inquirer';
 import { ItemUsed, PlayerDied } from './interface';
@@ -16,23 +15,9 @@ const COLOR_RESET = '\x1b[0m';
 const RECONNECT_INTERVAL = 5000;
 const MAX_NOTIFICATIONS = 10;
 
-// --- Types ---
-type ServerStatus = {
-  uptime: string;
-  playerCount: number;
-  cpuUsage: string;
-  memoryUsage: number;
-  usedMemoryMB: number;
-  loadStatus: string;
-  wsPing: number;
-  isWorldLoaded: boolean;
-};
-
 // --- Global Variables ---
-let isWorldLoaded = false;
 let wss: WebSocket | null = null;
 let reconnectionInterval: NodeJS.Timeout | null;
-let serverStartTime = Date.now();
 let envLoaded = false;
 let autoConnectOnStartup = false;
 let webSocketUrl: string | null = null;
@@ -178,7 +163,23 @@ async function extractPlayerName(
 
 // --- UI Functions ---
 
+// displayMenu関数を更新して、WebSocketサーバーのステータス確認後に再帰的に呼び出すように変更
 const displayMenu = async () => {
+  if (webSocketUrl && !envLoaded) { // 初回起動時のみWebSocketサーバーのステータスを確認
+    try {
+      isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
+      log(
+        'green',
+        `WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`,
+      );
+    } catch (error) {
+      log(
+        'red',
+        `WebSocketサーバーの状態確認中にエラーが発生しました: ${error}`,
+      );
+    }
+  }
+
   autoConnectOnStartup = process.env.AUTO_CONNECT_ON_STARTUP === 'true';
 
   const choices = [
@@ -192,10 +193,9 @@ const displayMenu = async () => {
   clearConsole();
   console.log(COLOR_GREEN + 'Minecraftサーバーマネージャー' + COLOR_RESET);
   console.log(
-    `WebSocketサーバー: ${
-      isWebSocketServerOnline
-        ? COLOR_GREEN + 'オンライン' + COLOR_RESET
-        : COLOR_RED + 'オフライン' + COLOR_RESET
+    `WebSocketサーバー: ${isWebSocketServerOnline
+      ? COLOR_GREEN + 'オンライン' + COLOR_RESET
+      : COLOR_RED + 'オフライン' + COLOR_RESET
     }`,
   );
 
@@ -209,25 +209,24 @@ const displayMenu = async () => {
       },
     ]);
 
-    handleMenuChoice(choices.indexOf(answers.menuChoice) + 1);
+    await handleMenuChoice(choices.indexOf(answers.menuChoice) + 1);
   } catch (error) {
     log('red', 'エラーが発生しました: ' + error);
   }
 };
-
-const handleMenuChoice = (choice: number) => {
+const handleMenuChoice = async (choice: number) => {
   switch (choice) {
     case 1:
-      restartWss();
+      await restartWss();
       break;
     case 2:
-      setupWebSocketUrl();
+      await setupWebSocketUrl();
       break;
     case 3:
-      toggleAutoConnect();
+      await toggleAutoConnect();
       break;
     case 4:
-      displayNotifications();
+      await displayNotifications();
       break;
     case 5:
       console.log('終了します...');
@@ -241,25 +240,46 @@ const handleMenuChoice = (choice: number) => {
 
 const restartWss = async () => {
   clearConsole();
+
+  // .envファイルを再読み込み
+  envLoaded = false; // フラグをリセット
+  const envPath = path.resolve(process.cwd(), '.env');
+  try {
+    config({ path: envPath, override: true });
+    envLoaded = true;
+    addNotification(`${COLOR_GREEN}.envファイルを再読み込みしました。${COLOR_RESET}`);
+  } catch (error) {
+    addNotification(`${COLOR_RED}.envファイルの再読み込み中にエラーが発生しました: ${error}${COLOR_RESET}`);
+    // 必要に応じてデフォルト値を設定
+  }
+
+  // グローバル変数を更新
+  webSocketUrl = process.env.WSS_URL || null;
+  autoConnectOnStartup = process.env.AUTO_CONNECT_ON_STARTUP === 'true';
+
+  // WebSocketサーバーのステータス表示を更新
   if (webSocketUrl) {
+    log('yellow', `WebSocketサーバーURL: ${webSocketUrl}\n`);
+    isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
     log('yellow', `WebSocketサーバー: ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'}\n`);
     if (!isWebSocketServerOnline) {
       console.log(COLOR_RED + 'WebSocketサーバーに接続されていません。' + COLOR_RESET);
     }
-  }
-  if (!envLoaded) {
-    log(
-      'yellow',
-      `${COLOR_RED}エラー: .envファイルが読み込まれていないか、必要な変数が不足しています。${COLOR_RESET}`,
-    );
-    return;
-  }
-  if (!webSocketUrl) {
+  } else {
     log('red', `${COLOR_RED}エラー: WebSocket URLが設定されていません。${COLOR_RESET}`);
+    // .envの読み込みに失敗した場合、もしくは、.envが存在しない場合は、処理を停止。
     return;
   }
-  await wss?.close();
-  await connectToWss(webSocketUrl);
+  if (!autoConnectOnStartup) {
+    log('yellow', `${COLOR_YELLOW}起動時の自動接続が無効になっています。${COLOR_RESET}`);
+  }
+
+  // WebSocket接続
+  if (autoConnectOnStartup) {
+    await wss?.close();
+    await connectToWss(webSocketUrl);
+  }
+
   console.log('メニューに戻るにはEnterキーを押してください...\n');
   await inquirer.prompt([
     {
@@ -308,7 +328,7 @@ const setupWebSocketUrl = async () => {
       isWebSocketServerOnline = await Promise.race([checkStatusPromise, timeoutPromise]);
       log(
         'green',
-        `WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。\nサーバーマネージャーに戻った際にEnterを押すことで選択できるようになります`,
+        `WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`,
       );
 
       if (isWebSocketServerOnline && autoConnectOnStartup) {
@@ -326,7 +346,11 @@ const setupWebSocketUrl = async () => {
   } catch (error) {
     log('red', 'エラーが発生しました: ' + error);
   } finally {
-    setTimeout(displayMenu, 1000);
+    // setupWebSocketUrlが完了したら、再度WebSocketサーバーの状態を確認してメニューを更新
+    if (webSocketUrl) {
+      isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
+    }
+    displayMenu();
   }
 };
 
@@ -474,7 +498,7 @@ const reconnect = async (): Promise<void> => {
             clearInterval(reconnectionInterval!);
             resolve();
           })
-          .catch(() => {});
+          .catch(() => { });
       }
     };
 
@@ -494,8 +518,8 @@ const sendDataToWss = (event: string, data: any) => {
 // --- Server Setup and Event Handlers ---
 
 const server = new Server({
-  port: 8000,
-  timezone: 'Asia/Tokyo',
+  port: parseInt(process.env.SOCKET_BE_PORT || '8000'),
+  timezone: process.env.TIMEZONE || 'Asia/Tokyo',
 });
 
 server.events.on('serverOpen', async () => {
@@ -504,14 +528,12 @@ server.events.on('serverOpen', async () => {
       `${COLOR_GREEN}MinecraftサーバーがWebSocket経由で接続されました!${COLOR_RESET}`,
     );
   }
-  serverStartTime = Date.now();
   if (webSocketUrl && autoConnectOnStartup) {
     await connectToWss(webSocketUrl);
   }
 });
 
 server.events.on('worldAdd', async (event) => {
-  isWorldLoaded = true;
   sendDataToWss('worldAdd', {});
   const { world } = event;
   world.subscribeEvent('ItemUsed');
@@ -519,7 +541,6 @@ server.events.on('worldAdd', async (event) => {
 });
 
 server.events.on('worldRemove', async () => {
-  isWorldLoaded = false;
   sendDataToWss('worldRemove', {});
 });
 
@@ -583,11 +604,11 @@ server.events.on('packetReceive', async (event) => {
       inRaid: body.inRaid,
       killer: body.killer
         ? {
-            color: body.killer.color,
-            id: body.killer.id,
-            type: body.killer.type,
-            variant: body.killer.variant,
-          }
+          color: body.killer.color,
+          id: body.killer.id,
+          type: body.killer.type,
+          variant: body.killer.variant,
+        }
         : null,
       player: {
         color: body.player.color,
@@ -640,7 +661,7 @@ if (process.platform === 'win32') {
 
 const initEnv = async () => {
   const envPath = path.resolve(process.cwd(), '.env');
-  const defaultEnvContent = `# 自動的に作成された.envファイル\n# ここに設定値を記入してください\nWSS_URL="WebSocketサーバーURL"\nAUTO_CONNECT_ON_STARTUP="false" # 起動時の自動接続 (true or false)\n`;
+  const defaultEnvContent = `# 自動的に作成された.envファイル\n# ここに設定値を記入してください\nWSS_URL="WebSocketサーバーURL"\nAUTO_CONNECT_ON_STARTUP="false" # 起動時の自動接続 (true or false)\nSOCKET_BE_PORT="8000" # ソケットビーサーバーのポート番号\nTIMEZONE="Asia/Tokyo" # タイムゾーン\n`;
 
   const createDefaultEnvFile = async (filePath: string) => {
     try {
@@ -683,6 +704,7 @@ const initEnv = async () => {
   if (webSocketUrl) {
     addNotification(`${COLOR_GREEN}WebSocket URLが検出されました: ${webSocketUrl}${COLOR_RESET}`);
     try {
+      // 初期化時にWebSocketサーバーの状態を確認
       isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
       addNotification(
         `${COLOR_GREEN}WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。${COLOR_RESET}`,
@@ -704,5 +726,6 @@ const initEnv = async () => {
 // --- Start ---
 (async () => {
   await initEnv();
+  envLoaded = false;
   displayMenu();
 })();
