@@ -2,6 +2,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { IncomingMessage } from 'http';
 import { World } from './module/world';
 import { promises as fsPromises } from 'fs';
+import { getData } from './module/Data';
 
 // プレイヤー情報を表すインターフェース (最適化: 不要なプロパティを削除)
 export interface Player {
@@ -9,6 +10,7 @@ export interface Player {
     uuid: string;
     id: number;
     dimension: number;
+    ping: number;
     position: {
         x: number;
         y: number;
@@ -241,12 +243,45 @@ export class WsServer {
         const playerData = JSON.parse(queryResult.details.replace(/\\/g, ''))[0];
         if (!playerData || !playerData.uniqueId) return null;
 
+        // getData を使って ping を含む詳細なプレイヤー情報を取得
+        const detailedPlayerData = await getData({
+            name: playerName,
+            uuid: playerData.uniqueId,
+            id: playerData.id,
+            dimension: playerData.dimension,
+            position: { x: playerData.position.x, y: playerData.position.y - 2, z: playerData.position.z },
+            ping: 0,
+            sendMessage: (message: string) =>
+                this.sendToMinecraft({ command: `sendMessage`, message, playerName }),
+            runCommand: (command: string) => this.executeMinecraftCommand(command),
+            hasTag: async (tag: string) => {
+                const result = await this.executeMinecraftCommand(`tag ${playerName} list`);
+                return result && result.statusMessage
+                    ? new RegExp(`§a${tag}§r`).test(result.statusMessage)
+                    : false;
+            },
+            getTags: async () => {
+                const result = await this.executeMinecraftCommand(`tag ${playerName} list`);
+                if (!result || !result.statusMessage) return [];
+                const tagRegex = /§a([\w\d]+)§r/g;
+                const tags: string[] = [];
+                let match;
+                while ((match = tagRegex.exec(result.statusMessage)) !== null) {
+                    tags.push(match[1]);
+                }
+                return tags;
+            },
+        }, playerName);
+
+        if (!detailedPlayerData) return null;
+
         return {
             name: playerName,
             uuid: playerData.uniqueId,
             id: playerData.id,
             dimension: playerData.dimension,
             position: { x: playerData.position.x, y: playerData.position.y - 2, z: playerData.position.z },
+            ping: detailedPlayerData.ping,
             sendMessage: (message: string) =>
                 this.sendToMinecraft({ command: `sendMessage`, message, playerName }),
             runCommand: (command: string) => this.executeMinecraftCommand(command),

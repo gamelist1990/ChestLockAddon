@@ -459,7 +459,7 @@
             } else {
                 players.forEach(player => {
                     const li = $('<li>');
-                    li.html(`<strong>${player.name}</strong> (UUID: ${player.uuid})`);
+                    li.html(`<strong>${player.name}</strong> (UUID: ${player.uuid} - Ping: ${player.ping}ms)`);
                     if (player.position) {
                         li.append(`<br>位置: X=${player.position.x}, Y=${player.position.y}, Z=${player.position.z}`);
                     } else {

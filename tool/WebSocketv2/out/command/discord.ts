@@ -240,7 +240,7 @@ async function sendDiscordToMinecraft(message: Message) {
 
             if (message.mentions.has(discordClient.user!) && !message.author.bot) {
                 const content = message.content;
-                const match = content.match(/<@!?\d+>\s*([\d.]+)(?:\s+(true))?/i); // 数値とオプション(true)を抽出
+                const match = content.match(/<@!?\d+>\s*([\d.]+)(?:\s+(true))?/i); 
                 if (match) {
                     const num = parseFloat(match[1]);
                     const showCalculation = match[2] === 'true';

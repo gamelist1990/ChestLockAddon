@@ -303,6 +303,7 @@ async function getOnlinePlayersInfo() {
                 return {
                     name: player.name,
                     uuid: player.uuid,
+                    ping: player.ping,
                     position: player.position,
                 };
             })
