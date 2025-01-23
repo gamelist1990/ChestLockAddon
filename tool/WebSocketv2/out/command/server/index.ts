@@ -1,4 +1,4 @@
-import { world, Player } from '../../backend';
+import { world, Player, PlayerData } from '../../backend';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
@@ -8,6 +8,8 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { calculateUptime } from '../../module/Data';
 import fetch from 'node-fetch';
 import { banListCache, loadBanList, PlayerBAN, PlayerUNBAN } from '../ban';
+import { ver } from '../../version';
+import { ngrokUrls } from '../discord/discord';
 
 // .envファイルのパスを現在のディレクトリに設定
 const serverEnvPath = path.resolve(__dirname, 'server.env');
@@ -42,11 +44,56 @@ interface AuthInfo {
     password: string;
 }
 
+// 認証情報ファイルのパス
+const authDataPath = path.join(__dirname, 'auth_data.json');
+
 // 認証情報を格納する変数
-const authorizedUsers: AuthInfo[] = [
-    { username: 'PEXkoukunn', password: '@gamelist1990' },
-    { username: 'sunsun', password: '@admin_sunsun' },
-];
+let authorizedUsers: AuthInfo[] = [];
+
+// 認証情報をファイルから読み込む関数
+function loadAuthData() {
+    try {
+        if (fs.existsSync(authDataPath)) {
+            const data = fs.readFileSync(authDataPath, 'utf8');
+            authorizedUsers = JSON.parse(data);
+        } else {
+            console.warn('auth_data.json が見つかりません。新しいファイルを作成します。');
+            authorizedUsers = [];
+            saveAuthData();
+        }
+    } catch (error) {
+        console.error('認証情報の読み込みに失敗しました:', error);
+        authorizedUsers = [];
+    }
+}
+
+// 認証情報をファイルに保存する関数
+function saveAuthData() {
+    try {
+        const data = JSON.stringify(authorizedUsers, null, 2);
+        fs.writeFileSync(authDataPath, data, 'utf8');
+    } catch (error) {
+        console.error('認証情報の保存に失敗しました:', error);
+    }
+}
+
+// ユーザー認証情報を追加する関数
+export function addUser(username: string, password: string) {
+    authorizedUsers.push({ username, password });
+    saveAuthData();
+}
+
+// ユーザー認証情報を削除する関数
+export function removeUser(username: string): boolean {
+    const initialLength = authorizedUsers.length;
+    authorizedUsers = authorizedUsers.filter(user => user.username !== username);
+    saveAuthData();
+    return authorizedUsers.length < initialLength;
+}
+
+
+// 認証情報を読み込む
+loadAuthData();
 
 // ログイン状態を管理するマップ (ユーザー名とWebSocketの紐づけ)
 const authenticatedClients = new Map<string, WebSocket>();
@@ -80,7 +127,18 @@ app.post('/login', (req, res) => {
     }
 });
 
-// Status APIのエンドポイント (複数サーバー対応、ping情報追加)
+app.get('/api', (req, res) => {
+    res.sendFile(path.join(__dirname, 'status.html'));
+});
+
+app.get('/get_url', (req, res) => {
+    let wsUrl2 = "ws://example.com";
+    if (ngrokUrls) {
+        wsUrl2 = ngrokUrls.web.url
+    }
+    res.send(wsUrl2);
+});
+
 app.get('/status', async (req, res) => {
     const apiServerAddresses = process.env.API_SERVER_ADDRESSES;
 
@@ -94,37 +152,71 @@ app.get('/status', async (req, res) => {
 
     try {
         const promises = addresses.map(async (address) => {
-            const apiResponse = await fetch(`https://api.mcsrvstat.us/2/${address.trim()}`) as any;
+            const trimmedAddress = address.trim();
+            const isLocalhost = trimmedAddress.startsWith('localhost') || trimmedAddress.startsWith('127.0.0.1');
 
-            if (!apiResponse.ok) {
-                throw new Error(`API request for ${address} failed with status ${apiResponse.status}`);
+            if (isLocalhost) {
+                // localhost の場合の処理: POSTリクエストで /get_api に送信
+                try {
+                    const response = await fetch(`http://${trimmedAddress}/get_api`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ address: trimmedAddress }),
+                        timeout: 5000
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        //console.log(JSON.stringify(data))
+                        results[trimmedAddress] = data; // データをそのまま結果に格納
+                    } else {
+                        results[trimmedAddress] = { status: 'offline', error: `Error from /get_api: ${response.status}` };
+                    }
+                } catch (error) {
+                    results[trimmedAddress] = { status: 'offline', error: error.message };
+                }
+            } else {
+                // 外部サーバーの場合の処理 (mcsrvstat API を使用)
+                const apiResponse = await fetch(`https://api.mcsrvstat.us/2/${trimmedAddress}`);
+
+                if (!apiResponse.ok) {
+                    throw new Error(`API request for ${trimmedAddress} failed with status ${apiResponse.status}`);
+                }
+
+                const data = await apiResponse.json();
+
+                if (data.online) {
+                    results[trimmedAddress] = {
+                        status: 'online',
+                        players: {
+                            online: data.players.online,
+                            max: data.players.max,
+                        },
+                        motd: data.motd,
+                        ping: data.ping || null,
+                        server: {
+                            version: data.version || null, // サーバーバージョンを追加
+                        },
+                    };
+                } else {
+                    results[trimmedAddress] = { status: 'offline' };
+                }
             }
-
-            return { address: address.trim(), data: await apiResponse.json() as any };
         });
 
         const settledPromises = await Promise.allSettled(promises);
 
         settledPromises.forEach((result) => {
-            if (result.status === "fulfilled") {
-                const { address, data } = result.value;
-
-                if (data.online) {
-                    results[address] = {
-                        status: 'online',
-                        players: {
-                            online: data.players.online,
-                            max: data.players.max
-                        },
-                        motd: data.motd,
-                        // `ping` が存在する場合は追加
-                        ping: data.ping || null
-                    };
-                } else {
-                    results[address] = { status: 'offline' };
-                }
+            if (result.status === 'fulfilled') {
+                // fulfilled の場合は、すでに results に結果が格納されているので何もしない
             } else {
-                const address = result.reason.message.match(/API request for (.+?) failed/)?.[1] || "unknown";
+                const address = result.reason.message.match(/API request for (.+?) failed/)
+                    ?.[1]
+                    || (result.reason.message.includes('localhost') || result.reason.message.includes('127.0.0.1'))
+                    ? result.reason.message
+                    : 'unknown';
                 results[address] = { status: 'error', error: result.reason.message };
             }
         });
@@ -134,6 +226,38 @@ app.get('/status', async (req, res) => {
         console.error('Status API error:', error);
         res.status(500).json({ error: 'Status API error' });
     }
+});
+
+app.post('/get_api', async (req, res) => {
+    const { address } = req.body;
+    if (!address) {
+        res.status(400).json({ error: 'Address is required' });
+        return;
+    }
+    let online = 0;
+    if (world) {
+        const playerDataObject = await world.getPlayerData();
+        const playerDataArray = Object.values(playerDataObject);
+        const onlinePlayers = playerDataArray.filter((player: PlayerData) => player.isOnline);
+        online = onlinePlayers.length;
+    }
+
+    const serverData = {
+        status: 'online',
+        players: {
+            online,
+            max: 100,
+        },
+        motd: {
+            raw: `WebSocket Server`,
+            clean: `A WebSocket Server ${ver} is running`,
+        },
+        server: {
+            version: `${ver}`
+        }
+    };
+
+    res.json(serverData);
 });
 
 // BAN処理のエンドポイント

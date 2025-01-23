@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server Status</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            /* 好みでフォント変更 */
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #4A6572;
+            color: #F9AA33;
+            padding: 10px 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        #server-status {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .server-card {
+            background-color: #fff;
+            border: none;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 250px;
+            /* 幅を少し広く */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .server-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .server-card h3 {
+            color: #4A6572;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #F9AA33;
+            padding-bottom: 5px;
+        }
+
+        .server-card p {
+            margin: 8px 0;
+            font-size: 1em;
+            color: #333;
+        }
+
+        .server-card .status {
+            font-weight: bold;
+        }
+
+        .server-card .status-online {
+            color: #4CAF50;
+            /* オンライン時の色 */
+        }
+
+        .server-card .status-offline {
+            color: #F44336;
+            /* オフライン時の色 */
+        }
+
+        .server-card .status-error {
+            color: #FF9800;
+            /* エラー時の色 */
+        }
+
+        .loader {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .error-message {
+            color: #F44336;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #update-timer {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <h1>Minecraft Server Status by Koukunn_</h1>
+    </header>
+    <main>
+        <div id="server-status">
+            <div class="loader">Loading server status...<br>現在ステータス情報を読み込んでいます...</div>
+        </div>
+        <div id="update-timer">Next update in: 5m 00s</div>
+    </main>
+
+    <script>
+        const UPDATE_INTERVAL = 300000; // 5 minutes in milliseconds
+        let nextUpdateTime = Date.now() + UPDATE_INTERVAL;
+
+        async function fetchServerStatus() {
+            try {
+                const response = await fetch('/status');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                displayServerStatus(data);
+
+                // Reset the next update time after fetching new data
+                nextUpdateTime = Date.now() + UPDATE_INTERVAL;
+            } catch (error) {
+                console.error('Error fetching server status:', error);
+                displayErrorMessage();
+            }
+        }
+
+        function displayServerStatus(data) {
+            const serverStatusDiv = document.getElementById('server-status');
+            serverStatusDiv.innerHTML = '';
+
+            for (const address in data) {
+                const serverInfo = data[address];
+                const serverCard = document.createElement('div');
+                serverCard.classList.add('server-card');
+
+                const addressElement = document.createElement('h3');
+                addressElement.textContent = address;
+                serverCard.appendChild(addressElement);
+
+                const statusElement = document.createElement('p');
+                statusElement.classList.add('status');
+                if (serverInfo.status === 'online') {
+                    statusElement.textContent = 'Status: Online';
+                    statusElement.classList.add('status-online');
+                } else if (serverInfo.status === 'offline') {
+                    statusElement.textContent = 'Status: Offline';
+                    statusElement.classList.add('status-offline');
+                } else {
+                    statusElement.textContent = `Status: Error - ${serverInfo.error}`;
+                    statusElement.classList.add('status-error');
+                }
+                serverCard.appendChild(statusElement);
+
+                if (serverInfo.status === 'online') {
+                    const playersElement = document.createElement('p');
+                    playersElement.textContent = `Players: ${serverInfo.players.online} / ${serverInfo.players.max}`;
+                    serverCard.appendChild(playersElement);
+
+                    if (serverInfo.players.list && serverInfo.players.list.length > 0) {
+                        const playersListElement = document.createElement('p');
+                        playersListElement.textContent = `Players: ${serverInfo.players.list.join(', ')}`;
+                        serverCard.appendChild(playersListElement);
+                    }
+
+                    if (serverInfo.motd) {
+                        const motdElement = document.createElement('p');
+                        motdElement.textContent = `MOTD: ${serverInfo.motd.clean}`;
+                        serverCard.appendChild(motdElement);
+                    }
+
+                    if (serverInfo.server && serverInfo.server.version) {
+                        const serverVersionElement = document.createElement('p');
+                        serverVersionElement.textContent = `Version: ${serverInfo.server.version}`;
+                        serverCard.appendChild(serverVersionElement);
+                    }
+
+                    if (serverInfo.ping) {
+                        const pingElement = document.createElement('p');
+                        pingElement.textContent = `Ping: ${serverInfo.ping} ms`;
+                        serverCard.appendChild(pingElement);
+                    }
+                }
+
+                serverStatusDiv.appendChild(serverCard);
+            }
+        }
+
+        function displayErrorMessage() {
+            const serverStatusDiv = document.getElementById('server-status');
+            serverStatusDiv.innerHTML = '<p class="error-message">Failed to load server status.</p>';
+        }
+
+        function updateTimerDisplay() {
+            const now = Date.now();
+            const timeLeft = Math.max(0, nextUpdateTime - now); // Ensure time doesn't go negative
+            const minutes = Math.floor(timeLeft / 60000);
+            const seconds = Math.floor((timeLeft % 60000) / 1000);
+
+            const timerDiv = document.getElementById('update-timer');
+            timerDiv.textContent = `Next update in: ${minutes}m ${seconds.toString().padStart(2, '0')}s`;
+        }
+
+        fetchServerStatus();
+        setInterval(fetchServerStatus, UPDATE_INTERVAL);
+        setInterval(updateTimerDisplay, 1000);
+    </script>
+</body>
+
+</html>

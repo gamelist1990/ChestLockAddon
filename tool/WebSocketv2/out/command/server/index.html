@@ -23,6 +23,9 @@
 
     <nav id="main-nav">
         <ul>
+            <li>
+                <span class="nav-icon">ℹ️</span> Creator:Koukunn_
+            </li>
             <li onclick="showPage('console-page')">
                 <span class="nav-icon">🎮</span> コンソール
             </li>
@@ -272,46 +275,91 @@
         }
 
         function connectWebSocket(username, password) {
-            let wsUrl = 'wss://bfxmknk4-80.asse.devtunnels.ms/';
-            ws = new WebSocket(wsUrl);
+            let wsUrl1 = 'wss://bfxmknk4-80.asse.devtunnels.ms/'; // 初期値 (wss1)
+            let wsUrl2 = ''; // wss2のURLを格納する変数
+            let currentWs = null;
 
-            ws.onopen = () => {
-                console.log(`WebSocket connected to ${wsUrl}`);
-                ws.send(JSON.stringify({ type: 'authenticate', username, password }));
-            };
+            // wss2のURLを取得する関数
+            function getWsUrl2(username, password) {
+                const urlRetrievalUrl = '/get_url';
+                let fetchOptions = {
+                    method: 'GET'
+                };
 
-            ws.onmessage = handleWebSocketMessage;
+                fetch(urlRetrievalUrl, fetchOptions)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(url => {
+                        wsUrl2 = url;
+                        console.log(`wsUrl2 received: ${wsUrl2}`);
+                        connectToWebSocket(wsUrl2, false); // 取得したwss2のURLで接続を試みる
+                    })
+                    .catch(error => {
+                        console.error('Error fetching wsUrl2:', error);
+                        connectToWebSocket(wsUrl1, false); // wss2のURL取得に失敗したらwss1を試す
+                    });
+            }
 
-            ws.onerror = (error) => {
-                console.error(`WebSocket error on ${wsUrl}:`, error);
-                ws.close();
-                connectLocalWebSocket(username, password);
-            };
+            // WebSocketに接続する関数
+            function connectToWebSocket(url, isRetry) {
+                console.log(`Trying to connect to WebSocket server: ${url}`);
+                currentWs = new WebSocket(url);
 
-            ws.onclose = (event) => {
-                console.log(`WebSocket connection to ${wsUrl} closed`, event);
-            };
-        }
+                currentWs.onopen = () => {
+                    console.log(`WebSocket connected to ${url}`);
+                    currentWs.send(JSON.stringify({ type: 'authenticate', username, password }));
+                };
 
-        function connectLocalWebSocket(username, password) {
-            const localWsUrl = `ws://${window.location.host}`;
-            console.log(`Trying to connect to local WebSocket server: ${localWsUrl}`);
-            ws = new WebSocket(localWsUrl);
+                currentWs.onmessage = handleWebSocketMessage;
 
-            ws.onopen = () => {
-                console.log(`WebSocket connected to ${localWsUrl}`);
-                ws.send(JSON.stringify({ type: 'authenticate', username, password }));
-            };
+                currentWs.onerror = (error) => {
+                    console.error(`WebSocket error on ${url}:`, error);
+                    currentWs.close();
+                    if (!isRetry && url === wsUrl2) {
+                        console.log('Retrying with wsUrl1...');
+                        connectToWebSocket(wsUrl1, false);  // 初回の接続が失敗した場合、wss1でリトライする
+                    } else if (url === wsUrl1) {
+                        connectLocalWebSocket(username, password);
+                    } else {
+                        alert('全ての接続試行に失敗しました。'); // すべての接続が失敗した場合にアラートを出す
+                    }
+                };
 
-            ws.onmessage = handleWebSocketMessage;
+                currentWs.onclose = (event) => {
+                    console.log(`WebSocket connection to ${url} closed`, event);
+                };
 
-            ws.onerror = (error) => {
-                console.error(`WebSocket error on ${localWsUrl}:`, error);
-            };
+            }
 
-            ws.onclose = () => {
-                console.log(`WebSocket connection to ${localWsUrl} closed`);
-            };
+            // ローカルのWebSocketサーバーに接続する関数
+            function connectLocalWebSocket(username, password) {
+                const localWsUrl = `ws://${window.location.host}`;
+                console.log(`Trying to connect to local WebSocket server: ${localWsUrl}`);
+                currentWs = new WebSocket(localWsUrl);
+
+                currentWs.onopen = () => {
+                    console.log(`WebSocket connected to ${localWsUrl}`);
+                    currentWs.send(JSON.stringify({ type: 'authenticate', username, password }));
+                };
+
+                currentWs.onmessage = handleWebSocketMessage;
+
+                currentWs.onerror = (error) => {
+                    console.error(`WebSocket error on ${localWsUrl}:`, error);
+
+                };
+
+                currentWs.onclose = () => {
+                    console.log(`WebSocket connection to ${localWsUrl} closed`);
+                };
+            }
+
+            // WebSocket接続を開始（まずは/get_urlからURLを取得）
+            getWsUrl2(username, password);
         }
 
         // WebSocket メッセージを処理する共通関数
@@ -332,6 +380,8 @@
                     $('#uptime2').html(`<span class="info-icon">⏱️</span> 起動時間: ${data.data}`);
                     break;
                 case 'onlinePlayers':
+                    $('#playerCount').html(`<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data.length}`);
+                    $('#playerCount2').html(`<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data.length}`);
                     updatePlayerLists(data.data);
                     updatePlayerSelectDropdown(data.data);
                     if (map) {
@@ -402,7 +452,19 @@
                         if (serverData.status === 'online') {
                             statusHTML += `<p><span class="status-icon">✔</span> ${address}: オンライン</p>`;
                             statusHTML += `<p>プレイヤー数: ${serverData.players.online} / ${serverData.players.max}</p>`;
-                            statusHTML += `<p>MOTD: ${serverData.motd.clean.join('<br>')}</p>`;
+
+                            // プレイヤーリスト (存在する場合)
+                            if (serverData.players.list && serverData.players.list.length > 0) {
+                                statusHTML += `<p>プレイヤー: ${serverData.players.list.join(', ')}</p>`;
+                            }
+
+                            statusHTML += `<p>MOTD: ${serverData.motd.clean}</p>`; // motd.clean を直接使用
+
+                            // サーバーバージョン (存在する場合)
+                            if (serverData.server && serverData.server.version) {
+                                statusHTML += `<p>バージョン: ${serverData.server.version}</p>`;
+                            }
+
                             if (typeof serverData.ping !== 'undefined') {
                                 statusHTML += `<p>Ping: ${serverData.ping} ms</p>`;
                             }
@@ -420,33 +482,6 @@
                     console.error('Status check error:', error);
                     $('#server-status').html('<span class="status-icon error">⚠</span> 状態確認中にエラーが発生しました');
                 });
-        }
-
-        // プレイヤーリストを更新および、新規プレイヤーの追加、退出プレイヤーの削除
-        function updatePlayerLists(newPlayers) {
-            // プレイヤーリストをソートして更新
-            let sortedPlayers = newPlayers;
-
-            sortedPlayers.sort((a, b) => {
-                const nameA = a.name || '';
-                const nameB = b.name || '';
-
-                // 日本語かどうかの判定
-                const isJapaneseA = /[ぁ-んァ-ン一-龯]/.test(nameA);
-                const isJapaneseB = /[ぁ-んァ-ン一-龯]/.test(nameB);
-
-                // 日本語が先、それ以外はアルファベット順で比較
-                if (isJapaneseA && !isJapaneseB) {
-                    return -1;
-                } else if (!isJapaneseA && isJapaneseB) {
-                    return 1;
-                } else {
-                    return nameA.localeCompare(nameB);
-                }
-            });
-
-            // プレイヤーリストの表示を更新
-            updatePlayerList(sortedPlayers);
         }
 
         // プレイヤーリストを更新する関数
@@ -774,6 +809,8 @@
             updatePlayerList(sortedPlayers);
             updatePlayerListMap(sortedPlayers);
         }
+
+
 
         //マップページのプレイヤーリスト更新
         function updatePlayerListMap(players) {

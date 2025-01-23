@@ -12,9 +12,8 @@ registerCommand({
         requireTag: []
     },
     executor: async (player: Player) => {
-        // ワールド情報 (存在する場合)
         if (world) {
-            world.sendMessage("Worldオブジェクトのテスト");
+            world.sendMessage("Worldのテスト～");
             world.sendMessage(`Name: ${player.name}`);
             world.sendMessage(`UUID: ${player.uuid}`);
             world.sendMessage(`ID: ${player.id}`);
@@ -26,6 +25,14 @@ registerCommand({
                 world.sendMessage(`Block Name : ${JSON.stringify(block.position)}`)
             }
         }
-        player.sendMessage("現在のサーバーのバージョンは"+ ver)
+        player.sendMessage(`§e§lこのサーバーは§av${ver}§eで処理されています§r`);
     }
 });
+
+
+
+
+
+
+
+

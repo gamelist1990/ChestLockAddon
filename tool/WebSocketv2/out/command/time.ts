@@ -91,7 +91,3 @@ export async function resetJapanTime() {
 
     console.log("日本時間をリセットしました。スコアボードの値を現在の日本時間にしました");
 }
-
-// 初期化時にタイマーが動かないようにする (必要に応じて)
-// clearInterval(timerInterval);
-// timerInterval = null;

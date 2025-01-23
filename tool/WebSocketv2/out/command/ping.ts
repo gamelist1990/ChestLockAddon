@@ -44,7 +44,7 @@ registerCommand({
                     }
                 }
             } catch (error) {
-                console.error("スコアボードからのTPSデータの取得に失敗しました:", error);
+               // console.error("スコアボードからのTPSデータの取得に失敗しました:", error);
             }
 
             if (data && data.ping !== undefined) {

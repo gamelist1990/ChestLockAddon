@@ -5,7 +5,7 @@
     "uuid": "2fa2aac9-cde2-3233-93da-8503717ed9a7",
     "join": "2025/1/22 23:0:25",
     "left": "",
-    "isOnline": true
+    "isOnline": false
   },
   "8f26d444-0529-3200-a49d-0c34e240ecd1": {
     "name": "anojininoji",
@@ -197,7 +197,7 @@
     "uuid": "19508434-d3de-3ddb-824d-0cce0e0587d2",
     "join": "2025/1/22 23:4:2",
     "left": "",
-    "isOnline": true
+    "isOnline": false
   },
   "92c3b8a7-2bbe-3e3b-8279-c18de22670d6": {
     "name": "kanarun0222",
@@ -221,6 +221,6 @@
     "uuid": "1d4252ab-2a2c-3dd8-9cae-c7ab0c3d6d90",
     "join": "2025/1/22 23:3:18",
     "left": "",
-    "isOnline": true
+    "isOnline": false
   }
 }
