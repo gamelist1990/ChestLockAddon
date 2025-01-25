@@ -7,6 +7,7 @@
   "scripts": {
     "copy": "node tool/copy.js",
     "start": "cd tool/WebSocket && bun index.ts",
+    "start1": "cd tool/WebSocketv2/out && bun backend.ts",
     "build": "cd tool/WebSocket && bun build index.ts --compile --outfile WebSocket",
     "build2": "cd tool/ErrorCheck && bun build index.ts --compile --outfile ErrorCheck",
     "build3": "cd tool/WebSocketv2 && bun build index.ts --compile --outfile ClientV2"

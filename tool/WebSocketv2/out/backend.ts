@@ -101,7 +101,6 @@ export class WsServer {
         // プレイヤーデータの初期化または読み込み
         this.initPlayerData();
         setInterval(() => this.checkOnlineStatus(), 10000);
-        setInterval(() => this.getPlayers(), 1);
     }
 
     // プレイヤーデータの初期化または読み込み
@@ -329,8 +328,25 @@ export class WsServer {
 
     // プレイヤーのチャットを処理する (最適化: 引数の処理とコマンド処理を調整)
     public async onPlayerChat(sender: string, message: string, type: string, receiver: string) {
-        if (message.startsWith(this.commandPrefix)) {
-            const args = message
+        let chatSender = sender; 
+        let chatMessage = message; 
+
+        try {
+            // JSON文字列の解析を試みる
+            const parsedMessage = JSON.parse(message);
+
+            // rawtextプロパティがあるか確認
+            if (parsedMessage && parsedMessage.rawtext && parsedMessage.rawtext.length > 0) {
+                const text = parsedMessage.rawtext[0].text;
+                const nameMatch = text.match(/<([^>]*)>/);
+                chatSender = nameMatch ? nameMatch[1] : sender; 
+                chatMessage = text.replace(/<[^>]*>\s*/, ''); 
+            }
+        } catch (error) {
+            // 失敗！w
+        }
+        if (chatMessage.startsWith(this.commandPrefix)) {
+            const args = chatMessage
                 .slice(this.commandPrefix.length)
                 .replace('@', '')
                 .match(/(".*?"|\S+)/g)
@@ -338,18 +354,21 @@ export class WsServer {
             if (!args) return;
 
             const commandName = args.shift()!; // args[0] を取得し、args から削除
-            const player = await this.createPlayerObject(sender);
+            const player = await world.getEntityByName(chatSender) as Player;
 
             if (!player) {
-                console.error(`Player object not found for ${sender}`);
+                console.error(`Player object not found for ${chatSender}`);
                 return;
             }
 
             this.processCommand(player, commandName, args);
-        } else {
-            this.world.triggerEvent('playerChat', sender, message, type, receiver);
-            this.broadcastToClients({ event: 'playerChat', data: { sender, message, type, receiver } });
+            return;
         }
+
+
+        // 通常のチャット処理 (JSONから抽出されたか、元のチャットかに関わらず処理)
+        this.world.triggerEvent('playerChat', chatSender, chatMessage, type, receiver);
+        this.broadcastToClients({ event: 'playerChat', data: { sender: chatSender, message: chatMessage, type, receiver } });
     }
 
     // コマンドを処理する
@@ -456,7 +475,6 @@ export class WsServer {
 
             await this.savePlayerData(playerData);
         } catch (error) {
-            console.error('Error in checkOnlineStatus:', error);
         }
     }
 
@@ -498,7 +516,8 @@ export class WsServer {
                 try {
                     setTimeout(async () => {
                         // プレイヤー名を取得
-                        const playerName = Array.isArray(data.player) ? data.player[0] : data.player;
+                        const playerNames = Array.isArray(data.player) ? data.player[0] : data.player;
+                        const playerName = await world.getPlayers().then((players) => players.find((p) => p.uuid === playerNames)?.name);
 
                         // プレイヤーデータとフラグを初期化
                         const playerData = await this.loadPlayerData();
@@ -570,7 +589,7 @@ export class WsServer {
                                         this.getWorld().triggerEvent('playerJoin', playerName);
                                         isOnlineStatusChanged = true;
                                     } else {
-                                        console.log('Existing player already online:', playerName);
+                                        //console.log('Existing player already online:', playerName);
                                     }
 
                                     // 既存プレイヤーのデータを更新
@@ -608,7 +627,7 @@ export class WsServer {
                         let playerUUID: string | undefined | null;
                         let isTrulyOffline = false;
                         let retryCount = 0;
-                        const maxRetries = 3; // 試行回数
+                        const maxRetries = 5; // 試行回数
                         const retryDelay = 1000; // ミリ秒単位の遅延
 
                         // オフライン確認のループ
@@ -623,7 +642,7 @@ export class WsServer {
                         }
 
                         if (isTrulyOffline) {
-                            console.log(`Confirmed offline: ${playerName}`);
+                           // console.log(`Confirmed offline: ${playerName}`);
 
                             // プレイヤーデータから UUID を取得
                             playerUUID = Object.keys(playerData).find((uuid) => playerData[uuid].name === playerName);
@@ -644,12 +663,12 @@ export class WsServer {
                                 this.broadcastToClients({ event: 'playerLeave', data: playerLeave });
                                 this.getWorld().triggerEvent('playerLeave', playerName);
                             } else {
-                                console.log(`Player ${playerName} not found or was already offline.`);
+                                //console.log(`Player ${playerName} not found or was already offline.`);
                             }
 
 
                         } else {
-                            console.log(`Player ${playerName} is still online after ${maxRetries} retries. Aborting playerLeave event.`);
+                          //  console.log(`Player ${playerName} is still online after ${maxRetries} retries. Aborting playerLeave event.`);
                         }
                     }, 500); // 遅延を少し減らして500msに設定
                 } catch (error) {
@@ -659,7 +678,7 @@ export class WsServer {
 
             case 'playerChat':
                 const { sender, message, type, receiver } = data;
-               // console.log(`Chat from ${sender}: ${message}`);
+                // console.log(`Chat from ${sender}: ${message}`);
                 if (sender !== 'External') this.onPlayerChat(sender, message, type, receiver);
                 break;
             case 'PlayerDied':

@@ -33,11 +33,13 @@ registerDisCommand({
             checkPrefixCommandPermission(message, requiredPermissionLevel)
         ) {
             if (ngrokUrls && ngrokEnabled) {
+                let ngrokUrl = ngrokUrls.api.url;
+                let wssUrl = ngrokUrl.replace("https", "wss");
                 const embed = new EmbedBuilder()
                     .setTitle("ngrok URLs")
                     .addFields({ name: "Web URL", value: ngrokUrls.web.url })
                     .addFields({ name: "Status URL", value: ngrokUrls.web.url + "/api" })
-                    .addFields({ name: "API URL", value: ngrokUrls.api.url })
+                    .addFields({ name: "API URL", value: `**${wssUrl}/minecraft**` })
                     .setColor(0x00ff00)
                     .setTimestamp();
                 await message.author.send({ embeds: [embed] }).catch(console.error);

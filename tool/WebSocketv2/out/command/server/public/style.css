@@ -545,3 +545,28 @@ h2.ban-icon {
 .player-list-map li a:hover {
   text-decoration: underline;
 }
+
+
+
+/**
+ * pagination Styles
+ */
+
+ .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.pagination button {
+    padding: 8px 12px;
+    margin: 0 5px;
+    border: 1px solid #ccc;
+    background-color: #f4f4f4;
+    cursor: pointer;
+}
+
+.pagination button.active {
+    background-color: #007bff;
+    color: white;
+}
