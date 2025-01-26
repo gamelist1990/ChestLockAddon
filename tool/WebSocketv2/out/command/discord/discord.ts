@@ -18,7 +18,7 @@ import { world } from "../../backend";
 import { calculateUptime } from "../../module/Data";
 
 // .envファイルのパスを現在のディレクトリに設定
-const envPath = path.resolve(__dirname, ".env");
+const envPath = path.resolve(__dirname, "discord.env");
 
 // .envファイルが存在するか確認し、なければ作成
 if (!fs.existsSync(envPath)) {

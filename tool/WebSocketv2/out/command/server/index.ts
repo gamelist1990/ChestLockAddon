@@ -1,4 +1,4 @@
-import { world, Player, PlayerData } from '../../backend';
+import { world, PlayerData } from '../../backend';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
