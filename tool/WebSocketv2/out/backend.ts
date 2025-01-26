@@ -306,7 +306,7 @@ export class WsServer {
                             this.minecraftClient.off('message', listener);
                         }
 
-                        clearTimeout(timeoutId); 
+                        clearTimeout(timeoutId);
 
                         resolve(message.data.result);
                     }

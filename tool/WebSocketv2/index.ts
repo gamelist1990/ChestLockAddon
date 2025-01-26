@@ -5,7 +5,6 @@ import fs from 'fs';
 import { WebSocket } from 'ws';
 import inquirer from 'inquirer';
 import axios from 'axios';
-import { spawn } from 'child_process';
 
 // --- Constants ---
 const COLOR_RED = '\x1b[31m';
