@@ -145,9 +145,10 @@ app.get('/get_api', (req, res) => {
     let wsUrl2 = "ws://localhost:8000";
     let ngrokUrl = ngrokUrls?.api.url;
     if (ngrokUrl) {
-    let wssUrl = ngrokUrl.replace("https", "wss");
+        let wssUrl = ngrokUrl.replace("https", "wss");
         wsUrl2 = `${wssUrl}/minecraft`;
     }
+    console.log("get_api Requested")
     res.send(wsUrl2);
 });
 
@@ -464,7 +465,7 @@ if (world) {
         const playerDataObject = await world.getPlayerData();
         const playerDataArray = Object.values(playerDataObject);
         userData = JSON.parse(JSON.stringify(playerDataArray));
-        broadcast('playerData',userData);
+        broadcast('playerData', userData);
 
     }, 1000);
 

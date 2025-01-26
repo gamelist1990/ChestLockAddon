@@ -86,6 +86,11 @@ export class WsServer {
     private playerDataFile: string;
     private timeout: number = 5000;
 
+    // 並列処理対応のための追加プロパティ
+    private isSaving: boolean = false;
+    private playerDataCache: PlayerData[] | null = null;
+    private saveQueue: PlayerData[] | null = null;
+
     constructor(port: number, commandPrefix: string = '#') {
         this.port = port;
         this.clients = new Map<string, WebSocket>();
@@ -100,8 +105,12 @@ export class WsServer {
         // WebSocket サーバーを初期化
         this.wss = new WebSocketServer({ port: this.port });
         this.wss.on('connection', this.handleConnection.bind(this));
-        this.wss.on('listening', () => {
+        this.wss.on('listening', async () => {
             console.log(`WebSocket server started on port ${this.port}`);
+
+            const a = await import('./command/server');
+            //load
+            a;
         });
 
         // プレイヤーデータの初期化または読み込み
@@ -116,32 +125,34 @@ export class WsServer {
             const data = await fsPromises.readFile(this.playerDataFile, 'utf-8');
             const jsonData = JSON.parse(data);
 
-            // 読み込んだデータが配列であればオブジェクトに変換する
-            if (Array.isArray(jsonData)) {
-                const playerObject: { [key: string]: PlayerData } = {};
-                for (const player of jsonData) {
-                    if (player.uuid) {
-                        playerObject[player.uuid] = {
-                            ...player,
-                            oldNames: player.oldNames || [],
-                        };
-                    }
-                }
-                await this.savePlayerData(playerObject); // 変換したデータを保存
-                console.log('playerData.json was converted from array to object and saved.');
-            } else {
-                // 既存のデータに oldNames がない場合は追加する
+            // 既存のデータがオブジェクトの場合、配列に変換
+            if (!Array.isArray(jsonData) && typeof jsonData === 'object') {
+                const newJsonData: PlayerData[] = [];
                 for (const uuid in jsonData) {
                     if (!jsonData[uuid].oldNames) {
                         jsonData[uuid].oldNames = [];
                     }
+                    newJsonData.push(jsonData[uuid]);
                 }
-                await this.savePlayerData(jsonData);
+                await this.savePlayerData(newJsonData);
+                console.log('Converted playerData.json from object to array format.');
+            } else if (Array.isArray(jsonData)) {
+                // 配列の場合、各プレイヤーに oldNames があるか確認し、なければ追加
+                for (const player of jsonData) {
+                    if (!player.oldNames) {
+                        player.oldNames = [];
+                    }
+                }
+                if (jsonData) {
+                    await this.savePlayerData(jsonData);
+                }
+            } else {
+                console.error('Error: playerData.json is not in the expected format.');
             }
         } catch (error) {
             if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-                // ファイルが存在しない場合は新規作成
-                await fsPromises.writeFile(this.playerDataFile, '{}');
+                // ファイルが存在しない場合は新規作成 (空の配列で初期化)
+                await fsPromises.writeFile(this.playerDataFile, '[]');
                 console.log('playerData.json created.');
             } else {
                 console.error('Error initializing player data:', error);
@@ -194,7 +205,6 @@ export class WsServer {
         }
     }
 
-
     // プレイヤー名から`Player`オブジェクトを生成する (最適化・軽量化)
     public async createPlayerObject(playerName: string): Promise<Player | null> {
         const queryResult = await this.executeMinecraftCommand(`querytarget @a[name=${playerName}]`);
@@ -204,7 +214,7 @@ export class WsServer {
             return null;
         }
         if (softData === null) {
-            return null
+            return null;
         }
 
         if (queryResult.statusCode !== 0 || !queryResult.details) return null;
@@ -218,18 +228,23 @@ export class WsServer {
             return null;
         }
 
-
         if (!playerDataRaw || !playerDataRaw.uniqueId) return null;
 
         const storedPlayerData = await this.loadPlayerData();
         const playerUUID = playerDataRaw.uniqueId;
-        if (storedPlayerData[playerUUID]) {
-            storedPlayerData[playerUUID].position = {
+
+        // 変更点: 配列から該当プレイヤーを検索
+        const playerIndex = Object.values(storedPlayerData).findIndex((p) => p.uuid === playerUUID);
+        if (playerIndex !== -1) {
+            storedPlayerData[playerIndex].position = {
                 x: playerDataRaw.position.x,
                 y: playerDataRaw.position.y - 2,
-                z: playerDataRaw.position.z
+                z: playerDataRaw.position.z,
             };
-            await this.savePlayerData(storedPlayerData);
+
+            if (storedPlayerData) {
+                await this.savePlayerData(storedPlayerData);
+            }
         }
 
         return {
@@ -238,7 +253,11 @@ export class WsServer {
             id: playerDataRaw.id,
             dimension: playerDataRaw.dimension,
             ping: softData ? softData.ping || 0 : 0,
-            position: { x: playerDataRaw.position.x, y: playerDataRaw.position.y - 2, z: playerDataRaw.position.z },
+            position: {
+                x: playerDataRaw.position.x,
+                y: playerDataRaw.position.y - 2,
+                z: playerDataRaw.position.z,
+            },
             sendMessage: (message: string) =>
                 this.sendToMinecraft({ command: `sendMessage`, message, playerName }),
             runCommand: (command: string) => this.executeMinecraftCommand(command),
@@ -262,19 +281,17 @@ export class WsServer {
         };
     }
 
-
     // Minecraft コマンドを実行する (最適化)
     public async executeMinecraftCommand(command: string): Promise<any> {
         if (!this.minecraftClient || this.minecraftClient.readyState !== WebSocket.OPEN) {
-            // console.error('Minecraft server is not connected.');
             return null;
         }
 
-        return new Promise((resolve, reject) => { // reject も使用する
-            let timeoutId: NodeJS.Timeout | undefined;
+        return new Promise((resolve, _reject) => {
+            let timeoutId: NodeJS.Timeout | undefined; // タイムアウトIDを宣言
             const commandId = Math.random().toString(36).substring(2, 15);
 
-            let resolved = false; // 成功、失敗問わず1度だけ resolve/reject を呼ぶ
+            let resolved = false;
             const listener = (data: any) => {
                 if (resolved) {
                     return;
@@ -283,20 +300,20 @@ export class WsServer {
                 try {
                     const message = JSON.parse(data);
                     if (message.event === 'commandResult' && message.data.commandId === commandId) {
-                        resolved = true; // 成功フラグ
+                        resolved = true;
 
                         if (this.minecraftClient) {
                             this.minecraftClient.off('message', listener);
                         }
 
-                        clearTimeout(timeoutId); // タイムアウトをクリア
+                        clearTimeout(timeoutId); 
 
                         resolve(message.data.result);
                     }
                 } catch (error) {
                     console.error('Error processing command result:', error);
 
-                    resolved = true; // エラー発生でrejectする
+                    resolved = true;
 
                     if (this.minecraftClient) {
                         this.minecraftClient.off('message', listener);
@@ -304,19 +321,28 @@ export class WsServer {
 
                     clearTimeout(timeoutId); // タイムアウトをクリア
 
-                    reject(new Error('Error processing command result. See console for details.')); // 詳細エラーを投げ直す。consoleに出力してあるエラーと同じ内容にする
+                    return null
                 }
             };
 
             if (this.minecraftClient) {
-                this.minecraftClient.setMaxListeners(20);
+                this.minecraftClient.setMaxListeners(50);
                 this.minecraftClient.on('message', listener);
 
                 // タイムアウト処理を追加
+                timeoutId = setTimeout(() => { // timeoutIdに代入
+                    if (!resolved) {
+                        resolved = true;
+                        if (this.minecraftClient) {
+                            this.minecraftClient.off('message', listener);
+                        }
+                        return null
+                    }
+                }, this.timeout);
 
                 this.sendToMinecraft({ command, commandId });
             } else {
-                reject(new Error('Minecraft server is not connected.')); // this.minecraftClientがnullだった場合、既に上でエラーを投げているので冗長に思えるが念の為入れておく
+                return null
             }
         });
     }
@@ -325,7 +351,6 @@ export class WsServer {
     public async onPlayerChat(sender: string, message: string, type: string, receiver: string) {
         let chatSender = sender;
         let chatMessage = message;
-
         try {
             // JSON文字列の解析を試みる
             let parsedMessage: any;
@@ -355,7 +380,7 @@ export class WsServer {
             if (!args) return;
 
             const commandName = args.shift()!; // args[0] を取得し、args から削除
-            const player = await world.getEntityByName(chatSender) as Player;
+            const player = (await world.getEntityByName(chatSender)) as Player;
 
             if (!player) {
                 console.error(`Player object not found for ${chatSender}`);
@@ -366,10 +391,12 @@ export class WsServer {
             return;
         }
 
-
         // 通常のチャット処理 (JSONから抽出されたか、元のチャットかに関わらず処理)
         this.world.triggerEvent('playerChat', chatSender, chatMessage, type, receiver);
-        this.broadcastToClients({ event: 'playerChat', data: { sender: chatSender, message: chatMessage, type, receiver } });
+        this.broadcastToClients({
+            event: 'playerChat',
+            data: { sender: chatSender, message: chatMessage, type, receiver },
+        });
     }
 
     // コマンドを処理する
@@ -405,64 +432,223 @@ export class WsServer {
         command.executor(player, args);
     }
 
-    // コマンドを処理する (最適化: 引数の処理を調整)
-    private async handleCommand(player: Player, commandName: string, args: string[]) {
-        this.processCommand(player, commandName, args);
+    // プレイヤーデータをファイルから読み込む
+    public async loadPlayerData(): Promise<PlayerData[]> {
+        // 書き込み中であれば待機
+        while (this.isSaving) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        // キャッシュがあればそれを返す
+        if (this.playerDataCache) {
+            return this.playerDataCache;
+        }
+
+        try {
+            let data = await fsPromises.readFile(this.playerDataFile, 'utf8');
+
+            // データの読み込みと修正の関数
+            const loadAndFixData = async (rawData: string): Promise<PlayerData[]> => {
+                if (rawData.trim() === '' || rawData.trim() === '[]') {
+                    return [];
+                }
+
+                try {
+                    let jsonData = JSON.parse(rawData);
+                    if (!Array.isArray(jsonData)) {
+                        jsonData = Object.values(jsonData);
+                    }
+
+                    const uniquePlayers: { [key: string]: PlayerData } = {};
+                    for (const player of jsonData) {
+                        if (player.name && player.uuid) {
+                            const key = `${player.name}-${player.uuid}`;
+                            uniquePlayers[key] = player;
+                        }
+                    }
+
+                    const cleanedPlayerData: PlayerData[] = Object.values(uniquePlayers);
+                    return cleanedPlayerData;
+                } catch (error) {
+                    if (error instanceof SyntaxError) {
+                        console.warn('Warning: Invalid JSON format detected. Attempting to fix...');
+                        const fixedData = this.fixJson(rawData);
+
+                        if (fixedData === '[]') {
+                            console.log('Data is empty or fixed to "[]", returning empty array.');
+                            return [];
+                        }
+
+                        try {
+                            let fixedJsonData = JSON.parse(fixedData);
+
+                            if (fixedData !== rawData) {
+                                console.log('JSON data has been fixed.');
+                            }
+
+                            try {
+                                await fsPromises.writeFile(this.playerDataFile, fixedData, 'utf8');
+                                console.log('JSON data saved.');
+                            } catch (writeError) {
+                                console.error('Error writing fixed JSON data to file:', writeError);
+                                return [];
+                            }
+
+                            if (!Array.isArray(fixedJsonData)) {
+                                fixedJsonData = Object.values(fixedJsonData);
+                            }
+
+                            const uniquePlayersFixed: { [key: string]: PlayerData } = {};
+                            for (const player of fixedJsonData) {
+                                if (player.name && player.uuid) {
+                                    const key = `${player.name}-${player.uuid}`;
+                                    uniquePlayersFixed[key] = player;
+                                }
+                            }
+                            const cleanedFixedPlayerData: PlayerData[] = Object.values(uniquePlayersFixed);
+
+                            return cleanedFixedPlayerData;
+                        } catch {
+                            console.error('Fixed JSON data is not valid.');
+                            return [];
+                        }
+                    } else {
+                        console.error('Error loading player data:', error);
+                        return [];
+                    }
+                }
+            };
+
+            const playerData = await loadAndFixData(data);
+            this.playerDataCache = playerData; // キャッシュを更新
+            return playerData;
+        } catch (error) {
+            console.error('Error reading player data file:', error);
+            return [];
+        }
     }
 
-    // プレイヤーデータをファイルから読み込む
-    public async loadPlayerData(): Promise<{ [key: string]: PlayerData }> {
-        const data = await fsPromises.readFile(this.playerDataFile, 'utf8');
-        return JSON.parse(data);
-    }
+    // JSONの修正関数を宣言(loadPlayerDataの外に出す)
+    private fixJson = (jsonString: string): string => {
+        // 空もしくは'[]'なら空の配列で処理する
+        if (jsonString.trim() === '' || jsonString.trim() === '[]') {
+            return '[]';
+        }
+        // JSON文字列からコメントを削除
+        jsonString = jsonString.replace(
+            /\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g,
+            (match, group) => (group ? '' : match),
+        );
+        // JSON文字列の前後に不要な文字があれば削除
+        jsonString = jsonString.trim().replace(/^[^\[\{]+|[^\]\}]+$/g, '');
+        // オブジェクトの末尾にカンマが存在する場合は削除
+        jsonString = jsonString.replace(/,\s*([}\]])/g, '$1');
+        // 不足している閉じ括弧を追加
+        let openBraces = (jsonString.match(/\{/g) || []).length;
+        let closeBraces = (jsonString.match(/\}/g) || []).length;
+        while (openBraces > closeBraces) {
+            jsonString += '}';
+            closeBraces++;
+        }
+        let openBrackets = (jsonString.match(/\[/g) || []).length;
+        let closeBrackets = (jsonString.match(/\]/g) || []).length;
+        while (openBrackets > closeBrackets) {
+            jsonString += ']';
+            closeBrackets++;
+        }
+        // 再度JSONのパースを試みる
+        try {
+            JSON.parse(jsonString);
+            return jsonString;
+        } catch {
+            // パースに失敗した場合は、修正を諦めて空の配列を返す
+            console.error('Failed to fix JSON. Returning an empty array.');
+            return '[]';
+        }
+    };
 
     // プレイヤーデータをファイルに書き込む
-    private async savePlayerData(playerData: { [key: string]: PlayerData }) {
-        try {
-            // JSON 文字列に変換する前に、不正な値を修正する
-            const cleanedPlayerData = this.cleanPlayerData(playerData);
+    private async savePlayerData(newPlayerData: PlayerData[]) {
+        // 書き込み中ならキューに追加して待機
+        if (this.isSaving) {
+            this.saveQueue = newPlayerData;
+            return;
+        }
 
-            const data = JSON.stringify(cleanedPlayerData, null, 2);
+        this.isSaving = true;
+
+        try {
+            let existingData: PlayerData[] = [];
+            try {
+                const rawData = await fsPromises.readFile(this.playerDataFile, 'utf8');
+                if (rawData.trim() !== '' && rawData.trim() !== '[]') {
+                    if (!this.isValidJson(rawData)) {
+                        const fixedData = this.fixJson(rawData);
+                        await fsPromises.writeFile(this.playerDataFile, fixedData, 'utf8');
+                        existingData = JSON.parse(fixedData);
+                    } else {
+                        existingData = JSON.parse(rawData);
+                    }
+                }
+            } catch (readError) {
+                console.warn('Warning: Could not read existing player data. Creating new data.');
+                existingData = [];
+            }
+
+            if (!Array.isArray(existingData)) {
+                existingData = Object.values(existingData);
+            }
+
+            const mergedData = this.mergePlayerData(existingData, newPlayerData);
+            const validPlayerData = mergedData.filter((player) => player.name && player.uuid);
+            const data = JSON.stringify(validPlayerData, null, 2);
+
             await fsPromises.writeFile(this.playerDataFile, data, 'utf8');
+            this.playerDataCache = validPlayerData; // キャッシュを更新
         } catch (error) {
             console.error('Error saving player data:', error);
-            console.error('Problematic player data:', playerData); // 問題のある playerData を出力
-            // ここで、エラーを適切に処理する。
-            // 例えば、デフォルトのデータを書き込む、エラーを上位に伝播させるなど。
-            // 下記は、空のデータを書き込む例です。
-            // 注意：この対応はあくまで例であり、環境に応じて最適なものを選んでください
-            try {
-                await fsPromises.writeFile(this.playerDataFile, '{}', 'utf8');
-                console.warn('Wrote empty object to player data file due to previous error.');
-            } catch (writeError) {
-                console.error('Failed to write empty object to player data file:', writeError);
-                // 必要に応じて、さらにエラー処理や、呼び出し元にエラーを伝播させるなどを記述します
+            console.error('Problematic player data:', newPlayerData);
+        } finally {
+            this.isSaving = false;
+            if (this.saveQueue) {
+                const queuedData = this.saveQueue;
+                this.saveQueue = null;
+                await this.savePlayerData(queuedData); // 再帰的に処理
             }
         }
     }
 
-
-
-    // プレイヤーデータから不正な値を取り除くヘルパー関数
-    private cleanPlayerData(playerData: { [key: string]: PlayerData }): { [key: string]: PlayerData } {
-        const cleanedData: { [key: string]: PlayerData } = {};
-        for (const uuid in playerData) {
-            const player = playerData[uuid];
-            cleanedData[uuid] = {
-                name: player.name,
-                oldNames: player.oldNames || [],
-                uuid: player.uuid,
-                join: player.join,
-                left: player.left, // left が undefined や null の場合は空文字列にする
-                isOnline: !!player.isOnline, // 明示的に boolean に変換する
-                position: player.position ? {
-                    x: player.position.x,
-                    y: player.position.y,
-                    z: player.position.z,
-                } : undefined,
-            };
+    // データをマージして、重複を排除するヘルパー関数
+    private mergePlayerData(existingData: PlayerData[], newPlayerData: PlayerData[]): PlayerData[] {
+        // nameとuuidをキーとして既存プレイヤーをマップ
+        const playerMap: { [key: string]: PlayerData } = {};
+        for (const player of existingData) {
+            if (player.name && player.uuid) {
+                const key = `${player.name}-${player.uuid}`;
+                playerMap[key] = player;
+            }
         }
-        return cleanedData;
+
+        // 新しいプレイヤーデータを追加・更新
+        for (const player of newPlayerData) {
+            if (player.name && player.uuid) {
+                const key = `${player.name}-${player.uuid}`;
+                playerMap[key] = player; // 既存のプレイヤーは上書きされる
+            }
+        }
+
+        // マップから配列に戻す
+        return Object.values(playerMap);
+    }
+
+    // 有効なJSONか確認するヘルパー関数
+    private isValidJson(jsonString: string): boolean {
+        try {
+            JSON.parse(jsonString);
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 
     private formatTimestamp(): string {
@@ -502,23 +688,34 @@ export class WsServer {
             const onlinePlayers = await this.getPlayers();
             const playerData = await this.loadPlayerData();
 
-            for (const uuid in playerData) {
-                const playerIsOnline = onlinePlayers.some((player) => player.uuid === uuid);
-                if (playerData[uuid].isOnline && !playerIsOnline) {
-                    // プレイヤーがオフラインになった場合
-                    playerData[uuid].isOnline = false;
-                    playerData[uuid].left = '';
-                    console.log(`Player ${playerData[uuid].name} marked as offline.`);
-                } else if (!playerData[uuid].isOnline && playerIsOnline) {
-                    // プレイヤーがオンラインに復帰した場合
-                    playerData[uuid].isOnline = true;
-                    playerData[uuid].left = '';
-                    console.log(`Player ${playerData[uuid].name} marked as online.`);
-                }
-            }
+            // プレイヤーデータに変更があったかどうかを追跡するフラグ
+            let dataChanged = false;
 
-            await this.savePlayerData(playerData);
+            const updatedPlayerData = playerData.map((pData) => {
+                const playerIsOnline = onlinePlayers.some((player) => player.uuid === pData.uuid);
+
+                // プレイヤーのオンライン状態に変化がある場合のみ更新
+                if (pData.isOnline !== playerIsOnline) {
+                    dataChanged = true;
+
+                    if (!playerIsOnline) {
+                        console.log(`Player ${pData.name} marked as offline.`);
+                        return { ...pData, isOnline: false, left: this.formatTimestamp() }; // オフライン時にタイムスタンプを記録
+                    } else {
+                        console.log(`Player ${pData.name} marked as online.`);
+                        return { ...pData, isOnline: true, left: '' }; // オンライン時は left をクリア
+                    }
+                }
+
+                return pData;
+            });
+
+            // 変更がある場合のみ保存処理を実行
+            if (dataChanged) {
+                await this.savePlayerData(updatedPlayerData);
+            }
         } catch (error) {
+            console.error('Error during checkOnlineStatus:', error);
         }
     }
 
@@ -526,15 +723,15 @@ export class WsServer {
         try {
             const playerData = await this.loadPlayerData();
 
-            for (const uuid in playerData) {
-                if (playerData[uuid].isOnline) {
-                    playerData[uuid].isOnline = false;
-                    playerData[uuid].left = this.formatTimestamp();
-                    console.log(`Player ${playerData[uuid].name} marked as offline due to worldRemove event.`);
+            const updatedPlayerData = playerData.map((pData) => {
+                if (pData.isOnline) {
+                    console.log(`Player ${pData.name} marked as offline due to worldRemove event.`);
+                    return { ...pData, isOnline: false, left: this.formatTimestamp() };
                 }
-            }
+                return pData;
+            });
 
-            await this.savePlayerData(playerData);
+            await this.savePlayerData(updatedPlayerData);
             console.log('All players marked as offline due to worldRemove event.');
         } catch (error) {
             console.error('Error handling worldRemove event:', error);
@@ -559,106 +756,96 @@ export class WsServer {
             case 'playerJoin':
                 try {
                     setTimeout(async () => {
-                        // プレイヤー名を取得
                         const playerNames = Array.isArray(data.player) ? data.player[0] : data.player;
-                        const playerName = await world.getPlayers().then((players) => players.find((p) => p.name === playerNames)?.name);
+                        const playerName = await world
+                            .getPlayers()
+                            .then((players) => players.find((p) => p.name === playerNames)?.name);
 
-                        // プレイヤーデータとフラグを初期化
+                        if (!playerName) return;
+                        if (playerName === undefined) return;
+                        //console.log('playerJoin:', playerName);
 
-                        console.log('playerJoin:', playerName);
                         const playerData = await this.loadPlayerData();
+                        const timestamp = this.formatTimestamp();
+                        let playerIndex = -1;
+                        let uuid: string | null = null;
                         let isNewPlayer = false;
                         let isOnlineStatusChanged = false;
 
-                        if (playerName) {
-                            const timestamp = this.formatTimestamp();
-                            let uuid: string | null = null;
-                            let retryCount = 0;
-                            const maxRetries = 10;
-                            const retryInterval = 3000; // 3秒
-
-                            // プレイヤー名から既存プレイヤーを探す
-                            let existingPlayer: PlayerData | undefined;
-
-                            while (!uuid && retryCount < maxRetries) {
-                                existingPlayer = Object.values(playerData).find((p) => p.name === playerName);
-
-                                if (existingPlayer) {
-                                    uuid = existingPlayer.uuid;
-                                } else {
-                                    uuid = await this.getPlayerUUID(playerName);
-                                }
-
-                                if (!uuid) {
-                                    retryCount++;
-                                    console.log(
-                                        `UUID not found for player: ${playerName}, retrying in ${retryInterval / 1000} seconds... (${retryCount}/${maxRetries})`,
-                                    );
-                                    await new Promise((resolve) => setTimeout(resolve, retryInterval));
-                                }
-                            }
-
-                            if (uuid) {
-                                // uuid が null でないことを確認
-                                if (!existingPlayer) {
-                                    // 新規プレイヤーの場合
-                                    playerData[uuid] = {
-                                        name: playerName,
-                                        oldNames: [],
-                                        uuid: uuid,
-                                        join: timestamp,
-                                        left: '',
-                                        isOnline: true,
-                                    };
-                                    console.log('New player added to playerData:', playerName);
-                                    isNewPlayer = true;
-                                } else {
-                                    // 既存プレイヤーの場合
-                                    if (existingPlayer.name !== playerName) {
-                                        // 名前が異なる場合、古い名前をoldNamesに追加
-                                        if (!existingPlayer.oldNames.includes(existingPlayer.name)) {
-                                            existingPlayer.oldNames.unshift(existingPlayer.name);
-                                            if (existingPlayer.oldNames.length > 3) {
-                                                existingPlayer.oldNames.pop();
-                                            }
-                                        }
-                                        existingPlayer.name = playerName;
-                                        console.log(
-                                            `Player name updated. Old names for ${existingPlayer.uuid}:`,
-                                            existingPlayer.oldNames,
-                                        );
-                                    }
-
-                                    if (!existingPlayer.isOnline) {
-                                        existingPlayer.isOnline = true;
-                                        existingPlayer.join = timestamp; // joinの時間を更新
-                                        isOnlineStatusChanged = true;
-                                    } else {
-                                        console.log('Existing player already online:', playerName);
-                                    }
-
-                                    // 既存プレイヤーのデータを更新
-                                    playerData[uuid] = existingPlayer;
-                                }
-
-                                await this.savePlayerData(playerData);
-
-                                // クライアントへの通知
-                                if (isNewPlayer || isOnlineStatusChanged) {
-                                    this.broadcastToClients({
-                                        event: 'playerJoin',
-                                        data: { name: playerName, uuid: uuid },
-                                    });
-
-                                    this.getWorld().triggerEvent('playerJoin', playerName);
-                                }
-                            } else {
-                                console.error(
-                                    `Failed to get UUID for player: ${playerName} after ${maxRetries} retries.`,
+                        // UUID 取得とリトライ処理
+                        let retryCount = 0;
+                        const maxRetries = 10;
+                        const retryInterval = 3000; // 3秒
+                        while (!uuid && retryCount < maxRetries) {
+                            uuid = await this.getPlayerUUID(playerName);
+                            if (!uuid) {
+                                retryCount++;
+                                console.log(
+                                    `UUID not found for player: ${playerName}, retrying in ${retryInterval / 1000} seconds... (${retryCount}/${maxRetries})`,
                                 );
+                                await new Promise((resolve) => setTimeout(resolve, retryInterval));
                             }
                         }
-                    });
+
+                        if (!uuid) {
+                            console.error(
+                                `Failed to get UUID for player: ${playerName} after ${maxRetries} retries.`,
+                            );
+                            return;
+                        }
+
+                        playerIndex = playerData.findIndex((p) => p.uuid === uuid);
+                        if (playerIndex === -1) {
+                            // 新規プレイヤー
+                            playerData.push({
+                                name: playerName,
+                                oldNames: [],
+                                uuid: uuid,
+                                join: timestamp,
+                                left: '',
+                                isOnline: true,
+                            });
+                            console.log('New player added to playerData:', playerName);
+                            isNewPlayer = true;
+                        } else {
+                            // 既存プレイヤー
+                            const existingPlayer = playerData[playerIndex];
+                            if (existingPlayer.name !== playerName) {
+                                if (!existingPlayer.oldNames.includes(existingPlayer.name)) {
+                                    existingPlayer.oldNames.unshift(existingPlayer.name);
+                                    if (existingPlayer.oldNames.length > 3) {
+                                        existingPlayer.oldNames.pop();
+                                    }
+                                }
+                                existingPlayer.name = playerName;
+                                console.log(
+                                    `Player name updated. Old names for ${existingPlayer.uuid}:`,
+                                    existingPlayer.oldNames,
+                                );
+                            }
+
+                            if (!existingPlayer.isOnline) {
+                                existingPlayer.isOnline = true;
+                                existingPlayer.join = timestamp;
+                                isOnlineStatusChanged = true;
+                            } else {
+                                // console.log('Existing player already online:', playerName);
+                            }
+
+                            playerData[playerIndex] = existingPlayer;
+                        }
+
+                        if (playerData) {
+                            await this.savePlayerData(playerData);
+                        }
+                        if (isNewPlayer || isOnlineStatusChanged) {
+                            this.broadcastToClients({
+                                event: 'playerJoin',
+                                data: { name: playerName, uuid: uuid },
+                            });
+                            this.getWorld().triggerEvent('playerJoin', playerName);
+                        }
+                    }, 0);
                 } catch (error) {
                     console.error('Error in playerJoin:', error);
                 }
@@ -669,8 +856,6 @@ export class WsServer {
                         const playerName = Array.isArray(data.player) ? data.player[0] : data.player;
                         const playerData = await this.loadPlayerData();
 
-
-                        let playerUUID: string | undefined | null;
                         let isTrulyOffline = false;
                         let retryCount = 0;
                         const maxRetries = 5; // 試行回数
@@ -678,45 +863,33 @@ export class WsServer {
 
                         // オフライン確認のループ
                         while (!isTrulyOffline && retryCount < maxRetries) {
-                            playerUUID = await this.getPlayerUUID(playerName);
+                            let playerUUID = await this.getPlayerUUID(playerName);
                             if (playerUUID === null) {
                                 isTrulyOffline = true;
                             } else {
                                 retryCount++;
-                                await new Promise(resolve => setTimeout(resolve, retryDelay));
+                                await new Promise((resolve) => setTimeout(resolve, retryDelay));
                             }
                         }
 
                         if (isTrulyOffline) {
-                            // console.log(`Confirmed offline: ${playerName}`);
-
-                            // プレイヤーデータから UUID を取得
-                            playerUUID = Object.keys(playerData).find((uuid) => playerData[uuid].name === playerName);
-
-                            // UUIDが不明な場合は、プレイヤー名で仮のオブジェクトを作成
-                            const playerLeave = {
-                                name: playerName,
-                                uuid: playerUUID ? playerUUID : null,
-                            };
-
-                            if (playerUUID && playerData[playerUUID]?.isOnline) {
-                                console.log('Processing playerLeave for:', playerLeave.name);
+                            let playerIndex = playerData.findIndex((p) => p.name === playerName);
+                            if (playerIndex !== -1 && playerData[playerIndex]?.isOnline) {
+                                console.log('Processing playerLeave for:', playerName);
                                 const timestamp = this.formatTimestamp();
-                                playerData[playerUUID].left = timestamp;
-                                playerData[playerUUID].isOnline = false;
-
-                                await this.savePlayerData(playerData);
-                                this.broadcastToClients({ event: 'playerLeave', data: playerLeave });
+                                playerData[playerIndex].left = timestamp;
+                                playerData[playerIndex].isOnline = false;
+                                if (playerData) {
+                                    await this.savePlayerData(playerData);
+                                }
+                                this.broadcastToClients({
+                                    event: 'playerLeave',
+                                    data: { name: playerName, uuid: playerData[playerIndex].uuid },
+                                });
                                 this.getWorld().triggerEvent('playerLeave', playerName);
-                            } else {
-                                //console.log(`Player ${playerName} not found or was already offline.`);
                             }
-
-
-                        } else {
-                            //  console.log(`Player ${playerName} is still online after ${maxRetries} retries. Aborting playerLeave event.`);
                         }
-                    }, 500); // 遅延を少し減らして500msに設定
+                    }, 500);
                 } catch (error) {
                     console.error('Error in playerLeave:', error);
                 }
@@ -805,6 +978,7 @@ export class WsServer {
 
 // wsserver インスタンスをエクスポート
 export const wsserver = new WsServer(19133);
+
 // Export the generic world instance for use in other files
 export const world = wsserver.getWorld();
 

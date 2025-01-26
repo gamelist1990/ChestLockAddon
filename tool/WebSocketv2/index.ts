@@ -632,31 +632,18 @@ const handleShutdown = async (signal: string) => {
     }
 };
 
-// 再起動関数の追加
-const restartApp = () => {
-    console.log('アプリケーションを再起動します...');
-    // 現在のプロセスを新しいプロセスで置き換える
-    spawn(process.execPath, process.argv.slice(1), {
-        cwd: process.cwd(),
-        detached: true,
-        stdio: 'inherit'
-    }).unref();
-    process.exit(0);
-};
 
 process.on('SIGINT', () => handleShutdown('SIGINT'));
 process.on('SIGTERM', () => handleShutdown('SIGTERM'));
 process.on('exit', (code) => {
     if (code !== 0) {
         log('red', `異常終了 コード: ${code}`);
-        restartApp(); // 再起動を行う場合
     }
 });
 
 // エラーハンドリングの追加
 process.on('uncaughtException', (error) => {
     log('red', `キャッチされなかった例外: ${error}`);
-    restartApp(); // 再起動を行う場合
 });
 
 if (process.platform === 'win32') {
