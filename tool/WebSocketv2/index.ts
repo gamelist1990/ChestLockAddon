@@ -4,10 +4,8 @@ import path from 'path';
 import fs from 'fs';
 import { WebSocket } from 'ws';
 import inquirer from 'inquirer';
-import { ItemUsed, PlayerDied } from './interface';
-import { UAParser } from 'ua-parser-js';
-// Windows通知用
-import notifier from 'node-notifier';
+import axios from 'axios';
+import { spawn } from 'child_process';
 
 // --- Constants ---
 const COLOR_RED = '\x1b[31m';
@@ -17,6 +15,7 @@ const COLOR_RESET = '\x1b[0m';
 
 const RECONNECT_INTERVAL = 5000;
 const MAX_NOTIFICATIONS = 50; // 通知タブに表示する最大通知数
+const RECONNECTION_TIMEOUT = 3 * 60 * 1000; // 3分
 
 // --- Global Variables ---
 let wss: WebSocket | null = null;
@@ -27,7 +26,7 @@ let webSocketUrl: string | null = null;
 let isWebSocketServerOnline = false;
 const notifications: string[] = []; // 通知タブ用の通知を格納する配列
 const playerNameCache: { [key: string]: { name: string; uuid: string } } = {};
-let isWindows = false;
+let reconnectionStartTime: number | null = null;
 
 // --- ログファイル名 ---
 const LOG_FILE = path.join(process.cwd(), 'ClientV2.log.txt');
@@ -42,24 +41,6 @@ const writeLog = (message: string) => {
     } catch (error) {
         console.error('ログファイルへの書き込みエラー:', error);
     }
-};
-
-// --- Windows通知用関数 ---
-const sendWindowsNotification = (message: string) => {
-    if (process.platform !== 'win32') return;
-
-    notifier.notify({
-        title: 'Minecraft Server Manager',
-        message: message,
-        sound: true,
-        icon: path.join(__dirname, 'icon.png'),
-    }, (error, response, metadata) => {
-        if (error) {
-            writeLog(`Notification error: ${error}`);
-        } else {
-            writeLog(`Notification response: ${response}, metadata: ${metadata}`);
-        }
-    });
 };
 
 // --- Helper Functions ---
@@ -88,16 +69,9 @@ const log = (color: string, message: string) => {
 
 // addNotification関数は、接続成功と切断時のみ通知するように変更
 const addNotification = (message: string, type: 'connection' | 'disconnection' | 'other' = 'other') => {
-    if (type === 'connection' && message.includes('WebSocketサーバーに接続しました')) {
-        sendWindowsNotification(message);
-    } else if (type === 'disconnection' && message.includes('WebSocketサーバーから切断されました')) {
-        sendWindowsNotification(message);
-    } else if (type === 'other') {
-        // typeがotherの場合はnotifications配列に格納
-        notifications.push(message);
-        if (notifications.length > MAX_NOTIFICATIONS) {
-            notifications.shift(); // 古い通知を削除
-        }
+    notifications.push(message);
+    if (notifications.length > MAX_NOTIFICATIONS) {
+        notifications.shift(); // 古い通知を削除
     }
 };
 
@@ -107,6 +81,8 @@ const displayNotifications = async () => {
     if (notifications.length === 0) {
         console.log('通知はありません。\n');
         writeLog('通知はありません。');
+    } else {
+        notifications.forEach((notification) => console.log(notification));
     }
     await inquirer.prompt([
         {
@@ -345,7 +321,8 @@ const setupWebSocketUrl = async () => {
             },
         ]);
 
-        const url = answers.url.trim();
+        let url = answers.url.trim();
+
         webSocketUrl = url;
         updateEnvFile('WSS_URL', url);
         config({ path: path.resolve(process.cwd(), '.env'), override: true });
@@ -400,116 +377,119 @@ const toggleAutoConnect = async () => {
 
 // --- WebSocket Functions ---
 const connectToWss = async (url: string) => {
-    // 接続試行前に isWebSocketServerOnline を false に設定
-    isWebSocketServerOnline = false;
+    return new Promise<void>(async (resolve, reject) => {
+        // 接続試行前に isWebSocketServerOnline を false に設定
+        isWebSocketServerOnline = false;
 
-    // `wss`が既に存在する場合は、既存の接続を削除してnullにする
-    if (wss) {
-        wss.removeAllListeners();
-        wss.close();
-        wss = null;
-    }
+        // `wss`が既に存在する場合は、既存の接続を削除してnullにする
+        if (wss) {
+            wss.removeAllListeners();
+            wss.close();
+            wss = null;
+        }
 
-    // 新しいWebSocket接続を確立
-    wss = new WebSocket(url);
-
-    // `open`イベント: 接続が開かれたとき
-    wss.on('open', () => {
-        clearInterval(reconnectionInterval!);
-        reconnectionInterval = null;
-        isWebSocketServerOnline = true;
-        writeLog(`WebSocketサーバーに接続しました。`); // 接続が確立されたときにログに記録
-        addNotification(`WebSocketサーバーに接続しました。`, 'connection'); // 接続が確立されたときに通知
-    });
-
-    wss.on('message', async (data: string) => {
-        try {
-            // 受信データが空でないことを確認
-            if (!data) {
-                addNotification('空のメッセージを受信しました。', 'other');
-                return;
-            }
-            let message: any;
+        // ngrok URLの取得処理 (必要であれば)
+        if (url.includes('ngrok-free.app')) {
             try {
-                message = JSON.parse(data);
+                const response = await axios.get('https://bfxmknk4-80.asse.devtunnels.ms/get_api');
+                url = response.data;
+                webSocketUrl = url; // グローバル変数も更新
+                writeLog(`ngrok URLを更新しました: ${url}`);
+                updateEnvFile('WSS_URL', url);
             } catch (error) {
-                addNotification(`無効なJSONメッセージを受信しました: ${error}`, 'other');
-                console.error('Received invalid JSON data:', data);
-                return;
+                //log('red', `ngrok URLの取得に失敗しました: ${error}`);
+                // 失敗した場合は、元のURLを使い続けるか、rejectして再試行を促すかを選択
+                // return reject(error); // 例：失敗時にリジェクトする
             }
-            switch (message.event) {
-                case 'commandResult':
-                    addNotification(`コマンド結果: ${message.data.result}`, 'other'); // type other として通知
-                    break;
-                case 'playerJoin':
-                    addNotification(`${COLOR_GREEN}プレイヤーが参加しました: ${message.data.player} (UUID: ${message.data.uuid})${COLOR_RESET}`, 'other'); // type other として通知
-                    break;
-                case 'playerLeave':
-                    addNotification(`${COLOR_YELLOW}プレイヤーが退出しました: ${message.data.player} (UUID: ${message.data.uuid})${COLOR_RESET}`, 'other'); // type other として通知
-                    break;
-                case 'playerChat':
-                    addNotification(`[チャット] ${message.data.sender}: ${message.data.message}`, 'other'); // type other として通知
-                    break;
-                case 'PlayerDied':
-                    addNotification(`[PlayerDied]`, 'other'); // type other として通知
-                    break;
-                case 'ItemUsed':
-                    addNotification(`[ItemUsed]`, 'other'); // type other として通知
-                    break;
-                case 'serverShutdown':
-                    break;
-                default:
-                    if (message.command) {
-                        const world = server.getWorlds()[0];
+        }
 
-                        if (world) {
-                            switch (message.command) {
-                                case 'sendMessage':
-                                    if (message.playerName) {
-                                        await world.sendMessage(message.message, message.playerName);
-                                    } else {
-                                        await world.sendMessage(message.message);
-                                    }
-                                    break;
-                                default:
-                                    const commandResult = await world.runCommand(message.command);
-                                    sendDataToWss('commandResult', {
-                                        result: commandResult,
-                                        command: message.command,
-                                        commandId: message.commandId,
-                                    });
-                                    break;
-                            }
+        // 新しいWebSocket接続を確立
+        wss = new WebSocket(url);
+        // `open`イベント: 接続が開かれたとき
+        wss.on('open', () => {
+            clearInterval(reconnectionInterval!);
+            reconnectionInterval = null;
+            isWebSocketServerOnline = true;
+            reconnectionStartTime = null; // 接続成功時にリセット
+            writeLog(`WebSocketサーバーに接続しました。`); // 接続が確立されたときにログに記録
+            addNotification(`WebSocketサーバーに接続しました。`, 'connection'); // 接続が確立されたときに通知
+            resolve(); // プロミスを解決
+        });
+
+        wss.on('message', async (data: string) => {
+            try {
+                if (!data) {
+                    addNotification('空のメッセージを受信しました。', 'other');
+                    return;
+                }
+                let message: any;
+                try {
+                    message = JSON.parse(data);
+                } catch (error) {
+                    addNotification(`無効なJSONメッセージを受信しました: ${error}`, 'other');
+                    return;
+                }
+
+                if (message.command) {
+                    const world = server.getWorlds()[0];
+
+                    if (world) {
+                        switch (message.command) {
+                            case 'sendMessage':
+                                if (message.playerName) {
+                                    await world.sendMessage(message.message, message.playerName);
+                                } else {
+                                    await world.sendMessage(message.message);
+                                }
+                                break;
+                            default:
+                                const commandResult = await world.runCommand(message.command);
+                                sendDataToWss('commandResult', {
+                                    result: commandResult,
+                                    command: message.command,
+                                    commandId: message.commandId,
+                                });
+                                break;
                         }
                     }
+
+                }
+            } catch (error) {
             }
-        } catch (error) {
-        }
-    });
+        });
 
-    // `close`イベント: 接続が閉じられたとき
-    wss.on('close', () => {
-        // `isWebSocketServerOnline`が`true`の場合にのみ切断通知を出す
-        // これにより、接続されていないときや切断通知が既に処理されたときに、誤った通知が表示されるのを防ぐ
-        if (isWebSocketServerOnline) {
-            addNotification(`WebSocketサーバーから切断されました。`, 'disconnection');
-            writeLog('WebSocketサーバーから切断されました。');
-            isWebSocketServerOnline = false;
-        }
+        // `close`イベント: 接続が閉じられたとき
+        wss.on('close', () => {
+            // `isWebSocketServerOnline`が`true`の場合にのみ切断通知を出す
+            // これにより、接続されていないときや切断通知が既に処理されたときに、誤った通知が表示されるのを防ぐ
+            if (isWebSocketServerOnline) {
+                addNotification(`WebSocketサーバーから切断されました。`, 'disconnection');
+                writeLog('WebSocketサーバーから切断されました。');
+                isWebSocketServerOnline = false;
+            }
 
-        // 自動再接続が有効な場合に再接続を試みる
-        if (webSocketUrl && autoConnectOnStartup) {
-            reconnect();
-        }
-    });
+            // 再接続試行開始タイムスタンプを設定 (初めての切断時のみ)
+            if (reconnectionStartTime === null) {
+                reconnectionStartTime = Date.now();
+            }
 
-    // `error`イベント: エラーが発生したとき
-    wss.on('error', (error) => {
-        // `isWebSocketServerOnline`が`true`の場合にのみエラーを記録
-        // 接続がまだ確立されていないか、既に切断されている場合にエラーが記録されるのを防ぐ
-        if (isWebSocketServerOnline) {
-            writeLog(`WebSocketエラー: ${error}`);
-        }
+            // 自動再接続が有効な場合に再接続を試みる
+            if (webSocketUrl && autoConnectOnStartup) {
+                reconnect()
+                    .then(() => resolve())  // 再接続が成功したらresolveを呼ぶ
+                    .catch(reject); // 再接続が失敗したらrejectを呼ぶ
+            }
+        });
+
+        // `error`イベント: エラーが発生したとき
+        wss.on('error', (error) => {
+            // `isWebSocketServerOnline`が`true`の場合にのみエラーを記録
+            // 接続がまだ確立されていないか、既に切断されている場合にエラーが記録されるのを防ぐ
+            if (isWebSocketServerOnline) {
+                writeLog(`WebSocketエラー: ${error}`);
+            }
+            reject(error);
+        });
     });
 };
 
@@ -522,15 +502,41 @@ const reconnect = async (): Promise<void> => {
             return;
         }
 
-        const attemptReconnect = () => {
+        const attemptReconnect = async () => {
             if (!isWebSocketServerOnline) {
+                const elapsedTime = reconnectionStartTime ? Date.now() - reconnectionStartTime : 0;
+
+                // 3分以上経過しているかチェック
+                if (elapsedTime >= RECONNECTION_TIMEOUT) {
+                    log('yellow', '再接続試行開始から3分が経過しました。ngrok URLの再取得を試みます。');
+                    reconnectionStartTime = Date.now(); // タイムスタンプをリセット
+
+                    // ngrok URLを再取得
+                    try {
+                        const response = await axios.get('https://bfxmknk4-80.asse.devtunnels.ms/get_api');
+                        const newWebSocketUrl = response.data;
+                        if (newWebSocketUrl !== webSocketUrl) {
+                            webSocketUrl = newWebSocketUrl;
+                            addNotification(`ngrok URLを更新しました: ${webSocketUrl}`);
+                            if (webSocketUrl) {
+                                updateEnvFile('WSS_URL', webSocketUrl);
+                            }
+                        } else {
+                            addNotification('ngrok URLは変更されていません。');
+                        }
+                    } catch (error) {
+                        addNotification(`ngrok URLの再取得に失敗しました: ${error}`);
+                    }
+                }
+
                 addNotification(`${COLOR_YELLOW}WebSocketサーバーへの再接続を試みています...${COLOR_RESET}`, 'other');
+
                 connectToWss(webSocketUrl!)
                     .then(() => {
                         clearInterval(reconnectionInterval!);
                         resolve();
                     })
-                    .catch(() => { });
+                    .catch(() => { /* エラーは無視して再試行を続ける */ });
             }
         };
 
@@ -610,67 +616,6 @@ server.events.on('playerChat', async (event) => {
     sendDataToWss('playerChat', { sender, message, type, receiver });
 });
 
-server.events.on('packetReceive', async (event) => {
-    const body = event.packet.body;
-    const header = event.packet.header;
-    const eventName = header.eventName;
-
-    if (eventName === 'ItemUsed') {
-        const itemUsedData: ItemUsed = {
-            count: body.count,
-            item: {
-                aux: body.item.aux,
-                id: body.item.id,
-                namespace: body.item.namespace,
-            },
-            player: {
-                color: body.player.color,
-                dimension: body.player.dimension,
-                id: body.player.id,
-                name: body.player.name,
-                position: {
-                    x: body.player.position.x,
-                    y: body.player.position.y,
-                    z: body.player.position.z,
-                },
-                type: body.player.type,
-                variant: body.player.variant,
-                yRot: body.player.yRot,
-            },
-            useMethod: body.useMethod,
-        };
-        sendDataToWss('ItemUsed', { event: itemUsedData });
-    } else if (eventName === 'PlayerDied') {
-        const playerDiedData: PlayerDied = {
-            cause: body.cause,
-            inRaid: body.inRaid,
-            killer: body.killer
-                ? {
-                    color: body.killer.color,
-                    id: body.killer.id,
-                    type: body.killer.type,
-                    variant: body.killer.variant,
-                }
-                : null,
-            player: {
-                color: body.player.color,
-                dimension: body.player.dimension,
-                id: body.player.id,
-                name: body.player.name,
-                position: {
-                    x: body.player.position.x,
-                    y: body.player.position.y,
-                    z: body.player.position.z,
-                },
-                type: body.player.type,
-                variant: body.player.variant,
-                yRot: body.player.yRot,
-            },
-        };
-        sendDataToWss('PlayerDied', { event: playerDiedData });
-    }
-});
-
 // --- Process Exit Handlers ---
 
 const handleShutdown = async (signal: string) => {
@@ -687,10 +632,31 @@ const handleShutdown = async (signal: string) => {
     }
 };
 
+// 再起動関数の追加
+const restartApp = () => {
+    console.log('アプリケーションを再起動します...');
+    // 現在のプロセスを新しいプロセスで置き換える
+    spawn(process.execPath, process.argv.slice(1), {
+        cwd: process.cwd(),
+        detached: true,
+        stdio: 'inherit'
+    }).unref();
+    process.exit(0);
+};
+
 process.on('SIGINT', () => handleShutdown('SIGINT'));
 process.on('SIGTERM', () => handleShutdown('SIGTERM'));
 process.on('exit', (code) => {
-    if (code !== 0) handleShutdown(`異常終了 コード: ${code}`);
+    if (code !== 0) {
+        log('red', `異常終了 コード: ${code}`);
+        restartApp(); // 再起動を行う場合
+    }
+});
+
+// エラーハンドリングの追加
+process.on('uncaughtException', (error) => {
+    log('red', `キャッチされなかった例外: ${error}`);
+    restartApp(); // 再起動を行う場合
 });
 
 if (process.platform === 'win32') {
@@ -747,7 +713,7 @@ const initEnv = async () => {
     }
 
     if (webSocketUrl) {
-        writeLog( `WebSocket URLが検出されました: ${webSocketUrl}`);
+        writeLog(`WebSocket URLが検出されました: ${webSocketUrl}`);
         addNotification(`WebSocket URLが検出されました: ${webSocketUrl}`, 'other');
         try {
             // 初期化時にWebSocketサーバーの状態を確認
@@ -765,9 +731,6 @@ const initEnv = async () => {
 
 // --- Start ---
 (async () => {
-    const parser = new UAParser();
-    const osType = parser.getOS().name;
-    isWindows = osType === 'win32';
 
     await initEnv();
     envLoaded = false;

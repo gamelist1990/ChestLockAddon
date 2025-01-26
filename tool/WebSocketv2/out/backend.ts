@@ -65,9 +65,14 @@ export interface PlayerData {
     name: string;
     oldNames: string[];
     uuid: string;
-    join: string; // 参加時刻を文字列で保存
-    left: string; // 退出時刻を文字列で保存
+    join: string;
+    left: string;
     isOnline: boolean;
+    position?: {
+        x: number;
+        y: number;
+        z: number;
+    };
 }
 
 export class WsServer {
@@ -79,6 +84,7 @@ export class WsServer {
     private commandPrefix: string;
     private world: World;
     private playerDataFile: string;
+    private timeout: number = 5000;
 
     constructor(port: number, commandPrefix: string = '#') {
         this.port = port;
@@ -183,50 +189,11 @@ export class WsServer {
         const url = new URL(req.url!, `wss://${req.headers.host}`);
         if (url.pathname === '/minecraft') {
             this.handleMinecraftConnection(ws);
-        } else if (url.pathname === '/client') {
-            this.handleClientConnection(ws, this.generateClientId());
         } else {
             ws.close();
         }
     }
 
-    // クライアント接続の処理 (最適化)
-    private async handleClientConnection(ws: WebSocket, clientId: string) {
-        this.clients.set(clientId, ws);
-        console.log(`Client connected: ${clientId}`);
-        // クライアントへの初期メッセージ送信を削除
-
-        ws.on('message', async (data: any) => {
-            console.log(`Received message from client ${clientId}: ${data}`);
-            try {
-                const message = JSON.parse(data);
-                if (message.command) {
-                    const player = await this.createPlayerObject(clientId);
-                    if (player) {
-                        this.handleCommand(player, message.command, message.args || []);
-                    } else {
-                        console.error(`Player object not found for ${clientId}`);
-                    }
-                }
-            } catch (error) {
-                console.error('Error processing message from client:', error);
-            }
-        });
-
-        ws.on('close', () => {
-            this.clients.delete(clientId);
-            console.log(`Client disconnected: ${clientId}`);
-        });
-
-        ws.on('error', (error) => {
-            console.error(`WebSocket error for client ${clientId}:`, error);
-        });
-    }
-
-    // クライアントIDを生成する (軽量化)
-    private generateClientId(): string {
-        return Math.random().toString(36).substring(2, 15);
-    }
 
     // プレイヤー名から`Player`オブジェクトを生成する (最適化・軽量化)
     public async createPlayerObject(playerName: string): Promise<Player | null> {
@@ -242,16 +209,36 @@ export class WsServer {
 
         if (queryResult.statusCode !== 0 || !queryResult.details) return null;
 
-        const playerData = JSON.parse(queryResult.details.replace(/\\/g, ''))[0];
-        if (!playerData || !playerData.uniqueId) return null;
+        let playerDataRaw: any;
+
+        try {
+            playerDataRaw = JSON.parse(queryResult.details.replace(/\\/g, ''))[0];
+        } catch (error) {
+            //   console.error('Error parsing player data:', error);
+            return null;
+        }
+
+
+        if (!playerDataRaw || !playerDataRaw.uniqueId) return null;
+
+        const storedPlayerData = await this.loadPlayerData();
+        const playerUUID = playerDataRaw.uniqueId;
+        if (storedPlayerData[playerUUID]) {
+            storedPlayerData[playerUUID].position = {
+                x: playerDataRaw.position.x,
+                y: playerDataRaw.position.y - 2,
+                z: playerDataRaw.position.z
+            };
+            await this.savePlayerData(storedPlayerData);
+        }
 
         return {
             name: playerName,
-            uuid: playerData.uniqueId,
-            id: playerData.id,
-            dimension: playerData.dimension,
+            uuid: playerDataRaw.uniqueId,
+            id: playerDataRaw.id,
+            dimension: playerDataRaw.dimension,
             ping: softData ? softData.ping || 0 : 0,
-            position: { x: playerData.position.x, y: playerData.position.y - 2, z: playerData.position.z },
+            position: { x: playerDataRaw.position.x, y: playerDataRaw.position.y - 2, z: playerDataRaw.position.z },
             sendMessage: (message: string) =>
                 this.sendToMinecraft({ command: `sendMessage`, message, playerName }),
             runCommand: (command: string) => this.executeMinecraftCommand(command),
@@ -283,11 +270,11 @@ export class WsServer {
             return null;
         }
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => { // reject も使用する
+            let timeoutId: NodeJS.Timeout | undefined;
             const commandId = Math.random().toString(36).substring(2, 15);
 
-            // リスナー関数内で `resolve` を確実に一度だけ呼び出すための変数
-            let resolved = false;
+            let resolved = false; // 成功、失敗問わず1度だけ resolve/reject を呼ぶ
             const listener = (data: any) => {
                 if (resolved) {
                     return;
@@ -296,51 +283,65 @@ export class WsServer {
                 try {
                     const message = JSON.parse(data);
                     if (message.event === 'commandResult' && message.data.commandId === commandId) {
-                        resolved = true; // フラグを立てる
+                        resolved = true; // 成功フラグ
 
                         if (this.minecraftClient) {
                             this.minecraftClient.off('message', listener);
                         }
+
+                        clearTimeout(timeoutId); // タイムアウトをクリア
 
                         resolve(message.data.result);
                     }
                 } catch (error) {
                     console.error('Error processing command result:', error);
 
-                    resolved = true;
+                    resolved = true; // エラー発生でrejectする
+
                     if (this.minecraftClient) {
                         this.minecraftClient.off('message', listener);
                     }
-                    resolve(null);
+
+                    clearTimeout(timeoutId); // タイムアウトをクリア
+
+                    reject(new Error('Error processing command result. See console for details.')); // 詳細エラーを投げ直す。consoleに出力してあるエラーと同じ内容にする
                 }
             };
 
             if (this.minecraftClient) {
+                this.minecraftClient.setMaxListeners(20);
                 this.minecraftClient.on('message', listener);
-            } else {
-                resolve(null);
-                return;
-            }
 
-            this.sendToMinecraft({ command, commandId });
+                // タイムアウト処理を追加
+
+                this.sendToMinecraft({ command, commandId });
+            } else {
+                reject(new Error('Minecraft server is not connected.')); // this.minecraftClientがnullだった場合、既に上でエラーを投げているので冗長に思えるが念の為入れておく
+            }
         });
     }
 
     // プレイヤーのチャットを処理する (最適化: 引数の処理とコマンド処理を調整)
     public async onPlayerChat(sender: string, message: string, type: string, receiver: string) {
-        let chatSender = sender; 
-        let chatMessage = message; 
+        let chatSender = sender;
+        let chatMessage = message;
 
         try {
             // JSON文字列の解析を試みる
-            const parsedMessage = JSON.parse(message);
+            let parsedMessage: any;
+
+            try {
+                parsedMessage = JSON.parse(message);
+            } catch (error) {
+                // console.error("Invalid JSON:", message, error);
+            }
 
             // rawtextプロパティがあるか確認
             if (parsedMessage && parsedMessage.rawtext && parsedMessage.rawtext.length > 0) {
                 const text = parsedMessage.rawtext[0].text;
                 const nameMatch = text.match(/<([^>]*)>/);
-                chatSender = nameMatch ? nameMatch[1] : sender; 
-                chatMessage = text.replace(/<[^>]*>\s*/, ''); 
+                chatSender = nameMatch ? nameMatch[1] : sender;
+                chatMessage = text.replace(/<[^>]*>\s*/, '');
             }
         } catch (error) {
             // 失敗！w
@@ -417,8 +418,51 @@ export class WsServer {
 
     // プレイヤーデータをファイルに書き込む
     private async savePlayerData(playerData: { [key: string]: PlayerData }) {
-        const data = JSON.stringify(playerData, null, 2);
-        await fsPromises.writeFile(this.playerDataFile, data, 'utf8');
+        try {
+            // JSON 文字列に変換する前に、不正な値を修正する
+            const cleanedPlayerData = this.cleanPlayerData(playerData);
+
+            const data = JSON.stringify(cleanedPlayerData, null, 2);
+            await fsPromises.writeFile(this.playerDataFile, data, 'utf8');
+        } catch (error) {
+            console.error('Error saving player data:', error);
+            console.error('Problematic player data:', playerData); // 問題のある playerData を出力
+            // ここで、エラーを適切に処理する。
+            // 例えば、デフォルトのデータを書き込む、エラーを上位に伝播させるなど。
+            // 下記は、空のデータを書き込む例です。
+            // 注意：この対応はあくまで例であり、環境に応じて最適なものを選んでください
+            try {
+                await fsPromises.writeFile(this.playerDataFile, '{}', 'utf8');
+                console.warn('Wrote empty object to player data file due to previous error.');
+            } catch (writeError) {
+                console.error('Failed to write empty object to player data file:', writeError);
+                // 必要に応じて、さらにエラー処理や、呼び出し元にエラーを伝播させるなどを記述します
+            }
+        }
+    }
+
+
+
+    // プレイヤーデータから不正な値を取り除くヘルパー関数
+    private cleanPlayerData(playerData: { [key: string]: PlayerData }): { [key: string]: PlayerData } {
+        const cleanedData: { [key: string]: PlayerData } = {};
+        for (const uuid in playerData) {
+            const player = playerData[uuid];
+            cleanedData[uuid] = {
+                name: player.name,
+                oldNames: player.oldNames || [],
+                uuid: player.uuid,
+                join: player.join,
+                left: player.left, // left が undefined や null の場合は空文字列にする
+                isOnline: !!player.isOnline, // 明示的に boolean に変換する
+                position: player.position ? {
+                    x: player.position.x,
+                    y: player.position.y,
+                    z: player.position.z,
+                } : undefined,
+            };
+        }
+        return cleanedData;
     }
 
     private formatTimestamp(): string {
@@ -517,9 +561,11 @@ export class WsServer {
                     setTimeout(async () => {
                         // プレイヤー名を取得
                         const playerNames = Array.isArray(data.player) ? data.player[0] : data.player;
-                        const playerName = await world.getPlayers().then((players) => players.find((p) => p.uuid === playerNames)?.name);
+                        const playerName = await world.getPlayers().then((players) => players.find((p) => p.name === playerNames)?.name);
 
                         // プレイヤーデータとフラグを初期化
+
+                        console.log('playerJoin:', playerName);
                         const playerData = await this.loadPlayerData();
                         let isNewPlayer = false;
                         let isOnlineStatusChanged = false;
@@ -586,10 +632,9 @@ export class WsServer {
                                     if (!existingPlayer.isOnline) {
                                         existingPlayer.isOnline = true;
                                         existingPlayer.join = timestamp; // joinの時間を更新
-                                        this.getWorld().triggerEvent('playerJoin', playerName);
                                         isOnlineStatusChanged = true;
                                     } else {
-                                        //console.log('Existing player already online:', playerName);
+                                        console.log('Existing player already online:', playerName);
                                     }
 
                                     // 既存プレイヤーのデータを更新
@@ -605,7 +650,7 @@ export class WsServer {
                                         data: { name: playerName, uuid: uuid },
                                     });
 
-                                    //this.getWorld().triggerEvent('playerJoin', playerName);
+                                    this.getWorld().triggerEvent('playerJoin', playerName);
                                 }
                             } else {
                                 console.error(
@@ -623,6 +668,7 @@ export class WsServer {
                     setTimeout(async () => {
                         const playerName = Array.isArray(data.player) ? data.player[0] : data.player;
                         const playerData = await this.loadPlayerData();
+
 
                         let playerUUID: string | undefined | null;
                         let isTrulyOffline = false;
@@ -642,7 +688,7 @@ export class WsServer {
                         }
 
                         if (isTrulyOffline) {
-                           // console.log(`Confirmed offline: ${playerName}`);
+                            // console.log(`Confirmed offline: ${playerName}`);
 
                             // プレイヤーデータから UUID を取得
                             playerUUID = Object.keys(playerData).find((uuid) => playerData[uuid].name === playerName);
@@ -668,7 +714,7 @@ export class WsServer {
 
 
                         } else {
-                          //  console.log(`Player ${playerName} is still online after ${maxRetries} retries. Aborting playerLeave event.`);
+                            //  console.log(`Player ${playerName} is still online after ${maxRetries} retries. Aborting playerLeave event.`);
                         }
                     }, 500); // 遅延を少し減らして500msに設定
                 } catch (error) {
@@ -678,16 +724,7 @@ export class WsServer {
 
             case 'playerChat':
                 const { sender, message, type, receiver } = data;
-                // console.log(`Chat from ${sender}: ${message}`);
                 if (sender !== 'External') this.onPlayerChat(sender, message, type, receiver);
-                break;
-            case 'PlayerDied':
-                this.broadcastToClients({ event: 'PlayerDied', data });
-                this.world.triggerEvent('PlayerDied', data);
-                break;
-            case 'ItemUsed':
-                this.broadcastToClients({ event: 'ItemUsed', data });
-                this.world.triggerEvent('ItemUsed', data);
                 break;
             case 'serverShutdown':
                 this.broadcastToClients({ event: 'serverShutdown', data });
@@ -733,7 +770,11 @@ export class WsServer {
             //   console.error('Minecraft server is not connected.');
             return;
         }
-        this.minecraftClient.send(JSON.stringify(data));
+        try {
+            this.minecraftClient.send(JSON.stringify(data));
+        } catch (error) {
+            console.error('Error sending data to Minecraft server:', error);
+        }
     }
 
     /**

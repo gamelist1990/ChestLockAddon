@@ -1,717 +1,872 @@
 <!doctype html>
 <html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minecraft Server Control Panel</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Minecraft Server Control Panel</title>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <link rel="stylesheet" href="style.css" />
-</head>
-
-<body>
-  <div class="hamburger-menu" onclick="toggleNav()">
-    <div></div>
-    <div></div>
-    <div></div>
-  </div>
-
-  <nav id="main-nav">
-    <ul>
-      <li><span class="nav-icon">ℹ️</span> Creator:Koukunn_</li>
-      <li onclick="showPage('console-page')"><span class="nav-icon">🎮</span> コンソール</li>
-      <li onclick="showPage('players-page')"><span class="nav-icon">👥</span> プレイヤー確認</li>
-      <li onclick="showPage('players-page_2')"><span class="nav-icon">👥</span> 入室退出確認</li>
-      <li onclick="showPage('status-page')">
-        <span class="nav-icon">📊</span> サーバーステータス
-      </li>
-      <li onclick="showPage('ban-page')"><span class="nav-icon">🚫</span> BAN</li>
-      <li onclick="showPage('map-page')"><span class="nav-icon">🌍</span> マップ</li>
-      <li><button id="logout-button" onclick="logout()">ログアウト</button></li>
-    </ul>
-  </nav>
-
-  <div class="container" id="login-form">
-    <h2><span class="login-icon">🔒</span> ログイン</h2>
-    <div class="input-group">
-      <label for="username">ユーザー名:</label>
-      <input type="text" id="username" placeholder="ユーザー名" required />
+  <body>
+    <div class="hamburger-menu" onclick="toggleNav()">
+      <div></div>
+      <div></div>
+      <div></div>
     </div>
-    <div class="input-group">
-      <label for="password">パスワード:</label>
-      <input type="password" id="password" placeholder="パスワード" required />
-    </div>
-    <div class="autologin-container">
-      <input type="checkbox" id="autologin" name="autologin" />
-      <label for="autologin">自動ログイン</label>
-    </div>
-    <button onclick="login()"><span class="login-icon">ログイン</span></button>
-    <div id="login-error"></div>
-  </div>
 
-  <div class="page" id="console-page">
-    <div class="container">
-      <h1><span class="server-icon">🖥️</span> Minecraft サーバーコントロールパネル</h1>
-      <div class="info-box">
-        <div id="playerCount"><span class="info-icon">👥</span> 現在のプレイヤー数: 0</div>
-        <div id="uptime"><span class="info-icon">⏱️</span> 起動時間: 不明</div>
-      </div>
-      <div class="console-input-area">
-        <div class="console-container">
-          <textarea id="console" readonly></textarea>
-        </div>
-        <div class="input-container">
-          <input type="text" id="commandInput" placeholder="コマンドを入力..." />
-          <button onclick="sendCommand()"><span class="send-icon">送信</span></button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="page" id="players-page">
-    <div class="container">
-      <h2><span class="server-icon">👥</span> プレイヤー確認</h2>
-      <div class="info-box">
-        <div id="playerCount2"><span class="info-icon">👥</span> 現在のプレイヤー数: 0</div>
-        <div id="uptime2"><span class="info-icon">⏱️</span> 起動時間: 不明</div>
-      </div>
-      <ul class="player-list" id="player-list"></ul>
-    </div>
-  </div>
-
-  <div class="page" id="players-page_2">
-    <div class="container">
-      <h2><span class="server-icon">👥</span> プレイヤーの入退出の確認</h2>
-      <div class="info-box">
-        <div id="playerCount3"><span class="info-icon">👥</span> 現在のプレイヤー数: 0</div>
-        <div id="uptime3"><span class="info-icon">⏱️</span> 起動時間: 不明</div>
-      </div>
-      <ul class="player-list" id="player-left_list">
+    <nav id="main-nav">
+      <ul>
+        <li><span class="nav-icon">ℹ️</span> Creator:Koukunn_</li>
+        <li onclick="showPage('console-page')"><span class="nav-icon">🎮</span> コンソール</li>
+        <li onclick="showPage('players-page')"><span class="nav-icon">👥</span> プレイヤー確認</li>
+        <li onclick="showPage('players-page_2')"><span class="nav-icon">👥</span> 入室退出確認</li>
+        <li onclick="showPage('status-page')">
+          <span class="nav-icon">📊</span> サーバーステータス
+        </li>
+        <li onclick="showPage('ban-page')"><span class="nav-icon">🚫</span> BAN</li>
+        <li onclick="showPage('map-page')"><span class="nav-icon">🌍</span> マップ</li>
+        <li><button id="logout-button" onclick="logout()">ログアウト</button></li>
       </ul>
-      <div id="pagination-container" class="pagination">
-        <!-- ページネーションボタンがここに挿入されます -->
+    </nav>
+
+    <div class="container" id="login-form">
+      <h2><span class="login-icon">🔒</span> ログイン</h2>
+      <div class="input-group">
+        <label for="username">ユーザー名:</label>
+        <input type="text" id="username" placeholder="ユーザー名" required />
+      </div>
+      <div class="input-group">
+        <label for="password">パスワード:</label>
+        <input type="password" id="password" placeholder="パスワード" required />
+      </div>
+      <div class="autologin-container">
+        <input type="checkbox" id="autologin" name="autologin" />
+        <label for="autologin">自動ログイン</label>
+      </div>
+      <button onclick="login()"><span class="login-icon">ログイン</span></button>
+      <div id="login-error"></div>
+    </div>
+
+    <div class="page" id="console-page">
+      <div class="container">
+        <h1><span class="server-icon">🖥️</span> Minecraft サーバーコントロールパネル</h1>
+        <div class="info-box">
+          <div id="playerCount"><span class="info-icon">👥</span> 現在のプレイヤー数: 0</div>
+          <div id="uptime"><span class="info-icon">⏱️</span> 起動時間: 不明</div>
+        </div>
+        <div class="console-input-area">
+          <div class="console-container">
+            <textarea id="console" readonly></textarea>
+          </div>
+          <div class="input-container">
+            <input type="text" id="commandInput" placeholder="コマンドを入力..." />
+            <button onclick="sendCommand()"><span class="send-icon">送信</span></button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="page" id="status-page">
-    <div class="container">
-      <h2><span class="status-icon">📊</span> サーバー状態確認</h2>
-      <button onclick="checkServerStatus()"><span class="status-icon">🔄</span> 状態確認</button>
-      <div id="server-status" class="status-info"></div>
-    </div>
-  </div>
-  <!-- BAN Page -->
-  <div class="page" id="ban-page">
-    <div class="container">
-      <h2><span class="ban-icon">🚫</span> BAN / Unban</h2>
-      <div class="ban-form">
-        <!-- BAN フォーム -->
-        <div class="input-group player-select">
-          <label for="banPlayerName">プレイヤー名 (BAN):</label>
-          <select id="banPlayerName">
-            <option value="">プレイヤーを選択</option>
-            <!-- プレイヤーリストがここに挿入されます -->
-          </select>
-        </div>
-        <div class="input-group">
-          <label for="banReason">理由:</label>
-          <input type="text" id="banReason" placeholder="BAN理由" required />
-        </div>
-        <div class="input-group">
-          <label for="banDuration">期間:</label>
-          <input type="text" id="banDuration" placeholder="例: 1d, 6h, 30m (空欄で永久BAN)" required />
-        </div>
-        <button onclick="banPlayer()">BAN</button>
 
-        <!-- Unban フォーム -->
-        <div class="input-group">
-          <label for="unbanPlayerName">プレイヤー名 (Unban):</label>
-          <input type="text" id="unbanPlayerName" placeholder="プレイヤー名を入力" required />
+    <div class="page" id="players-page">
+      <div class="container">
+        <h2><span class="server-icon">👥</span> プレイヤー確認</h2>
+        <div class="info-box">
+          <div id="playerCount2"><span class="info-icon">👥</span> 現在のプレイヤー数: 0</div>
+          <div id="uptime2"><span class="info-icon">⏱️</span> 起動時間: 不明</div>
         </div>
-        <button onclick="unbanPlayer()">Unban</button>
+        <ul class="player-list" id="player-list"></ul>
       </div>
-      <h2><span class="ban-icon">📜</span> BANリスト</h2>
-      <ul class="ban-list" id="ban-list">
-        <!-- BANされたプレイヤーのリストがここに表示されます -->
-      </ul>
     </div>
-  </div>
 
-  <div class="page" id="map-page">
-    <div class="container">
-      <h2><span class="map-icon">🌍</span> マップ</h2>
-      <div id="mapid"></div>
-      <ul class="player-list-map" id="player-list-map">
-        <!-- プレイヤーリストはここに挿入されます -->
-      </ul>
+    <div class="page" id="players-page_2">
+      <div class="container">
+        <h2><span class="server-icon">👥</span> プレイヤーの入退出の確認</h2>
+        <div class="info-box">
+          <div id="playerCount3"><span class="info-icon">👥</span> 現在のプレイヤー数: 0</div>
+          <div id="uptime3"><span class="info-icon">⏱️</span> 起動時間: 不明</div>
+        </div>
+        <ul class="player-list" id="player-left_list"></ul>
+        <div id="pagination-container" class="pagination">
+          <!-- ページネーションボタンがここに挿入されます -->
+        </div>
+      </div>
     </div>
-  </div>
+    <div class="page" id="status-page">
+      <div class="container">
+        <h2><span class="status-icon">📊</span> サーバー状態確認</h2>
+        <button onclick="checkServerStatus()"><span class="status-icon">🔄</span> 状態確認</button>
+        <div id="server-status" class="status-info"></div>
+      </div>
+    </div>
+    <!-- BAN Page -->
+    <div class="page" id="ban-page">
+      <div class="container">
+        <h2><span class="ban-icon">🚫</span> BAN / Unban</h2>
+        <div class="ban-form">
+          <!-- BAN フォーム -->
+          <div class="input-group player-select">
+            <label for="banPlayerName">プレイヤー名 (BAN):</label>
+            <select id="banPlayerName">
+              <option value="">プレイヤーを選択</option>
+              <!-- プレイヤーリストがここに挿入されます -->
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="banReason">理由:</label>
+            <input type="text" id="banReason" placeholder="BAN理由" required />
+          </div>
+          <div class="input-group">
+            <label for="banDuration">期間:</label>
+            <input
+              type="text"
+              id="banDuration"
+              placeholder="例: 1d, 6h, 30m (空欄で永久BAN)"
+              required
+            />
+          </div>
+          <button onclick="banPlayer()">BAN</button>
 
-  <script>
-    let ws = null;
-    let loggedIn = false;
-    let playerCache = {};
-    let commandHistory = [];
-    let currentHistoryIndex = -1;
-    let selectedPlayerName = ''; // 選択されたプレイヤー名を保持する変数
-    let updateBan = true;
-    let map = null;
-    let playerMarkers = {};
+          <!-- Unban フォーム -->
+          <div class="input-group">
+            <label for="unbanPlayerName">プレイヤー名 (Unban):</label>
+            <input type="text" id="unbanPlayerName" placeholder="プレイヤー名を入力" required />
+          </div>
+          <button onclick="unbanPlayer()">Unban</button>
+        </div>
+        <h2><span class="ban-icon">📜</span> BANリスト</h2>
+        <ul class="ban-list" id="ban-list">
+          <!-- BANされたプレイヤーのリストがここに表示されます -->
+        </ul>
+      </div>
+    </div>
 
-    // ページを切り替える関数
-    function showPage(pageId) {
-      $('.page').removeClass('active');
-      $('#' + pageId).addClass('active');
+    <div class="page" id="map-page">
+      <div class="container">
+        <h2><span class="map-icon">🌍</span> マップ</h2>
+        <div id="mapid"></div>
+        <ul class="player-list-map" id="player-list-map">
+          <!-- プレイヤーリストはここに挿入されます -->
+        </ul>
+      </div>
+    </div>
 
-      const nav = $('#main-nav');
-      if (nav.hasClass('active')) {
-        nav.removeClass('active');
-        $('.container').css('padding-left', '');
-      }
+    <script>
+      let ws = null;
+      let loggedIn = false;
+      let playerCache = {};
+      let commandHistory = [];
+      let currentHistoryIndex = -1;
+      let selectedPlayerName = ''; // 選択されたプレイヤー名を保持する変数
+      let updateBan = true;
+      let map = null;
+      let playerMarkers = {};
 
-      // BANページ表示時にBANリストを更新
-      if (pageId === 'ban-page') {
-        updateBanList();
-      }
-
-      if (pageId === 'map-page') {
-        initializeMap();
-      }
-    }
-
-    //ハンバーガーメニュー
-    function toggleNav() {
-      const nav = $('#main-nav');
-      if (nav.hasClass('active')) {
-        nav.removeClass('active');
-        $('.container').css('padding-left', '');
-      } else {
-        nav.addClass('active');
-        $('.container').css('padding-left', '280px');
-      }
-    }
-
-    function toggleDisplay() {
-      const loginForm = $('#login-form');
-      const hamburgerMenu = $('.hamburger-menu');
-      const nav = $('#main-nav');
-
-      if (loggedIn) {
-        loginForm.hide();
-        hamburgerMenu.show();
-        showPage('console-page');
-      } else {
-        loginForm.show();
-        hamburgerMenu.hide();
-        nav.removeClass('active');
+      // ページを切り替える関数
+      function showPage(pageId) {
         $('.page').removeClass('active');
-      }
-    }
+        $('#' + pageId).addClass('active');
 
-    // 自動ログインの処理
-    function checkAutoLogin() {
-      if (localStorage.getItem('autoLogin') === 'true') {
-        const username = localStorage.getItem('username');
-        const password = localStorage.getItem('password');
-        if (username && password) {
-          $('#username').val(username);
-          $('#password').val(password);
-          $('#autologin').prop('checked', true);
-          login();
+        const nav = $('#main-nav');
+        if (nav.hasClass('active')) {
+          nav.removeClass('active');
+          $('.container').css('padding-left', '');
+        }
+
+        // BANページ表示時にBANリストを更新
+        if (pageId === 'ban-page') {
+          updateBanList();
+        }
+
+        if (pageId === 'map-page') {
+          initializeMap();
         }
       }
-    }
 
-    // ログイン処理
-    function login() {
-      const username = $('#username').val();
-      const password = $('#password').val();
-      const autoLogin = $('#autologin').prop('checked');
-
-      fetch('/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            loggedIn = true;
-            if (autoLogin) {
-              localStorage.setItem('username', username);
-              localStorage.setItem('password', password);
-              localStorage.setItem('autoLogin', 'true');
-            } else {
-              localStorage.removeItem('username');
-              localStorage.removeItem('password');
-              localStorage.removeItem('autoLogin');
-            }
-            toggleDisplay();
-            connectWebSocket(username, password);
-          } else {
-            $('#login-error').text('ログインに失敗しました。');
-          }
-        })
-        .catch((error) => {
-          console.error('Login error:', error);
-          $('#login-error').text('エラーが発生しました。');
-        });
-    }
-
-    // ログアウト処理
-    function logout() {
-      loggedIn = false;
-      localStorage.removeItem('username');
-      localStorage.removeItem('password');
-      localStorage.removeItem('autoLogin');
-      toggleDisplay();
-      if (ws) {
-        ws.close();
-        ws = null;
+      //ハンバーガーメニュー
+      function toggleNav() {
+        const nav = $('#main-nav');
+        if (nav.hasClass('active')) {
+          nav.removeClass('active');
+          $('.container').css('padding-left', '');
+        } else {
+          nav.addClass('active');
+          $('.container').css('padding-left', '280px');
+        }
       }
-    }
 
-    function connectWebSocket(username, password) {
-      let wsUrl1 = 'wss://bfxmknk4-80.asse.devtunnels.ms/'; // 初期値 (wss1)
-      let wsUrl2 = ''; // wss2のURLを格納する変数
-      let currentWs = null;
+      function toggleDisplay() {
+        const loginForm = $('#login-form');
+        const hamburgerMenu = $('.hamburger-menu');
+        const nav = $('#main-nav');
 
-      // wss2のURLを取得する関数
-      function getWsUrl2(username, password) {
-        const urlRetrievalUrl = '/get_url';
-        let fetchOptions = {
-          method: 'GET',
-        };
+        if (loggedIn) {
+          loginForm.hide();
+          hamburgerMenu.show();
+          showPage('console-page');
+        } else {
+          loginForm.show();
+          hamburgerMenu.hide();
+          nav.removeClass('active');
+          $('.page').removeClass('active');
+        }
+      }
 
-        fetch(urlRetrievalUrl, fetchOptions)
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
+      // 自動ログインの処理
+      function checkAutoLogin() {
+        if (getCookie('autoLogin') === 'true') {
+          const username = getCookie('username');
+          const password = getCookie('password');
+          if (username && password) {
+            $('#username').val(username);
+            $('#password').val(password);
+            $('#autologin').prop('checked', true);
+            login();
+          }
+        }
+      }
+
+      function login() {
+        const username = $('#username').val();
+        const password = $('#password').val();
+        const autoLogin = $('#autologin').prop('checked');
+
+        fetch('/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              loggedIn = true;
+              if (autoLogin) {
+                setCookie('username', username, 365, window.location.hostname);
+                setCookie('password', password, 365, window.location.hostname);
+                setCookie('autoLogin', 'true', 365, window.location.hostname);
+              } else {
+                deleteCookie('username', window.location.hostname);
+                deleteCookie('password', window.location.hostname);
+                deleteCookie('autoLogin', window.location.hostname);
+              }
+              toggleDisplay();
+              connectWebSocket(username, password);
+            } else {
+              $('#login-error').text('ログインに失敗しました。');
             }
-            return response.text();
-          })
-          .then((url) => {
-            wsUrl2 = url;
-            console.log(`wsUrl2 received: ${wsUrl2}`);
-            connectToWebSocket(wsUrl2, false); // 取得したwss2のURLで接続を試みる
           })
           .catch((error) => {
-            console.error('Error fetching wsUrl2:', error);
-            connectToWebSocket(wsUrl1, false); // wss2のURL取得に失敗したらwss1を試す
+            console.error('Login error:', error);
+            $('#login-error').text('エラーが発生しました。');
           });
       }
 
-      // WebSocketに接続する関数
-      function connectToWebSocket(url, isRetry) {
-        console.log(`Trying to connect to WebSocket server: ${url}`);
-        currentWs = new WebSocket(url);
-
-        currentWs.onopen = () => {
-          ws = currentWs; 
-          loggedIn = true; 
-          console.log(`WebSocket connected to ${url}`);
-          currentWs.send(JSON.stringify({ type: 'authenticate', username, password }));
-        };
-
-        currentWs.onmessage = handleWebSocketMessage;
-
-        currentWs.onerror = (error) => {
-          console.error(`WebSocket error on ${url}:`, error);
-          currentWs.close();
-          if (!isRetry && url === wsUrl2) {
-            console.log('Retrying with wsUrl1...');
-            connectToWebSocket(wsUrl1, false); // 初回の接続が失敗した場合、wss1でリトライする
-          } else if (url === wsUrl1) {
-            connectLocalWebSocket(username, password);
-          } else {
-            alert('全ての接続試行に失敗しました。'); // すべての接続が失敗した場合にアラートを出す
-          }
-        };
-
-        currentWs.onclose = (event) => {
-          console.log(`WebSocket connection to ${url} closed`, event);
-        };
-      }
-
-      // ローカルのWebSocketサーバーに接続する関数
-      function connectLocalWebSocket(username, password) {
-        const localWsUrl = `ws://${window.location.host}`;
-        console.log(`Trying to connect to local WebSocket server: ${localWsUrl}`);
-        currentWs = new WebSocket(localWsUrl);
-
-        currentWs.onopen = () => {
-          console.log(`WebSocket connected to ${localWsUrl}`);
-          ws = currentWs; 
-          currentWs.send(JSON.stringify({ type: 'authenticate', username, password }));
-          loggedIn = true; 
-
-        };
-
-        currentWs.onmessage = handleWebSocketMessage;
-
-        currentWs.onerror = (error) => {
-          console.error(`WebSocket error on ${localWsUrl}:`, error);
-        };
-
-        currentWs.onclose = () => {
-          console.log(`WebSocket connection to ${localWsUrl} closed`);
-        };
-      }
-
-      // WebSocket接続を開始（まずは/get_urlからURLを取得）
-      getWsUrl2(username, password);
-    }
-
-    // WebSocket メッセージを処理する共通関数
-    function handleWebSocketMessage(event) {
-      const data = JSON.parse(event.data);
-      switch (data.type) {
-        case 'playerCount':
-          $('#playerCount').html(
-            `<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data}`,
-          );
-          $('#playerCount2').html(
-            `<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data}`,
-          );
-          break;
-        case 'console':
-          const consoleElement = $('#console');
-          consoleElement.val(consoleElement.val() + data.data + '\n');
-          consoleElement.scrollTop(consoleElement.prop('scrollHeight'));
-          break;
-        case 'uptime':
-          $('#uptime').html(`<span class="info-icon">⏱️</span> 起動時間: ${data.data}`);
-          $('#uptime2').html(`<span class="info-icon">⏱️</span> 起動時間: ${data.data}`);
-          $('#uptime3').html(`<span class="info-icon">⏱️</span> 起動時間: ${data.data}`);
-          break;
-        case 'onlinePlayers':
-          $('#playerCount').html(
-            `<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data.length}`,
-          );
-          $('#playerCount2').html(
-            `<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data.length}`,
-          );
-          $('#playerCount3').html(
-            `<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data.length}`,
-          );
-          updatePlayerLists(data.data);
-          updatePlayerSelectDropdown(data.data);
-          if (map) {
-            updatePlayerMarkers(data.data);
-          }
-          break;
-        case 'playerData':
-          updatePlayerLeftData(data.data);
-          break;
-        case 'banList':
-          if (updateBan) {
-
-            updateBanListDisplay(data.data);
-          }
-          break;
-        case 'error':
-          console.error('WebSocket error:', data.message);
-          if (data.message === '認証に失敗しました') {
-            loggedIn = false;
-            toggleDisplay();
-            ws.close();
-          }
-          break;
-      }
-    }
-
-    // コマンド送信
-    function sendCommand() {
-      if (!loggedIn || !ws) {
-        alert('ログインしてください。');
-        return;
-      }
-      const command = $('#commandInput').val();
-      ws.send(JSON.stringify({ type: 'command', command }));
-
-      // コマンド履歴の管理
-      if (commandHistory[0] !== command) {
-        commandHistory.unshift(command); // 最新のコマンドを先頭に追加
-      }
-      currentHistoryIndex = -1; // 履歴インデックスをリセット
-      $('#commandInput').val('');
-    }
-
-    // コマンド入力欄で↑キーや↓キーが押された時の処理
-    $('#commandInput').keydown(function (e) {
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        if (currentHistoryIndex < commandHistory.length - 1) {
-          currentHistoryIndex++;
-          $('#commandInput').val(commandHistory[currentHistoryIndex]);
-        }
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        if (currentHistoryIndex > 0) {
-          currentHistoryIndex--;
-          $('#commandInput').val(commandHistory[currentHistoryIndex]);
-        } else {
-          currentHistoryIndex = -1;
-          $('#commandInput').val('');
+      function logout() {
+        loggedIn = false;
+        deleteCookie('username', window.location.hostname);
+        deleteCookie('password', window.location.hostname);
+        deleteCookie('autoLogin', window.location.hostname);
+        toggleDisplay();
+        if (ws) {
+          ws.close();
+          ws = null;
         }
       }
-    });
 
-    // サーバーステータス確認
-    function checkServerStatus() {
-      fetch('/status')
-        .then((response) => response.json())
-        .then((data) => {
-          let statusHTML = '';
-          Object.keys(data).forEach((address) => {
-            const serverData = data[address];
-            if (serverData.status === 'online') {
-              statusHTML += `<p><span class="status-icon">✔</span> ${address}: オンライン</p>`;
-              statusHTML += `<p>プレイヤー数: ${serverData.players.online} / ${serverData.players.max}</p>`;
+      function setCookie(name, value, days, domain) {
+        const expires = new Date(Date.now() + days * 864e5).toUTCString();
+        document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; domain=${domain}`;
+      }
 
-              // プレイヤーリスト (存在する場合)
-              if (serverData.players.list && serverData.players.list.length > 0) {
-                statusHTML += `<p>プレイヤー: ${serverData.players.list.join(', ')}</p>`;
+      // Cookie を取得する関数
+      function getCookie(name) {
+        const cookie = document.cookie.split('; ').find((row) => row.startsWith(`${name}=`));
+        return cookie ? decodeURIComponent(cookie.split('=')[1]) : null;
+      }
+
+      // Cookie を削除する関数
+      function deleteCookie(name, domain) {
+        setCookie(name, '', -1, domain);
+      }
+
+      function connectWebSocket(username, password) {
+        let wsUrl1 = 'wss://bfxmknk4-80.asse.devtunnels.ms/'; // 初期値 (wss1)
+        let wsUrl2 = ''; // wss2のURLを格納する変数
+        let currentWs = null;
+
+        // wss2のURLを取得する関数
+        function getWsUrl2(username, password) {
+          const urlRetrievalUrl = '/get_url';
+          let fetchOptions = {
+            method: 'GET',
+          };
+
+          fetch(urlRetrievalUrl, fetchOptions)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
               }
+              return response.text();
+            })
+            .then((url) => {
+              wsUrl2 = url;
+              console.log(`wsUrl2 received: ${wsUrl2}`);
+              connectToWebSocket(wsUrl2, false); // 取得したwss2のURLで接続を試みる
+            })
+            .catch((error) => {
+              console.error('Error fetching wsUrl2:', error);
+              connectToWebSocket(wsUrl1, false); // wss2のURL取得に失敗したらwss1を試す
+            });
+        }
 
-              statusHTML += `<p>MOTD: ${serverData.motd.clean}</p>`; // motd.clean を直接使用
+        // WebSocketに接続する関数
+        function connectToWebSocket(url, isRetry) {
+          console.log(`Trying to connect to WebSocket server: ${url}`);
+          currentWs = new WebSocket(url);
 
-              // サーバーバージョン (存在する場合)
-              if (serverData.server && serverData.server.version) {
-                statusHTML += `<p>バージョン: ${serverData.server.version}</p>`;
-              }
+          currentWs.onopen = () => {
+            ws = currentWs;
+            loggedIn = true;
+            console.log(`WebSocket connected to ${url}`);
+            currentWs.send(JSON.stringify({ type: 'authenticate', username, password }));
+          };
 
-              if (typeof serverData.ping !== 'undefined') {
-                statusHTML += `<p>Ping: ${serverData.ping} ms</p>`;
-              }
-            } else if (serverData.status === 'offline') {
-              statusHTML += `<p><span class="status-icon offline">✖</span> ${address}: オフライン</p>`;
+          currentWs.onmessage = handleWebSocketMessage;
+
+          currentWs.onerror = (error) => {
+            console.error(`WebSocket error on ${url}:`, error);
+            currentWs.close();
+            if (!isRetry && url === wsUrl2) {
+              console.log('Retrying with wsUrl1...');
+              connectToWebSocket(wsUrl1, false); // 初回の接続が失敗した場合、wss1でリトライする
+            } else if (url === wsUrl1) {
+              connectLocalWebSocket(username, password);
             } else {
-              statusHTML += `<p><span class="status-icon error">⚠</span> ${address}: 状態確認エラー</p>`;
-              statusHTML += `<p>エラー詳細: ${serverData.error}</p>`;
+              alert('全ての接続試行に失敗しました。'); // すべての接続が失敗した場合にアラートを出す
             }
-          });
+          };
 
-          $('#server-status').html(statusHTML);
-        })
-        .catch((error) => {
-          console.error('Status check error:', error);
-          $('#server-status').html(
-            '<span class="status-icon error">⚠</span> 状態確認中にエラーが発生しました',
-          );
-        });
-    }
+          currentWs.onclose = (event) => {
+            console.log(`WebSocket connection to ${url} closed`, event);
+          };
+        }
 
-    // プレイヤーリストを更新する関数
-    function updatePlayerList(players) {
-      const playerList = $('#player-list');
-      playerList.empty();
+        // ローカルのWebSocketサーバーに接続する関数
+        function connectLocalWebSocket(username, password) {
+          const localWsUrl = `ws://${window.location.host}`;
+          console.log(`Trying to connect to local WebSocket server: ${localWsUrl}`);
+          currentWs = new WebSocket(localWsUrl);
 
-      if (players.length === 0) {
-        playerList.append($('<li>').text('現在オンラインのプレイヤーはいません'));
-      } else {
-        players.forEach((player) => {
-          const li = $('<li>');
-          li.html(
-            `<strong>${player.name}</strong> (UUID: ${player.uuid} - Ping: ${player.ping}ms)`,
-          );
-          if (player.position) {
-            li.append(
-              `<br>位置: X=${player.position.x}, Y=${player.position.y}, Z=${player.position.z}`,
+          currentWs.onopen = () => {
+            console.log(`WebSocket connected to ${localWsUrl}`);
+            ws = currentWs;
+            currentWs.send(JSON.stringify({ type: 'authenticate', username, password }));
+            loggedIn = true;
+          };
+
+          currentWs.onmessage = handleWebSocketMessage;
+
+          currentWs.onerror = (error) => {
+            console.error(`WebSocket error on ${localWsUrl}:`, error);
+          };
+
+          currentWs.onclose = () => {
+            console.log(`WebSocket connection to ${localWsUrl} closed`);
+          };
+        }
+
+        // WebSocket接続を開始（まずは/get_urlからURLを取得）
+        getWsUrl2(username, password);
+      }
+
+      // WebSocket メッセージを処理する共通関数
+      function handleWebSocketMessage(event) {
+        const data = JSON.parse(event.data);
+        switch (data.type) {
+          case 'playerCount':
+            $('#playerCount').html(
+              `<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data}`,
             );
-          } else {
-            li.append(`<br>位置: 不明`);
-          }
-          playerList.append(li);
-        });
-      }
-    }
-
-    // BAN/Unbanリクエストを送信する関数
-    function sendAuthenticatedRequest(url, data) {
-      const username = localStorage.getItem('username');
-      const password = localStorage.getItem('password');
-
-      if (!username || !password) {
-        alert('ログイン情報がありません。ログインしてください。');
-        return Promise.reject('No login information found');
-      }
-
-      const base64Credentials = btoa(username + ':' + password);
-
-      return fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${base64Credentials}`,
-        },
-        body: JSON.stringify(data),
-      });
-    }
-
-    // BANリクエストを送信する関数
-    function banPlayer() {
-      const playerName = $('#banPlayerName').val();
-      const reason = $('#banReason').val();
-      const duration = $('#banDuration').val();
-
-      if (!playerName) {
-        alert('プレイヤーを選択してください');
-        return;
-      }
-
-      sendAuthenticatedRequest('/ban', { type: 'ban', playerName, reason, duration })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            alert(`${playerName} をBANしました。`);
-            updateBanList();
-            // フォームをクリア
-            $('#banPlayerName').val('');
-            $('#banReason').val('');
-            $('#banDuration').val('');
-            selectedPlayerName = '';
-          } else {
-            alert(`BANリクエストに失敗しました: ${data.error}`);
-          }
-        })
-        .catch((error) => {
-          console.error('BAN request error:', error);
-          alert('BANリクエスト中にエラーが発生しました。');
-        });
-    }
-
-    // Unbanリクエストを送信する関数(フォーム入力)
-    function unbanPlayer() {
-      const playerName = $('#unbanPlayerName').val();
-
-      if (!playerName) {
-        alert('プレイヤー名を入力してください');
-        return;
+            $('#playerCount2').html(
+              `<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data}`,
+            );
+            break;
+          case 'console':
+            const consoleElement = $('#console');
+            consoleElement.val(consoleElement.val() + data.data + '\n');
+            consoleElement.scrollTop(consoleElement.prop('scrollHeight'));
+            break;
+          case 'uptime':
+            $('#uptime').html(`<span class="info-icon">⏱️</span> 起動時間: ${data.data}`);
+            $('#uptime2').html(`<span class="info-icon">⏱️</span> 起動時間: ${data.data}`);
+            $('#uptime3').html(`<span class="info-icon">⏱️</span> 起動時間: ${data.data}`);
+            break;
+          case 'onlinePlayers':
+            $('#playerCount').html(
+              `<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data.length}`,
+            );
+            $('#playerCount2').html(
+              `<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data.length}`,
+            );
+            $('#playerCount3').html(
+              `<span class="info-icon">👥</span> 現在のプレイヤー数: ${data.data.length}`,
+            );
+            updatePlayerLists(data.data);
+            updatePlayerSelectDropdown(data.data);
+            if (map) {
+              updatePlayerMarkers(data.data);
+            }
+            break;
+          case 'playerData':
+            updatePlayerLeftData(data.data);
+            break;
+          case 'banList':
+            if (updateBan) {
+              updateBanListDisplay(data.data);
+            }
+            break;
+          case 'error':
+            console.error('WebSocket error:', data.message);
+            if (data.message === '認証に失敗しました') {
+              loggedIn = false;
+              toggleDisplay();
+              ws.close();
+            }
+            break;
+        }
       }
 
-      sendAuthenticatedRequest('/unban', { type: 'unban', playerName })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            alert(`${playerName} のBANを解除しました。`);
-            updateBanList();
-            // フォームをクリア
-            $('#unbanPlayerName').val('');
-            selectedPlayerName = playerName; // 選択状態を維持するためにセット
-          } else {
-            alert(`Unbanリクエストに失敗しました: ${data.error}`);
-          }
-        })
-        .catch((error) => {
-          console.error('Unban request error:', error);
-          alert('Unbanリクエスト中にエラーが発生しました。');
-        });
-    }
-
-    // Unbanリクエストを送信する関数(リストクリック)
-    function unbanPlayerFromList(playerName) {
-      sendAuthenticatedRequest('/unban', { type: 'unban', playerName })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            alert(`${playerName} のBANを解除しました。`);
-            updateBanList();
-            selectedPlayerName = playerName;
-          } else {
-            alert(`Unbanリクエストに失敗しました: ${data.error}`);
-          }
-        })
-        .catch((error) => {
-          console.error('Unban request error:', error);
-          alert('Unbanリクエスト中にエラーが発生しました。');
-        });
-    }
-
-    $('#banPlayerName').on('change', function () {
-      selectedPlayerName = $(this).val();
-      console.log('選択中のプレイヤー:', selectedPlayerName);
-    });
-
-    // BANリストを更新する関数
-    function updateBanList() {
-      if (!ws) {
-        console.error('WebSocket is not connected.');
-        return;
-      }
-      // BANリストの更新をWebSocketサーバーに要求
-      ws.send(JSON.stringify({ type: 'getBanList' }));
-    }
-
-    // BANリストの表示を更新する関数
-    function updateBanListDisplay(banList) {
-      const banListElement = $('#ban-list');
-      banListElement.empty();
-
-      if (banList.length === 0) {
-        banListElement.append($('<li>').text('現在BANされているプレイヤーはいません'));
-      } else {
-        banList.forEach((ban) => {
-          const li = $('<li>');
-          const expires = ban.expiresAt ? new Date(ban.expiresAt).toLocaleString() : '永久';
-          li.html(
-            `<strong>${ban.name}</strong> (UUID: ${ban.uuid})<br>理由: ${ban.reason}<br>BANした管理者: ${ban.bannedBy}<br>期限: ${expires}`,
+      // コマンド送信
+      // コマンド送信
+      function sendCommand() {
+        if (!loggedIn || !ws) {
+          alert('ログインしてください。');
+          return;
+        }
+        const command = $('#commandInput').val();
+        if (command.startsWith('.')) {
+          // . 以降の文字列を取得
+          const message = command.substring(1);
+          // tellraw コマンドを組み立てて送信
+          ws.send(
+            JSON.stringify({
+              type: 'command',
+              command: `tellraw @a {"rawtext":[{"text":"§l§f[Server] §r${message}"}]}`,
+            }),
           );
+        } else {
+          // 通常のコマンド処理
+          ws.send(JSON.stringify({ type: 'command', command }));
+        }
 
-          // Unban 確認メニューを追加
-          const unbanConfirmMenu = $(`<div class="unban-confirm">
+        // コマンド履歴の管理
+        if (commandHistory[0] !== command) {
+          commandHistory.unshift(command); // 最新のコマンドを先頭に追加
+        }
+        currentHistoryIndex = -1; // 履歴インデックスをリセット
+        $('#commandInput').val('');
+      }
+
+      // コマンド入力欄で↑キーや↓キーが押された時の処理
+      $('#commandInput').keydown(function (e) {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (currentHistoryIndex < commandHistory.length - 1) {
+            currentHistoryIndex++;
+            $('#commandInput').val(commandHistory[currentHistoryIndex]);
+          }
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (currentHistoryIndex > 0) {
+            currentHistoryIndex--;
+            $('#commandInput').val(commandHistory[currentHistoryIndex]);
+          } else {
+            currentHistoryIndex = -1;
+            $('#commandInput').val('');
+          }
+        } else if (e.key === 'Enter') {
+          // Enterキーの処理を追加
+          e.preventDefault();
+          sendCommand();
+        }
+      });
+
+      // サーバーステータス確認
+      function checkServerStatus() {
+        fetch('/status')
+          .then((response) => response.json())
+          .then((data) => {
+            let statusHTML = '';
+            Object.keys(data).forEach((address) => {
+              const serverData = data[address];
+              if (serverData.status === 'online') {
+                statusHTML += `<p><span class="status-icon">✔</span> ${address}: オンライン</p>`;
+                statusHTML += `<p>プレイヤー数: ${serverData.players.online} / ${serverData.players.max}</p>`;
+
+                // プレイヤーリスト (存在する場合)
+                if (serverData.players.list && serverData.players.list.length > 0) {
+                  statusHTML += `<p>プレイヤー: ${serverData.players.list.join(', ')}</p>`;
+                }
+
+                statusHTML += `<p>MOTD: ${serverData.motd.clean}</p>`; // motd.clean を直接使用
+
+                // サーバーバージョン (存在する場合)
+                if (serverData.server && serverData.server.version) {
+                  statusHTML += `<p>バージョン: ${serverData.server.version}</p>`;
+                }
+
+                if (typeof serverData.ping !== 'undefined') {
+                  statusHTML += `<p>Ping: ${serverData.ping} ms</p>`;
+                }
+              } else if (serverData.status === 'offline') {
+                statusHTML += `<p><span class="status-icon offline">✖</span> ${address}: オフライン</p>`;
+              } else {
+                statusHTML += `<p><span class="status-icon error">⚠</span> ${address}: 状態確認エラー</p>`;
+                statusHTML += `<p>エラー詳細: ${serverData.error}</p>`;
+              }
+            });
+
+            $('#server-status').html(statusHTML);
+          })
+          .catch((error) => {
+            console.error('Status check error:', error);
+            $('#server-status').html(
+              '<span class="status-icon error">⚠</span> 状態確認中にエラーが発生しました',
+            );
+          });
+      }
+
+      // プレイヤーリストを更新する関数
+      function updatePlayerList(players) {
+        const playerList = $('#player-list');
+        playerList.empty();
+
+        if (players.length === 0) {
+          playerList.append($('<li>').text('現在オンラインのプレイヤーはいません'));
+        } else {
+          players.forEach((player) => {
+            const li = $('<li>');
+            li.html(
+              `<strong>${player.name}</strong> (UUID: ${player.uuid} - Ping: ${player.ping}ms)`,
+            );
+            if (player.position) {
+              li.append(
+                `<br>位置: X=${player.position.x}, Y=${player.position.y}, Z=${player.position.z}`,
+              );
+            } else {
+              li.append(`<br>位置: 不明`);
+            }
+            playerList.append(li);
+          });
+        }
+      }
+
+      // BAN/Unbanリクエストを送信する関数
+      function sendAuthenticatedRequest(url, data) {
+        const username = getCookie('username');
+        const password = getCookie('password');
+
+        if (!username || !password) {
+          alert('ログイン情報がありません。ログインしてください。');
+          return Promise.reject('No login information found');
+        }
+
+        const base64Credentials = btoa(username + ':' + password);
+
+        return fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Basic ${base64Credentials}`,
+          },
+          body: JSON.stringify(data),
+        });
+      }
+
+      // BANリクエストを送信する関数
+      function banPlayer() {
+        const playerName = $('#banPlayerName').val();
+        const reason = $('#banReason').val();
+        const duration = $('#banDuration').val();
+
+        if (!playerName) {
+          alert('プレイヤーを選択してください');
+          return;
+        }
+
+        sendAuthenticatedRequest('/ban', { type: 'ban', playerName, reason, duration })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert(`${playerName} をBANしました。`);
+              updateBanList();
+              // フォームをクリア
+              $('#banPlayerName').val('');
+              $('#banReason').val('');
+              $('#banDuration').val('');
+              selectedPlayerName = '';
+            } else {
+              alert(`BANリクエストに失敗しました: ${data.error}`);
+            }
+          })
+          .catch((error) => {
+            console.error('BAN request error:', error);
+            alert('BANリクエスト中にエラーが発生しました。');
+          });
+      }
+
+      // Unbanリクエストを送信する関数(フォーム入力)
+      function unbanPlayer() {
+        const playerName = $('#unbanPlayerName').val();
+
+        if (!playerName) {
+          alert('プレイヤー名を入力してください');
+          return;
+        }
+
+        sendAuthenticatedRequest('/unban', { type: 'unban', playerName })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert(`${playerName} のBANを解除しました。`);
+              updateBanList();
+              // フォームをクリア
+              $('#unbanPlayerName').val('');
+              selectedPlayerName = playerName; // 選択状態を維持するためにセット
+            } else {
+              alert(`Unbanリクエストに失敗しました: ${data.error}`);
+            }
+          })
+          .catch((error) => {
+            console.error('Unban request error:', error);
+            alert('Unbanリクエスト中にエラーが発生しました。');
+          });
+      }
+
+      // Unbanリクエストを送信する関数(リストクリック)
+      function unbanPlayerFromList(playerName) {
+        sendAuthenticatedRequest('/unban', { type: 'unban', playerName })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert(`${playerName} のBANを解除しました。`);
+              updateBanList();
+              selectedPlayerName = playerName;
+            } else {
+              alert(`Unbanリクエストに失敗しました: ${data.error}`);
+            }
+          })
+          .catch((error) => {
+            console.error('Unban request error:', error);
+            alert('Unbanリクエスト中にエラーが発生しました。');
+          });
+      }
+
+      $('#banPlayerName').on('change', function () {
+        selectedPlayerName = $(this).val();
+        console.log('選択中のプレイヤー:', selectedPlayerName);
+      });
+
+      // BANリストを更新する関数
+      function updateBanList() {
+        if (!ws) {
+          console.error('WebSocket is not connected.');
+          return;
+        }
+        // BANリストの更新をWebSocketサーバーに要求
+        ws.send(JSON.stringify({ type: 'getBanList' }));
+      }
+
+      // BANリストの表示を更新する関数
+      function updateBanListDisplay(banList) {
+        const banListElement = $('#ban-list');
+        banListElement.empty();
+
+        if (banList.length === 0) {
+          banListElement.append($('<li>').text('現在BANされているプレイヤーはいません'));
+        } else {
+          banList.forEach((ban) => {
+            const li = $('<li>');
+            const expires = ban.expiresAt ? new Date(ban.expiresAt).toLocaleString() : '永久';
+            li.html(
+              `<strong>${ban.name}</strong> (UUID: ${ban.uuid})<br>理由: ${ban.reason}<br>BANした管理者: ${ban.bannedBy}<br>期限: ${expires}`,
+            );
+
+            // Unban 確認メニューを追加
+            const unbanConfirmMenu = $(`<div class="unban-confirm">
                         <p>${ban.name} のBANを解除しますか？</p>
                         <button class="confirm">はい</button>
                         <button class="cancel">いいえ</button>
                     </div>`);
-          li.append(unbanConfirmMenu);
+            li.append(unbanConfirmMenu);
 
-          li.on('click', function (event) {
-            event.stopPropagation();
-            $('.unban-confirm').hide(); // 他の確認メニューを隠す
-            unbanConfirmMenu.show(); // クリックされたプレイヤーの確認メニューを表示
-            updateBan = false;
+            li.on('click', function (event) {
+              event.stopPropagation();
+              $('.unban-confirm').hide(); // 他の確認メニューを隠す
+              unbanConfirmMenu.show(); // クリックされたプレイヤーの確認メニューを表示
+              updateBan = false;
+            });
+
+            // はいボタンのクリックイベント
+            unbanConfirmMenu.find('.confirm').on('click', function (event) {
+              event.stopPropagation();
+              unbanPlayerFromList(ban.name);
+              unbanConfirmMenu.hide();
+              updateBan = true;
+            });
+
+            // いいえボタンのクリックイベント
+            unbanConfirmMenu.find('.cancel').on('click', function (event) {
+              event.stopPropagation();
+              unbanConfirmMenu.hide();
+              updateBan = true;
+            });
+
+            banListElement.append(li);
+          });
+        }
+      }
+
+      // プレイヤー選択リストを更新する関数
+      function updatePlayerSelectDropdown(players) {
+        const playerSelect = $('#banPlayerName');
+        playerSelect.empty();
+        playerSelect.append($('<option>').val('').text('プレイヤーを選択'));
+
+        // プレイヤーリストをソート (名前のみをソート)
+        let sortedPlayerNames = players
+          .map((player) => player.name)
+          .sort((a, b) => {
+            // 日本語かどうかの判定
+            const isJapaneseA = /[ぁ-んァ-ン一-龯]/.test(a);
+            const isJapaneseB = /[ぁ-んァ-ン一-龯]/.test(b);
+
+            // 日本語が先、それ以外はアルファベット順で比較
+            if (isJapaneseA && !isJapaneseB) {
+              return -1;
+            } else if (!isJapaneseA && isJapaneseB) {
+              return 1;
+            } else {
+              return a.localeCompare(b);
+            }
           });
 
-          // はいボタンのクリックイベント
-          unbanConfirmMenu.find('.confirm').on('click', function (event) {
-            event.stopPropagation();
-            unbanPlayerFromList(ban.name);
-            unbanConfirmMenu.hide();
-            updateBan = true;
-          });
+        sortedPlayerNames.forEach((playerName) => {
+          playerSelect.append($('<option>').val(playerName).text(playerName));
+        });
 
-          // いいえボタンのクリックイベント
-          unbanConfirmMenu.find('.cancel').on('click', function (event) {
-            event.stopPropagation();
-            unbanConfirmMenu.hide();
-            updateBan = true;
-          });
+        // もし選択されたプレイヤーがリストにまだ存在する場合は、選択状態を維持する
+        if (selectedPlayerName && sortedPlayerNames.includes(selectedPlayerName)) {
+          playerSelect.val(selectedPlayerName);
+        }
+      }
 
-          banListElement.append(li);
+      function initializeMap() {
+        if (!map) {
+          map = L.map('mapid').setView([0, 0], 2); // マップの初期ビューを設定
+
+          // ベースレイヤーを追加（例：シンプルな背景）
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 7,
+            minZoom: -3,
+            attribution:
+              '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          }).addTo(map);
+
+          // ズーム制限を調整
+          map.setMinZoom(-3);
+
+          // 座標 (0, 0) に赤いマーカーを追加
+          L.marker([0, 0], {
+            icon: L.icon({
+              iconUrl:
+                'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+              shadowUrl:
+                'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34],
+              shadowSize: [41, 41],
+            }),
+          }).addTo(map);
+        }
+
+        updateMapMarkers();
+        updatePlayerListForMap();
+      }
+
+      function updateMapMarkers() {
+        if (!map) return;
+
+        // サーバーからオンラインプレイヤーの情報を取得し、マーカーを更新する
+        ws.send(JSON.stringify({ type: 'getOnlinePlayers' }));
+      }
+
+      function updatePlayerMarkers(players) {
+        // 既存のマーカーを削除し、新しいマーカーを追加
+        Object.values(playerMarkers).forEach((marker) => map.removeLayer(marker));
+        playerMarkers = {};
+
+        players.forEach((player) => {
+          if (player.position) {
+            // 緯度経度をMinecraftの座標から計算（1/100に縮小）
+            let lat = -player.position.z / 50;
+            let lng = player.position.x / 50;
+
+            // マーカーを追加
+            let marker = L.marker([lat, lng]).addTo(map);
+            marker.bindPopup(
+              `<b>${player.name}</b><br>X: ${player.position.x}, Y: ${player.position.y}, Z: ${player.position.z}`,
+            );
+            playerMarkers[player.uuid] = marker;
+          }
         });
       }
-    }
 
-    // プレイヤー選択リストを更新する関数
-    function updatePlayerSelectDropdown(players) {
-      const playerSelect = $('#banPlayerName');
-      playerSelect.empty();
-      playerSelect.append($('<option>').val('').text('プレイヤーを選択'));
+      function updatePlayerListForMap() {
+        const playerListMap = $('#player-list-map');
+        playerListMap.empty();
 
-      // プレイヤーリストをソート (名前のみをソート)
-      let sortedPlayerNames = players
-        .map((player) => player.name)
-        .sort((a, b) => {
+        // サーバーからオンラインプレイヤーの情報を取得
+        ws.send(JSON.stringify({ type: 'getOnlinePlayers' }));
+      }
+
+      function focusOnPlayer(playerName) {
+        for (let uuid in playerMarkers) {
+          let marker = playerMarkers[uuid];
+          let popup = marker.getPopup();
+          if (popup && popup.getContent().includes(playerName)) {
+            map.flyTo(marker.getLatLng(), 7);
+            marker.openPopup();
+            break;
+          }
+        }
+      }
+
+      // プレイヤーリストを更新および、新規プレイヤーの追加、退出プレイヤーの削除
+      function updatePlayerLists(newPlayers) {
+        // プレイヤーリストをソートして更新
+        let sortedPlayers = newPlayers;
+
+        sortedPlayers.sort((a, b) => {
+          const nameA = a.name || '';
+          const nameB = b.name || '';
+
           // 日本語かどうかの判定
-          const isJapaneseA = /[ぁ-んァ-ン一-龯]/.test(a);
-          const isJapaneseB = /[ぁ-んァ-ン一-龯]/.test(b);
+          const isJapaneseA = /[ぁ-んァ-ン一-龯]/.test(nameA);
+          const isJapaneseB = /[ぁ-んァ-ン一-龯]/.test(nameB);
 
           // 日本語が先、それ以外はアルファベット順で比較
           if (isJapaneseA && !isJapaneseB) {
@@ -719,235 +874,136 @@
           } else if (!isJapaneseA && isJapaneseB) {
             return 1;
           } else {
-            return a.localeCompare(b);
+            return nameA.localeCompare(nameB);
           }
         });
 
-      sortedPlayerNames.forEach((playerName) => {
-        playerSelect.append($('<option>').val(playerName).text(playerName));
-      });
-
-      // もし選択されたプレイヤーがリストにまだ存在する場合は、選択状態を維持する
-      if (selectedPlayerName && sortedPlayerNames.includes(selectedPlayerName)) {
-        playerSelect.val(selectedPlayerName);
-      }
-    }
-
-    function initializeMap() {
-      if (!map) {
-        map = L.map('mapid').setView([0, 0], 2); // マップの初期ビューを設定
-
-        // ベースレイヤーを追加（例：シンプルな背景）
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 7,
-          minZoom: -3,
-          attribution:
-            '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        }).addTo(map);
-
-        // ズーム制限を調整
-        map.setMinZoom(-3);
-
-        // 座標 (0, 0) に赤いマーカーを追加
-        L.marker([0, 0], {
-          icon: L.icon({
-            iconUrl:
-              'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-            shadowUrl:
-              'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41],
-          }),
-        }).addTo(map);
+        // プレイヤーリストの表示を更新
+        updatePlayerList(sortedPlayers);
+        updatePlayerListMap(sortedPlayers);
       }
 
-      updateMapMarkers();
-      updatePlayerListForMap();
-    }
+      //マップページのプレイヤーリスト更新
+      function updatePlayerListMap(players) {
+        const playerListMap = $('#player-list-map');
+        playerListMap.empty();
 
-    function updateMapMarkers() {
-      if (!map) return;
-
-      // サーバーからオンラインプレイヤーの情報を取得し、マーカーを更新する
-      ws.send(JSON.stringify({ type: 'getOnlinePlayers' }));
-    }
-
-    function updatePlayerMarkers(players) {
-      // 既存のマーカーを削除し、新しいマーカーを追加
-      Object.values(playerMarkers).forEach((marker) => map.removeLayer(marker));
-      playerMarkers = {};
-
-      players.forEach((player) => {
-        if (player.position) {
-          // 緯度経度をMinecraftの座標から計算（1/100に縮小）
-          let lat = -player.position.z / 50;
-          let lng = player.position.x / 50;
-
-          // マーカーを追加
-          let marker = L.marker([lat, lng]).addTo(map);
-          marker.bindPopup(
-            `<b>${player.name}</b><br>X: ${player.position.x}, Y: ${player.position.y}, Z: ${player.position.z}`,
-          );
-          playerMarkers[player.uuid] = marker;
-        }
-      });
-    }
-
-    function updatePlayerListForMap() {
-      const playerListMap = $('#player-list-map');
-      playerListMap.empty();
-
-      // サーバーからオンラインプレイヤーの情報を取得
-      ws.send(JSON.stringify({ type: 'getOnlinePlayers' }));
-    }
-
-    function focusOnPlayer(playerName) {
-      for (let uuid in playerMarkers) {
-        let marker = playerMarkers[uuid];
-        let popup = marker.getPopup();
-        if (popup && popup.getContent().includes(playerName)) {
-          map.flyTo(marker.getLatLng(), 7);
-          marker.openPopup();
-          break;
-        }
-      }
-    }
-
-    // プレイヤーリストを更新および、新規プレイヤーの追加、退出プレイヤーの削除
-    function updatePlayerLists(newPlayers) {
-      // プレイヤーリストをソートして更新
-      let sortedPlayers = newPlayers;
-
-      sortedPlayers.sort((a, b) => {
-        const nameA = a.name || '';
-        const nameB = b.name || '';
-
-        // 日本語かどうかの判定
-        const isJapaneseA = /[ぁ-んァ-ン一-龯]/.test(nameA);
-        const isJapaneseB = /[ぁ-んァ-ン一-龯]/.test(nameB);
-
-        // 日本語が先、それ以外はアルファベット順で比較
-        if (isJapaneseA && !isJapaneseB) {
-          return -1;
-        } else if (!isJapaneseA && isJapaneseB) {
-          return 1;
-        } else {
-          return nameA.localeCompare(nameB);
-        }
-      });
-
-      // プレイヤーリストの表示を更新
-      updatePlayerList(sortedPlayers);
-      updatePlayerListMap(sortedPlayers);
-    }
-
-    //マップページのプレイヤーリスト更新
-    function updatePlayerListMap(players) {
-      const playerListMap = $('#player-list-map');
-      playerListMap.empty();
-
-      players.forEach((player) => {
-        const li = $('<li>');
-        li.html(`<strong>${player.name}</strong>`);
-        if (player.position) {
-          li.append(` - <a href="#" onclick="focusOnPlayer('${player.name}')">位置に移動</a>`);
-        }
-        playerListMap.append(li);
-      });
-    }
-
-    let currentPage = 1;
-    const playersPerPage = 20;
-    let allPlayerLeftData = []; // すべてのプレイヤーデータを保持
-
-    function updatePlayerLeftData(event) {
-      allPlayerLeftData = []; // データリフレッシュ
-      if (!event || !Array.isArray(event)) {
-        $('#player-left_list')
-          .empty()
-          .append($('<li>').text('プレイヤーの入退出データがありません。'));
-        updatePagination(0); // ページングコントロールをリフレッシュ
-        return;
-      }
-
-      event.forEach((player) => {
-        if (!player.isOnline && player.left !== '') {
-          allPlayerLeftData.push(player); // 該当データをすべて格納
-        }
-      });
-
-      if (allPlayerLeftData.length === 0) {
-        $('#player-left_list')
-          .empty()
-          .append($('<li>').text('退出したプレイヤーデータはありません。'));
-        updatePagination(0); // ページングコントロールをリフレッシュ
-        return;
-      }
-
-      // ページング情報を更新
-      updatePagination(allPlayerLeftData.length);
-      // 初回表示
-      displayPlayersOnPage(currentPage);
-    }
-
-    function displayPlayersOnPage(page) {
-      const playerLeftList = $('#player-left_list');
-      playerLeftList.empty();
-
-      const startIndex = (page - 1) * playersPerPage;
-      const endIndex = startIndex + playersPerPage;
-
-      // 退出時間（left）で降順にソート
-      const sortedPlayers = allPlayerLeftData.slice().sort((a, b) => {
-        const dateA = new Date(a.left);
-        const dateB = new Date(b.left);
-        return dateB - dateA; // 降順ソート
-      });
-
-      const playersToShow = sortedPlayers.slice(startIndex, endIndex);
-
-      if (playersToShow.length === 0) {
-        playerLeftList.append($('<li>').text('表示するプレイヤーデータはありません。'));
-        return;
-      }
-
-      playersToShow.forEach((player) => {
-        const li = $('<li>');
-        li.html(`<strong>${player.name}</strong> (UUID: ${player.uuid})<br>
-                     入室時間: ${player.join}<br>
-                     退出時間: ${player.left}<br>
-                     オンライン状態: ${player.isOnline}`);
-        playerLeftList.append(li);
-      });
-    }
-
-    function updatePagination(totalPlayers) {
-      const totalPages = Math.ceil(totalPlayers / playersPerPage);
-      const paginationContainer = $('#pagination-container');
-      paginationContainer.empty();
-
-      if (totalPages <= 1) return; // 1ページ以下ならページング不要
-
-      for (let i = 1; i <= totalPages; i++) {
-        const pageButton = $('<button>').text(i);
-        if (i === currentPage) {
-          pageButton.addClass('active');
-        }
-        pageButton.click(() => {
-          currentPage = i;
-          displayPlayersOnPage(currentPage);
-          updatePagination(totalPlayers); // ボタンクリック時にページネーションを更新
+        players.forEach((player) => {
+          const li = $('<li>');
+          li.html(`<strong>${player.name}</strong>`);
+          if (player.position) {
+            li.append(` - <a href="#" onclick="focusOnPlayer('${player.name}')">位置に移動</a>`);
+          }
+          playerListMap.append(li);
         });
-        paginationContainer.append(pageButton);
       }
-    }
 
-    // 初期表示
-    toggleDisplay();
-    checkAutoLogin();
-  </script>
-</body>
+      let currentPage = 1;
+      const playersPerPage = 20;
+      let allPlayerLeftData = []; // すべてのプレイヤーデータを保持
 
+      function updatePlayerLeftData(event) {
+        allPlayerLeftData = []; // データリフレッシュ
+        if (!event || !Array.isArray(event)) {
+          $('#player-left_list')
+            .empty()
+            .append($('<li>').text('プレイヤーの入退出データがありません。'));
+          updatePagination(0); // ページングコントロールをリフレッシュ
+          return;
+        }
+
+        event.forEach((player) => {
+          if (!player.isOnline && player.left !== '') {
+            allPlayerLeftData.push(player); // 該当データをすべて格納
+          }
+        });
+
+        if (allPlayerLeftData.length === 0) {
+          $('#player-left_list')
+            .empty()
+            .append($('<li>').text('退出したプレイヤーデータはありません。'));
+          updatePagination(0); // ページングコントロールをリフレッシュ
+          return;
+        }
+
+        // ページング情報を更新
+        updatePagination(allPlayerLeftData.length);
+        // 初回表示
+        displayPlayersOnPage(currentPage);
+      }
+
+      function displayPlayersOnPage(page) {
+        const playerLeftList = $('#player-left_list');
+        playerLeftList.empty();
+
+        const startIndex = (page - 1) * playersPerPage;
+        const endIndex = startIndex + playersPerPage;
+
+        // 退出時間（left）で降順にソート
+        const sortedPlayers = allPlayerLeftData.slice().sort((a, b) => {
+          const dateA = new Date(a.left);
+          const dateB = new Date(b.left);
+          return dateB - dateA; // 降順ソート
+        });
+
+        const playersToShow = sortedPlayers.slice(startIndex, endIndex);
+
+        if (playersToShow.length === 0) {
+          playerLeftList.append($('<li>').text('表示するプレイヤーデータはありません。'));
+          return;
+        }
+
+        // テーブルの開始タグを追加
+        let tableHtml = '<table class="player-table">';
+        tableHtml +=
+          '<thead><tr><th>名前</th><th>UUID</th><th>入室時間</th><th>退出時間</th><th>位置 (X, Y, Z)</th></tr></thead>';
+        tableHtml += '<tbody>';
+
+        playersToShow.forEach((player) => {
+          // 位置情報を小数点以下2桁までに丸める
+          const x = player.position ? player.position.x.toFixed(2) : '不明';
+          const y = player.position ? player.position.y.toFixed(2) : '不明';
+          const z = player.position ? player.position.z.toFixed(2) : '不明';
+
+          // テーブルの行を追加
+          tableHtml += `<tr>`;
+          tableHtml += `<td><strong>${player.name}</strong></td>`;
+          tableHtml += `<td>${player.uuid}</td>`;
+          tableHtml += `<td>${player.join}</td>`;
+          tableHtml += `<td>${player.left}</td>`;
+          tableHtml += `<td>${x}, ${y}, ${z}</td>`;
+          tableHtml += `</tr>`;
+        });
+
+        // テーブルの終了タグを追加
+        tableHtml += '</tbody></table>';
+        playerLeftList.append($(tableHtml));
+      }
+
+      function updatePagination(totalPlayers) {
+        const totalPages = Math.ceil(totalPlayers / playersPerPage);
+        const paginationContainer = $('#pagination-container');
+        paginationContainer.empty();
+
+        if (totalPages <= 1) return; // 1ページ以下ならページング不要
+
+        for (let i = 1; i <= totalPages; i++) {
+          const pageButton = $('<button>').text(i);
+          if (i === currentPage) {
+            pageButton.addClass('active');
+          }
+          pageButton.click(() => {
+            currentPage = i;
+            displayPlayersOnPage(currentPage);
+            updatePagination(totalPlayers); // ボタンクリック時にページネーションを更新
+          });
+          paginationContainer.append(pageButton);
+        }
+      }
+
+      // 初期表示
+      toggleDisplay();
+      checkAutoLogin();
+    </script>
+  </body>
 </html>

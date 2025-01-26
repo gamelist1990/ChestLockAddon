@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "uuid": "74c247e9-88d7-37d2-8611-77440958a062",
+    "name": "arerere",
+    "reason": "連射コントローラーは禁止です(一日 アクセス禁止します)",
+    "bannedBy": "Server",
+    "bannedAt": 1737791464158,
+    "expiresAt": 1737877863790
+  },
+  {
+    "uuid": "2a6bb289-b610-369b-baa2-23ba1c8df90d",
+    "name": "RyukitiGames",
+    "reason": "マクロ 使用 当サーバーではチートまがいの行為は初期7day Banです",
+    "bannedBy": "Server",
+    "bannedAt": 1737808708823,
+    "expiresAt": 1738413508484
+  },
+  {
+    "uuid": "92c3b8a7-2bbe-3e3b-8279-c18de22670d6",
+    "name": "kanarun0222",
+    "reason": "お前もだよマクロ使うな死ね　",
+    "bannedBy": "Server",
+    "bannedAt": 1737808899472,
+    "expiresAt": 1738413699288
+  }
+]

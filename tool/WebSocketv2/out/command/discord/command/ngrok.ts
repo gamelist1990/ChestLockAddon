@@ -67,7 +67,7 @@ registerDisCommand({
     description: "ngrokのURLを再生成します。",
     config: {
         enabled: true,
-        requireLevel: 3, // 管理者権限
+        requireLevel: 3, 
     },
     prefixExecutor: async (message: Message, args: string[]) => {
         if (!message.member) return;

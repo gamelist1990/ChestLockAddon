@@ -11,6 +11,8 @@ import { banListCache, loadBanList, PlayerBAN, PlayerUNBAN } from '../ban';
 import { ver } from '../../version';
 import { ngrokUrls } from '../discord/discord';
 
+
+
 // .envファイルのパスを現在のディレクトリに設定
 const serverEnvPath = path.resolve(__dirname, 'server.env');
 

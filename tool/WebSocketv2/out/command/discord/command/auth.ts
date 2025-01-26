@@ -97,85 +97,22 @@ async function handleAuthRequest(
         channel: privateChannel,
     });
 
-    const embed = new EmbedBuilder()
-        .setTitle("認証リクエスト")
-        .setDescription(
-            `${action === "create" ? "認証情報を作成" : "認証情報を削除"
-            }する場合は、"yes" と入力してください。キャンセルする場合は "no" と入力してください。`
-        )
-        .setColor(0x00ff00);
-
-    const authMessage = await privateChannel
-        .send({ embeds: [embed] })
-        .catch(console.error);
-    if (!authMessage) {
-        await privateChannel.delete().catch(console.error);
-        authRequests.delete(requestId);
-        return;
-    }
-
-    // yes/no の返答を待機
-    try {
-        const filter = (m: Message) =>
-            m.author.id === requestId &&
-            ["yes", "no"].includes(m.content.toLowerCase());
-        const collected = await privateChannel.awaitMessages({
-            filter,
-            max: 1,
-            time: 60000,
-            errors: ["time"],
-        });
-        const response = collected.first();
-
-        if (!response) {
-            throw new Error(
-                "タイムアウトしました。認証リクエストを再度送信してください。"
-            );
-        }
-
-        // 間違った"yes/no"の入力メッセージは削除
-        if (
-            response.content.toLowerCase() !== "yes" &&
-            response.content.toLowerCase() !== "no"
-        ) {
-            try {
-                await response.delete();
-            } catch (error) {
-                console.error("メッセージ削除エラー:", error);
-            }
-        }
-
-        const userResponse = response.content.toLowerCase();
-
-        switch (userResponse) {
-            case "yes":
-                if (action === "create") {
-                    await handleCreateAuth(privateChannel, requestId, authMessage);
-                } else {
-                    await handleRemoveAuth(privateChannel, requestId, authMessage);
-                }
-                break;
-            case "no":
-                await handleAuthRejection(privateChannel, requestId, authMessage);
-                break;
-            default:
-                throw new Error(
-                    "無効な応答です: yes か no で答えてください"
-                );
-        }
-    } catch (error) {
-        handleAuthError(privateChannel, requestId, error);
+    // yes/no の確認を削除し、直接処理を開始
+    if (action === "create") {
+        await handleCreateAuth(privateChannel, requestId);
+    } else {
+        await handleRemoveAuth(privateChannel, requestId);
     }
 }
 
 // 認証情報作成処理
 async function handleCreateAuth(
     privateChannel: TextChannel,
-    requestId: string,
-    authMessage: Message
+    requestId: string
 ) {
     try {
         // ステップ 1: ユーザー名入力
+        await privateChannel.send("(1/3) ユーザー名を入力してください。");
         const usernameFilter = (m: Message) => m.author.id === requestId;
         const usernameCollected = await privateChannel.awaitMessages({
             filter: usernameFilter,
@@ -191,6 +128,9 @@ async function handleCreateAuth(
         }
 
         // ステップ 2: パスワード入力
+        await privateChannel.send(
+            "(2/3) パスワードを入力してください(8文字以上、大文字、小文字、数字、特殊文字をそれぞれ1つ以上含む)。"
+        );
         const passwordFilter = (m: Message) => m.author.id === requestId;
         let passwordCollected = await privateChannel.awaitMessages({
             filter: passwordFilter,
@@ -247,10 +187,11 @@ async function handleCreateAuth(
 // 認証情報削除処理
 async function handleRemoveAuth(
     privateChannel: TextChannel,
-    requestId: string,
-    authMessage: Message
+    requestId: string
 ) {
     try {
+        // ステップ 1: ユーザー名入力
+        await privateChannel.send("(1/2) 削除するユーザー名を入力してください。");
         const usernameFilter = (m: Message) => m.author.id === requestId;
         const usernameCollected = await privateChannel.awaitMessages({
             filter: usernameFilter,
@@ -265,6 +206,7 @@ async function handleRemoveAuth(
             throw new Error("ユーザー名が入力されませんでした。");
         }
 
+        // ステップ 2: 削除完了
         if (removeUser(username)) {
             await privateChannel.send(
                 `(2/2) 認証情報が削除されました: ユーザー名: ${username}`
@@ -279,29 +221,12 @@ async function handleRemoveAuth(
     }
 }
 
-// 認証リクエスト拒否時の処理
-async function handleAuthRejection(
-    privateChannel: TextChannel,
-    requestId: string,
-    authMessage: Message
-) {
-    await authMessage
-        .edit({
-            content: "認証リクエストがキャンセルされました。",
-            embeds: [],
-            components: [],
-        })
-        .catch(console.error);
-    await cleanupAuthRequest(privateChannel, requestId);
-}
-
-// タイムアウト時の処理
-
 // エラー発生時の処理
 function handleAuthError(
     privateChannel: TextChannel,
     requestId: string,
-    error: any) {
+    error: any
+) {
     console.error(error);
     privateChannel
         .send(
