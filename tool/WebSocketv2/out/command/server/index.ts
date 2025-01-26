@@ -11,6 +11,8 @@ import { banListCache, loadBanList, PlayerBAN, PlayerUNBAN } from '../ban';
 import { ver } from '../../version';
 import { ngrokUrls } from '../discord/discord';
 
+
+
 // .envファイルのパスを現在のディレクトリに設定
 const serverEnvPath = path.resolve(__dirname, 'server.env');
 
@@ -139,6 +141,17 @@ app.get('/get_url', (req, res) => {
     res.send(wsUrl2);
 });
 
+app.get('/get_api', (req, res) => {
+    let wsUrl2 = "ws://localhost:8000";
+    let ngrokUrl = ngrokUrls?.api.url;
+    if (ngrokUrl) {
+        let wssUrl = ngrokUrl.replace("https", "wss");
+        wsUrl2 = `${wssUrl}/minecraft`;
+    }
+    console.log("get_api Requested")
+    res.send(wsUrl2);
+});
+
 app.get('/status', async (req, res) => {
     const apiServerAddresses = process.env.API_SERVER_ADDRESSES;
 
@@ -235,6 +248,7 @@ app.post('/get_api', async (req, res) => {
         return;
     }
     let online = 0;
+
     if (world) {
         const playerDataObject = await world.getPlayerData();
         const playerDataArray = Object.values(playerDataObject);
@@ -447,6 +461,12 @@ if (world) {
         if (load) {
             broadcast('banList', banListCache);
         }
+        let userData: PlayerData;
+        const playerDataObject = await world.getPlayerData();
+        const playerDataArray = Object.values(playerDataObject);
+        userData = JSON.parse(JSON.stringify(playerDataArray));
+        broadcast('playerData', userData);
+
     }, 1000);
 
     // プレイヤーが参加したときの処理

@@ -226,6 +226,15 @@ if (world) {
             await checkAndKickBannedPlayer(player);
         }
     });
+    //定期的に確認
+    setInterval(async () => {
+        const player = await world.getPlayers();
+        if (player) {
+            player.forEach((player) => {
+                checkAndKickBannedPlayer(player);
+            })
+        }
+    }, 1000 * 60 * 10)
 }
 
 export { banPlayer as PlayerBAN, unbanPlayer as PlayerUNBAN };

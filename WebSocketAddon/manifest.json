@@ -1,0 +1,45 @@
+{
+    "format_version": 2,
+    "header": {
+        "description": "WebSocketの#コマンドが使えなくなるバグを修正します",
+        "name": "WebSocketAddon (fix)",
+        "uuid": "cbd39065-1d2e-41e2-845c-8b020c285e68",
+        "version": [
+            1,
+            4,
+            0
+        ],
+        "min_engine_version": [
+            1,
+            21,
+            40
+        ]
+    },
+    "metadata": {
+        "authors": [
+            "gamelist1990"
+        ],
+        "license": "MIT",
+        "url": "https://github.com/gamelist1990/ChestLockAddon"
+    },
+    "modules": [
+        {
+            "description": "",
+            "type": "script",
+            "uuid": "2acf7552-9584-4297-858e-83ed218b6c3b",
+            "version": [
+                0,
+                0,
+                1
+            ],
+            "language": "javascript",
+            "entry": "scripts/index.js"
+        }
+    ],
+    "dependencies": [
+        {
+            "module_name": "@minecraft/server",
+            "version": "2.0.0-alpha"
+        }
+    ]
+}

@@ -545,3 +545,60 @@ h2.ban-icon {
 .player-list-map li a:hover {
   text-decoration: underline;
 }
+
+
+
+/**
+ * pagination Styles
+ */
+
+ .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.pagination button {
+    padding: 8px 12px;
+    margin: 0 5px;
+    border: 1px solid #ccc;
+    background-color: #f4f4f4;
+    cursor: pointer;
+}
+
+.pagination button.active {
+    background-color: #007bff;
+    color: white;
+}
+
+
+
+/* 入室退出 CSS */
+.player-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-family: Arial, sans-serif; /* フォントの変更 */
+}
+
+.player-table th,
+.player-table td {
+  border: 1px solid #ddd;
+  padding: 10px; /* パディングを少し増やす */
+  text-align: left;
+}
+
+.player-table th {
+  background-color: #e0e0e0; /* ヘッダーの背景色を少し濃く */
+  font-weight: bold; /* ヘッダーを太字に */
+}
+
+/* ストライプ効果 */
+.player-table tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+/* ホバー効果 */
+.player-table tbody tr:hover {
+  background-color: #f0f0f0;
+}
