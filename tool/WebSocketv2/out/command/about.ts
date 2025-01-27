@@ -12,27 +12,7 @@ registerCommand({
         requireTag: []
     },
     executor: async (player: Player) => {
-        if (world) {
-            world.sendMessage("Worldのテスト～");
-            world.sendMessage(`Name: ${player.name}`);
-            world.sendMessage(`UUID: ${player.uuid}`);
-            world.sendMessage(`ID: ${player.id}`);
-            world.sendMessage(`dimension: ${player.dimension}`);
-            world.sendMessage(`position: x.${player.position.x} y.${player.position.y} z.${player.position.z}`);
-            const block = await world.getBlock(player.position.x, player.position.y, player.position.z);
-            if (block) {
-                world.sendMessage(`Block Name : ${block.blockName}`)
-                world.sendMessage(`Block Name : ${JSON.stringify(block.position)}`)
-            }
-        }
-        player.sendMessage(`§e§lこのサーバーは§av${ver}§eで処理されています§r`);
+        player.sendMessage(`§l§aAbout For §e${ver} §bWebSocket\n§r開発者: PEXkurann (こう君)\n機能: ScriptAPIの疑似的なPlayer/Worldクラスで、ある程度のコマンドを実現\n注意: 開発段階のため、バグやエラーがあり不安定`);
+        player.sendMessage(`§e§lサーバーバージョン: §av${ver}§r`);
     }
 });
-
-
-
-
-
-
-
-

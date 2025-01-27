@@ -10,3 +10,5 @@ import './command/time';
 import './command/discord/discord';
 import './command/ver';
 import './command/server/index';
+import './command/info';
+import './command/scoreboard';
