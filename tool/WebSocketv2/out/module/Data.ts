@@ -1,5 +1,4 @@
-import { Player, world } from "../backend";
-import { PlayerData } from "../command/ping";
+import { world } from "../backend";
 
 /**
  * 起動時間から経過時間を計算する関数
@@ -19,7 +18,7 @@ export function calculateUptime(startTime: Date): string {
 }
 
 
-export async function getData(playerName?: string): Promise<PlayerData | undefined> {
+export async function getData(playerName?: string): Promise<any | undefined> {
     try {
         const res = await world.runCommand('listd stats');
         if (res.statusCode !== 0) {
@@ -31,8 +30,8 @@ export async function getData(playerName?: string): Promise<PlayerData | undefin
             const parsed = JSON.parse(jsonString.replace(/-?Infinity|-?nan\(ind\)|NaN/g, '0'));
 
             if (parsed && Array.isArray(parsed.result)) {
-                const details: PlayerData[] = parsed.result.map((player: any) => {
-                    const fixedPlayer: PlayerData = { ...player };
+                const details: any[] = parsed.result.map((player: any) => {
+                    const fixedPlayer: any = { ...player };
                     for (const key in fixedPlayer) {
                         if (typeof fixedPlayer[key] === 'number' && !Number.isFinite(fixedPlayer[key])) {
                             fixedPlayer[key] = 0;

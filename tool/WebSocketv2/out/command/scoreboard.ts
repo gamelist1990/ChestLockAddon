@@ -36,7 +36,7 @@ async function updatePlayerSpeed(player: Player) {
 
         if (speedObjective) {
             if (speed % 1 === 0) {
-                speedObjective.setScore(player, Math.round(speed)); 
+                speedObjective.setScore(player, Math.round(speed));
             } else {
                 speedObjective.setScore(player, parseFloat(speed.toFixed(1)));
             }
@@ -49,7 +49,7 @@ async function updatePlayerSpeed(player: Player) {
 
     } else {
         // 初回は座標を記録
-        playerLastPosition[playerName] = { ...currentPosition};
+        playerLastPosition[playerName] = { ...currentPosition };
     }
 }
 
@@ -121,20 +121,3 @@ registerCommand({
         }
     },
 });
-
-async function setup() {
-    for (const key in ScoreSettings) {
-        if (!(await world.scoreboard.getObjective(ScoreSettings[key].objective))) {
-            try {
-                await world.scoreboard.addObjective(
-                    ScoreSettings[key].objective,
-                    ScoreSettings[key].objective,
-                );
-            } catch (error) {
-                console.error('スコアボードオブジェクトの作成に失敗しました:', error);
-            }
-        }
-    }
-}
-
-setup();

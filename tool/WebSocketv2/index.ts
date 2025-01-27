@@ -5,7 +5,6 @@ import fs from 'fs';
 import { WebSocket } from 'ws';
 import inquirer from 'inquirer';
 import axios from 'axios';
-import { spawn } from 'child_process';
 
 // --- Constants ---
 const COLOR_RED = '\x1b[31m';
@@ -294,23 +293,23 @@ const reconnectWebSocket = async () => {
 
     // WebSocketサーバーのステータス表示を更新
     if (webSocketUrl) {
-        log('yellow', `WebSocketサーバーURL: ${webSocketUrl}\n`);
+        writeLog(`WebSocketサーバーURL: ${webSocketUrl}\n`);
         try {
             isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
-            log('yellow', `WebSocketサーバー: ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'}\n`);
+            writeLog(`WebSocketサーバー: ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'}\n`);
         } catch (error) {
-            log('red', `WebSocketサーバーの状態確認中にエラーが発生しました: ${error}`);
+            writeLog(`WebSocketサーバーの状態確認中にエラーが発生しました: ${error}`);
             isWebSocketServerOnline = false;
         }
         if (!isWebSocketServerOnline) {
-            log('red', 'WebSocketサーバーに接続されていません。');
+            writeLog('WebSocketサーバーに接続されていません。');
         }
     } else {
         log('red', `エラー: WebSocket URLが設定されていません。`);
         return;
     }
     if (!autoConnectOnStartup) {
-        log('yellow', `起動時の自動接続が無効になっています。`);
+        writeLog(`起動時の自動接続が無効になっています。`);
     }
 
     // WebSocket接続
@@ -444,7 +443,7 @@ const connectToWss = async (url: string) => {
             reconnectionStartTime = null; // 接続成功時にリセット
             writeLog(`WebSocketサーバーに接続しました。`); // 接続が確立されたときにログに記録
             addNotification(`WebSocketサーバーに接続しました。`, 'connection'); // 接続が確立されたときに通
-            resolve(); 
+            resolve();
         });
 
         wss.on('message', async (data: string) => {
@@ -484,7 +483,7 @@ const connectToWss = async (url: string) => {
                                     break;
                             }
                         } catch (error) {
-                            log('red', `コマンド実行中にエラーが発生しました: ${error}`);
+                            writeLog(`コマンド実行中にエラーが発生しました: ${error}`);
                             sendDataToWss('commandError', {
                                 error: `コマンド実行中にエラーが発生しました: ${error}`,
                                 command: message.command,
@@ -548,9 +547,9 @@ const reconnect = async (): Promise<void> => {
             if (!isWebSocketServerOnline) {
                 const elapsedTime = reconnectionStartTime ? Date.now() - reconnectionStartTime : 0;
 
-                // WSS_URLがngrok URLの場合のみ、3分経過後に再取得を試みる
+                // WSS_URLがngrok URL (ngrok-free.app を含む) の場合のみ、3分経過後に再取得を試みる
                 if (webSocketUrl && webSocketUrl.includes('ngrok-free.app') && elapsedTime >= RECONNECTION_TIMEOUT) {
-                    log('yellow', '再接続試行開始から3分が経過しました。ngrok URLの再取得を試みます。');
+                    writeLog('再接続試行開始から3分が経過しました。ngrok URLの再取得を試みます。');
                     reconnectionStartTime = Date.now(); // タイムスタンプをリセット
 
                     // ngrok URLを再取得

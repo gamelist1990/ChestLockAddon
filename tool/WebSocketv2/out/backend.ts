@@ -398,7 +398,7 @@ export class WsServer {
                     parsedMessage = JSON.parse(message);
                 } catch (error) {
                     // JSON解析に失敗した場合、エラーログを出す
-                    console.error("Invalid JSON:", message, error);
+                  //  console.error("Invalid JSON:", message, error);
                 }
 
                 // rawtextプロパティがあるか確認
