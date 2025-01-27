@@ -1,23 +1,6 @@
 import { registerCommand, Player, world } from '../backend';
 import { getData } from '../module/Data';
 
-export interface PlayerData {
-    name: string;
-    ping: number;
-    randomId: number | bigint;
-    activeSessionId?: string;
-    avgpacketloss?: number;
-    avgping?: number;
-    clientId?: string;
-    color?: string;
-    deviceSessionId?: string;
-    globalMultiplayerCorrelationId?: string;
-    id?: number;
-    maxbps?: number;
-    packetloss?: number;
-    uuid?: string;
-}
-
 const playerPingHistory: { [playerName: string]: number[] } = {};
 const MAX_HISTORY_LENGTH = 10;
 
@@ -33,7 +16,7 @@ registerCommand({
             const data = await getData(player.name);
             const endTime = Date.now();
             let serverPing = endTime - startTime;
-            let Minecraft_tps = 0; 
+            let Minecraft_tps = 0;
 
             try {
                 const tpsObjective = await world.scoreboard.getObjective('TPSData');
@@ -44,7 +27,7 @@ registerCommand({
                     }
                 }
             } catch (error) {
-               // console.error("スコアボードからのTPSデータの取得に失敗しました:", error);
+                // console.error("スコアボードからのTPSデータの取得に失敗しました:", error);
             }
 
             if (data && data.ping !== undefined) {
@@ -53,20 +36,26 @@ registerCommand({
                 playerPingHistory[player.name] = (playerPingHistory[player.name] || []).concat(playerPing).slice(-MAX_HISTORY_LENGTH);
                 const averagePlayerPing = playerPingHistory[player.name].reduce((sum, p) => sum + p, 0) / playerPingHistory[player.name].length;
 
-                player.sendMessage(`§6[§ePing情報§6] §b${data.name}§aさん`);
-                player.sendMessage(`§eマイクラ Ping: §b${playerPing}ms §7(平均: ${Math.round(averagePlayerPing)}ms)`);
-                player.sendMessage(`§eマイクラ TPS: §b${Minecraft_tps}§a tps`);
-                player.sendMessage(`§eサーバー Ping: §b${Math.round(serverPing)}ms`);
-                player.sendMessage(`§eサーバー TPS: §b${world.getTPS()}§a tps`);
+                // プレイヤー情報をセクションで区切って表示
+                player.sendMessage(`§6━━━ §e${data.name}のPing情報 §6━━━`);
+                player.sendMessage(`§aマイクラ Ping: §b${playerPing}ms §7(平均: ${Math.round(averagePlayerPing)}ms)`);
+                player.sendMessage(`§aマイクラ TPS: §b${Minecraft_tps} tps`);
+
+                // サーバー情報をセクションで区切って表示
+                player.sendMessage(`\n§6━━━ §eサーバー情報 §6━━━`);
+                player.sendMessage(`§aサーバー Ping: §b${Math.round(serverPing)}ms`);
+                player.sendMessage(`§aサーバー TPS: §b${world.getTPS()} tps`);
 
             } else if (data && data.name && data.ping === undefined) {
                 player.sendMessage(`§c${data.name}はオフラインです、またはデータが取得できません。`);
-                player.sendMessage(`§eサーバー Ping: §b${Math.round(serverPing)}ms`);
-                player.sendMessage(`§eサーバー TPS: §b${world.getTPS()}`);
+                player.sendMessage(`\n§6━━━ §eサーバー情報 §6━━━`);
+                player.sendMessage(`§aサーバー Ping: §b${Math.round(serverPing)}ms`);
+                player.sendMessage(`§aサーバー TPS: §b${world.getTPS()} tps`);
             } else {
                 player.sendMessage(`§cプレイヤーデータの取得に失敗しました。`);
-                player.sendMessage(`§eサーバー Ping: §b${Math.round(serverPing)}ms`);
-                player.sendMessage(`§eサーバー TPS: §b${world.getTPS()}`);
+                player.sendMessage(`\n§6━━━ §eサーバー情報 §6━━━`);
+                player.sendMessage(`§aサーバー Ping: §b${Math.round(serverPing)}ms`);
+                player.sendMessage(`§aサーバー TPS: §b${world.getTPS()} tps`);
             }
         } catch (error) {
             player.sendMessage(`§cエラーが発生しました: ${error}`);

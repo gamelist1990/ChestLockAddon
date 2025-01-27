@@ -49,7 +49,7 @@ export async function startJapanTime() {
         timerInterval = setInterval(updateTimeScoreboard, 1000);
     }
 
-    console.log("日本時間の表示を有効にしました");
+    //console.log("日本時間の表示を有効にしました");
 }
 
 // 日本時間の表示を停止する関数
@@ -65,7 +65,7 @@ export async function stopJapanTime() {
         clearInterval(timerInterval);
         timerInterval = null;
     }
-    console.log("日本時間の表示を無効にしました");
+    //console.log("日本時間の表示を無効にしました");
 }
 
 // 日本時間スコアをリセットする関数

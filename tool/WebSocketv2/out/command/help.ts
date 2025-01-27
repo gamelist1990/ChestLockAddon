@@ -1,4 +1,4 @@
-import { registerCommand, Player, wsserver, Command } from '../backend';
+import { registerCommand, Player, wsserver, Command, prefix } from '../backend';
 
 function showHelp(player: Player, commands: Record<string, Command>, commandPrefix: string, pageOrCommand: string | number = 1) {
     const commandsPerPage = 4; // 1ページに表示するコマンド数
@@ -56,7 +56,7 @@ registerCommand({
     usage: "help [page | command]",
     config: { enabled: true, adminOnly: false, requireTag: [] },
     executor: (player: Player, args: string[]) => {
-        const commandPrefix = "#"; // コマンドのプレフィックス
+        const commandPrefix = prefix;
         const arg = args[0];
 
         if (arg) {

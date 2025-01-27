@@ -75,6 +75,11 @@ export interface PlayerData {
     };
 }
 
+
+//Global
+
+export const prefix = "#"
+
 export class WsServer {
     private port: number;
     private wss: WebSocketServer;
@@ -91,7 +96,7 @@ export class WsServer {
     private playerDataCache: PlayerData[] | null = null;
     private saveQueue: PlayerData[] | null = null;
 
-    constructor(port: number, commandPrefix: string = '#') {
+    constructor(port: number, commandPrefix: string = prefix) {
         this.port = port;
         this.clients = new Map<string, WebSocket>();
         this.commands = {};
@@ -260,7 +265,8 @@ export class WsServer {
             },
             sendMessage: (message: string) =>
                 this.sendToMinecraft({ command: `sendMessage`, message, playerName }),
-            runCommand: (command: string) => this.executeMinecraftCommand(command),
+            //player.runCommandは個人に対して行う為(execute,その他で自分自身にやる方法知らん..)
+            runCommand: (command: string) => this.executeMinecraftCommand(`execute as @a[name=${playerName}] at @s run ${command}`),
             hasTag: async (tag: string) => {
                 const result = await this.executeMinecraftCommand(`tag ${playerName} list`);
                 return result && result.statusMessage
@@ -351,26 +357,29 @@ export class WsServer {
     public async onPlayerChat(sender: string, message: string, type: string, receiver: string) {
         let chatSender = sender;
         let chatMessage = message;
-        try {
-            // JSON文字列の解析を試みる
-            let parsedMessage: any;
 
+        // tellかつreceiverとsenderが同じ場合にのみJSON解析を試みる
+        if (type === "tell" && receiver === sender) {
             try {
-                parsedMessage = JSON.parse(message);
-            } catch (error) {
-                // console.error("Invalid JSON:", message, error);
-            }
+                let parsedMessage: any;
 
-            // rawtextプロパティがあるか確認
-            if (parsedMessage && parsedMessage.rawtext && parsedMessage.rawtext.length > 0) {
-                const text = parsedMessage.rawtext[0].text;
-                const nameMatch = text.match(/<([^>]*)>/);
-                chatSender = nameMatch ? nameMatch[1] : sender;
-                chatMessage = text.replace(/<[^>]*>\s*/, '');
-            }
-        } catch (error) {
-            // 失敗！w
+                try {
+                    parsedMessage = JSON.parse(message);
+                } catch (error) {
+                    // JSON解析に失敗した場合、エラーログを出す
+                    console.error("Invalid JSON:", message, error);
+                }
+
+                // rawtextプロパティがあるか確認
+                if (parsedMessage && parsedMessage.rawtext && parsedMessage.rawtext.length > 0) {
+                    const text = parsedMessage.rawtext[0].text;
+                    const nameMatch = text.match(/<([^>]*)>/);
+                    chatSender = nameMatch ? nameMatch[1] : sender;
+                    chatMessage = text.replace(/<[^>]*>\s*/, '');
+                }
+            } catch (error) { }
         }
+
         if (chatMessage.startsWith(this.commandPrefix)) {
             const args = chatMessage
                 .slice(this.commandPrefix.length)

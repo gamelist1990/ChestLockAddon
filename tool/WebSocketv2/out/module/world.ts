@@ -16,7 +16,7 @@ export class ScoreboardObjective {
         console.debug(`[getScore] ${this.id} の ${playerName} のスコアを取得します。`);
         // 直接 /scoreboard players list <playerName> <objective> でスコアを取得する
         const scoreRes = await this.world.runCommand(`scoreboard players list "${playerName}"`);
-       // console.debug(`[getScore] ${playerName} の ${this.id} スコア取得結果:`, scoreRes);
+        // console.debug(`[getScore] ${playerName} の ${this.id} スコア取得結果:`, scoreRes);
 
         if (scoreRes && scoreRes.statusCode === 0 && scoreRes.statusMessage) {
             const lines = scoreRes.statusMessage.split('\n');
@@ -31,24 +31,40 @@ export class ScoreboardObjective {
             }
         }
 
-       // console.debug(`[getScore] ${playerName} の ${this.id} スコアが見つかりませんでした。`);
+        // console.debug(`[getScore] ${playerName} の ${this.id} スコアが見つかりませんでした。`);
         return null;
     }
 
-    async setScore(playerName: string, score: number): Promise<void> {
-        await this.world.runCommand(`scoreboard players set "${playerName}" "${this.id}" ${score}`);
+    private async runCommandWithPlayerCheck(commandTemplate: string, playerOrName: Player | string, score?: number): Promise<void> {
+        let playerName: string;
+        if (playerOrName) {
+            playerName = typeof playerOrName === 'string' ? `"${playerOrName}"` : `@a[name="${playerOrName.name}"]`; // Player型ならセレクターを使用
+        } else {
+            playerName = `"${playerOrName}"`;
+        }
+
+        const command = commandTemplate
+            .replace("{playerName}", playerName)
+            .replace("{objectiveId}", this.id)
+            .replace("{score}", score !== undefined ? score.toString() : "");
+
+        await this.world.runCommand(command);
     }
 
-    async addScore(playerName: string, score: number): Promise<void> {
-        await this.world.runCommand(`scoreboard players add "${playerName}" "${this.id}" ${score}`);
+    async setScore(playerOrName: Player | string, score: number): Promise<void> {
+        await this.runCommandWithPlayerCheck(`scoreboard players set {playerName} {objectiveId} {score}`, playerOrName, score);
     }
 
-    async removeScore(playerName: string, score: number): Promise<void> {
-        await this.world.runCommand(`scoreboard players remove "${playerName}" "${this.id}" ${score}`);
+    async addScore(playerOrName: Player | string, score: number): Promise<void> {
+        await this.runCommandWithPlayerCheck(`scoreboard players add {playerName} {objectiveId} {score}`, playerOrName, score);
     }
 
-    async resetScore(playerName: string): Promise<void> {
-        await this.world.runCommand(`scoreboard players reset "${playerName}" "${this.id}"`);
+    async removeScore(playerOrName: Player | string, score: number): Promise<void> {
+        await this.runCommandWithPlayerCheck(`scoreboard players remove {playerName} {objectiveId} {score}`, playerOrName, score);
+    }
+
+    async resetScore(playerOrName: Player | string): Promise<void> {
+        await this.runCommandWithPlayerCheck(`scoreboard players reset {playerName} {objectiveId}`, playerOrName);
     }
 
     async getScores(): Promise<{ participant: string, score: number }[]> {
@@ -60,10 +76,6 @@ export class ScoreboardObjective {
         ); // listRes を整形して全て出力
 
         if (!listRes || listRes.statusCode !== 0 || !listRes.statusMessage) {
-           //console.warn(
-           //    `[getScores] スコア情報の取得に失敗しました。レスポンス:`,
-           //    JSON.stringify(listRes, null, 2)
-           //); // listRes を整形して全て出力
             return [];
         }
 
@@ -188,7 +200,12 @@ export class World {
     }
 
     public async getPlayerData(): Promise<{ [key: string]: PlayerData }> {
-        return this.wsServer.loadPlayerData();
+        const playerDataArray = await this.wsServer.loadPlayerData();
+        const playerDataObject: { [key: string]: PlayerData } = {};
+        playerDataArray.forEach(playerData => {
+            playerDataObject[playerData.name] = playerData;
+        });
+        return playerDataObject;
     }
 
     public sendMessage(message: string): void {
@@ -319,24 +336,26 @@ export class World {
 // ScoreboardManager クラス
 class ScoreboardManager {
     private world: World;
-    private objectivesCache: { [objectiveName: string]: ScoreboardObjective | null } = {};
 
     constructor(world: World) {
         this.world = world;
     }
 
     public async getObjective(objectiveId: string): Promise<ScoreboardObjective | null> {
-        if (this.objectivesCache.hasOwnProperty(objectiveId)) {
-            return this.objectivesCache[objectiveId];
-        }
+        //  console.log(`[getObjective] objectiveId: ${objectiveId} を取得試行`);
+        //  console.log(`[getObjective] getObjectives() を呼び出します。`);
 
         const objectives = await this.getObjectives();
         const objective = objectives.find(objective => objective.id === objectiveId);
+
         if (objective) {
-            this.objectivesCache[objectiveId] = objective;
+            // console.log(`[getObjective] objectiveId: ${objectiveId} が見つかりました。`);
+            //console.log(`[getObjective] objectiveId: ${objective.id} を返します。`);
             return objective;
         }
-        this.objectivesCache[objectiveId] = null;
+
+        //console.log(`[getObjective] objectiveId: ${objectiveId} は見つかりませんでした。`);
+        //console.log(`[getObjective] null を返します。`);
         return null;
     }
 
@@ -379,7 +398,8 @@ class ScoreboardManager {
             }
 
             const newObjective = new ScoreboardObjective(this.world, objectiveName, displayName);
-            this.objectivesCache[objectiveName] = newObjective;
+            // キャッシュに保存しないように変更
+            // this.objectivesCache[objectiveName] = newObjective;
             return newObjective;
 
         } catch (error) {
@@ -393,13 +413,16 @@ class ScoreboardManager {
         if (!res || res.statusCode !== 0) {
             return false;
         }
-        if (this.objectivesCache.hasOwnProperty(objectiveId)) {
-            this.objectivesCache[objectiveId] = null;
-        }
+        // キャッシュから削除しないように変更
+        // if (this.objectivesCache.hasOwnProperty(objectiveId)) {
+        //     this.objectivesCache[objectiveId] = null;
+        // }
         return true;
     }
 
     static resolveObjective(objective: string | ScoreboardObjective): string {
         return typeof objective === 'string' ? objective : objective.id;
     }
+
+
 }
