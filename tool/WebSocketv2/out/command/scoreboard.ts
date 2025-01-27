@@ -5,6 +5,7 @@ interface ScoreSetting {
     objective: string;
 }
 
+
 let ScoreSettings: { [key: string]: ScoreSetting } = {
     speed: { enabled: true, objective: 'speed_m' },
     ping: { enabled: true, objective: 'Ping' },
