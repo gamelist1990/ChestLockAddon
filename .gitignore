@@ -12,3 +12,4 @@ User.json
 wsData.json
 tool/WebSocket/WebSocket.exe
 tool/WebSocketv2/out/command/.env
+tool/WebSocketv2/out/command/discord/discord.env

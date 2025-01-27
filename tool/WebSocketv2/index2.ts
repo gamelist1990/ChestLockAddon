@@ -5,7 +5,6 @@ import fs from 'fs';
 import { WebSocket } from 'ws';
 import inquirer from 'inquirer';
 import axios from 'axios';
-import { spawn } from 'child_process';
 
 // --- Constants ---
 const COLOR_RED = '\x1b[31m';
@@ -23,13 +22,13 @@ let reconnectionInterval: NodeJS.Timeout | null;
 let envLoaded = false;
 let autoConnectOnStartup = false;
 let webSocketUrl: string | null = null;
-let isWebSocketServerOnline = false;
+let isWebSocketServerOnline = false; // WebSocket サーバーのオンライン状態 (初期値は false)
 const notifications: string[] = []; // 通知タブ用の通知を格納する配列
 const playerNameCache: { [key: string]: { name: string; uuid: string } } = {};
 let reconnectionStartTime: number | null = null;
 
 // --- ログファイル名 ---
-const LOG_FILE = path.join(process.cwd(), 'ClientV2.log.txt');
+const LOG_FILE = path.join(process.cwd(), 'ClientV3.log.txt');
 
 // --- ログ記録用関数 ---
 const writeLog = (message: string) => {
@@ -113,9 +112,13 @@ const updateEnvFile = (key: string, value: string) => {
     }
 };
 
-const checkWebSocketStatus = async (url: string): Promise<boolean> => {
+// WebSocket サーバーのステータスを確認する関数
+const checkWebSocketStatus = (url: string): Promise<boolean> => {
     return new Promise((resolve) => {
-        const ws = new WebSocket(url);
+        // WebSocketのパスが /minecraft で終わる場合は、それを /isOnline に置き換える
+        const statusUrl = url.endsWith('/minecraft') ? url.replace(/\/minecraft$/, '/isOnline') : url;
+
+        const ws = new WebSocket(statusUrl);
         let resolved = false;
 
         const resolveAndClose = (value: boolean) => {
@@ -126,9 +129,31 @@ const checkWebSocketStatus = async (url: string): Promise<boolean> => {
             }
         };
 
-        ws.on('open', () => resolveAndClose(true)); // 接続成功時はオンライン
-        ws.on('error', () => resolveAndClose(false)); // エラー発生時はオフライン
-        setTimeout(() => resolveAndClose(false), 5000); // タイムアウト時もオフライン
+        ws.on('open', () => {
+            ws.send(JSON.stringify({ type: 'isOnline' }));
+        });
+
+        ws.on('message', (data: any) => {
+            try {
+                const message = JSON.parse(data.toString());
+                if (message.status === 'online') {
+                    resolveAndClose(true);
+                } else {
+                    resolveAndClose(false);
+                }
+            } catch (error) {
+                console.error(`WebSocketステータス確認エラー: ${error}`);
+                resolveAndClose(false);
+            }
+        });
+
+        ws.on('error', (error) => {
+            console.error(`WebSocketエラー: ${error}`);
+            resolveAndClose(false);
+        });
+
+        // 5秒後にタイムアウト
+        setTimeout(() => resolveAndClose(false), 5000);
     });
 };
 
@@ -177,19 +202,10 @@ async function extractPlayerName(
 // --- UI Functions ---
 
 const displayMenu = async () => {
-    if (webSocketUrl && !envLoaded) { // 初回起動時のみWebSocketサーバーのステータスを確認
-        try {
-            isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
-            log(
-                'green',
-                `WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`,
-            );
-        } catch (error) {
-            log(
-                'red',
-                `WebSocketサーバーの状態確認中にエラーが発生しました: ${error}`,
-            );
-        }
+    // WebSocket サーバーのステータスを再確認
+    if (webSocketUrl) {
+        isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
+        log('green', `WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`);
     }
 
     autoConnectOnStartup = process.env.AUTO_CONNECT_ON_STARTUP === 'true';
@@ -285,13 +301,15 @@ const restartWss = async () => {
         log('yellow', `起動時の自動接続が無効になっています。`);
     }
 
-    // WebSocket接続
+    // WebSocket接続 (Minecraft サーバーへの接続を再試行)
     if (autoConnectOnStartup) {
         if (wss) {
             wss.close();
+            wss = null; // 既存の接続をリセット
         }
-        await connectToWss(webSocketUrl);
+        connectToMinecraftWss(); // Minecraft サーバーへの再接続を試行
     }
+
     await inquirer.prompt([
         {
             type: 'input',
@@ -330,34 +348,19 @@ const setupWebSocketUrl = async () => {
         envLoaded = true;
         log('green', `WebSocket URLが設定されました: ${url}`);
 
-        const timeout = 10000;
-        const checkStatusPromise = checkWebSocketStatus(url);
-        const timeoutPromise = new Promise<boolean>((_, reject) =>
-            setTimeout(() => reject(new Error('WebSocket status check timed out')), timeout),
-        );
+        // WebSocket サーバーのステータスを確認
+        isWebSocketServerOnline = await checkWebSocketStatus(url);
+        log('green', `WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`);
 
-        try {
-            isWebSocketServerOnline = await Promise.race([checkStatusPromise, timeoutPromise]);
-            log(
-                'green',
-                `WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`,
-            );
-
-            if (isWebSocketServerOnline && autoConnectOnStartup) {
-                const connectPromise = connectToWss(url);
-                const connectTimeoutPromise = new Promise<void>((_, reject) =>
-                    setTimeout(() => reject(new Error('WebSocket connection timed out')), timeout),
-                );
-
-                await Promise.race([connectPromise, connectTimeoutPromise]);
-                addNotification('WebSocketサーバーに接続しました。', "other");
-            }
-        } catch (error) {
-            log('red', `WebSocketサーバーの状態確認または接続中にエラーが発生しました: ${error}`);
+        // オンラインでかつ自動接続が有効な場合、Minecraft サーバーに接続
+        if (isWebSocketServerOnline && autoConnectOnStartup) {
+            connectToMinecraftWss();
+            addNotification('WebSocketサーバーに接続しました。', 'other');
         }
     } catch (error) {
         log('red', 'エラーが発生しました: ' + error);
     } finally {
+        // WebSocket サーバーのステータスを再確認して表示を更新
         if (webSocketUrl) {
             isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
         }
@@ -376,120 +379,101 @@ const toggleAutoConnect = async () => {
 };
 
 // --- WebSocket Functions ---
-const connectToWss = async (url: string) => {
-    return new Promise<void>(async (resolve, reject) => {
-        // 接続試行前に isWebSocketServerOnline を false に設定
-        isWebSocketServerOnline = false;
 
-        // `wss`が既に存在する場合は、既存の接続を削除してnullにする
-        if (wss) {
-            wss.removeAllListeners();
-            wss.close();
-            wss = null;
-        }
+// Minecraft サーバーに接続するための関数
+const connectToMinecraftWss = async () => {
+    if (!webSocketUrl) {
+        log('red', 'エラー: WebSocket URLが設定されていません。');
+        return;
+    }
 
-        // ngrok URLの取得処理 (必要であれば)
-        if (url.includes('ngrok-free.app')) {
-            try {
-                const response = await axios.get('https://bfxmknk4-80.asse.devtunnels.ms/get_api');
-                url = response.data;
-                webSocketUrl = url; // グローバル変数も更新
-                writeLog(`ngrok URLを更新しました: ${url}`);
-                updateEnvFile('WSS_URL', url);
-            } catch (error) {
-                //log('red', `ngrok URLの取得に失敗しました: ${error}`);
-                // 失敗した場合は、元のURLを使い続けるか、rejectして再試行を促すかを選択
-                // return reject(error); // 例：失敗時にリジェクトする
+    if (wss) {
+        wss.removeAllListeners();
+        wss.close();
+        wss = null;
+    }
+
+    // 実際のゲームデータ通信用の WebSocket 接続 (Minecraft 用)
+    wss = new WebSocket(webSocketUrl);
+
+    wss.on('open', () => {
+        clearInterval(reconnectionInterval!);
+        reconnectionInterval = null;
+        isWebSocketServerOnline = true;
+        reconnectionStartTime = null;
+        log('green', 'Minecraftサーバーに接続しました。');
+        addNotification('Minecraftサーバーに接続しました。', 'connection');
+    });
+
+    wss.on('message', async (data: string) => {
+        try {
+            if (!data) {
+                addNotification('空のメッセージを受信しました。', 'other');
+                return;
             }
-        }
-
-        // 新しいWebSocket接続を確立
-        wss = new WebSocket(url);
-        // `open`イベント: 接続が開かれたとき
-        wss.on('open', () => {
-            clearInterval(reconnectionInterval!);
-            reconnectionInterval = null;
-            isWebSocketServerOnline = true;
-            reconnectionStartTime = null; // 接続成功時にリセット
-            writeLog(`WebSocketサーバーに接続しました。`); // 接続が確立されたときにログに記録
-            addNotification(`WebSocketサーバーに接続しました。`, 'connection'); // 接続が確立されたときに通知
-            resolve(); // プロミスを解決
-        });
-
-        wss.on('message', async (data: string) => {
+            let message: any;
             try {
-                if (!data) {
-                    addNotification('空のメッセージを受信しました。', 'other');
-                    return;
-                }
-                let message: any;
-                try {
-                    message = JSON.parse(data);
-                } catch (error) {
-                    addNotification(`無効なJSONメッセージを受信しました: ${error}`, 'other');
-                    return;
-                }
+                message = JSON.parse(data);
+            } catch (error) {
+                addNotification(`無効なJSONメッセージを受信しました: ${error}`, 'other');
+                return;
+            }
 
-                if (message.command) {
-                    const world = server.getWorlds()[0];
+            // 'event' フィールドをチェックして、コマンド実行リクエストかどうかを判定
+            if (message.event === 'commandRequest') {
+                const world = server.getWorlds()[0];
 
-                    if (world) {
-                        switch (message.command) {
-                            case 'sendMessage':
-                                if (message.playerName) {
-                                    await world.sendMessage(message.message, message.playerName);
-                                } else {
-                                    await world.sendMessage(message.message);
-                                }
-                                break;
-                            default:
-                                const commandResult = await world.runCommand(message.command);
-                                sendDataToWss('commandResult', {
-                                    result: commandResult,
-                                    command: message.command,
-                                    commandId: message.commandId,
-                                });
-                                break;
-                        }
+                if (world) {
+                    switch (message.data.command) {
+                        case 'sendMessage':
+                            if (message.data.playerName) {
+                                await world.sendMessage(message.data.message, message.data.playerName);
+                            } else {
+                                await world.sendMessage(message.data.message);
+                            }
+                            break;
+                        default:
+                            const commandResult = await world.runCommand(message.data.command);
+                            sendDataToWss('commandResult', {
+                                result: commandResult,
+                                command: message.data.command,
+                                commandId: message.data.commandId,
+                            });
+                            break;
                     }
-
                 }
-            } catch (error) {
             }
-        });
+        } catch (error) {
+            console.error('メッセージ処理エラー:', error);
+        }
+    });
 
-        // `close`イベント: 接続が閉じられたとき
-        wss.on('close', () => {
-            // `isWebSocketServerOnline`が`true`の場合にのみ切断通知を出す
-            // これにより、接続されていないときや切断通知が既に処理されたときに、誤った通知が表示されるのを防ぐ
-            if (isWebSocketServerOnline) {
-                addNotification(`WebSocketサーバーから切断されました。`, 'disconnection');
-                writeLog('WebSocketサーバーから切断されました。');
-                isWebSocketServerOnline = false;
-            }
+    wss.on('close', () => {
+        if (isWebSocketServerOnline) {
+            addNotification('Minecraftサーバーから切断されました。', 'disconnection');
+            writeLog('Minecraftサーバーから切断されました。');
+            isWebSocketServerOnline = false;
+        }
 
-            // 再接続試行開始タイムスタンプを設定 (初めての切断時のみ)
-            if (reconnectionStartTime === null) {
-                reconnectionStartTime = Date.now();
-            }
+        if (reconnectionStartTime === null) {
+            reconnectionStartTime = Date.now();
+        }
 
-            // 自動再接続が有効な場合に再接続を試みる
-            if (webSocketUrl && autoConnectOnStartup) {
-                reconnect()
-                    .then(() => resolve())  // 再接続が成功したらresolveを呼ぶ
-                    .catch(reject); // 再接続が失敗したらrejectを呼ぶ
-            }
-        });
+        if (webSocketUrl && autoConnectOnStartup) {
+            reconnect()
+                .then(() => {
+                    log('green', 'Minecraftサーバーへの再接続に成功しました。');
+                })
+                .catch((error) => {
+                    log('red', `Minecraftサーバーへの再接続に失敗しました: ${error}`);
+                });
+        }
+    });
 
-        // `error`イベント: エラーが発生したとき
-        wss.on('error', (error) => {
-            // `isWebSocketServerOnline`が`true`の場合にのみエラーを記録
-            // 接続がまだ確立されていないか、既に切断されている場合にエラーが記録されるのを防ぐ
-            if (isWebSocketServerOnline) {
-                writeLog(`WebSocketエラー: ${error}`);
-            }
-            reject(error);
-        });
+    wss.on('error', (error) => {
+        if (isWebSocketServerOnline) {
+            log('red', `MinecraftサーバーとのWebSocketエラー: ${error}`);
+        }
     });
 };
 
@@ -529,14 +513,10 @@ const reconnect = async (): Promise<void> => {
                     }
                 }
 
-                addNotification(`${COLOR_YELLOW}WebSocketサーバーへの再接続を試みています...${COLOR_RESET}`, 'other');
+                addNotification(`${COLOR_YELLOW}Minecraftサーバーへの再接続を試みています...${COLOR_RESET}`, 'other');
 
-                connectToWss(webSocketUrl!)
-                    .then(() => {
-                        clearInterval(reconnectionInterval!);
-                        resolve();
-                    })
-                    .catch(() => { /* エラーは無視して再試行を続ける */ });
+                // Minecraft サーバーへの接続を試みる
+                connectToMinecraftWss();
             }
         };
 
@@ -545,11 +525,12 @@ const reconnect = async (): Promise<void> => {
     });
 };
 
+// 他のWebSocketサーバーにデータを送信するための関数
 const sendDataToWss = (event: string, data: any) => {
     if (wss && wss.readyState === WebSocket.OPEN) {
         wss.send(JSON.stringify({ event, data }));
     } else {
-        addNotification(`WebSocketが接続されていません。`, "other");
+        addNotification(`WebSocketが接続されていません。`, 'other');
     }
 };
 
@@ -561,29 +542,34 @@ const server = new Server({
 });
 
 server.events.on('serverOpen', async () => {
-    log('green', 'Minecraft server started.');
+    log('green', 'Minecraftサーバーが起動しました。');
 
-    // worldAdd イベントをリッスン
+    // worldAdd イベントをリッスン (サーバー起動後に発生)
     server.events.on('worldAdd', async () => {
+        log('green', 'ワールドが追加されました。');
+
         if (webSocketUrl) {
             try {
+                // WebSocket サーバーのオンライン状態を確認
                 isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
-                writeLog(`WebSocket server is ${isWebSocketServerOnline ? 'online' : 'offline'}.`);
-                if (autoConnectOnStartup && isWebSocketServerOnline) {
-                    writeLog('Attempting to connect to WebSocket server.');
-                    await connectToWss(webSocketUrl);
+                log('green', `WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`);
+
+                // オンラインでかつ自動接続が有効な場合、Minecraft サーバーに接続
+                if (isWebSocketServerOnline && autoConnectOnStartup) {
+                    log('green', 'WebSocketサーバーに接続します。');
+                    await connectToMinecraftWss();
                 }
             } catch (error) {
-                writeLog(`Error checking WebSocket server status: ${error}`);
+                log('red', `WebSocketサーバーの状態確認中にエラーが発生しました: ${error}`);
             }
         }
     });
 });
 
-server.events.on('worldAdd', async (event) => {
+server.events.on('worldAdd', async () => {
     sendDataToWss('worldAdd', {});
     addNotification(`Minecraftサーバーに接続しました。`, 'connection');
-    const { world } = event;
+    const world = server.getWorlds()[0];
     world.subscribeEvent('ItemUsed');
     world.subscribeEvent('PlayerDied');
 });
@@ -631,7 +617,6 @@ const handleShutdown = async (signal: string) => {
         process.exit(0);
     }
 };
-
 
 process.on('SIGINT', () => handleShutdown('SIGINT'));
 process.on('SIGTERM', () => handleShutdown('SIGTERM'));
@@ -702,23 +687,11 @@ const initEnv = async () => {
     if (webSocketUrl) {
         writeLog(`WebSocket URLが検出されました: ${webSocketUrl}`);
         addNotification(`WebSocket URLが検出されました: ${webSocketUrl}`, 'other');
-        try {
-            // 初期化時にWebSocketサーバーの状態を確認
-            isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
-            writeLog(`WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`);
-            if (isWebSocketServerOnline && autoConnectOnStartup) {
-                writeLog(`起動時の自動接続が有効です。WebSocketサーバーに接続します。`);
-                await connectToWss(webSocketUrl);
-            }
-        } catch (error) {
-            writeLog(`WebSocketサーバーの状態確認中にエラーが発生しました: ${error}`);
-        }
     }
 };
 
 // --- Start ---
 (async () => {
-
     await initEnv();
     envLoaded = false;
     displayMenu();

@@ -91,6 +91,8 @@ export class WsServer {
     private playerDataCache: PlayerData[] | null = null;
     private saveQueue: PlayerData[] | null = null;
 
+    private httpServer: any; 
+
     constructor(port: number, commandPrefix: string = '#') {
         this.port = port;
         this.clients = new Map<string, WebSocket>();
@@ -198,9 +200,38 @@ export class WsServer {
     // 新しいクライアントとの接続処理
     private handleConnection(ws: WebSocket, req: IncomingMessage) {
         const url = new URL(req.url!, `wss://${req.headers.host}`);
+        console.log(`Client connected. URL: ${url.pathname}`);
+
         if (url.pathname === '/minecraft') {
+            console.log('Handling Minecraft connection.');
             this.handleMinecraftConnection(ws);
+        } else if (url.pathname === '/isOnline') {
+            console.log('Handling isOnline check request.');
+            ws.on('message', (data: any) => {
+                try {
+                    const message = JSON.parse(data.toString());
+
+                    if (message.type === 'isOnline') {
+                        console.log('Received isOnline check request.');
+                        ws.send(JSON.stringify({ status: 'online' }));
+                        return;
+                    }
+                    console.warn(`Received unknown request type: ${message.type} on path: ${url.pathname}`);
+                } catch (error) {
+                    console.error('Invalid JSON received:', error);
+                    ws.send(JSON.stringify({ error: 'Invalid JSON format' }));
+                }
+            });
+
+            ws.on('close', () => {
+                console.log('isOnline check connection closed.');
+            });
+
+            ws.on('error', (error) => {
+                console.error(`WebSocket error: ${error}`);
+            });
         } else {
+            console.warn(`Connection to unknown path ${url.pathname} was attempted.`);
             ws.close();
         }
     }
