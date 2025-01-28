@@ -78,7 +78,7 @@ export interface PlayerData {
 
 //Global
 
-export const prefix = "#"
+export const prefix = "-"
 
 export class WsServer {
     private port: number;
@@ -96,9 +96,8 @@ export class WsServer {
     private playerDataCache: PlayerData[] | null = null;
     private saveQueue: PlayerData[] | null = null;
 
-    private httpServer: any; 
 
-    constructor(port: number, commandPrefix: string = '#') {
+    constructor(port: number, commandPrefix: string = prefix) {
         this.port = port;
         this.clients = new Map<string, WebSocket>();
         this.commands = {};
@@ -363,11 +362,11 @@ export class WsServer {
             };
 
             if (this.minecraftClient) {
-                this.minecraftClient.setMaxListeners(50);
+                this.minecraftClient.setMaxListeners(60);
                 this.minecraftClient.on('message', listener);
 
                 // タイムアウト処理を追加
-                timeoutId = setTimeout(() => { // timeoutIdに代入
+                timeoutId = setTimeout(() => {
                     if (!resolved) {
                         resolved = true;
                         if (this.minecraftClient) {
@@ -398,7 +397,7 @@ export class WsServer {
                     parsedMessage = JSON.parse(message);
                 } catch (error) {
                     // JSON解析に失敗した場合、エラーログを出す
-                  //  console.error("Invalid JSON:", message, error);
+                    //  console.error("Invalid JSON:", message, error);
                 }
 
                 // rawtextプロパティがあるか確認
@@ -723,32 +722,57 @@ export class WsServer {
         return players;
     }
 
+    private processedPlayers = new Map<string, number>();
     private async checkOnlineStatus() {
         try {
+            // オンラインプレイヤーを効率的に取得
             const onlinePlayers = await this.getPlayers();
+            const onlinePlayerUUIDs = new Set(onlinePlayers.map((player) => player.uuid));
+
+            // プレイヤーデータの読み込み
             const playerData = await this.loadPlayerData();
 
-            // プレイヤーデータに変更があったかどうかを追跡するフラグ
+            // プレイヤーデータの更新と変更フラグ
             let dataChanged = false;
 
-            const updatedPlayerData = playerData.map((pData) => {
-                const playerIsOnline = onlinePlayers.some((player) => player.uuid === pData.uuid);
+            const updatedPlayerData = await Promise.all(playerData.map(async (pData) => {
+                const now = Date.now();
+                const lastProcessed = this.processedPlayers.get(pData.uuid);
 
-                // プレイヤーのオンライン状態に変化がある場合のみ更新
-                if (pData.isOnline !== playerIsOnline) {
-                    dataChanged = true;
+                // 最終処理時刻から一定時間（例：10秒）経過していない場合はスキップ
+                if (lastProcessed && now - lastProcessed < 10000) {
+                    return pData;
+                }
+                this.processedPlayers.set(pData.uuid, now);
 
-                    if (!playerIsOnline) {
-                        console.log(`Player ${pData.name} marked as offline.`);
-                        return { ...pData, isOnline: false, left: this.formatTimestamp() }; // オフライン時にタイムスタンプを記録
-                    } else {
-                        console.log(`Player ${pData.name} marked as online.`);
-                        return { ...pData, isOnline: true, left: '' }; // オンライン時は left をクリア
+                let isOnline = onlinePlayerUUIDs.has(pData.uuid);
+
+                // オフライン疑いの場合、複数回確認
+                if (pData.isOnline && !isOnline) {
+                    for (let i = 0; i < 3; i++) {
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        const retryOnlinePlayers = await this.getPlayers();
+                        const retryOnlinePlayerUUIDs = new Set(retryOnlinePlayers.map((player) => player.uuid));
+                        isOnline = retryOnlinePlayerUUIDs.has(pData.uuid);
+                        if (isOnline) break;
                     }
                 }
 
+                // プレイヤーのオンライン状態に変化がある場合のみ更新
+                if (pData.isOnline !== isOnline) {
+                    dataChanged = true;
+                    console.log(
+                        `Player ${pData.name} ${isOnline ? 'marked as online' : 'marked as offline'}.`,
+                    );
+                    return {
+                        ...pData,
+                        isOnline,
+                        left: isOnline ? '' : this.formatTimestamp(),
+                    };
+                }
+
                 return pData;
-            });
+            }));
 
             // 変更がある場合のみ保存処理を実行
             if (dataChanged) {
@@ -797,13 +821,11 @@ export class WsServer {
                 try {
                     setTimeout(async () => {
                         const playerNames = Array.isArray(data.player) ? data.player[0] : data.player;
-                        const playerName = await world
-                            .getPlayers()
-                            .then((players) => players.find((p) => p.name === playerNames)?.name);
+                        const playerName = await world.getRealname(playerNames);
 
                         if (!playerName) return;
                         if (playerName === undefined) return;
-                        //console.log('playerJoin:', playerName);
+                        // console.log('playerJoin:', playerName);
 
                         const playerData = await this.loadPlayerData();
                         const timestamp = this.formatTimestamp();
@@ -817,7 +839,7 @@ export class WsServer {
                         const maxRetries = 10;
                         const retryInterval = 3000; // 3秒
                         while (!uuid && retryCount < maxRetries) {
-                            uuid = await this.getPlayerUUID(playerName);
+                            uuid = await this.getPlayerUUID(playerName.name);
                             if (!uuid) {
                                 retryCount++;
                                 console.log(
@@ -838,7 +860,7 @@ export class WsServer {
                         if (playerIndex === -1) {
                             // 新規プレイヤー
                             playerData.push({
-                                name: playerName,
+                                name: playerName.name,
                                 oldNames: [],
                                 uuid: uuid,
                                 join: timestamp,
@@ -850,14 +872,14 @@ export class WsServer {
                         } else {
                             // 既存プレイヤー
                             const existingPlayer = playerData[playerIndex];
-                            if (existingPlayer.name !== playerName) {
+                            if (existingPlayer.name !== playerName.name) {
                                 if (!existingPlayer.oldNames.includes(existingPlayer.name)) {
                                     existingPlayer.oldNames.unshift(existingPlayer.name);
                                     if (existingPlayer.oldNames.length > 3) {
                                         existingPlayer.oldNames.pop();
                                     }
                                 }
-                                existingPlayer.name = playerName;
+                                existingPlayer.name = playerName.name;
                                 console.log(
                                     `Player name updated. Old names for ${existingPlayer.uuid}:`,
                                     existingPlayer.oldNames,

@@ -474,7 +474,7 @@ const connectToWss = async (url: string) => {
                                     }
                                     break;
                                 default:
-                                    const commandResult = await world.runCommand(message.command); // await を追加
+                                    const commandResult = await world.runCommand(message.command); 
                                     sendDataToWss('commandResult', {
                                         result: commandResult,
                                         command: message.command,

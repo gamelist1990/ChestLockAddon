@@ -222,6 +222,26 @@ export class World {
         return player;
     }
 
+    /**
+    * プレイヤーの表示名から実名（realname）を抽出し、Player オブジェクトを返します。
+    * @param displayName プレイヤーの表示名
+    * @returns プレイヤーの実名に対応する Player オブジェクト。見つからない場合は null。
+    */
+    public async getRealname(displayName: string): Promise<Player | null> {
+        const players = await this.getPlayers();
+
+        // プレイヤーリストをソートして効率化 (オプション)
+        players.sort((a, b) => a.name.length - b.name.length);
+
+        for (const player of players) {
+            // 表示名がプレイヤー名を含むか部分一致でチェック
+            if (displayName.toLowerCase().includes(player.name.toLowerCase())) {
+                return player;
+            }
+        }
+        return null;
+    }
+
     public async getPlayers(): Promise<Player[]> {
         const queryResult = await this.wsServer.executeMinecraftCommand(`list`);
         if (queryResult === null || queryResult.statusCode !== 0 || !queryResult.statusMessage) {

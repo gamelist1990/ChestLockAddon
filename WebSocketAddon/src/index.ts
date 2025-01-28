@@ -110,6 +110,11 @@ console.log("WebSocket Addon Loaded");
 world.beforeEvents.chatSend.subscribe((event) => {
     const { message, sender } = event;
     updateTpsScoreboard(tps);
+    if (message.length >= 256) {
+        event.cancel;
+        world.sendMessage("Test")
+        return;
+    }
 
     console.log(`[chatSend] ${sender.name}: ${message}`);
 

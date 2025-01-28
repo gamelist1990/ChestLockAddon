@@ -12,7 +12,7 @@ server.events.on('serverOpen', async () => {
 
 
 });
-const NAME = "DevConsoleCommand"
+const NAME = "SlashCommandExecuted"
 
 server.events.on('worldAdd', async (event) => {
     console.log('worldと接続完了!');

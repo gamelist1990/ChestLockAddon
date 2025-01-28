@@ -251,7 +251,7 @@ async function setDiscordBridge() {
             GatewayIntentBits.GuildVoiceStates,
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.MessageContent,
-            GatewayIntentBits.DirectMessages,  
+            GatewayIntentBits.DirectMessages,
             GatewayIntentBits.DirectMessageReactions
         ],
     });
@@ -333,17 +333,26 @@ async function setDiscordBridge() {
 async function sendMinecraftToDiscord(playerName: string, message: string) {
     if (discordClient && discordChannelId) {
         try {
-            const channel = (await discordClient.channels.fetch(
-                discordChannelId
-            )) as TextChannel;
+            const channel = (await discordClient.channels.fetch(discordChannelId)) as TextChannel;
             if (channel) {
-                channel.send(`**${playerName}**: ${message}`);
+                const maxLength = 500;
+                if (message.length > maxLength) {
+                    const parts = message.match(new RegExp(`.{1,${maxLength}}`, 'g'));
+                    if (parts) {
+                        for (const part of parts) {
+                            await channel.send(`**${playerName}**: ${part}`);
+                        }
+                    }
+                } else {
+                    await channel.send(`**${playerName}**: ${message}`);
+                }
             }
         } catch (error) {
             console.error("Discordへのメッセージ送信に失敗しました:", error);
         }
     }
 }
+
 
 /**
  * 指定された数値を使って、結果が必ず114514に近づくようなより高度な計算を行う関数
