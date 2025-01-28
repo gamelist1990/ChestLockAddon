@@ -12,3 +12,4 @@ import './command/ver';
 import './command/server/index';
 import './command/info';
 import './command/scoreboard';
+import './command/miniAC';
