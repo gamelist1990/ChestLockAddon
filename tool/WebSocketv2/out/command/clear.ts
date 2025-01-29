@@ -180,7 +180,7 @@ registerCommand({
 });
 
 // 再起動関連の変数を追加
-let restartTimer: NodeJS.Timeout | null = null;
+let restartTimer: NodeJS.Timer | null = null;
 let timeLeft = autoClearSettings.restartTime; // 再起動までの残り時間（分）
 
 function startRestartTimer() {

@@ -1,39 +1,53 @@
+import ora from 'ora';
+import CliTable from 'cli-table3';
+import inquirer from 'inquirer';
+import chalk from 'chalk';
 import { Server } from 'socket-be';
-import { config } from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import { WebSocket } from 'ws';
-import inquirer from 'inquirer';
 import axios from 'axios';
 
 // --- Constants ---
-const COLOR_RED = '\x1b[31m';
-const COLOR_GREEN = '\x1b[32m';
-const COLOR_YELLOW = '\x1b[33m';
-const COLOR_RESET = '\x1b[0m';
-
 const RECONNECT_INTERVAL = 5000;
-const MAX_NOTIFICATIONS = 50; // 通知タブに表示する最大通知数
-const RECONNECTION_TIMEOUT = 3 * 60 * 1000; // 3分
+const MAX_NOTIFICATIONS = 10;
+const RECONNECTION_TIMEOUT = 3 * 60 * 1000;
+const MAX_LOGS = 10;
 
 // --- Global Variables ---
 let wss: WebSocket | null = null;
-let reconnectionInterval: NodeJS.Timeout | null;
-let envLoaded = false;
+let reconnectionInterval: NodeJS.Timer | null;
 let autoConnectOnStartup = false;
 let webSocketUrl: string | null = null;
 let isWebSocketServerOnline = false;
-const notifications: string[] = []; // 通知タブ用の通知を格納する配列
+const notifications: string[] = [];
+const logs: string[] = [];
 const playerNameCache: { [key: string]: { name: string; uuid: string } } = {};
-const playerUuidCache: { [key: string]: string } = {}; // プレイヤー名からUUIDを引くためのキャッシュ
+const playerUuidCache: { [key: string]: string } = {};
 let reconnectionStartTime: number | null = null;
 
 // --- ログファイル名 ---
 const LOG_FILE = path.join(process.cwd(), 'ClientV3.log.txt');
 
+// --- 設定ファイル名 ---
+const CONFIG_FILE = path.join(process.cwd(), 'config.json');
+
 // --- ログ記録用関数 ---
 const writeLog = (message: string) => {
-    const timestamp = new Date().toLocaleString('ja-JP', { timeZone: process.env.TIMEZONE || 'Asia/Tokyo' });
+    // loadConfig()を呼び出さずに、直接タイムゾーンを取得 (ファイルが存在しない場合はデフォルト値を使用)
+    let timezone = 'Asia/Tokyo';
+    try {
+        const data = fs.readFileSync(CONFIG_FILE, 'utf-8');
+        const config = JSON.parse(data) as Config;
+        timezone = config.timezone || 'Asia/Tokyo';
+    } catch (error) {
+        // エラーが発生してもここではログ出力しない (無限再帰を避けるため)
+        console.error('タイムゾーンの取得中にエラーが発生しましたが、ログ出力はスキップします:', error);
+    }
+
+    const timestamp = new Date().toLocaleString('ja-JP', {
+        timeZone: timezone
+    });
     const logMessage = `[${timestamp}] ${message}\n`;
 
     try {
@@ -44,82 +58,82 @@ const writeLog = (message: string) => {
 };
 
 // --- Helper Functions ---
-
 const clearConsole = () => {
-    if (process.stdout.isTTY) { // ターミナルやコマンドプロンプトの場合
-        // ANSI エスケープコードを使ってカーソルを移動させてから画面をクリア
-        process.stdout.write('\x1b[H\x1b[2J');
-    } else {
-        // ターミナル以外 (IDEのコンソールなど) の場合は、console.clear() を使う
-        console.clear();
-    }
+    console.clear();
 };
 
-
-const log = (color: string, message: string) => {
-    switch (color) {
-        case 'red':
-            console.log(COLOR_RED + message + COLOR_RESET);
-            writeLog(message);
-            break;
-        case 'green':
-            console.log(COLOR_GREEN + message + COLOR_RESET);
-            writeLog(message);
-            break;
-        case 'yellow':
-            console.log(COLOR_YELLOW + message + COLOR_RESET);
-            writeLog(message);
-            break;
-        default:
-            console.log(message);
-            writeLog(message);
+const addLog = (message: string) => {
+    // ログ出力時にタイムゾーンを取得する必要がなくなったため、loadConfig()を呼び出さない
+    const timestamp = new Date().toLocaleTimeString('ja-JP', {
+        timeZone: 'Asia/Tokyo' // デフォルトのタイムゾーンを使用
+    });
+    const timedMessage = `[${timestamp}] ${message}`;
+    logs.push(timedMessage);
+    if (logs.length > MAX_LOGS) {
+        logs.shift();
     }
+    writeLog(message);
+    updateDashboard();
 };
 
-// addNotification関数は、接続成功と切断時のみ通知するように変更
-const addNotification = (message: string, type: 'connection' | 'disconnection' | 'other' = 'other') => {
-    notifications.push(message);
+const addNotification = (
+    message: string,
+    type: 'connection' | 'disconnection' | 'other' = 'other',
+) => {
+    // ログ出力時にタイムゾーンを取得する必要がなくなったため、loadConfig()を呼び出さない
+    const timestamp = new Date().toLocaleTimeString('ja-JP', {
+        timeZone: 'Asia/Tokyo' // デフォルトのタイムゾーンを使用
+    });
+    const timedMessage = `[${timestamp}] ${message}`;
+
+    notifications.push(timedMessage);
     if (notifications.length > MAX_NOTIFICATIONS) {
-        notifications.shift(); // 古い通知を削除
+        notifications.shift();
     }
+
+    addLog(`[Notification] ${message}`);
 };
 
-// displayNotifications関数は通知タブの内容を表示するように変更
-const displayNotifications = async () => {
-    // clearConsole(); // 削除: 通知表示前にコンソールをクリアしない
-    if (notifications.length === 0) {
-        console.log('通知はありません。\n');
-        writeLog('通知はありません。');
-    } else {
-        notifications.forEach((notification) => console.log(notification));
-    }
-    await inquirer.prompt([
-        {
-            type: 'input',
-            name: 'continue',
-            message: 'メニューに戻るにはEnterキーを押してください...',
-        },
-    ]);
-    displayMenu();
+// --- 設定ファイルの読み込みと書き込み ---
+interface Config {
+    wssUrl: string;
+    autoConnectOnStartup: boolean;
+    socketBePort: number;
+    timezone: string;
+}
+
+const defaultConfig: Required<Config> = {
+    wssUrl: "WebSocketサーバーURL",
+    autoConnectOnStartup: false,
+    socketBePort: 8000,
+    timezone: "Asia/Tokyo",
 };
 
-const updateEnvFile = (key: string, value: string) => {
-    const envPath = path.resolve(process.cwd(), '.env');
+const loadConfig = (): Config => {
     try {
-        let envContent = fs.readFileSync(envPath, 'utf-8');
-        const regex = new RegExp(`^${key}=.*$`, 'm');
-        if (regex.test(envContent)) {
-            envContent = envContent.replace(regex, `${key}="${value}"`);
-        } else {
-            envContent += `\n${key}="${value}"`;
-        }
-        fs.writeFileSync(envPath, envContent);
-        addNotification(`${COLOR_GREEN}.envファイルが更新されました。${COLOR_RESET}`, 'other');
-        log('green', '.envファイルが更新されました。');
+        const data = fs.readFileSync(CONFIG_FILE, 'utf-8');
+        const config = JSON.parse(data) as Config;
+        return config;
     } catch (error) {
-        // addNotification(`${COLOR_RED}.envファイルの更新中にエラーが発生しました: ${error}${COLOR_RESET}`); // 通知しない
-        log('red', `.envファイルの更新中にエラーが発生しました: ${error}`);
+        // loadConfig() 内でエラーが発生した場合は、コンソールにエラーを出力するが、addLog() は呼び出さない
+        console.error(`設定ファイルの読み込み中にエラーが発生しました: ${error}`);
+        return defaultConfig;
     }
+};
+
+const saveConfig = <T extends Config>(config: T) => {
+    try {
+        fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+        addNotification(`設定ファイルが更新されました。`);
+    } catch (error) {
+        addLog(`設定ファイルの更新中にエラーが発生しました: ${error}`);
+    }
+};
+
+const updateConfig = <K extends keyof Config>(key: K, value: Config[K]) => {
+    const config = loadConfig();
+    config[key] = value;
+    saveConfig<Config>(config); // 型引数として Config を渡す
 };
 
 const checkWebSocketStatus = async (url: string): Promise<boolean> => {
@@ -135,16 +149,15 @@ const checkWebSocketStatus = async (url: string): Promise<boolean> => {
             }
         };
 
-        ws.on('open', () => resolveAndClose(true)); // 接続成功時はオンライン
-        ws.on('error', () => resolveAndClose(false)); // エラー発生時はオフライン
-        setTimeout(() => resolveAndClose(false), 5000); // タイムアウト時もオフライン
+        ws.on('open', () => resolveAndClose(true));
+        ws.on('error', () => resolveAndClose(false));
+        setTimeout(() => resolveAndClose(false), 5000);
     });
 };
 
 async function extractPlayerName(
     playerNameWithTags: string,
 ): Promise<{ name: string; uuid: string } | null> {
-    // キャッシュに存在すればそれを返す
     if (playerNameCache[playerNameWithTags]) {
         return playerNameCache[playerNameWithTags];
     }
@@ -155,17 +168,16 @@ async function extractPlayerName(
     }
 
     try {
-        // testfor コマンドでプレイヤーを検索
         const playerListResult = await world.runCommand(`testfor @a`);
         if (playerListResult.statusCode !== 0 || !playerListResult.victim) {
             return null;
         }
 
-        // プレイヤーリストから目的のプレイヤーを探す
         for (const realPlayerName of playerListResult.victim) {
             if (playerNameWithTags.includes(realPlayerName)) {
-                // querytarget コマンドでプレイヤーの詳細情報を取得
-                const queryResult = await world.runCommand(`querytarget @a[name="${realPlayerName}"]`);
+                const queryResult = await world.runCommand(
+                    `querytarget @a[name="${realPlayerName}"]`,
+                );
                 if (queryResult.statusCode === 0 && queryResult.details !== '[]') {
                     const playerData = JSON.parse(queryResult.details);
                     if (playerData && playerData.length > 0) {
@@ -173,7 +185,6 @@ async function extractPlayerName(
                             name: realPlayerName,
                             uuid: playerData[0].uniqueId,
                         };
-                        // キャッシュに保存
                         playerNameCache[playerNameWithTags] = playerInfo;
                         playerUuidCache[realPlayerName] = playerData[0].uniqueId;
                         return playerInfo;
@@ -182,7 +193,7 @@ async function extractPlayerName(
             }
         }
     } catch (error) {
-        log('red', `プレイヤー情報の取得中にエラーが発生しました: ${error}`);
+        addLog(`プレイヤー情報の取得中にエラーが発生しました: ${error}`);
         return null;
     }
 
@@ -190,162 +201,119 @@ async function extractPlayerName(
 }
 
 // --- UI Functions ---
+let statusTable = new CliTable({
+    head: ['WebSocket', 'URL', 'AutoConnect'],
+    colWidths: [15, 40, 15],
+});
 
-const displayMenu = async () => {
-    // 初回起動時のみWebSocketサーバーのステータスを確認
-    if (webSocketUrl && !envLoaded) {
-        try {
+const updateDashboard = () => {
+    clearConsole();
+
+    statusTable.length = 0;
+
+    // ステータス表示
+    console.log(chalk.yellow('[Status]'));
+    statusTable.push([
+        isWebSocketServerOnline ? chalk.green('Online') : chalk.red('Offline'),
+        webSocketUrl || 'N/A',
+        autoConnectOnStartup ? 'On' : 'Off',
+    ]);
+    console.log(statusTable.toString());
+
+    console.log(chalk.gray('--------------------------------------------------'));
+
+    console.log(chalk.blue('[Notifications]'));
+    notifications.slice(-5).forEach((notification) => {
+        console.log(notification);
+    });
+
+    console.log(chalk.gray('--------------------------------------------------'));
+
+    console.log(chalk.green('[Logs]'));
+    logs.slice(-20).forEach((log) => {
+        console.log(log);
+    });
+
+    console.log(chalk.gray('--------------------------------------------------'));
+
+    console.log(chalk.yellow('[Menu]'));
+};
+
+const initialize = async () => {
+    try {
+        const config = loadConfig();
+        addLog('設定ファイルを読み込みました。');
+
+        webSocketUrl = config.wssUrl || null;
+        autoConnectOnStartup = config.autoConnectOnStartup || false;
+
+        if (webSocketUrl) {
             isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
-            log(
-                'green',
+            addLog(
                 `WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`,
             );
-        } catch (error) {
-            log(
-                'red',
-                `WebSocketサーバーの状態確認中にエラーが発生しました: ${error}`,
-            );
+            if (isWebSocketServerOnline && autoConnectOnStartup) {
+                addLog('起動時の自動接続が有効です。WebSocketサーバーに接続します。');
+                await connectToWss(webSocketUrl);
+            }
         }
+        updateDashboard();
+    } catch (error) {
+        addLog(`初期化中にエラーが発生しました: ${error}`);
     }
+};
 
-    autoConnectOnStartup = process.env.AUTO_CONNECT_ON_STARTUP === 'true';
+const displayMenu = async () => {
+    //updateDashboard();
 
     const choices = [
-        'サーバーに再接続',
-        'WebSocketサーバーURLを設定',
-        `起動時の自動接続を切り替え (現在: ${autoConnectOnStartup ? '有効' : '無効'})`,
-        '通知',
-        '終了',
+        'Connect',
+        'Configure WebSocket URL', // メニュー項目名を変更
+        'Toggle AutoConnect',
+        new inquirer.Separator(),
+        'Exit',
     ];
 
-    clearConsole();
-    console.log(COLOR_GREEN + 'Minecraftサーバーマネージャー' + COLOR_RESET);
-    console.log(
-        `WebSocketサーバー: ${isWebSocketServerOnline
-            ? COLOR_GREEN + 'オンライン' + COLOR_RESET
-            : COLOR_RED + 'オフライン' + COLOR_RESET
-        }`,
-    );
-
-    // メニュー表示をループ処理に変更
-    while (true) {
-        try {
-            const answers = await inquirer.prompt([
-                {
-                    type: 'list',
-                    name: 'menuChoice',
-                    message: '選択してください:',
-                    choices: choices,
-                },
-            ]);
-
-            const choice = choices.indexOf(answers.menuChoice) + 1;
-            if (choice === 5) { // 終了
-                console.log('終了します...');
-                process.exit(0);
-            } else {
-                await handleMenuChoice(choice);
-            }
-        } catch (error) {
-            log('red', 'エラーが発生しました: ' + error);
-        }
-    }
-};
-
-const handleMenuChoice = async (choice: number) => {
-    switch (choice) {
-        case 1:
-            await reconnectWebSocket();
-            break;
-        case 2:
-            await configureWebSocketUrl();
-            break;
-        case 3:
-            await toggleAutoConnect();
-            break;
-        case 4:
-            await displayNotifications();
-            break;
-        // case 5 は displayMenu で処理
-        default:
-            log('red', '無効な選択です。もう一度お試しください。');
-    }
-};
-
-const reconnectWebSocket = async () => {
-    clearConsole();
-
-    // .envファイルを再読み込み
-    envLoaded = false; // フラグをリセット
-    const envPath = path.resolve(process.cwd(), '.env');
-    try {
-        config({ path: envPath, override: true });
-        envLoaded = true;
-        log('green', '.envファイルを再読み込みしました。');
-    } catch (error) {
-        log('red', `.envファイルの再読み込み中にエラーが発生しました: ${error}`);
-        // 必要に応じてデフォルト値を設定
-    }
-
-    // グローバル変数を更新
-    webSocketUrl = process.env.WSS_URL || null;
-    autoConnectOnStartup = process.env.AUTO_CONNECT_ON_STARTUP === 'true';
-
-    // WebSocketサーバーのステータス表示を更新
-    if (webSocketUrl) {
-        writeLog(`WebSocketサーバーURL: ${webSocketUrl}\n`);
-        try {
-            isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
-            writeLog(`WebSocketサーバー: ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'}\n`);
-        } catch (error) {
-            writeLog(`WebSocketサーバーの状態確認中にエラーが発生しました: ${error}`);
-            isWebSocketServerOnline = false;
-        }
-        if (!isWebSocketServerOnline) {
-            writeLog('WebSocketサーバーに接続されていません。');
-        }
-    } else {
-        log('red', `エラー: WebSocket URLが設定されていません。`);
-        return;
-    }
-    if (!autoConnectOnStartup) {
-        writeLog(`起動時の自動接続が無効になっています。`);
-    }
-
-    // WebSocket接続
-    if (autoConnectOnStartup) {
-        await connectToWss(webSocketUrl);
-    }
-    await inquirer.prompt([
+    const { menuChoice } = await inquirer.prompt([
         {
-            type: 'input',
-            name: 'continue',
-            message: 'メニューに戻るにはEnterキーを押してください...',
+            type: 'list',
+            name: 'menuChoice',
+            message: 'メニュー:',
+            choices: choices,
+            pageSize: 7,
         },
     ]);
+
+    switch (menuChoice) {
+        case 'Connect':
+            if (webSocketUrl) {
+                const spinner = ora('WebSocketサーバーへ接続中...').start();
+                try {
+                    await connectToWss(webSocketUrl);
+                    spinner.succeed('WebSocketサーバーに接続しました。');
+                } catch (error) {
+                    spinner.fail(`WebSocketサーバーへの接続に失敗しました: ${error}`);
+                }
+            } else {
+                addLog('エラー: WebSocket URLが設定されていません。');
+            }
+            break;
+        case 'Configure WebSocket URL': // メニュー項目名を変更
+            await configureWebSocketUrl();
+            break;
+        case 'Toggle AutoConnect':
+            await toggleAutoConnect();
+            break;
+        case 'Exit':
+            addLog('アプリケーションを終了します。');
+            process.exit(0);
+    }
     displayMenu();
 };
 
 const configureWebSocketUrl = async () => {
     try {
-        if (webSocketUrl) {
-            const answers = await inquirer.prompt([
-                {
-                    type: 'confirm',
-                    name: 'useExistingUrl',
-                    message: `既にWebSocket URLが設定されています: ${webSocketUrl}\nこのURLを使用しますか？`,
-                    default: true,
-                },
-            ]);
-
-            if (answers.useExistingUrl) {
-                log('green', `既存のWebSocket URLを使用します: ${webSocketUrl}`);
-                displayMenu();
-                return;
-            }
-        }
-
-        const answers = await inquirer.prompt([
+        const { url } = await inquirer.prompt([
             {
                 type: 'input',
                 name: 'url',
@@ -362,101 +330,114 @@ const configureWebSocketUrl = async () => {
             },
         ]);
 
-        let url = answers.url.trim();
+        // 新しいURLの確認
+        const { confirmUrl } = await inquirer.prompt([
+            {
+                type: 'confirm',
+                name: 'confirmUrl',
+                message: `入力されたURL: ${url}\nこのURLでよろしいですか？`,
+                default: true,
+            },
+        ]);
 
-        webSocketUrl = url;
-        updateEnvFile('WSS_URL', url);
-        config({ path: path.resolve(process.cwd(), '.env'), override: true });
-        autoConnectOnStartup = process.env.AUTO_CONNECT_ON_STARTUP === 'true';
-        envLoaded = true;
-        log('green', `WebSocket URLが設定されました: ${url}`);
+        if (!confirmUrl) {
+            addLog('URLの入力をキャンセルしました。');
+            updateDashboard();
+            displayMenu();
+            return;
+        }
 
-        const timeout = 10000;
-        const checkStatusPromise = checkWebSocketStatus(url);
-        const timeoutPromise = new Promise<boolean>((_, reject) =>
-            setTimeout(() => reject(new Error('WebSocket status check timed out')), timeout),
-        );
+        webSocketUrl = url.trim();
+        if (webSocketUrl) {
+            updateConfig('wssUrl', webSocketUrl);
+        }
+        const config = loadConfig();
+        autoConnectOnStartup = config.autoConnectOnStartup || false;
+        addLog(`WebSocket URLが設定されました: ${webSocketUrl}`);
 
-        try {
-            isWebSocketServerOnline = await Promise.race([checkStatusPromise, timeoutPromise]);
-            log(
-                'green',
-                `WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`,
+        const checkStatusAndConnect = async () => {
+            const timeout = 10000;
+            const checkStatusPromise = checkWebSocketStatus(webSocketUrl!);
+            const timeoutPromise = new Promise<boolean>((_, reject) =>
+                setTimeout(() => reject(new Error('WebSocket status check timed out')), timeout),
             );
 
-            if (isWebSocketServerOnline && autoConnectOnStartup) {
-                const connectPromise = connectToWss(url);
-                const connectTimeoutPromise = new Promise<void>((_, reject) =>
-                    setTimeout(() => reject(new Error('WebSocket connection timed out')), timeout),
+            try {
+                isWebSocketServerOnline = await Promise.race([checkStatusPromise, timeoutPromise]);
+                addLog(
+                    `WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`,
                 );
 
-                await Promise.race([connectPromise, connectTimeoutPromise]);
-                addNotification('WebSocketサーバーに接続しました。', "other");
+                if (isWebSocketServerOnline && autoConnectOnStartup) {
+                    addNotification('WebSocketサーバーへの接続を試みます...');
+                    const connectPromise = connectToWss(webSocketUrl!);
+                    const connectTimeoutPromise = new Promise<void>((_, reject) =>
+                        setTimeout(() => reject(new Error('WebSocket connection timed out')), timeout),
+                    );
+
+                    await Promise.race([connectPromise, connectTimeoutPromise]);
+                    addNotification('WebSocketサーバーに接続しました。');
+                }
+            } catch (error) {
+                addLog(`WebSocketサーバーの状態確認または接続中にエラーが発生しました: ${error}`);
+            } finally {
+                displayMenu();
+                updateDashboard();
             }
-        } catch (error) {
-            log('red', `WebSocketサーバーの状態確認または接続中にエラーが発生しました: ${error}`);
-        }
+        };
+
+        checkStatusAndConnect();
     } catch (error) {
-        log('red', 'エラーが発生しました: ' + error);
-    } finally {
-        if (webSocketUrl) {
-            isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
-        }
-        displayMenu();
+        addLog('エラーが発生しました: ' + error);
     }
 };
 
 const toggleAutoConnect = async () => {
-    autoConnectOnStartup = !autoConnectOnStartup;
-    updateEnvFile('AUTO_CONNECT_ON_STARTUP', autoConnectOnStartup.toString());
-    config({ path: path.resolve(process.cwd(), '.env'), override: true });
-    autoConnectOnStartup = process.env.AUTO_CONNECT_ON_STARTUP === 'true';
-    const message = `${COLOR_GREEN}起動時の自動接続が ${autoConnectOnStartup ? '有効' : '無効'} になりました。${COLOR_RESET}`;
-    log('white', message);
-    displayMenu();
+    const config = loadConfig();
+    const newAutoConnectValue = !config.autoConnectOnStartup;
+
+    updateConfig('autoConnectOnStartup', newAutoConnectValue);
+
+    autoConnectOnStartup = newAutoConnectValue;
+    const message = `起動時の自動接続が ${autoConnectOnStartup ? '有効' : '無効'} になりました。`;
+    addLog(message);
+    updateDashboard();
 };
 
 // --- WebSocket Functions ---
 const connectToWss = async (url: string) => {
     return new Promise<void>(async (resolve, reject) => {
-        // 接続試行前に isWebSocketServerOnline を false に設定
         isWebSocketServerOnline = false;
         if (wss) {
-            // 既存のイベントリスナーを削除
-            wss.removeAllListeners();
-            wss.removeAllListeners();
             wss.removeAllListeners();
             await wss.removeAllListeners();
             wss.close();
             wss = null;
         }
 
-        // 新しいWebSocket接続を確立
         wss = new WebSocket(url);
         wss.setMaxListeners(50);
 
-        // `open`イベント: 接続が開かれたとき
         wss.on('open', () => {
             clearInterval(reconnectionInterval!);
             reconnectionInterval = null;
             isWebSocketServerOnline = true;
-            reconnectionStartTime = null; // 接続成功時にリセット
-            writeLog(`WebSocketサーバーに接続しました。`); // 接続が確立されたときにログに記録
-            addNotification(`WebSocketサーバーに接続しました。`, 'connection'); // 接続が確立されたときに通
+            reconnectionStartTime = null;
+            addNotification(`WebSocketサーバーに接続しました。`);
             resolve();
         });
 
         wss.on('message', async (data: string) => {
             try {
                 if (!data) {
-                    addNotification('空のメッセージを受信しました。', 'other');
+                    addNotification('空のメッセージを受信しました。');
                     return;
                 }
                 let message: any;
                 try {
-                    message = JSON.parse(data);
+                    message = JSON.parse(data.toString());
                 } catch (error) {
-                    addNotification(`無効なJSONメッセージを受信しました: ${error}`, 'other');
+                    addNotification(`無効なJSONメッセージを受信しました: ${error}`);
                     return;
                 }
 
@@ -464,7 +445,7 @@ const connectToWss = async (url: string) => {
                     const world = server.getWorlds()[0];
 
                     if (world) {
-                        try { // エラーハンドリングを追加
+                        try {
                             switch (message.command) {
                                 case 'sendMessage':
                                     if (message.playerName) {
@@ -474,7 +455,7 @@ const connectToWss = async (url: string) => {
                                     }
                                     break;
                                 default:
-                                    const commandResult = await world.runCommand(message.command); 
+                                    const commandResult = await world.runCommand(message.command);
                                     sendDataToWss('commandResult', {
                                         result: commandResult,
                                         command: message.command,
@@ -493,41 +474,31 @@ const connectToWss = async (url: string) => {
                     }
                 }
             } catch (error) {
-                log('red', `メッセージ処理中にエラーが発生しました: ${error}`);
+                addLog(`メッセージ処理中にエラーが発生しました: ${error}`);
             }
         });
 
-        // `close`イベント: 接続が閉じられたとき
         wss.on('close', async () => {
-            // `isWebSocketServerOnline`が`true`の場合にのみ切断通知を出す
-            // これにより、接続されていないときや切断通知が既に処理されたときに、誤った通知が表示されるのを防ぐ
             if (isWebSocketServerOnline) {
-                addNotification(`WebSocketサーバーから切断されました。`, 'disconnection');
-                writeLog('WebSocketサーバーから切断されました。');
-                clearConsole();
-                displayMenu();
+                addNotification(`WebSocketサーバーから切断されました。`);
                 isWebSocketServerOnline = false;
+                updateDashboard();
             }
 
-            // 再接続試行開始タイムスタンプを設定 (初めての切断時のみ)
             if (reconnectionStartTime === null) {
                 reconnectionStartTime = Date.now();
             }
 
-            // 自動再接続が有効な場合に再接続を試みる
             if (webSocketUrl && autoConnectOnStartup) {
                 reconnect()
-                    .then(() => resolve())  // 再接続が成功したらresolveを呼ぶ
-                    .catch(reject); // 再接続が失敗したらrejectを呼ぶ
+                    .then(() => resolve())
+                    .catch(reject);
             }
         });
 
-        // `error`イベント: エラーが発生したとき
         wss.on('error', (error) => {
-            // `isWebSocketServerOnline`が`true`の場合にのみエラーを記録
-            // 接続がまだ確立されていないか、既に切断されている場合にエラーが記録されるのを防ぐ
             if (isWebSocketServerOnline) {
-                writeLog(`WebSocketエラー: ${error}`);
+                addLog(`WebSocketエラー: ${error}`);
             }
             reject(error);
         });
@@ -547,12 +518,14 @@ const reconnect = async (): Promise<void> => {
             if (!isWebSocketServerOnline) {
                 const elapsedTime = reconnectionStartTime ? Date.now() - reconnectionStartTime : 0;
 
-                // WSS_URLがngrok URL (ngrok-free.app を含む) の場合のみ、3分経過後に再取得を試みる
-                if (webSocketUrl && webSocketUrl.includes('ngrok-free.app') && elapsedTime >= RECONNECTION_TIMEOUT) {
-                    writeLog('再接続試行開始から3分が経過しました。ngrok URLの再取得を試みます。');
-                    reconnectionStartTime = Date.now(); // タイムスタンプをリセット
+                if (
+                    webSocketUrl &&
+                    webSocketUrl.includes('ngrok-free.app') &&
+                    elapsedTime >= RECONNECTION_TIMEOUT
+                ) {
+                    addLog('再接続試行開始から3分が経過しました。ngrok URLの再取得を試みます。');
+                    reconnectionStartTime = Date.now();
 
-                    // ngrok URLを再取得
                     try {
                         const response = await axios.get('https://bfxmknk4-80.asse.devtunnels.ms/get_api');
                         const newWebSocketUrl = response.data;
@@ -560,7 +533,7 @@ const reconnect = async (): Promise<void> => {
                             webSocketUrl = newWebSocketUrl;
                             addNotification(`ngrok URLを更新しました: ${webSocketUrl}`);
                             if (webSocketUrl) {
-                                updateEnvFile('WSS_URL', webSocketUrl);
+                                updateConfig('wssUrl', webSocketUrl);
                             }
                         } else {
                             addNotification('ngrok URLは変更されていません。');
@@ -570,14 +543,16 @@ const reconnect = async (): Promise<void> => {
                     }
                 }
 
-                addNotification(`${COLOR_YELLOW}WebSocketサーバーへの再接続を試みています...${COLOR_RESET}`, 'other');
+                addNotification(`WebSocketサーバーへの再接続を試みています...`);
 
                 connectToWss(webSocketUrl!)
                     .then(() => {
                         clearInterval(reconnectionInterval!);
                         resolve();
                     })
-                    .catch(() => { /* エラーは無視して再試行を続ける */ });
+                    .catch(() => {
+                        /* エラーは無視して再試行を続ける */
+                    });
             }
         };
 
@@ -590,34 +565,32 @@ const sendDataToWss = (event: string, data: any) => {
     if (wss && wss.readyState === WebSocket.OPEN) {
         wss.send(JSON.stringify({ event, data }));
     } else {
-        addNotification(`WebSocketが接続されていません。`, "other");
+        addNotification(`WebSocketが接続されていません。`);
     }
 };
 
 // --- Server Setup and Event Handlers ---
-
+const config = loadConfig();
 const server = new Server({
-    port: parseInt(process.env.SOCKET_BE_PORT || '8000'),
-    timezone: process.env.TIMEZONE || 'Asia/Tokyo',
+    port: config.socketBePort || 8000,
+    timezone: config.timezone || 'Asia/Tokyo',
 });
 server.setMaxListeners(50);
 
 server.events.on('serverOpen', async () => {
-    log('green', 'Minecraft server started.');
+    addLog('Minecraft server started.');
 
-    // worldAdd イベントをリッスン
     server.events.on('worldAdd', async () => {
         if (webSocketUrl && autoConnectOnStartup && isWebSocketServerOnline) {
             try {
-                writeLog('Attempting to connect to WebSocket server.');
+                addLog('Attempting to connect to WebSocket server.');
                 await connectToWss(webSocketUrl);
             } catch (error) {
-                writeLog(`Error connecting to WebSocket server: ${error}`);
+                addLog(`Error connecting to WebSocket server: ${error}`);
             }
         }
-        // worldAdd イベントの共通処理
         sendDataToWss('worldAdd', {});
-        addNotification(`Minecraftサーバーに接続しました。`, 'connection');
+        addNotification(`Minecraftサーバーに接続しました。`);
         const world = server.getWorlds()[0];
         world.subscribeEvent('ItemUsed');
         world.subscribeEvent('PlayerDied');
@@ -640,7 +613,6 @@ server.events.on('playerJoin', async (event) => {
 
 server.events.on('playerLeave', async (event) => {
     const playerInfo = await extractPlayerName(event.players.toString());
-    // プレイヤーが退出したらキャッシュから情報を削除
     if (playerInfo && playerInfo.name) {
         delete playerNameCache[event.players.toString()];
         delete playerUuidCache[playerInfo.name];
@@ -658,16 +630,15 @@ server.events.on('playerChat', async (event) => {
 });
 
 // --- Process Exit Handlers ---
-
 const handleShutdown = async (signal: string) => {
-    log('white', `${signal}を受信しました。プロセスをクリアします。`);
+    addLog(`${signal}を受信しました。プロセスをクリアします。`);
     clearInterval(reconnectionInterval!);
     try {
         sendDataToWss('serverShutdown', {});
     } catch (error) {
-        log('red', `WSSへのサーバーシャットダウンの送信中にエラーが発生しました: ${error}`);
+        addLog(`WSSへのサーバーシャットダウンの送信中にエラーが発生しました: ${error}`);
     } finally {
-        log('white', `Node.jsアプリケーションを終了します。`);
+        addLog(`Node.jsアプリケーションを終了します。`);
         wss?.close();
         process.exit(0);
     }
@@ -677,13 +648,12 @@ process.on('SIGINT', () => handleShutdown('SIGINT'));
 process.on('SIGTERM', () => handleShutdown('SIGTERM'));
 process.on('exit', (code) => {
     if (code !== 0) {
-        log('red', `異常終了 コード: ${code}`);
+        addLog(`異常終了 コード: ${code}`);
     }
 });
 
-// エラーハンドリングの追加
 process.on('uncaughtException', (error) => {
-    log('red', `キャッチされなかった例外: ${error}`);
+    addLog(`キャッチされなかった例外: ${error}`);
 });
 
 if (process.platform === 'win32') {
@@ -691,74 +661,64 @@ if (process.platform === 'win32') {
 }
 
 // --- Initialization ---
-
 const validateWebSocketUrl = (url: string): boolean => {
     return /^wss?:\/\/.+$/.test(url);
 };
 
-const initEnv = async () => {
-    const envPath = path.resolve(process.cwd(), '.env');
-    const defaultEnvContent = `# 自動的に作成された.envファイル\n# ここに設定値を記入してください\nWSS_URL="WebSocketサーバーURL"\nAUTO_CONNECT_ON_STARTUP="false" # 起動時の自動接続 (true or false)\nSOCKET_BE_PORT="8000" # ソケットビーサーバーのポート番号\nTIMEZONE="Asia/Tokyo" # タイムゾーン\n`;
-
-    const createDefaultEnvFile = async (filePath: string) => {
-        try {
-            await fs.promises.writeFile(filePath, defaultEnvContent);
-            log('yellow', `デフォルトの.envファイルが ${filePath} に作成されました`);
-        } catch (error) {
-            log('red', `デフォルトの.envファイルの作成中にエラーが発生しました: ${error}`);
-            process.exit(1);
-        }
-    };
+const initConfig = async () => {
 
     try {
-        await fs.promises.access(envPath);
-        config({ path: envPath }); // 1回だけ呼び出す
-        log('green', `.envファイルから環境変数を読み込みました。`);
-        addNotification(`.envファイルから環境変数を読み込みました。`, 'other');
-        envLoaded = true;
+        await fs.promises.access(CONFIG_FILE);
+        const config: Config = loadConfig(); // 型注釈を追加
+        addNotification(`設定ファイルから環境変数を読み込みました。`);
+
+        // 不足しているキーをデフォルト値で補完
+        for (const key in defaultConfig) {
+            if (!config.hasOwnProperty(key)) {
+                (config as Config)[key] = defaultConfig[key as keyof Config];
+            }
+        }
+        saveConfig<Config>(config); // 型引数として Config を渡す
     } catch (error) {
-        if ((error as any).code === 'ENOENT') {
-            log('yellow', `システムまたは.envファイルから環境変数を読み込めませんでした。`);
-            await createDefaultEnvFile(envPath);
-            config({ path: envPath });
-            envLoaded = false;
+        if ((error as any).code === "ENOENT") {
+            addLog(
+                `設定ファイルが見つかりませんでした。デフォルトの設定ファイルを作成します。`
+            );
+            saveConfig<Config>(defaultConfig); // 型引数として Config を渡す
         } else {
-            log('red', `.envファイルへのアクセス中にエラーが発生しました: ${error}`);
+            addLog(`設定ファイルへのアクセス中にエラーが発生しました: ${error}`);
             process.exit(1);
         }
     }
 
-    webSocketUrl = process.env.WSS_URL || null;
-    autoConnectOnStartup = process.env.AUTO_CONNECT_ON_STARTUP === 'true';
+    webSocketUrl = loadConfig().wssUrl || null;
+    autoConnectOnStartup = loadConfig().autoConnectOnStartup || false;
 
     if (webSocketUrl && !validateWebSocketUrl(webSocketUrl)) {
-        console.log(
-            `${COLOR_RED}エラー: .envファイル内のWSS_URLの形式が不正です。ws:// または wss:// で始まる必要があります。${COLOR_RESET}`,
+        addLog(
+            `エラー: 設定ファイル内のWSS_URLの形式が不正です。ws:// または wss:// で始まる必要があります。`,
         );
-        console.log(`${COLOR_RED}起動を中止します。WSS_URLを修正し、再度起動してください。${COLOR_RESET}`);
+        addLog(`起動を中止します。WSS_URLを修正し、再度起動してください。`);
         process.exit(1);
     }
 
     if (webSocketUrl) {
-        writeLog(`WebSocket URLが検出されました: ${webSocketUrl}`);
-        addNotification(`WebSocket URLが検出されました: ${webSocketUrl}`, 'other');
+        addNotification(`WebSocket URLが検出されました: ${webSocketUrl}`);
         try {
-            // 初期化時にWebSocketサーバーの状態を確認
             isWebSocketServerOnline = await checkWebSocketStatus(webSocketUrl);
-            writeLog(`WebSocketサーバーは ${isWebSocketServerOnline ? 'オンライン' : 'オフライン'} です。`);
             if (isWebSocketServerOnline && autoConnectOnStartup) {
-                writeLog(`起動時の自動接続が有効です。WebSocketサーバーに接続します。`);
+                addLog(`起動時の自動接続が有効です。WebSocketサーバーに接続します。`);
                 await connectToWss(webSocketUrl);
             }
         } catch (error) {
-            writeLog(`WebSocketサーバーの状態確認中にエラーが発生しました: ${error}`);
+            addLog(`WebSocketサーバーの状態確認中にエラーが発生しました: ${error}`);
         }
     }
 };
 
 // --- Start ---
 (async () => {
-    await initEnv();
-    envLoaded = false;
+    await initConfig();
+    await initialize();
     displayMenu();
 })();

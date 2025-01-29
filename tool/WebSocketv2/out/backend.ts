@@ -93,7 +93,6 @@ export class WsServer {
 
     // 並列処理対応のための追加プロパティ
     private isSaving: boolean = false;
-    private playerDataCache: PlayerData[] | null = null;
     private saveQueue: PlayerData[] | null = null;
 
 
@@ -242,7 +241,13 @@ export class WsServer {
 
     // プレイヤー名から`Player`オブジェクトを生成する (最適化・軽量化)
     public async createPlayerObject(playerName: string): Promise<Player | null> {
-        const queryResult = await this.executeMinecraftCommand(`querytarget @a[name=${playerName}]`);
+        let player: any;
+        if (world) {
+            player = await world.getRealname(playerName);
+        } else {
+            return null;
+        }
+        const queryResult = await this.executeMinecraftCommand(`querytarget @a[name=${player.name}]`);
         const softData = await getData(playerName);
 
         if (queryResult === null) {
@@ -324,7 +329,7 @@ export class WsServer {
         }
 
         return new Promise((resolve, _reject) => {
-            let timeoutId: NodeJS.Timeout | undefined; // タイムアウトIDを宣言
+            let timeoutId: NodeJS.Timer | undefined; // タイムアウトIDを宣言
             const commandId = Math.random().toString(36).substring(2, 15);
 
             let resolved = false;
@@ -478,11 +483,6 @@ export class WsServer {
             await new Promise((resolve) => setTimeout(resolve, 100));
         }
 
-        // キャッシュがあればそれを返す
-        if (this.playerDataCache) {
-            return this.playerDataCache;
-        }
-
         try {
             let data = await fsPromises.readFile(this.playerDataFile, 'utf8');
 
@@ -559,7 +559,6 @@ export class WsServer {
             };
 
             const playerData = await loadAndFixData(data);
-            this.playerDataCache = playerData; // キャッシュを更新
             return playerData;
         } catch (error) {
             console.error('Error reading player data file:', error);
@@ -643,7 +642,6 @@ export class WsServer {
             const data = JSON.stringify(validPlayerData, null, 2);
 
             await fsPromises.writeFile(this.playerDataFile, data, 'utf8');
-            this.playerDataCache = validPlayerData; // キャッシュを更新
         } catch (error) {
             console.error('Error saving player data:', error);
             console.error('Problematic player data:', newPlayerData);
@@ -867,7 +865,7 @@ export class WsServer {
                                 left: '',
                                 isOnline: true,
                             });
-                            console.log('New player added to playerData:', playerName);
+                            console.log('New player added to playerData:', playerName.name);
                             isNewPlayer = true;
                         } else {
                             // 既存プレイヤー
@@ -941,7 +939,7 @@ export class WsServer {
                                 const timestamp = this.formatTimestamp();
                                 playerData[playerIndex].left = timestamp;
                                 playerData[playerIndex].isOnline = false;
-                                if (playerData) {
+                                if (playerData[playerIndex]) {
                                     await this.savePlayerData(playerData);
                                 }
                                 this.broadcastToClients({
@@ -988,6 +986,15 @@ export class WsServer {
     }
 
     private async getPlayerUUID(playerName: string): Promise<string | null> {
+        let player: any;
+        if (world) {
+            let playerData = await world.getRealname(playerName);
+            if (playerData) {
+                player = playerData.name;
+            }
+        } else {
+            player = playerName
+        }
         const queryResult = await this.executeMinecraftCommand(`querytarget @a[name=${playerName}]`);
         if (queryResult && queryResult.statusCode === 0 && queryResult.details) {
             const playerData = JSON.parse(queryResult.details.replace(/\\/g, ''))[0];

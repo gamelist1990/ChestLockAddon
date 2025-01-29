@@ -2,7 +2,7 @@ import { world } from '../backend';
 
 const TIME_OBJECTIVE_NAME = 'JapanTime';
 
-let timerInterval: NodeJS.Timeout | null = null;
+let timerInterval: NodeJS.Timer | null = null;
 
 // 外部からアクセス可能な JapanTime 変数
 export let JapanTime: boolean = false;

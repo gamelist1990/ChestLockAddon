@@ -11,7 +11,7 @@
     "build": "cd tool/WebSocket && bun build index.ts --compile --outfile WebSocket",
     "build2": "cd tool/ErrorCheck && bun build index.ts --compile --outfile ErrorCheck",
     "build3": "cd tool/WebSocketv2 && bun build index.ts --compile --outfile ClientV3",
-    "build4": "cd tool/WebSocketv2/out && bun build backend.ts --compile --outfile test"
+    "build4": "cd tool/WebSocketv2 && bun build index.ts --compile --outfile ClientV3 --external neo-blessed"
   },
   "dependencies": {
     "@minecraft/server": "^1.17.0-beta.1.21.50-stable",
@@ -20,8 +20,11 @@
     "adm-zip": "^0.5.16",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
+    "blessed": "^0.1.81",
     "bun": "^1.1.38",
-    "discord.js": "^14.16.3",
+    "chalk": "^5.4.1",
+    "cli-table3": "^0.6.5",
+    "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "fs": "^0.0.1-security",
@@ -38,6 +41,7 @@
     "npm": "^10.8.3",
     "oggmented": "^1.0.1",
     "open": "^10.1.0",
+    "ora": "^8.1.1",
     "path": "^0.12.7",
     "pcm-player": "^0.0.18",
     "pcm-util": "^3.0.0",
@@ -51,6 +55,8 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/blessed": "^0.1.25",
+    "@types/bun": "^1.2.1",
     "@types/express": "^5.0.0",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.9.1",

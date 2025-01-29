@@ -1,9 +1,9 @@
 {
     "format_version": 2,
     "header": {
-        "description": "WebSocketの#コマンドが使えなくなるバグを修正します",
-        "name": "WebSocketAddon (fix)",
-        "uuid": "cbd39065-1d2e-41e2-845c-8b020c285e68",
+        "description": "WebSocket",
+        "name": "WebSocketAddon",
+        "uuid": "fa679746-ead0-4605-859c-f061243b4b55",
         "version": [
             1,
             4,
@@ -24,9 +24,9 @@
     },
     "modules": [
         {
-            "description": "",
+            "description": "WebSocket Addons",
             "type": "script",
-            "uuid": "2acf7552-9584-4297-858e-83ed218b6c3b",
+            "uuid": "9cfe7667-266d-4ec4-990c-035ffc50525a",
             "version": [
                 0,
                 0,

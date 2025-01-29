@@ -1,7 +1,6 @@
 import { Player, world } from '../backend';
 import * as fs from 'fs';
 import { promisify } from 'util';
-import { World } from '../module/world';
 
 const readFileAsync = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
@@ -221,7 +220,7 @@ registerCommand({
 
 if (world) {
     world.on("playerJoin", async (name: string) => {
-        const player = await world.getEntityByName(name);
+        const player = await world.getRealname(name);
         if (player) {
             await checkAndKickBannedPlayer(player);
         }
