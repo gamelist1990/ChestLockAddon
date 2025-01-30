@@ -592,14 +592,23 @@ if (world) {
         async (sender: string, message: string, type: string, receiver: string) => {
             if (sender !== "外部") {
                 if (type === "chat") {
-                    const player = await world.getEntityByName(sender);
+                    const player = await world.getRealname(sender);
                     if (player) {
-                        sendMinecraftToDiscord(player.name, message);
+                        // §と§から続く文字一つを削除
+                        let cleanedMessage = message.replace(/§./g, "");
+                        // @here を ?here に置換
+                        cleanedMessage = cleanedMessage.replace(/@here/g, "?here");
+                        sendMinecraftToDiscord(player.name, cleanedMessage); 
                     }
                 } else {
                     let formattedMessage = "";
                     if (type === "say") {
-                        formattedMessage = `*${message}*`;
+                        // §と§から続く文字一つを削除
+                        let cleanedMessage = message.replace(/§./g, "");
+                        // @here を ?here に置換
+                        cleanedMessage = cleanedMessage.replace(/@here/g, "?here");
+
+                        formattedMessage = `*${cleanedMessage}*`;
                         sendMinecraftToDiscord("**Server**", formattedMessage);
                     } else {
                         // console.log(`Unknown type: ${type}, Message: ${sender}:${message}`);

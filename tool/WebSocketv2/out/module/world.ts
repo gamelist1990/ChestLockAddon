@@ -234,12 +234,32 @@ export class World {
         players.sort((a, b) => a.name.length - b.name.length);
 
         for (const player of players) {
-            // 表示名がプレイヤー名を含むか部分一致でチェック
-            if (displayName.toLowerCase().includes(player.name.toLowerCase())) {
-                return player;
+            if (displayName) {
+                try {
+                    if (displayName.toLowerCase().includes(player.name.toLowerCase())) {
+                        return player;
+                    }
+                } catch (error) {
+                  //  console.error(`Error${error}`)
+                }
             }
         }
         return null;
+    }
+
+    public async getPlayerNames(): Promise<string[]> {
+        const queryResult = await this.wsServer.executeMinecraftCommand(`list`);
+        if (queryResult === null || queryResult.statusCode !== 0 || !queryResult.statusMessage) {
+            return [];
+        }
+
+        if (queryResult.statusMessage.includes("オンラインです:")) {
+            const playerListString = queryResult.statusMessage.split("オンラインです:\n")[1];
+            return playerListString.split(", ").map((name: string) => name.trim());
+        } else {
+            console.warn("Unknown log format:", queryResult.statusMessage);
+            return [];
+        }
     }
 
     public async getPlayers(): Promise<Player[]> {
@@ -280,8 +300,23 @@ export class World {
     }
 
     public async isPlayer(playerName: string): Promise<boolean> {
-        const player = await this.getEntityByName(playerName);
-        return !!player;
+        const queryResult = await this.runCommand(`list`);
+        if (queryResult === null || queryResult.statusCode !== 0 || !queryResult.statusMessage) {
+            return false;
+        }
+
+        if (queryResult.statusMessage.includes('オンラインです:')) {
+            const playerListString = queryResult.statusMessage.split('オンラインです:\n')[1];
+            if (playerListString) {
+                const playerNames = playerListString.split(', ');
+                return playerNames.includes(playerName);
+            } else {
+                return false;
+            }
+        } else {
+            //console.warn("Unknown log format:", queryResult.statusMessage);
+            return false;
+        }
     }
 
     public async getBlock(x: number, y: number, z: number): Promise<{ blockName: string, position: { x: number, y: number, z: number } } | null> {

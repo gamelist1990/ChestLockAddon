@@ -241,13 +241,15 @@ export class WsServer {
 
     // プレイヤー名から`Player`オブジェクトを生成する (最適化・軽量化)
     public async createPlayerObject(playerName: string): Promise<Player | null> {
-        let player: any;
         if (world) {
-            player = await world.getRealname(playerName);
+            const isplayer = await world.isPlayer(playerName);
+            if (!isplayer) {
+                return null;
+            }
         } else {
             return null;
         }
-        const queryResult = await this.executeMinecraftCommand(`querytarget @a[name=${player.name}]`);
+        const queryResult = await this.executeMinecraftCommand(`querytarget @a[name=${playerName}]`);
         const softData = await getData(playerName);
 
         if (queryResult === null) {

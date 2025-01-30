@@ -1,10 +1,10 @@
 {
   "web": {
     "port": 80,
-    "url": "https://0d34-240a-61-52b5-930d-d4ee-65cf-d071-bc4f.ngrok-free.app"
+    "url": "https://4cad-240a-61-1390-6efb-4cc3-71aa-b305-af1d.ngrok-free.app"
   },
   "api": {
     "port": 19133,
-    "url": "https://0ec4-240a-61-52b5-930d-d4ee-65cf-d071-bc4f.ngrok-free.app"
+    "url": "https://5ec8-240a-61-1390-6efb-4cc3-71aa-b305-af1d.ngrok-free.app"
   }
 }
