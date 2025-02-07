@@ -240,7 +240,7 @@ export class World {
                         return player;
                     }
                 } catch (error) {
-                  //  console.error(`Error${error}`)
+                    //  console.error(`Error${error}`)
                 }
             }
         }

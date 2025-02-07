@@ -258,17 +258,18 @@ function addNametag(player: Player | undefined, targetPlayer: Player | undefined
     const prefixNametag = `${nametag}|${target.name}`;
 
     system.runTimeout(() => {
-        if (target.nameTag === prefixNametag) { // 既に同じ名前タグが存在する場合
+        let currentNameTag = target.nameTag;
+        if (currentNameTag.startsWith(nametag + "|")) {
             if (player) {
                 player.sendMessage('[server] 既にネームタグ付いてまっせ.');
             }
             return;
-        } else {
-            target.nameTag = prefixNametag;
-            //target.sendMessage(`[server] ネームタグが追加されたよ！: ${nametag}`);
-            if (player && player !== target) {
-                player.sendMessage(`[server] ネームタグを "${nametag}" に対して追加しました ${target.name}`);
-            }
+        }
+
+        target.nameTag = prefixNametag; 
+
+        if (player && player !== target) {
+            player.sendMessage(`[server] ネームタグを "${nametag}" に対して追加しました ${target.name}`);
         }
     }, 1);
 }
@@ -278,9 +279,18 @@ function removeNametag(player: Player | undefined, targetPlayer: Player | undefi
     if (!target) {
         return;
     }
+
     system.runTimeout(() => {
-        if (target.nameTag.includes('|')) {
-            target.nameTag = target.name;
+        let currentNameTag = target.nameTag; 
+
+        if (currentNameTag.includes('|')) {
+            const parts = currentNameTag.split('|');
+            if (parts.length > 1) {
+                target.nameTag = parts[1]; 
+            } else {
+                target.nameTag = target.name; 
+            }
+
             target.sendMessage('[server] 追加されていたネームタグを削除しました');
             if (player && player !== target) {
                 player.sendMessage(`[server]  ${target.name}のネームタグを削除!`);
@@ -292,6 +302,7 @@ function removeNametag(player: Player | undefined, targetPlayer: Player | undefi
         }
     }, 1);
 }
+
 
 
 

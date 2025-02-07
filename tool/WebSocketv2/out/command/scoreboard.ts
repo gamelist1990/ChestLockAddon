@@ -5,14 +5,13 @@ interface ScoreSetting {
     objective: string;
 }
 
-
 let ScoreSettings: { [key: string]: ScoreSetting } = {
     speed: { enabled: true, objective: 'speed_m' },
     ping: { enabled: true, objective: 'Ping' },
 };
 
 const playerLastPosition: {
-    [playerName: string]: { x: number; y: number; z: number };
+    [playerName: string]: { x: number; z: number };
 } = {};
 
 //speed
@@ -23,33 +22,28 @@ async function updatePlayerSpeed(player: Player) {
     if (playerLastPosition[playerName]) {
         const lastPosition = playerLastPosition[playerName];
 
-        // 距離を計算
+        // 距離を計算（y座標は無視）
         const distance = Math.sqrt(
             Math.pow(currentPosition.x - lastPosition.x, 2) +
-            Math.pow(currentPosition.y - lastPosition.y, 2) +
             Math.pow(currentPosition.z - lastPosition.z, 2),
         );
 
-        const speed = distance; // 丸めない
+        // 速度を計算 時間差は考慮しない
+        const speed = distance;
 
         const speedObjective = await world.scoreboard.getObjective(ScoreSettings['speed'].objective);
 
         if (speedObjective) {
-            if (speed % 1 === 0) {
-                speedObjective.setScore(player, Math.round(speed));
-            } else {
-                speedObjective.setScore(player, parseFloat(speed.toFixed(1)));
-            }
+            speedObjective.setScore(player, Math.round(speed * 10) / 10);
         }
 
-        // 座標を更新
+        // 座標を更新（y座標は保存しない）
         playerLastPosition[playerName].x = currentPosition.x;
-        playerLastPosition[playerName].y = currentPosition.y;
         playerLastPosition[playerName].z = currentPosition.z;
 
     } else {
-        // 初回は座標を記録
-        playerLastPosition[playerName] = { ...currentPosition };
+        // 初回は座標を記録（y座標は保存しない）
+        playerLastPosition[playerName] = { x: currentPosition.x, z: currentPosition.z };
     }
 }
 
@@ -77,7 +71,7 @@ setInterval(async () => {
             updatePlayerPing(player);
         }
     }
-}, 1000);
+}, 100); // 100ミリ秒ごとに更新 (1秒間に10回)
 
 registerCommand({
     name: 'score',

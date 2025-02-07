@@ -11,6 +11,7 @@ export interface Player {
     id: number;
     dimension: number;
     ping: number;
+    bps:number;
     position: {
         x: number;
         y: number;
@@ -295,6 +296,7 @@ export class WsServer {
             id: playerDataRaw.id,
             dimension: playerDataRaw.dimension,
             ping: softData ? softData.ping || 0 : 0,
+            bps: softData ? softData.maxbps || 0:0,
             position: {
                 x: playerDataRaw.position.x,
                 y: playerDataRaw.position.y - 2,
