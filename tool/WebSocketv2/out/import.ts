@@ -13,3 +13,5 @@ import './command/info';
 import './command/scoreboard';
 import './command/miniAC';
 import './command/invsee';
+import './module/DataBase';
+import './command/plugin/vote';
