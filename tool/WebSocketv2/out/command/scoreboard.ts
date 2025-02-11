@@ -1,4 +1,4 @@
-import { Player, registerCommand, world } from '../backend';
+import { Player, registerCommand, world, wsserver } from '../backend';
 
 interface ScoreSetting {
     enabled: boolean;
@@ -8,13 +8,14 @@ interface ScoreSetting {
 let ScoreSettings: { [key: string]: ScoreSetting } = {
     speed: { enabled: true, objective: 'speed_m' },
     ping: { enabled: true, objective: 'Ping' },
+    message: { enabled: true, objective: 'message' },
 };
 
 const playerLastPosition: {
     [playerName: string]: { x: number; z: number };
 } = {};
 
-//speed
+// speed
 async function updatePlayerSpeed(player: Player) {
     const currentPosition = player.position;
     const playerName = player.name;
@@ -22,13 +23,11 @@ async function updatePlayerSpeed(player: Player) {
     if (playerLastPosition[playerName]) {
         const lastPosition = playerLastPosition[playerName];
 
-        // 距離を計算（y座標は無視）
         const distance = Math.sqrt(
             Math.pow(currentPosition.x - lastPosition.x, 2) +
             Math.pow(currentPosition.z - lastPosition.z, 2),
         );
 
-        // 速度を計算 時間差は考慮しない
         const speed = distance;
 
         const speedObjective = await world.scoreboard.getObjective(ScoreSettings['speed'].objective);
@@ -37,19 +36,17 @@ async function updatePlayerSpeed(player: Player) {
             speedObjective.setScore(player, Math.round(speed * 10) / 10);
         }
 
-        // 座標を更新（y座標は保存しない）
         playerLastPosition[playerName].x = currentPosition.x;
         playerLastPosition[playerName].z = currentPosition.z;
 
     } else {
-        // 初回は座標を記録（y座標は保存しない）
         playerLastPosition[playerName] = { x: currentPosition.x, z: currentPosition.z };
     }
 }
 
-//ping
+// ping
 async function updatePlayerPing(player: Player) {
-    const ping = player.ping; // プレイヤーのPing値を取得
+    const ping = player.ping;
 
     const pingObjective = await world.scoreboard.getObjective(ScoreSettings['ping'].objective);
     if (pingObjective) {
@@ -57,7 +54,52 @@ async function updatePlayerPing(player: Player) {
     }
 }
 
-//更新処理
+const lastChatTimes: { [key: string]: number } = {};
+
+async function checkMessageScores() {
+    if (!ScoreSettings['message'].enabled) return;
+
+    const messageObjective = await world.scoreboard.getObjective(ScoreSettings['message'].objective);
+    if (!messageObjective) return;
+
+    const scores = await messageObjective.getScores();
+
+    for (const scoreEntry of scores) {
+        const scoreName = scoreEntry.participant;
+
+        if (scoreName && scoreName.includes('{') && scoreName.includes('}')) {
+            const startIndex = scoreName.indexOf('{') + 1;
+            const endIndex = scoreName.indexOf('}');
+            const content = scoreName.substring(startIndex, endIndex);
+
+            const parts = content.split('_');
+            if (parts.length >= 2) {
+                const sender = parts[0];
+                const message = parts.slice(1).join('_');
+
+                const key = `${sender}:${message}`; // senderとmessageを組み合わせたキーを作成
+                const now = Date.now();
+
+                if (!lastChatTimes[key] || now - lastChatTimes[key] > 1000) { // クールダウンチェック
+                    if (world) {
+                        setTimeout(() => {
+                            wsserver.onPlayerChat(sender, message, "scoreboard", "");
+                        })
+                        lastChatTimes[key] = now; // 最終チャット時刻を更新
+                    } else {
+                        console.warn("world is undefined");
+                    }
+                }
+
+                await messageObjective.resetScore(scoreEntry.participant);
+            }
+        }
+    }
+}
+
+// 更新処理
+
+
 setInterval(async () => {
     if (ScoreSettings['speed'].enabled) {
         for (const player of await world.getPlayers()) {
@@ -65,13 +107,17 @@ setInterval(async () => {
         }
     }
 
-    // Ping値の更新はここで行う
     if (ScoreSettings['ping'].enabled) {
         for (const player of await world.getPlayers()) {
             updatePlayerPing(player);
         }
     }
-}, 100); // 100ミリ秒ごとに更新 (1秒間に10回)
+
+    // メッセージスコアボードのチェック (追加)
+    await checkMessageScores();
+
+}, 1000);
+
 
 registerCommand({
     name: 'score',

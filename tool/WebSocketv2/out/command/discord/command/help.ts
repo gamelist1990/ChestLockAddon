@@ -1,7 +1,6 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { checkPrefixCommandPermission, registerDisCommand, registeredCommands } from "../discord";
 import { world } from "../../../backend";
-import e from "express";
 
 
 registerDisCommand({

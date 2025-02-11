@@ -559,7 +559,7 @@
           players.forEach((player) => {
             const li = $('<li>');
             li.html(
-              `<strong>${player.name}</strong> (UUID: ${player.uuid} - Ping: ${player.ping}ms)`,
+              `<strong>${player.name}</strong> (UUID: ${player.uuid} - Ping: ${player.ping}ms　/　bps:${player.bps})`,
             );
             if (player.position) {
               li.append(

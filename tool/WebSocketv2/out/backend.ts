@@ -1,17 +1,16 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import { IncomingMessage } from 'http';
-import { World } from './module/world';
 import { promises as fsPromises } from 'fs';
+import { World } from './module/world';
 import { getData } from './module/Data';
 
-// プレイヤー情報を表すインターフェース (最適化: 不要なプロパティを削除)
 export interface Player {
     name: string;
     uuid: string;
     id: number;
     dimension: number;
     ping: number;
-    bps:number;
+    bps: number;
     position: {
         x: number;
         y: number;
@@ -23,14 +22,12 @@ export interface Player {
     getTags: () => Promise<string[]>;
 }
 
-// コマンドの設定情報を表すインターフェース
 export interface CommandConfig {
     enabled: boolean;
     adminOnly: boolean;
     requireTag: string[];
 }
 
-// コマンドの実行関数
 type CommandExecutor = (player: Player, args: string[]) => void;
 
 export interface Command {
@@ -43,7 +40,6 @@ export interface Command {
     executor: CommandExecutor;
 }
 
-// 汎用的な検証関数
 async function verifier(player: Player, config: CommandConfig): Promise<boolean> {
     if (config.enabled !== true) {
         player.sendMessage('このコマンドは無効です。');
@@ -61,7 +57,6 @@ async function verifier(player: Player, config: CommandConfig): Promise<boolean>
     return true;
 }
 
-// プレイヤーデータのインターフェース (join と left を string 型に変更)
 export interface PlayerData {
     name: string;
     oldNames: string[];
@@ -76,10 +71,7 @@ export interface PlayerData {
     };
 }
 
-
-//Global
-
-export const prefix = "-"
+export const prefix = '-';
 
 export class WsServer {
     private port: number;
@@ -89,13 +81,13 @@ export class WsServer {
     private minecraftClient: WebSocket | null;
     private commandPrefix: string;
     private world: World;
-    private playerDataFile: string;
+    private playerDataFile: string = 'playerData.json';
     private timeout: number = 5000;
-
-    // 並列処理対応のための追加プロパティ
+    private activePlayers: Map<string, Player> = new Map();
+    private lastSeenPlayers: Map<string, number> = new Map();
+    private joinLeaveCooldown: number = 1000;
     private isSaving: boolean = false;
     private saveQueue: PlayerData[] | null = null;
-
 
     constructor(port: number, commandPrefix: string = prefix) {
         this.port = port;
@@ -103,35 +95,28 @@ export class WsServer {
         this.commands = {};
         this.minecraftClient = null;
         this.commandPrefix = commandPrefix;
-        this.playerDataFile = 'playerData.json';
 
-        // 全てのプレイヤーに影響する汎用ワールドを初期化
         this.world = new World('all', this);
 
-        // WebSocket サーバーを初期化
         this.wss = new WebSocketServer({ port: this.port });
         this.wss.on('connection', this.handleConnection.bind(this));
         this.wss.on('listening', async () => {
             console.log(`WebSocket server started on port ${this.port}`);
-
             const a = await import('./command/server');
-            //load
-            a;
+            a; // Load commands
+            this.initPlayerData(); // Initialize or load player data
+            setInterval(() => {
+                this.checkOnlineStatus();
+            }, 3000);
         });
-
-        // プレイヤーデータの初期化または読み込み
-        this.initPlayerData();
-        setInterval(() => this.checkOnlineStatus(), 10000);
     }
 
-    // プレイヤーデータの初期化または読み込み
     private async initPlayerData() {
         try {
             await fsPromises.access(this.playerDataFile);
             const data = await fsPromises.readFile(this.playerDataFile, 'utf-8');
             const jsonData = JSON.parse(data);
 
-            // 既存のデータがオブジェクトの場合、配列に変換
             if (!Array.isArray(jsonData) && typeof jsonData === 'object') {
                 const newJsonData: PlayerData[] = [];
                 for (const uuid in jsonData) {
@@ -143,7 +128,6 @@ export class WsServer {
                 await this.savePlayerData(newJsonData);
                 console.log('Converted playerData.json from object to array format.');
             } else if (Array.isArray(jsonData)) {
-                // 配列の場合、各プレイヤーに oldNames があるか確認し、なければ追加
                 for (const player of jsonData) {
                     if (!player.oldNames) {
                         player.oldNames = [];
@@ -157,7 +141,6 @@ export class WsServer {
             }
         } catch (error) {
             if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-                // ファイルが存在しない場合は新規作成 (空の配列で初期化)
                 await fsPromises.writeFile(this.playerDataFile, '[]');
                 console.log('playerData.json created.');
             } else {
@@ -166,21 +149,16 @@ export class WsServer {
         }
     }
 
-    // Minecraft サーバーとの接続処理
     private async handleMinecraftConnection(ws: WebSocket) {
         console.log('Minecraft server connected.');
-
         const load = await import('./import');
-        //Load Command
-        load;
-
+        load; // Load other modules
         this.minecraftClient = ws;
         ws.on('message', this.handleMinecraftMessage.bind(this));
         ws.on('close', this.handleMinecraftClose.bind(this));
         ws.on('error', this.handleMinecraftError.bind(this));
     }
 
-    // Minecraft サーバーからのメッセージ処理
     private handleMinecraftMessage(data: any) {
         try {
             const message = JSON.parse(data);
@@ -190,57 +168,35 @@ export class WsServer {
         }
     }
 
-    // Minecraft サーバーとの接続切断処理
     private handleMinecraftClose() {
         console.log('Minecraft server disconnected.');
         this.minecraftClient = null;
     }
 
-    // Minecraft サーバーとの接続エラー処理
     private handleMinecraftError(error: any) {
         console.error('Error with Minecraft server connection:', error);
     }
 
-    // 新しいクライアントとの接続処理
     private handleConnection(ws: WebSocket, req: IncomingMessage) {
         const url = new URL(req.url!, `wss://${req.headers.host}`);
-        console.log(`Client connected. URL: ${url.pathname}`);
-
         if (url.pathname === '/minecraft') {
-            console.log('Handling Minecraft connection.');
             this.handleMinecraftConnection(ws);
         } else if (url.pathname === '/isOnline') {
-            console.log('Handling isOnline check request.');
             ws.on('message', (data: any) => {
-                try {
-                    const message = JSON.parse(data.toString());
-
-                    if (message.type === 'isOnline') {
-                        console.log('Received isOnline check request.');
-                        ws.send(JSON.stringify({ status: 'online' }));
-                        return;
-                    }
+                const message = JSON.parse(data.toString());
+                if (message.type === 'isOnline') {
+                    ws.send(JSON.stringify({ status: 'online' }));
+                } else {
                     console.warn(`Received unknown request type: ${message.type} on path: ${url.pathname}`);
-                } catch (error) {
-                    console.error('Invalid JSON received:', error);
-                    ws.send(JSON.stringify({ error: 'Invalid JSON format' }));
                 }
             });
-
-            ws.on('close', () => {
-                console.log('isOnline check connection closed.');
-            });
-
-            ws.on('error', (error) => {
-                console.error(`WebSocket error: ${error}`);
-            });
+            ws.on('close', () => console.log('isOnline check connection closed.'));
+            ws.on('error', (error) => console.error(`WebSocket error: ${error}`));
         } else {
-            console.warn(`Connection to unknown path ${url.pathname} was attempted.`);
             ws.close();
         }
     }
 
-    // プレイヤー名から`Player`オブジェクトを生成する (最適化・軽量化)
     public async createPlayerObject(playerName: string): Promise<Player | null> {
         if (world) {
             const isplayer = await world.isPlayer(playerName);
@@ -250,44 +206,41 @@ export class WsServer {
         } else {
             return null;
         }
+
         const queryResult = await this.executeMinecraftCommand(`querytarget @a[name=${playerName}]`);
         const softData = await getData(playerName);
 
-        if (queryResult === null) {
+        if (
+            queryResult === null ||
+            softData === null ||
+            queryResult.statusCode !== 0 ||
+            !queryResult.details
+        ) {
             return null;
         }
-        if (softData === null) {
-            return null;
-        }
-
-        if (queryResult.statusCode !== 0 || !queryResult.details) return null;
 
         let playerDataRaw: any;
-
         try {
             playerDataRaw = JSON.parse(queryResult.details.replace(/\\/g, ''))[0];
         } catch (error) {
-            //   console.error('Error parsing player data:', error);
             return null;
         }
 
         if (!playerDataRaw || !playerDataRaw.uniqueId) return null;
-
         const storedPlayerData = await this.loadPlayerData();
         const playerUUID = playerDataRaw.uniqueId;
-
-        // 変更点: 配列から該当プレイヤーを検索
         const playerIndex = Object.values(storedPlayerData).findIndex((p) => p.uuid === playerUUID);
+
         if (playerIndex !== -1) {
             storedPlayerData[playerIndex].position = {
                 x: playerDataRaw.position.x,
                 y: playerDataRaw.position.y - 2,
                 z: playerDataRaw.position.z,
             };
+        }
 
-            if (storedPlayerData) {
-                await this.savePlayerData(storedPlayerData);
-            }
+        if (storedPlayerData) {
+            await this.savePlayerData(storedPlayerData);
         }
 
         return {
@@ -295,8 +248,8 @@ export class WsServer {
             uuid: playerDataRaw.uniqueId,
             id: playerDataRaw.id,
             dimension: playerDataRaw.dimension,
-            ping: softData ? softData.ping || 0 : 0,
-            bps: softData ? softData.maxbps || 0:0,
+            ping: softData?.ping ?? 0,
+            bps: softData?.maxbps ?? 0,
             position: {
                 x: playerDataRaw.position.x,
                 y: playerDataRaw.position.y - 2,
@@ -304,17 +257,15 @@ export class WsServer {
             },
             sendMessage: (message: string) =>
                 this.sendToMinecraft({ command: `sendMessage`, message, playerName }),
-            //player.runCommandは個人に対して行う為(execute,その他で自分自身にやる方法知らん..)
-            runCommand: (command: string) => this.executeMinecraftCommand(`execute as @a[name=${playerName}] at @s run ${command}`),
+            runCommand: (command: string) =>
+                this.executeMinecraftCommand(`execute as @a[name=${playerName}] at @s run ${command}`),
             hasTag: async (tag: string) => {
                 const result = await this.executeMinecraftCommand(`tag ${playerName} list`);
-                return result && result.statusMessage
-                    ? new RegExp(`§a${tag}§r`).test(result.statusMessage)
-                    : false;
+                return result?.statusMessage?.includes(`§a${tag}§r`) ?? false;
             },
             getTags: async () => {
                 const result = await this.executeMinecraftCommand(`tag ${playerName} list`);
-                if (!result || !result.statusMessage) return [];
+                if (!result?.statusMessage) return [];
                 const tagRegex = /§a([\w\d]+)§r/g;
                 const tags: string[] = [];
                 let match;
@@ -326,91 +277,65 @@ export class WsServer {
         };
     }
 
-    // Minecraft コマンドを実行する (最適化)
     public async executeMinecraftCommand(command: string): Promise<any> {
         if (!this.minecraftClient || this.minecraftClient.readyState !== WebSocket.OPEN) {
             return null;
         }
 
-        return new Promise((resolve, _reject) => {
-            let timeoutId: NodeJS.Timer | undefined; // タイムアウトIDを宣言
+        return new Promise((resolve) => {
             const commandId = Math.random().toString(36).substring(2, 15);
-
             let resolved = false;
+            let timeoutId: NodeJS.Timer;
+
             const listener = (data: any) => {
-                if (resolved) {
-                    return;
-                }
-
-                try {
-                    const message = JSON.parse(data);
-                    if (message.event === 'commandResult' && message.data.commandId === commandId) {
-                        resolved = true;
-
-                        if (this.minecraftClient) {
-                            this.minecraftClient.off('message', listener);
-                        }
-
-                        clearTimeout(timeoutId);
-
-                        resolve(message.data.result);
-                    }
-                } catch (error) {
-                    console.error('Error processing command result:', error);
-
+                if (resolved) return;
+                const message = JSON.parse(data);
+                if (message.event === 'commandResult' && message.data.commandId === commandId) {
                     resolved = true;
-
-                    if (this.minecraftClient) {
-                        this.minecraftClient.off('message', listener);
-                    }
-
-                    clearTimeout(timeoutId); // タイムアウトをクリア
-
-                    return null
+                    this.minecraftClient?.off('message', listener);
+                    clearTimeout(timeoutId);
+                    resolve(message.data.result);
                 }
             };
 
-            if (this.minecraftClient) {
-                this.minecraftClient.setMaxListeners(60);
-                this.minecraftClient.on('message', listener);
+            this.minecraftClient?.on('message', listener);
+            timeoutId = setTimeout(() => {
+                if (!resolved) {
+                    resolved = true;
+                    this.minecraftClient?.off('message', listener);
+                    resolve(null); // Resolve with null on timeout
+                }
+            }, this.timeout);
 
-                // タイムアウト処理を追加
-                timeoutId = setTimeout(() => {
-                    if (!resolved) {
-                        resolved = true;
-                        if (this.minecraftClient) {
-                            this.minecraftClient.off('message', listener);
-                        }
-                        return null
-                    }
-                }, this.timeout);
-
-                this.sendToMinecraft({ command, commandId });
-            } else {
-                return null
-            }
+            this.sendToMinecraft({ command, commandId });
         });
     }
 
-    // プレイヤーのチャットを処理する (最適化: 引数の処理とコマンド処理を調整)
-    public async onPlayerChat(sender: string, message: string, type: string, receiver: string) {
+    private recentChatMessages: {
+        sender: string;
+        message: string;
+        type: string;
+        receiver: string;
+        timestamp: number;
+    }[] = [];
+    private readonly chatRetention = 5000; // メッセージ履歴保持時間(ms)
+    private readonly chatSpamThreshold = 1000; // 同じ送信者からのメッセージを拒否する期間(ms)
+
+    // receiver のデフォルト値を "all" に設定
+    public async onPlayerChat(
+        sender: string,
+        message: string,
+        type: string,
+        receiver: string = 'all',
+    ) {
         let chatSender = sender;
         let chatMessage = message;
 
-        // tellかつreceiverとsenderが同じ場合にのみJSON解析を試みる
-        if (type === "tell" && receiver === sender) {
+        // tell で自分自身に送る特殊な形式のメッセージの処理
+        if (type === 'tell' && receiver === sender) {
             try {
-                let parsedMessage: any;
-
-                try {
-                    parsedMessage = JSON.parse(message);
-                } catch (error) {
-                    // JSON解析に失敗した場合、エラーログを出す
-                    //  console.error("Invalid JSON:", message, error);
-                }
-
-                // rawtextプロパティがあるか確認
-                if (parsedMessage && parsedMessage.rawtext && parsedMessage.rawtext.length > 0) {
+                const parsedMessage = JSON.parse(message);
+                if (parsedMessage?.rawtext?.[0]?.text) {
                     const text = parsedMessage.rawtext[0].text;
                     const nameMatch = text.match(/<([^>]*)>/);
                     chatSender = nameMatch ? nameMatch[1] : sender;
@@ -419,49 +344,110 @@ export class WsServer {
             } catch (error) { }
         }
 
-        if (chatMessage.startsWith(this.commandPrefix)) {
-            const args = chatMessage
-                .slice(this.commandPrefix.length)
-                .replace('@', '')
-                .match(/(".*?"|\S+)/g)
-                ?.map((match: string) => match.replace(/"/g, ''));
-            if (!args) return;
+        // スパムチェック (短期間に同じsenderからのメッセージを拒否)
+        const now = Date.now();
+        const lastMessageFromSender = this.recentChatMessages.findLast(
+            (msg) => msg.sender === chatSender,
+        );
 
-            const commandName = args.shift()!; // args[0] を取得し、args から削除
-            const player = (await world.getEntityByName(chatSender)) as Player;
+        if (lastMessageFromSender && now - lastMessageFromSender.timestamp < this.chatSpamThreshold) {
+            //console.warn(`[Spam Detected] Message from ${chatSender} was blocked due to rate limiting.`);
+            return;
+        }
+        // 過去のメッセージ履歴は削除(chatRetentionより古いものを削除)
+        this.recentChatMessages = this.recentChatMessages.filter(
+            (msg) => now - msg.timestamp < this.chatRetention,
+        );
 
-            if (!player) {
-                console.error(`Player object not found for ${chatSender}`);
+        // メイン処理 (type === "chat")
+        if (type === 'chat') {
+            this.recentChatMessages.push({
+                sender: chatSender,
+                message: chatMessage,
+                type,
+                receiver,
+                timestamp: now,
+            });
+            this.world.triggerEvent('playerChat', chatSender, chatMessage, type, receiver);
+            if (chatMessage.startsWith(this.commandPrefix)) {
+                const args = chatMessage
+                    .slice(this.commandPrefix.length)
+                    .replace('@', '')
+                    .match(/(".*?"|\S+)/g)
+                    ?.map((match: string) => match.replace(/"/g, ''));
+                if (!args) return;
+                const commandName = args.shift()!;
+                const player = (await world.getEntityByName(chatSender)) as Player;
+                if (!player) {
+                    return;
+                }
+                this.processCommand(player, commandName, args);
                 return;
             }
-
-            this.processCommand(player, commandName, args);
+            this.broadcastToClients({
+                event: 'playerChat',
+                data: { sender: chatSender, message: chatMessage, type, receiver },
+            });
             return;
         }
 
-        // 通常のチャット処理 (JSONから抽出されたか、元のチャットかに関わらず処理)
-        this.world.triggerEvent('playerChat', chatSender, chatMessage, type, receiver);
-        this.broadcastToClients({
-            event: 'playerChat',
-            data: { sender: chatSender, message: chatMessage, type, receiver },
-        });
+        // スコアボードチャットの処理 (type === "scoreboard")
+        if (type === 'scoreboard') {
+            // recentChatMessages 配列をチェック。"chat" が先に来ていれば処理しない
+            const duplicateChat = this.recentChatMessages.find(
+                (msg) =>
+                    msg.sender === chatSender &&
+                    msg.message === chatMessage &&
+                    msg.type === 'chat' &&
+                    msg.receiver === receiver,
+            );
+
+            if (duplicateChat) {
+                // console.warn("Scoreboard event skipped because chat event was already processed.", duplicateChat);
+                return;
+            }
+
+            if (chatMessage.startsWith(this.commandPrefix)) {
+                const args = chatMessage
+                    .slice(this.commandPrefix.length)
+                    .replace('@', '')
+                    .match(/(".*?"|\S+)/g)
+                    ?.map((match: string) => match.replace(/"/g, ''));
+                if (!args) return;
+                const commandName = args.shift()!;
+                const player = (await world.getEntityByName(chatSender)) as Player;
+                if (!player) {
+                    return;
+                }
+                this.processCommand(player, commandName, args);
+                return;
+            }
+            // "chat" イベントがない場合のみ、"scoreboard" イベントを処理
+            this.recentChatMessages.push({
+                sender: chatSender,
+                message: chatMessage,
+                type,
+                receiver,
+                timestamp: now,
+            });
+            this.world.triggerEvent('playerChat', chatSender, chatMessage, type, receiver);
+            this.broadcastToClients({
+                event: 'playerChat',
+                data: { sender: chatSender, message: chatMessage, type, receiver },
+            });
+        }
     }
 
-    // コマンドを処理する
     private async processCommand(player: Player, commandName: string, args: string[]) {
-        let command = this.commands[commandName];
+        const command = this.commands[commandName];
         if (!command) {
             player.sendMessage(`不明なコマンドです: ${commandName}`);
             return;
         }
 
-        // 最終的なコマンドの検証と実行
         const hasPermission = await verifier(player, command.config);
-        if (!hasPermission) {
-            return;
-        }
+        if (!hasPermission) return;
 
-        // 引数の数の確認と使用法の表示
         if (command.minArgs !== undefined && args.length < command.minArgs) {
             const usageMessage = command.usage
                 ? `使用法: ${commandName} ${command.usage}`
@@ -480,9 +466,7 @@ export class WsServer {
         command.executor(player, args);
     }
 
-    // プレイヤーデータをファイルから読み込む
     public async loadPlayerData(): Promise<PlayerData[]> {
-        // 書き込み中であれば待機
         while (this.isSaving) {
             await new Promise((resolve) => setTimeout(resolve, 100));
         }
@@ -490,7 +474,6 @@ export class WsServer {
         try {
             let data = await fsPromises.readFile(this.playerDataFile, 'utf8');
 
-            // データの読み込みと修正の関数
             const loadAndFixData = async (rawData: string): Promise<PlayerData[]> => {
                 if (rawData.trim() === '' || rawData.trim() === '[]') {
                     return [];
@@ -548,8 +531,8 @@ export class WsServer {
                                     uniquePlayersFixed[key] = player;
                                 }
                             }
-                            const cleanedFixedPlayerData: PlayerData[] = Object.values(uniquePlayersFixed);
 
+                            const cleanedFixedPlayerData: PlayerData[] = Object.values(uniquePlayersFixed);
                             return cleanedFixedPlayerData;
                         } catch {
                             console.error('Fixed JSON data is not valid.');
@@ -570,53 +553,46 @@ export class WsServer {
         }
     }
 
-    // JSONの修正関数を宣言(loadPlayerDataの外に出す)
     private fixJson = (jsonString: string): string => {
-        // 空もしくは'[]'なら空の配列で処理する
         if (jsonString.trim() === '' || jsonString.trim() === '[]') {
             return '[]';
         }
-        // JSON文字列からコメントを削除
+
         jsonString = jsonString.replace(
             /\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g,
             (match, group) => (group ? '' : match),
         );
-        // JSON文字列の前後に不要な文字があれば削除
         jsonString = jsonString.trim().replace(/^[^\[\{]+|[^\]\}]+$/g, '');
-        // オブジェクトの末尾にカンマが存在する場合は削除
         jsonString = jsonString.replace(/,\s*([}\]])/g, '$1');
-        // 不足している閉じ括弧を追加
+
         let openBraces = (jsonString.match(/\{/g) || []).length;
         let closeBraces = (jsonString.match(/\}/g) || []).length;
         while (openBraces > closeBraces) {
             jsonString += '}';
             closeBraces++;
         }
+
         let openBrackets = (jsonString.match(/\[/g) || []).length;
         let closeBrackets = (jsonString.match(/\]/g) || []).length;
         while (openBrackets > closeBrackets) {
             jsonString += ']';
             closeBrackets++;
         }
-        // 再度JSONのパースを試みる
+
         try {
             JSON.parse(jsonString);
             return jsonString;
         } catch {
-            // パースに失敗した場合は、修正を諦めて空の配列を返す
             console.error('Failed to fix JSON. Returning an empty array.');
             return '[]';
         }
     };
 
-    // プレイヤーデータをファイルに書き込む
     private async savePlayerData(newPlayerData: PlayerData[]) {
-        // 書き込み中ならキューに追加して待機
         if (this.isSaving) {
             this.saveQueue = newPlayerData;
             return;
         }
-
         this.isSaving = true;
 
         try {
@@ -644,24 +620,20 @@ export class WsServer {
             const mergedData = this.mergePlayerData(existingData, newPlayerData);
             const validPlayerData = mergedData.filter((player) => player.name && player.uuid);
             const data = JSON.stringify(validPlayerData, null, 2);
-
             await fsPromises.writeFile(this.playerDataFile, data, 'utf8');
         } catch (error) {
             console.error('Error saving player data:', error);
-            console.error('Problematic player data:', newPlayerData);
         } finally {
             this.isSaving = false;
             if (this.saveQueue) {
                 const queuedData = this.saveQueue;
                 this.saveQueue = null;
-                await this.savePlayerData(queuedData); // 再帰的に処理
+                await this.savePlayerData(queuedData);
             }
         }
     }
 
-    // データをマージして、重複を排除するヘルパー関数
     private mergePlayerData(existingData: PlayerData[], newPlayerData: PlayerData[]): PlayerData[] {
-        // nameとuuidをキーとして既存プレイヤーをマップ
         const playerMap: { [key: string]: PlayerData } = {};
         for (const player of existingData) {
             if (player.name && player.uuid) {
@@ -670,19 +642,15 @@ export class WsServer {
             }
         }
 
-        // 新しいプレイヤーデータを追加・更新
         for (const player of newPlayerData) {
             if (player.name && player.uuid) {
                 const key = `${player.name}-${player.uuid}`;
-                playerMap[key] = player; // 既存のプレイヤーは上書きされる
+                playerMap[key] = player;
             }
         }
-
-        // マップから配列に戻す
         return Object.values(playerMap);
     }
 
-    // 有効なJSONか確認するヘルパー関数
     private isValidJson(jsonString: string): boolean {
         try {
             JSON.parse(jsonString);
@@ -696,92 +664,187 @@ export class WsServer {
         const now = new Date();
         return `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
     }
-    // ワールドにいる全プレイヤーを取得する
+
+    // New getPlayers that uses cached data
     public async getPlayers(): Promise<Player[]> {
-        const queryResult = await this.executeMinecraftCommand(`list`);
-        if (queryResult === null || queryResult.statusCode !== 0 || !queryResult.statusMessage) {
-            return []; // エラーが発生した場合、または statusMessage がない場合は空の配列を返す
-        }
-
-        // ログのパターンに応じて処理を分岐
-        const players: Player[] = [];
-
-        if (queryResult.statusMessage.includes('オンラインです:')) {
-            // "オンラインです:\n" 以降の文字列を取得
-            const playerListString = queryResult.statusMessage.split('オンラインです:\n')[1];
-
-            // プレイヤー名をカンマとスペースで分割して配列にする
-            const playerNames = playerListString.split(', ');
-
-            for (const name of playerNames) {
-                const player = await this.createPlayerObject(name.trim());
-                if (player) {
-                    players.push(player);
-                }
-            }
-        }
-
-        return players;
+        return Array.from(this.activePlayers.values());
     }
 
-    private processedPlayers = new Map<string, number>();
+    private onlinePlayerNamesCache: string[] = [];
+    private currentOnlineCache: number = 0;
+    private maxOnlineCache: number = 0;
+
     private async checkOnlineStatus() {
         try {
-            // オンラインプレイヤーを効率的に取得
-            const onlinePlayers = await this.getPlayers();
-            const onlinePlayerUUIDs = new Set(onlinePlayers.map((player) => player.uuid));
+            // 1. list コマンドを実行
+            const listResult = await this.executeMinecraftCommand('list');
+            let playerData = await this.loadPlayerData();
 
-            // プレイヤーデータの読み込み
-            const playerData = await this.loadPlayerData();
+            if (listResult?.statusCode === 0 && listResult?.statusMessage) {
+                const parts = listResult.statusMessage.split('\n');
+                if (parts.length > 1) {
+                    const countParts = parts[0].split(' ');
+                    if (countParts.length > 1) {
+                        const counts = countParts[0].split('/');
+                        if (counts.length === 2) {
+                            this.currentOnlineCache = parseInt(counts[0]);
+                            this.maxOnlineCache = parseInt(counts[1]);
+                            this.world.World_player = this.currentOnlineCache;
+                            this.world.Max_player = this.maxOnlineCache;
+                        }
+                    }
 
-            // プレイヤーデータの更新と変更フラグ
-            let dataChanged = false;
 
-            const updatedPlayerData = await Promise.all(playerData.map(async (pData) => {
-                const now = Date.now();
-                const lastProcessed = this.processedPlayers.get(pData.uuid);
+                    // プレイヤー名のリストを取得し、トリムしてカンマと空白文字を取り除く
+                    this.onlinePlayerNamesCache = parts[1].split(',').map(name => name.trim());
 
-                // 最終処理時刻から一定時間（例：10秒）経過していない場合はスキップ
-                if (lastProcessed && now - lastProcessed < 10000) {
-                    return pData;
-                }
-                this.processedPlayers.set(pData.uuid, now);
+                    // 2. 参加処理
+                    for (const playerName of this.onlinePlayerNamesCache) {
+                        if (!this.activePlayers.has(playerName)) {
+                            // 新規参加または再参加
+                            const player = await this.createPlayerObject(playerName);
+                            if (player) {
+                                this.activePlayers.set(playerName, player);
 
-                let isOnline = onlinePlayerUUIDs.has(pData.uuid);
+                                // playerData.json の更新
+                                let playerIndex = playerData.findIndex((p) => p.name === playerName);
+                                if (playerIndex === -1) {
+                                    // 新規プレイヤー
+                                    playerData.push({
+                                        name: playerName,
+                                        oldNames: [],
+                                        uuid: player.uuid,
+                                        join: this.formatTimestamp(),
+                                        left: '',
+                                        isOnline: true,
+                                    });
+                                    console.log(`New player joined: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`);
+                                } else {
+                                    // 既存プレイヤー (再参加)
+                                    const existingPlayer = playerData[playerIndex];
+                                    //名前変更処理
+                                    if (existingPlayer.name !== playerName) {
+                                        if (!existingPlayer.oldNames.includes(existingPlayer.name)) {
+                                            existingPlayer.oldNames.unshift(existingPlayer.name);
+                                            if (existingPlayer.oldNames.length > 3) {
+                                                existingPlayer.oldNames.pop();
+                                            }
+                                        }
+                                        existingPlayer.name = playerName;
+                                    }
+                                    existingPlayer.join = this.formatTimestamp();
+                                    existingPlayer.isOnline = true;
+                                    existingPlayer.uuid = player.uuid; // UUIDも更新
+                                    playerData[playerIndex] = existingPlayer;
+                                    console.log(`Player re-joined: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`);
+                                }
 
-                // オフライン疑いの場合、複数回確認
-                if (pData.isOnline && !isOnline) {
-                    for (let i = 0; i < 3; i++) {
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        const retryOnlinePlayers = await this.getPlayers();
-                        const retryOnlinePlayerUUIDs = new Set(retryOnlinePlayers.map((player) => player.uuid));
-                        isOnline = retryOnlinePlayerUUIDs.has(pData.uuid);
-                        if (isOnline) break;
+                                this.broadcastToClients({ event: 'playerJoin', data: { name: playerName, uuid: player.uuid } });
+                                this.getWorld().triggerEvent('playerJoin', playerName);
+                            }
+                        } else {
+                            // 4.  すでにアクティブなプレイヤーの名前変更処理
+                            const existingPlayer = this.activePlayers.get(playerName)!;
+                            // UUID を使って playerData 内のプレイヤーを特定
+                            let playerIndex = playerData.findIndex((p) => p.uuid === existingPlayer.uuid);
+                            if (playerIndex !== -1) {
+                                const p = playerData[playerIndex];
+                                if (p.name !== playerName) {
+                                    if (!p.oldNames.includes(p.name)) {
+                                        p.oldNames.unshift(p.name);
+                                        if (p.oldNames.length > 3) {
+                                            p.oldNames.pop();
+                                        }
+                                    }
+                                    p.name = playerName; // playerDataの名前も更新
+                                    playerData[playerIndex] = p; // 変更を保存
+                                    console.log(`Player ${p.oldNames[0]} name changed: ${playerName}`);
+                                    this.broadcastToClients({
+                                        event: 'playerNameChange',
+                                        data: { oldName: p.oldNames[0], newName: playerName, uuid: existingPlayer.uuid },
+                                    });
+                                }
+
+                            }
+
+                        }
+                    }
+
+                    // 3. 退出処理
+                    const leftPlayers: string[] = [];
+                    for (const [playerName, player] of this.activePlayers) {
+                        if (!this.onlinePlayerNamesCache.includes(playerName)) {
+                            this.activePlayers.delete(playerName);
+                            let playerIndex = playerData.findIndex((p) => p.name === playerName);
+                            if (playerIndex !== -1) {
+                                playerData[playerIndex].isOnline = false;
+                                playerData[playerIndex].left = this.formatTimestamp();
+                            }
+                            console.log(`Player left: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`);
+                            this.broadcastToClients({ event: 'playerLeave', data: { name: playerName, uuid: player.uuid } });
+                            this.getWorld().triggerEvent('playerLeave', playerName);
+                            leftPlayers.push(playerName);
+                        }
+                    }
+
+                    // 4. データ整合性チェック
+                    for (const player of playerData) {
+                        if (player.isOnline && !this.onlinePlayerNamesCache.includes(player.name) && !leftPlayers.includes(player.name)) {
+                            player.isOnline = false;
+                            player.left = this.formatTimestamp();
+                            console.log(`Data fixed: Player ${player.name} marked as offline.`);
+                        }
+                    }
+                } else {
+                    // list コマンドの結果が予期せぬ形式の場合 (通常は起こらない)
+                    for (const [playerName, player] of this.activePlayers) {
+                        this.activePlayers.delete(playerName);
+                        let playerIndex = playerData.findIndex((p) => p.name === playerName);
+                        if (playerIndex !== -1) {
+                            playerData[playerIndex].isOnline = false;
+                            playerData[playerIndex].left = this.formatTimestamp();
+                            console.log(`Player left (list failed): ${playerName}`);
+                            this.broadcastToClients({ event: 'playerLeave', data: { name: playerName, uuid: player.uuid } });
+                            this.getWorld().triggerEvent('playerLeave', playerName);
+
+                        }
+                    }
+                    // 全員をオフラインにする(playerData.json)
+                    for (const player of playerData) {
+                        if (player.isOnline) {
+                            player.isOnline = false;
+                            player.left = this.formatTimestamp();
+                        }
                     }
                 }
+                await this.savePlayerData(playerData);
 
-                // プレイヤーのオンライン状態に変化がある場合のみ更新
-                if (pData.isOnline !== isOnline) {
-                    dataChanged = true;
-                    console.log(
-                        `Player ${pData.name} ${isOnline ? 'marked as online' : 'marked as offline'}.`,
-                    );
-                    return {
-                        ...pData,
-                        isOnline,
-                        left: isOnline ? '' : this.formatTimestamp(),
-                    };
+            } else {
+                // list コマンドが失敗した場合
+                for (const [playerName, player] of this.activePlayers) {
+                    this.activePlayers.delete(playerName);
+                    let playerIndex = playerData.findIndex((p) => p.name === playerName);
+
+                    if (playerIndex !== -1) {
+                        playerData[playerIndex].isOnline = false;
+                        playerData[playerIndex].left = this.formatTimestamp();
+                        console.log(`Player left (list failed or no status): ${playerName}`);
+                        this.broadcastToClients({ event: 'playerLeave', data: { name: playerName, uuid: player.uuid } });
+                        this.getWorld().triggerEvent('playerLeave', playerName);
+
+                    }
                 }
-
-                return pData;
-            }));
-
-            // 変更がある場合のみ保存処理を実行
-            if (dataChanged) {
-                await this.savePlayerData(updatedPlayerData);
+                // 全員をオフラインにする(playerData.json)
+                for (const player of playerData) {
+                    if (player.isOnline) {
+                        player.isOnline = false;
+                        player.left = this.formatTimestamp();
+                    }
+                }
+                await this.savePlayerData(playerData);
             }
         } catch (error) {
-            console.error('Error during checkOnlineStatus:', error);
+            console.error('Error in checkOnlineStatus:', error);
         }
     }
 
@@ -803,7 +866,6 @@ export class WsServer {
             console.error('Error handling worldRemove event:', error);
         }
     }
-
     private async handleMinecraftServerData(event: string, data: any) {
         switch (event) {
             case 'worldAdd':
@@ -819,147 +881,7 @@ export class WsServer {
                 this.world.triggerEvent('worldLeave', 'leave');
                 this.getWorld().triggerEvent('worldLeave', 'leave');
                 break;
-            case 'playerJoin':
-                try {
-                    setTimeout(async () => {
-                        const playerNames = Array.isArray(data.player) ? data.player[0] : data.player;
-                        const playerName = await world.getRealname(playerNames);
-
-                        if (!playerName) return;
-                        if (playerName === undefined) return;
-                        // console.log('playerJoin:', playerName);
-
-                        const playerData = await this.loadPlayerData();
-                        const timestamp = this.formatTimestamp();
-                        let playerIndex = -1;
-                        let uuid: string | null = null;
-                        let isNewPlayer = false;
-                        let isOnlineStatusChanged = false;
-
-                        // UUID 取得とリトライ処理
-                        let retryCount = 0;
-                        const maxRetries = 10;
-                        const retryInterval = 3000; // 3秒
-                        while (!uuid && retryCount < maxRetries) {
-                            uuid = await this.getPlayerUUID(playerName.name);
-                            if (!uuid) {
-                                retryCount++;
-                                console.log(
-                                    `UUID not found for player: ${playerName}, retrying in ${retryInterval / 1000} seconds... (${retryCount}/${maxRetries})`,
-                                );
-                                await new Promise((resolve) => setTimeout(resolve, retryInterval));
-                            }
-                        }
-
-                        if (!uuid) {
-                            console.error(
-                                `Failed to get UUID for player: ${playerName} after ${maxRetries} retries.`,
-                            );
-                            return;
-                        }
-
-                        playerIndex = playerData.findIndex((p) => p.uuid === uuid);
-                        if (playerIndex === -1) {
-                            // 新規プレイヤー
-                            playerData.push({
-                                name: playerName.name,
-                                oldNames: [],
-                                uuid: uuid,
-                                join: timestamp,
-                                left: '',
-                                isOnline: true,
-                            });
-                            console.log('New player added to playerData:', playerName.name);
-                            isNewPlayer = true;
-                        } else {
-                            // 既存プレイヤー
-                            const existingPlayer = playerData[playerIndex];
-                            if (existingPlayer.name !== playerName.name) {
-                                if (!existingPlayer.oldNames.includes(existingPlayer.name)) {
-                                    existingPlayer.oldNames.unshift(existingPlayer.name);
-                                    if (existingPlayer.oldNames.length > 3) {
-                                        existingPlayer.oldNames.pop();
-                                    }
-                                }
-                                existingPlayer.name = playerName.name;
-                                console.log(
-                                    `Player name updated. Old names for ${existingPlayer.uuid}:`,
-                                    existingPlayer.oldNames,
-                                );
-                            }
-
-                            if (!existingPlayer.isOnline) {
-                                existingPlayer.isOnline = true;
-                                existingPlayer.join = timestamp;
-                                isOnlineStatusChanged = true;
-                            } else {
-                                // console.log('Existing player already online:', playerName);
-                            }
-
-                            playerData[playerIndex] = existingPlayer;
-                        }
-
-                        if (playerData) {
-                            await this.savePlayerData(playerData);
-                        }
-                        if (isNewPlayer || isOnlineStatusChanged) {
-                            this.broadcastToClients({
-                                event: 'playerJoin',
-                                data: { name: playerName, uuid: uuid },
-                            });
-                            this.getWorld().triggerEvent('playerJoin', playerName);
-                        }
-                    }, 0);
-                } catch (error) {
-                    console.error('Error in playerJoin:', error);
-                }
-                break;
-            case 'playerLeave':
-                try {
-                    setTimeout(async () => {
-                        const playerName = Array.isArray(data.player) ? data.player[0] : data.player;
-                        const playerData = await this.loadPlayerData();
-
-                        let isTrulyOffline = false;
-                        let retryCount = 0;
-                        const maxRetries = 5; // 試行回数
-                        const retryDelay = 1000; // ミリ秒単位の遅延
-
-                        // オフライン確認のループ
-                        while (!isTrulyOffline && retryCount < maxRetries) {
-                            let playerUUID = await this.getPlayerUUID(playerName);
-                            if (playerUUID === null) {
-                                isTrulyOffline = true;
-                            } else {
-                                retryCount++;
-                                await new Promise((resolve) => setTimeout(resolve, retryDelay));
-                            }
-                        }
-
-                        if (isTrulyOffline) {
-                            let playerIndex = playerData.findIndex((p) => p.name === playerName);
-                            if (playerIndex !== -1 && playerData[playerIndex]?.isOnline) {
-                                console.log('Processing playerLeave for:', playerName);
-                                const timestamp = this.formatTimestamp();
-                                playerData[playerIndex].left = timestamp;
-                                playerData[playerIndex].isOnline = false;
-                                if (playerData[playerIndex]) {
-                                    await this.savePlayerData(playerData);
-                                }
-                                this.broadcastToClients({
-                                    event: 'playerLeave',
-                                    data: { name: playerName, uuid: playerData[playerIndex].uuid },
-                                });
-                                this.getWorld().triggerEvent('playerLeave', playerName);
-                            }
-                        }
-                    }, 500);
-                } catch (error) {
-                    console.error('Error in playerLeave:', error);
-                }
-                break;
-
-            case 'playerChat':
+            case 'playerChat': // Only handle chat
                 const { sender, message, type, receiver } = data;
                 if (sender !== 'External') this.onPlayerChat(sender, message, type, receiver);
                 break;
@@ -970,16 +892,14 @@ export class WsServer {
                 this.broadcastToClients({ event: 'commandResult', data });
                 break;
             default:
-                console.warn('Unknown event received:', event);
+            // console.warn('Unknown event received:', event); // Less verbose
         }
     }
 
-    // 汎用ワールドオブジェクトを取得する
     public getWorld(): World {
         return this.world;
     }
 
-    // 全クライアントにデータをブロードキャストする (最適化)
     public broadcastToClients(data: any) {
         const message = JSON.stringify(data);
         for (const client of this.clients.values()) {
@@ -990,30 +910,29 @@ export class WsServer {
     }
 
     private async getPlayerUUID(playerName: string): Promise<string | null> {
-        let player: any;
         if (world) {
             let playerData = await world.getRealname(playerName);
             if (playerData) {
-                player = playerData.name;
             }
         } else {
-            player = playerName
         }
         const queryResult = await this.executeMinecraftCommand(`querytarget @a[name=${playerName}]`);
-        if (queryResult && queryResult.statusCode === 0 && queryResult.details) {
-            const playerData = JSON.parse(queryResult.details.replace(/\\/g, ''))[0];
-            //console.log(JSON.stringify(playerData))
-            if (playerData && playerData.uniqueId) {
-                return playerData.uniqueId;
+        if (queryResult?.statusCode === 0 && queryResult?.details) {
+            try {
+                const playerData = JSON.parse(queryResult.details.replace(/\\/g, ''))[0];
+                if (playerData?.uniqueId) {
+                    return playerData.uniqueId;
+                }
+            } catch (error) {
+                console.error(`Error parsing UUID for ${playerName}:`, error);
+                return null;
             }
         }
         return null;
     }
 
-    // Minecraft サーバーにデータを送信する (最適化)
     public sendToMinecraft(data: any) {
         if (!this.minecraftClient || this.minecraftClient.readyState !== WebSocket.OPEN) {
-            //   console.error('Minecraft server is not connected.');
             return;
         }
         try {
@@ -1023,12 +942,7 @@ export class WsServer {
         }
     }
 
-    /**
-     * WebSocket サーバーを停止する。
-     * 接続中の全ての WebSocket クライアントと Minecraft サーバーとの接続を閉じる。
-     */
     public close() {
-        // 全クライアントの接続を閉じる
         for (const client of this.clients.values()) {
             if (client.readyState === WebSocket.OPEN) {
                 client.close();
@@ -1036,26 +950,20 @@ export class WsServer {
         }
         this.clients.clear();
 
-        // Minecraft サーバーとの接続を閉じる
         if (this.minecraftClient && this.minecraftClient.readyState === WebSocket.OPEN) {
             this.minecraftClient.close();
             this.minecraftClient = null;
         }
 
-        // WebSocket サーバーを閉じる
         this.wss.close(() => {
             console.log('WebSocket server closed.');
         });
     }
 }
 
-// wsserver インスタンスをエクスポート
 export const wsserver = new WsServer(19133);
-
-// Export the generic world instance for use in other files
 export const world = wsserver.getWorld();
 
-// コマンド登録関数をエクスポート
 export function registerCommand(command: Command) {
     wsserver.commands[command.name] = command;
 }
@@ -1063,25 +971,23 @@ export function registerCommand(command: Command) {
 process.on('SIGINT', () => {
     console.log('SIGINT signal received. Closing server...');
     wsserver.close();
-    process.exit(0); // クリーンに終了
+    process.exit(0);
 });
 
 process.on('SIGTERM', () => {
     console.log('SIGTERM signal received. Closing server...');
     wsserver.close();
-    process.exit(0); // クリーンに終了
+    process.exit(0);
 });
 
-// 未処理の例外をハンドルする
 process.on('uncaughtException', (err) => {
     console.error('Uncaught Exception:', err);
     wsserver.close();
-    process.exit(1); // エラーコード 1 で終了
+    process.exit(1);
 });
 
-// 未処理の Promise 拒否をハンドルする
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
     wsserver.close();
-    process.exit(1); // エラーコード 1 で終了
+    process.exit(1);
 });

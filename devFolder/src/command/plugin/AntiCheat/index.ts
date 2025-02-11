@@ -15,7 +15,7 @@ import { tps } from '../../utility/server';
 
 const configs = {
     debugMode: false,
-    ver: 0.4,
+    ver: 0.5,
     antiCheat: {
         enabled: true,
         detectionThreshold: 2,
@@ -24,12 +24,12 @@ const configs = {
         xrayDetectionDistance: 10,
         enderPearlCooldown: 80,
         modules: {
-            airJump: false,
+            airJump: true,
             speed: false,
-            killAura: false,
+            killAura: true,
             xray: false,
             spam: true,
-            editionFake: false
+            editionFake: true
         }
     },
 };

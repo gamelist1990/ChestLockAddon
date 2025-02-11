@@ -63,13 +63,13 @@ interface SpamPlayerData {
 const spamLog: Map<string, SpamPlayerData> = new Map();
 
 function detectSpam(player: Player, message: string): void {
-    const shortTimeWindow: number = 1000;  
-    const longTimeWindow: number = 5000;  
-    const shortSpamThreshold: number = 3;  
-    const longSpamThreshold: number = 6;  
-    const longMessageLength: number = 50; 
-    const similarityThreshold: number = 0.8; 
-    const maxWarnings: number = 3; 
+    const shortTimeWindow: number = 1000;
+    const longTimeWindow: number = 5000;
+    const shortSpamThreshold: number = 3;
+    const longSpamThreshold: number = 6;
+    const longMessageLength: number = 50;
+    const similarityThreshold: number = 0.8;
+    const maxWarnings: number = 3;
 
     const spamAction = async (player: Player, level: number) => {
         const playerName = player.name;
@@ -81,7 +81,10 @@ function detectSpam(player: Player, message: string): void {
             case 2:
                 player.sendMessage("§c[警告] スパム行為を繰り返したため、1分間ミュートします。");
                 console.warn(`[AntiCheat] ${playerName} - Spam warning (Level 2). Muted for 1 minute.`);
-                //player.runCommand(``)
+                player.runCommand(`ability @s mute true`);
+                setTimeout(() => {
+                    player.runCommand(`ability @s mute false`);
+                }, 10000)
                 break;
             case 3:
                 try {
@@ -91,6 +94,13 @@ function detectSpam(player: Player, message: string): void {
                     console.error(`[AntiCheat] Error banning player ${playerName}:`, error);
                 }
                 break;
+        }
+        // Reset Spam Data after action
+        resetSpamData(playerName);
+    };
+    const resetSpamData = (playerName: string) => {
+        if (spamLog.has(playerName)) {
+            spamLog.set(playerName, { lastMessageTime: 0, recentMessages: [], warningCount: 0 });
         }
     };
 
@@ -134,11 +144,11 @@ function detectSpam(player: Player, message: string): void {
     if (shortTimeMessages >= shortSpamThreshold) {
         //console.debug(`[AntiCheat] ${playerName} - Short time spam detected! ${shortTimeMessages} messages in ${shortTimeWindow}ms.`);
         spamDetected = true;
-        spamLevel = 2; // 短時間スパムはレベル2
+        spamLevel = 2; 
     } else if (longTimeMessages >= longSpamThreshold) {
         //     console.debug(`[AntiCheat] ${playerName} - Long time spam detected! ${longTimeMessages} messages in ${longTimeWindow}ms.`);
         spamDetected = true;
-        spamLevel = 1; // 長時間スパムはレベル1
+        spamLevel = 1; 
     } else if (similarMessageCount >= shortSpamThreshold) {
         //   console.debug(`[AntiCheat] ${playerName} - Similar message spam detected! ${similarMessageCount} similar messages.`);
         spamDetected = true;
@@ -152,16 +162,14 @@ function detectSpam(player: Player, message: string): void {
     if (spamDetected) {
         playerData.warningCount++;
         if (playerData.warningCount >= maxWarnings) {
-            spamAction(player, 3); // BAN
-            spamLog.delete(playerName);
+            spamAction(player, 3);
         } else {
             spamAction(player, spamLevel);
-            playerData.lastMessageTime = now;
+            playerData.lastMessageTime = now; 
         }
     } else {
-        // スパムでない場合は警告カウントをリセット (最後のメッセージから longTimeWindow 以上経過している場合)
         if (now - playerData.lastMessageTime > longTimeWindow) {
-            playerData.warningCount = 0;
+            resetSpamData(playerName);
         }
         playerData.lastMessageTime = now;
     }
@@ -207,7 +215,7 @@ antiCheat.registerFeature(new AntiCheatFeature('spam', 'スパム行為を検知
 
 // メッセージ受信イベントをリッスンする関数
 function onPlayerMessage(player: Player, message: string) {
-   // console.debug(`[AntiCheat] ${player.name} sent a message: ${message}`);
+    // console.debug(`[AntiCheat] ${player.name} sent a message: ${message}`);
     antiCheat.check(player, message);
 }
 

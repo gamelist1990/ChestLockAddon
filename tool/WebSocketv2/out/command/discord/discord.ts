@@ -8,6 +8,7 @@ import {
     PermissionFlagsBits,
     ChannelType,
     Interaction,
+    GuildMember,
 } from "discord.js";
 import dotenv from "dotenv";
 import path from "path";
@@ -15,6 +16,8 @@ import fs from "fs";
 import * as ngrok from "ngrok";
 import { world } from "../../backend";
 import { calculateUptime } from "../../module/Data";
+import sharp from 'sharp';
+
 
 // .envファイルのパスを現在のディレクトリに設定
 const envPath = path.resolve(__dirname, "discord.env");
@@ -327,6 +330,7 @@ async function setDiscordBridge() {
     });
 }
 
+
 /**
  * MinecraftチャットからDiscordへのメッセージ送信処理
  */
@@ -354,64 +358,165 @@ async function sendMinecraftToDiscord(playerName: string, message: string) {
 }
 
 
+// Minecraftのカラーコードと対応するRGB値のマップ (主要な色 + いくつかの追加)
+const mcColorMap: { [key: string]: { r: number; g: number; b: number } } = {
+    '0': { r: 0, g: 0, b: 0 },
+    '1': { r: 0, g: 0, b: 170 },
+    '2': { r: 0, g: 170, b: 0 },
+    '3': { r: 0, g: 170, b: 170 },
+    '4': { r: 170, g: 0, b: 0 },
+    '5': { r: 170, g: 0, b: 170 },
+    '6': { r: 255, g: 170, b: 0 },
+    '7': { r: 170, g: 170, b: 170 },
+    '8': { r: 85, g: 85, b: 85 },
+    '9': { r: 85, g: 85, b: 255 },
+    'a': { r: 85, g: 255, b: 85 },
+    'b': { r: 85, g: 255, b: 255 },
+    'c': { r: 255, g: 85, b: 85 },
+    'd': { r: 255, g: 85, b: 255 },
+    'e': { r: 255, g: 255, b: 85 },
+    'f': { r: 255, g: 255, b: 255 },
+};
+
+
+
+const asciiChars = "@";
+
+
 /**
- * 指定された数値を使って、結果が必ず114514に近づくようなより高度な計算を行う関数
- * @param num 入力された数値 (小数点を許可)
- * @param showCalculation 計算過程を表示するかどうかのフラグ
- * @returns 計算結果と計算過程を含むオブジェクト
+ *  CIE76色差式を用いて、最も近い色を計算する関数
  */
-function GenNumber(
-    num: number,
-    showCalculation: boolean = false
-): { result: number; calculation?: string } {
-    // 1. 入力値の絶対値を取得
-    const absNum = Math.abs(num);
+function findClosestColor(r: number, g: number, b: number): string {
+    let closestColorCode = 'f';
+    let minDistance = Infinity;
 
-    // 2. 対数スケールでの変換
-    const logValue = Math.log10(absNum + 1); // 0 にならないように +1
+    for (const code in mcColorMap) {
+        const color = mcColorMap[code];
 
-    // 3. 無理数を掛け合わせて複雑な計算をシミュレート
-    const complexValue = logValue * Math.PI * Math.E;
+        // CIE76 色差式
+        const distance = Math.sqrt(
+            (r - color.r) ** 2 + (g - color.g) ** 2 + (b - color.b) ** 2
+        );
 
-    // 4. 114514に近づけるための調整係数を計算
-    const adjustmentFactor = 114514 / (complexValue === 0 ? 1 : complexValue); // ゼロ除算を回避
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestColorCode = code;
+        }
+    }
 
-    // 5. 最終結果を計算（小数点以下2桁に丸める）
-    const result = parseFloat((complexValue * adjustmentFactor).toFixed(2));
+    return closestColorCode;
+}
 
-    if (showCalculation) {
-        const calculation =
-            `計算過程:\n` +
-            `1. 入力値の絶対値: ${absNum}\n` +
-            `2. 対数スケールでの変換: log10(${absNum} + 1) = ${logValue}\n` +
-            `3. 無理数を掛け合わせて複雑な計算をシミュレート: ${logValue} * π * e ≈ ${complexValue}\n` +
-            `4. 114514に近づけるための調整係数を計算: 114514 / ${complexValue} ≈ ${adjustmentFactor}\n` +
-            `5. 最終結果を計算: ${complexValue} * ${adjustmentFactor} ≈ ${result} (小数点以下2桁に丸める)\n`;
-        return { result, calculation };
-    } else {
-        return { result };
+/**
+ * 画像をMinecraft形式のアスキーアートに変換する関数 (軽量版)
+ * @param imageUrl 画像のURL
+ * @param width アスキーアートの幅 (文字数)
+ * @param height アスキーアートの高さ (文字数)
+ * @returns Minecraft形式のアスキーアート文字列
+ */
+async function imageToMinecraftAsciiLight(imageUrl: string, width: number, height: number): Promise<string> {
+    try {
+        const image = sharp(await (await fetch(imageUrl)).arrayBuffer());
+
+        const resizedImage = image.resize(width, height, {
+            fit: 'inside',
+            kernel: sharp.kernel.lanczos3,
+            withoutEnlargement: true,
+        }).removeAlpha();
+
+        const { data, info } = await resizedImage.raw().toBuffer({ resolveWithObject: true });
+
+        let asciiArt = "";
+
+        for (let y = 0; y < info.height; y++) {
+            for (let x = 0; x < info.width; x++) {
+                const offset = (y * info.width + x) * info.channels;
+                const r = data[offset];
+                const g = data[offset + 1];
+                const b = data[offset + 2];
+
+                // 最も近いMinecraftの色を見つける (CIE76色差式を使用)
+                const closestColorCode = findClosestColor(r, g, b);
+
+
+                const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                // 輝度からASCII文字へのマッピング (改善)
+                const charIndex = Math.floor((brightness / 255) * (asciiChars.length - 1)); // 0-255 を 0-(文字数-1) にマッピング
+                const asciiChar = asciiChars[charIndex];
+
+
+                asciiArt += `§l§${closestColorCode}${asciiChar}`;
+            }
+            asciiArt += '\n';
+        }
+        return asciiArt;
+
+    } catch (error) {
+        console.error("Error converting image to ASCII art:", error);
+        return "§c[Image Conversion Error]";
     }
 }
 
 /**
- * DiscordからMinecraftへのメッセージ送信処理
+ * DiscordからMinecraftへのメッセージ送信処理 (軽量アスキーアート対応)
  */
 async function sendDiscordToMinecraft(message: Message) {
     if (world && discordClient.user && message.member) {
         if (message.author.id !== discordClient.user.id && message.guild?.id === discordGuildId) {
             let content = message.content;
 
-            // HTMLタグを取り除く (mentions と attachments の処理後に行う)
-            const cleanedContent = content.replace(/<[^>]+>/g, '');
+            // メンションの処理
+            const mentions = message.mentions.members;
+            if (mentions && mentions.size > 0) {
+                mentions.forEach((member: GuildMember) => {
+                    const displayName = member.displayName;
+                    const replaceRegex = new RegExp(`<@!?${member.id}>`, "g");
+                    content = content.replace(replaceRegex, `@${displayName}`);
+                });
+            }
 
-            // メッセージを構築して送信
-            const mes = `§l§f<§b${message.member.displayName}§f>§r ${cleanedContent}`
-            world.sendMessage(mes);
+            // 添付ファイルの処理 (アスキーアート変換)
+            const attachments = message.attachments;
+            let attachmentMessages: string[] = []; // 添付ファイル用のメッセージを格納する配列
+
+            if (attachments && attachments.size > 0) {
+                for (const attachment of attachments.values()) {
+                    if (attachment.contentType?.startsWith('image/')) {
+                        const asciiArt = await imageToMinecraftAsciiLight(attachment.url, 10, 10); // サイズ調整 (高さを25に)
+                        attachmentMessages.push(`§l§f<§b${message.member.displayName}§f>§r [画像: ${attachment.name}]`); // 画像ファイル名
+                        attachmentMessages.push("§f↓"); // 下矢印
+                        attachmentMessages = attachmentMessages.concat(asciiArt.split('\n').filter(line => line.trim() !== "")); // 空行を除去して結合
+
+                    } else if (attachment.contentType?.startsWith('video/')) {
+                        attachmentMessages.push(`§l§f<§b${message.member.displayName}§f>§r [動画: ${attachment.name}]`);
+                    } else {
+                        attachmentMessages.push(`§l§f<§b${message.member.displayName}§f>§r [ファイル: ${attachment.name}]`);
+                    }
+                }
+            }
+
+            // メッセージと添付ファイルメッセージを結合
+            if (content.trim() !== "" || attachmentMessages.length > 0) { // メッセージまたは添付ファイルがある場合のみ送信
+                // HTMLタグを取り除く
+                const cleanedContent = content.replace(/<[^>]+>/g, '');
+
+                if (cleanedContent.trim() !== "") { 
+                    world.sendMessage(`§l§f<§b${message.member.displayName}§f>§r ${cleanedContent}`);
+                }
+
+                for (const attachmentMsg of attachmentMessages) {
+                    world.sendMessage(attachmentMsg);
+                }
+            }
+
+
         }
     } else {
         console.warn("サーバーが起動していないか、プレイヤーがオンラインでないか、メンバー情報が取得できないため、DiscordからMinecraftへのメッセージ送信をスキップしました。");
     }
 }
+
 
 /**
  * コマンドを登録する関数

@@ -1,11 +1,9 @@
 //AntiCheat/detections/AirJump.ts
 import { Player } from '@minecraft/server';
 import { PlayerDataManager } from '../PlayerData';
-import { calculateVerticalVelocity } from '../utils';
 import { updatePlayerData } from '../DataUpdate';
 import { getGamemode } from '../../../../Modules/Util';
 import { InputButton, ButtonState } from '@minecraft/server';
-
 
 export function detectAirJump(player: Player, playerDataManager: PlayerDataManager): { cheatType: string } | null {
     const data = playerDataManager.get(player);
@@ -31,48 +29,53 @@ export function detectAirJump(player: Player, playerDataManager: PlayerDataManag
     const isJumping = player.inputInfo.getButtonState(InputButton.Jump) === ButtonState.Pressed; // Input APIを使用
     const isOnGround = player.isOnGround;
     const currentPosition = player.location;
+    let previousPosition = pastPositions[pastPositions.length - 2];
 
 
     if (isOnGround) {
         updatePlayerData(player, playerDataManager, {
             isJumping: false,
-            jumpCounter: 0,
+            jumpCounter: 0, // 地面についたらリセット
             airJumpDetected: false,
             lastGroundY: currentPosition.y,
-            lastOnGroundTime: Date.now()
+            lastOnGroundTime: Date.now(),
+            allowedJumps: 2, // 許容ジャンプ回数をリセット
         });
     } else if (isJumping && !data.isJumping) {
-        // ジャンプ開始時の処理を強化
-        if (Date.now() - data.lastOnGroundTime > 250) { // 地面から離れて一定時間後にジャンプした場合
-            updatePlayerData(player, playerDataManager, { isJumping: true, jumpStartTime: Date.now() });
+        // ジャンプ開始時の処理
+        let expectedYChange = 0;
 
+        if (Date.now() - data.lastOnGroundTime > 250) { // 地面から離れて一定時間後にジャンプした場合
+            expectedYChange = currentPosition.y - previousPosition.y
+            updatePlayerData(player, playerDataManager, { isJumping: true, jumpStartTime: Date.now() });
         } else {
+            expectedYChange = currentPosition.y - previousPosition.y
             updatePlayerData(player, playerDataManager, { isJumping: true, jumpStartTime: Date.now() });
         }
-    } else if (data.isJumping && !isOnGround) {
-        if (Date.now() - data.lastOnGroundTime < 150) return null; // 直前の接地からの時間チェックを短縮 (値は調整してください)
+
+        // 空中ジャンプのカウント
+        if (!isOnGround) {
+            data.allowedJumps--; // 許容ジャンプ回数を減らす
+            updatePlayerData(player, playerDataManager, { allowedJumps: data.allowedJumps });
+            // Y座標の変化をチェック (上昇しているか)
+            if (expectedYChange <= 0.001 && (Date.now() - data.lastOnGroundTime > 150)) {
+                data.jumpCounter++; // 不正なジャンプとしてカウント
+
+            }
 
 
-
-        const jumpHeight = currentPosition.y - data.lastGroundY;
-        const velocitiesY = pastPositions.slice(1).map((pos, i) => calculateVerticalVelocity(pos, pastPositions[i]));
-
-        // 不正な垂直移動のしきい値を調整 (値は調整してください)
-        const invalidVerticalMovement = velocitiesY.some(vel => vel > 0.48 || vel < -0.52);
-
-        if (invalidVerticalMovement || jumpHeight > 2.5) {
-            if (Date.now() - data.jumpStartTime > 100 && player.inputInfo.getButtonState(InputButton.Jump) !== ButtonState.Pressed) {
-
-                data.jumpCounter++;
-                if (data.jumpCounter >= 3) {  // jumpCounter のしきい値を下げる (値は調整してください)
-                    updatePlayerData(player, playerDataManager, { jumpCounter: 0 });
+            if (data.allowedJumps < 0) { // 許容ジャンプ回数を超えた場合
+                data.jumpCounter++; // 不正なジャンプとしてカウント
+                if (data.jumpCounter >= 3) { // 複数回の不正ジャンプで検知
+                    updatePlayerData(player, playerDataManager, { jumpCounter: 0 })
                     return { cheatType: 'AirJump' };
                 }
-                updatePlayerData(player, playerDataManager, { jumpCounter: data.jumpCounter })
+
+                updatePlayerData(player, playerDataManager, { jumpCounter: data.jumpCounter });
             }
         }
-
-
+    } else if (data.isJumping && !isOnGround) {
+        if (Date.now() - data.lastOnGroundTime < 150) return null; 
     }
 
     return null;

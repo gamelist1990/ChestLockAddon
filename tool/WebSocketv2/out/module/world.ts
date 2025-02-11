@@ -68,81 +68,38 @@ export class ScoreboardObjective {
     }
 
     async getScores(): Promise<{ participant: string, score: number }[]> {
-        console.debug(`[getScores] ${this.id} のスコア一覧を取得します。`);
-        const listRes = await this.world.runCommand(`scoreboard players list *`); // 全プレイヤーの情報を取得
-        console.debug(
-            `[getScores] scoreboard players list * の結果:`,
-            JSON.stringify(listRes, null, 2)
-        ); // listRes を整形して全て出力
+        const listRes = await this.world.runCommand(`scoreboard players list *`);
 
         if (!listRes || listRes.statusCode !== 0 || !listRes.statusMessage) {
             return [];
         }
 
         const scores: { participant: string, score: number }[] = [];
-        // プレイヤー名とスコア情報を一括で取得するための正規表現
-        const playerInfoRegex = /§a選択された \d+ 個のオブジェクトを (.*?) に表示:/g;
-        const scoreRegex = /- ([\w\.]+): (\d+) \(([\w\.]+)\)/g;
-
-        // プレイヤー名とスコア情報を格納するマップ
-        const playerScores = new Map<string, number[]>();
-
-        // プレイヤー名を取得
-        let playerMatch;
-        while ((playerMatch = playerInfoRegex.exec(listRes.statusMessage)) !== null) {
-            const playerName = playerMatch[1].trim();
-            //console.debug(
-            //    `[getScores] playerMatch:`,
-            //    JSON.stringify(playerMatch, null, 2)
-            //); // playerMatch を全て出力
-            if (playerName === '*') continue;
-            playerScores.set(playerName, []);
-        }
-
-        console.debug(
-            `[getScores] playerScores (途中経過):`,
-            JSON.stringify(Array.from(playerScores), null, 2)
-        ); // playerScores を全て出力
-
-        // `listRes.statusMessage` を先頭から確認して、`this.id` に一致するスコアのみを抽出する
         const scoreLines = listRes.statusMessage.split("\n");
 
-        // forEachは使わず、for文を使う
-        for (const line of scoreLines) {
-            const scoreMatch = scoreRegex.exec(line);
-            if (scoreMatch) {
-                const objectiveName = scoreMatch[1];
-                const score = parseInt(scoreMatch[2]);
-                const objectiveInBrackets = scoreMatch[3];
+        // スコアボード名が this.id であるエントリーを探す
+        for (let i = 0; i < scoreLines.length; i++) {
+            const playerInfoRegex = new RegExp(`§a選択された \\d+ 個のオブジェクトを (.*?) に表示:`);
+            const playerMatch = playerInfoRegex.exec(scoreLines[i]);
 
-                console.debug(
-                    `[getScores] scoreMatch:`,
-                    JSON.stringify(scoreMatch, null, 2)
-                ); // scoreMatch を全て出力
+            if (playerMatch) {
+                const playerName = playerMatch[1].trim();
 
-                // `this.id`と`objectiveInBrackets`が一致し、かつ`objectiveName`が'TPSData'で、`score`が有効な数値なら、
-                // スコア情報を`playerScores`に追加
-                if (
-                    objectiveInBrackets === this.id &&
-                    objectiveName === this.id &&
-                    !Number.isNaN(score)
-                ) {
-                    playerScores.set(this.id, [score]); // this.id に関連するスコアを直接 playerScores にセット
-                    //console.debug(
-                    //    `[getScores] playerScores (更新):`,
-                    //    JSON.stringify(Array.from(playerScores), null, 2)
-                    //); // playerScores を全て出力
+                // 次の行から、対象のスコアボードのエントリを探す
+                for (let j = i + 1; j < scoreLines.length; j++) {
+                    const scoreRegex = new RegExp(`- ${this.id}: (\\d+) \\(${this.id}\\)`);
+                    const scoreMatch = scoreRegex.exec(scoreLines[j]);
+
+                    if (scoreMatch) {
+                        const score = parseInt(scoreMatch[1]);
+                        scores.push({ participant: playerName, score: score });
+                        break; // このプレイヤーに対するスコアは見つかったので、内側のループを抜ける
+                    } else if (scoreLines[j].startsWith("§a")) {
+                        break; // 他のプレイヤーの情報が始まったら、内側のループを抜ける
+                    }
                 }
             }
         }
-
-        for (const [playerName, scoresArr] of playerScores) {
-            if (scoresArr.length > 0) {
-                scores.push({ participant: playerName, score: scoresArr[scoresArr.length - 1] });
-            }
-        }
-
-        console.debug(`[getScores] 最終的な scores:`, JSON.stringify(scores, null, 2)); // scores を全て出力
 
         return scores;
     }
@@ -161,6 +118,8 @@ export class World {
     private tpsTicks: number = 0;
     private lastTpsUpdate: number = 0;
     private tps: number = 20;
+    public World_player: number = 0;
+    public Max_player: number = 0;
 
     constructor(name: string, wsServer: WsServer) {
         this.name = name;

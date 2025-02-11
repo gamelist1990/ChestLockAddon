@@ -109,7 +109,7 @@ async function checkAndKickBannedPlayer(player: Player): Promise<void> {
 
         // キックメッセージを構築してプレイヤーをキック
         const kickMessage = `§4[§cBAN通知§4]\n§fあなたはBANされました。\n§f理由: §e${ban.reason}\n§fBANした管理者: §b${ban.bannedBy}\n§f期限: §e${ban.expiresAt ? new Date(ban.expiresAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }) : '永久'}`;
-        world.runCommand(`kick "${player.name}" ${kickMessage}`);
+        world.runCommand(`kick ${player.name} ${kickMessage}`);
         world.sendMessage(`§l§f[Server]§r\n§c X §aユーザー §b${player.name}§a はBANされています。§r\n§c参加を拒否しました。`);
     }
 }
@@ -233,7 +233,7 @@ if (world) {
                 checkAndKickBannedPlayer(player);
             })
         }
-    }, 1000 * 60 * 10)
+    }, 10000)
 }
 
 export { banPlayer as PlayerBAN, unbanPlayer as PlayerUNBAN };

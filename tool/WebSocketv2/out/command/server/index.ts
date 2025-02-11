@@ -438,6 +438,7 @@ async function getOnlinePlayersInfo() {
                     name: player.name,
                     uuid: player.uuid,
                     ping: player.ping,
+                    bps: player.bps,
                     position: player.position,
                 };
             })
