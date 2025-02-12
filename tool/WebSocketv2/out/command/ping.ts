@@ -1,5 +1,7 @@
-import { registerCommand, Player, world } from '../backend';
+import { registerCommand, world } from '../backend';
 import { getData } from '../module/Data';
+import { Player } from '../module/player';
+
 
 const playerPingHistory: { [playerName: string]: number[] } = {};
 const MAX_HISTORY_LENGTH = 10;

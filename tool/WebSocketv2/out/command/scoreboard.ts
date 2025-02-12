@@ -1,4 +1,5 @@
-import { Player, registerCommand, world, wsserver } from '../backend';
+import { registerCommand, world, wsserver } from '../backend';
+import { Player } from '../module/player';
 
 interface ScoreSetting {
     enabled: boolean;

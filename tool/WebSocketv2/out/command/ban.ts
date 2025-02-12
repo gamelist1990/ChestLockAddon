@@ -1,6 +1,7 @@
-import { Player, world } from '../backend';
+import { world } from '../backend';
 import * as fs from 'fs';
 import { promisify } from 'util';
+import { Player } from '../module/player';
 
 const readFileAsync = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);

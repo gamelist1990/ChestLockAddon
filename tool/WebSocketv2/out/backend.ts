@@ -1,26 +1,12 @@
+// backend.ts
 import { WebSocketServer, WebSocket } from 'ws';
 import { IncomingMessage } from 'http';
 import { promises as fsPromises } from 'fs';
 import { World } from './module/world';
-import { getData } from './module/Data';
+import { Player, createPlayerObject } from './module/player'; 
 
-export interface Player {
-    name: string;
-    uuid: string;
-    id: number;
-    dimension: number;
-    ping: number;
-    bps: number;
-    position: {
-        x: number;
-        y: number;
-        z: number;
-    };
-    sendMessage: (message: string) => void;
-    runCommand: (command: string) => Promise<any>;
-    hasTag: (tag: string) => Promise<boolean>;
-    getTags: () => Promise<string[]>;
-}
+
+
 
 export interface CommandConfig {
     enabled: boolean;
@@ -40,7 +26,7 @@ export interface Command {
     executor: CommandExecutor;
 }
 
-async function verifier(player: Player, config: CommandConfig): Promise<boolean> {
+export async function verifier(player: Player, config: CommandConfig): Promise<boolean> {
     if (config.enabled !== true) {
         player.sendMessage('このコマンドは無効です。');
         return false;
@@ -73,6 +59,7 @@ export interface PlayerData {
 
 export const prefix = '-';
 
+
 export class WsServer {
     private port: number;
     private wss: WebSocketServer;
@@ -88,7 +75,6 @@ export class WsServer {
     private joinLeaveCooldown: number = 1000;
     private isSaving: boolean = false;
     private saveQueue: PlayerData[] | null = null;
-
     constructor(port: number, commandPrefix: string = prefix) {
         this.port = port;
         this.clients = new Map<string, WebSocket>();
@@ -197,85 +183,6 @@ export class WsServer {
         }
     }
 
-    public async createPlayerObject(playerName: string): Promise<Player | null> {
-        if (world) {
-            const isplayer = await world.isPlayer(playerName);
-            if (!isplayer) {
-                return null;
-            }
-        } else {
-            return null;
-        }
-
-        const queryResult = await this.executeMinecraftCommand(`querytarget @a[name=${playerName}]`);
-        const softData = await getData(playerName);
-
-        if (
-            queryResult === null ||
-            softData === null ||
-            queryResult.statusCode !== 0 ||
-            !queryResult.details
-        ) {
-            return null;
-        }
-
-        let playerDataRaw: any;
-        try {
-            playerDataRaw = JSON.parse(queryResult.details.replace(/\\/g, ''))[0];
-        } catch (error) {
-            return null;
-        }
-
-        if (!playerDataRaw || !playerDataRaw.uniqueId) return null;
-        const storedPlayerData = await this.loadPlayerData();
-        const playerUUID = playerDataRaw.uniqueId;
-        const playerIndex = Object.values(storedPlayerData).findIndex((p) => p.uuid === playerUUID);
-
-        if (playerIndex !== -1) {
-            storedPlayerData[playerIndex].position = {
-                x: playerDataRaw.position.x,
-                y: playerDataRaw.position.y - 2,
-                z: playerDataRaw.position.z,
-            };
-        }
-
-        if (storedPlayerData) {
-            await this.savePlayerData(storedPlayerData);
-        }
-
-        return {
-            name: playerName,
-            uuid: playerDataRaw.uniqueId,
-            id: playerDataRaw.id,
-            dimension: playerDataRaw.dimension,
-            ping: softData?.ping ?? 0,
-            bps: softData?.maxbps ?? 0,
-            position: {
-                x: playerDataRaw.position.x,
-                y: playerDataRaw.position.y - 2,
-                z: playerDataRaw.position.z,
-            },
-            sendMessage: (message: string) =>
-                this.sendToMinecraft({ command: `sendMessage`, message, playerName }),
-            runCommand: (command: string) =>
-                this.executeMinecraftCommand(`execute as @a[name=${playerName}] at @s run ${command}`),
-            hasTag: async (tag: string) => {
-                const result = await this.executeMinecraftCommand(`tag ${playerName} list`);
-                return result?.statusMessage?.includes(`§a${tag}§r`) ?? false;
-            },
-            getTags: async () => {
-                const result = await this.executeMinecraftCommand(`tag ${playerName} list`);
-                if (!result?.statusMessage) return [];
-                const tagRegex = /§a([\w\d]+)§r/g;
-                const tags: string[] = [];
-                let match;
-                while ((match = tagRegex.exec(result.statusMessage)) !== null) {
-                    tags.push(match[1]);
-                }
-                return tags;
-            },
-        };
-    }
 
     public async executeMinecraftCommand(command: string): Promise<any> {
         if (!this.minecraftClient || this.minecraftClient.readyState !== WebSocket.OPEN) {
@@ -588,7 +495,7 @@ export class WsServer {
         }
     };
 
-    private async savePlayerData(newPlayerData: PlayerData[]) {
+    public async savePlayerData(newPlayerData: PlayerData[]) {
         if (this.isSaving) {
             this.saveQueue = newPlayerData;
             return;
@@ -694,15 +601,14 @@ export class WsServer {
                         }
                     }
 
-
                     // プレイヤー名のリストを取得し、トリムしてカンマと空白文字を取り除く
-                    this.onlinePlayerNamesCache = parts[1].split(',').map(name => name.trim());
+                    this.onlinePlayerNamesCache = parts[1].split(',').map((name) => name.trim());
 
                     // 2. 参加処理
                     for (const playerName of this.onlinePlayerNamesCache) {
                         if (!this.activePlayers.has(playerName)) {
                             // 新規参加または再参加
-                            const player = await this.createPlayerObject(playerName);
+                            const player = await createPlayerObject(this, playerName, this.world); 
                             if (player) {
                                 this.activePlayers.set(playerName, player);
 
@@ -718,7 +624,9 @@ export class WsServer {
                                         left: '',
                                         isOnline: true,
                                     });
-                                    console.log(`New player joined: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`);
+                                    console.log(
+                                        `New player joined: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`,
+                                    );
                                 } else {
                                     // 既存プレイヤー (再参加)
                                     const existingPlayer = playerData[playerIndex];
@@ -736,10 +644,15 @@ export class WsServer {
                                     existingPlayer.isOnline = true;
                                     existingPlayer.uuid = player.uuid; // UUIDも更新
                                     playerData[playerIndex] = existingPlayer;
-                                    console.log(`Player re-joined: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`);
+                                    console.log(
+                                        `Player re-joined: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`,
+                                    );
                                 }
 
-                                this.broadcastToClients({ event: 'playerJoin', data: { name: playerName, uuid: player.uuid } });
+                                this.broadcastToClients({
+                                    event: 'playerJoin',
+                                    data: { name: playerName, uuid: player.uuid },
+                                });
                                 this.getWorld().triggerEvent('playerJoin', playerName);
                             }
                         } else {
@@ -761,12 +674,14 @@ export class WsServer {
                                     console.log(`Player ${p.oldNames[0]} name changed: ${playerName}`);
                                     this.broadcastToClients({
                                         event: 'playerNameChange',
-                                        data: { oldName: p.oldNames[0], newName: playerName, uuid: existingPlayer.uuid },
+                                        data: {
+                                            oldName: p.oldNames[0],
+                                            newName: playerName,
+                                            uuid: existingPlayer.uuid,
+                                        },
                                     });
                                 }
-
                             }
-
                         }
                     }
 
@@ -780,8 +695,13 @@ export class WsServer {
                                 playerData[playerIndex].isOnline = false;
                                 playerData[playerIndex].left = this.formatTimestamp();
                             }
-                            console.log(`Player left: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`);
-                            this.broadcastToClients({ event: 'playerLeave', data: { name: playerName, uuid: player.uuid } });
+                            console.log(
+                                `Player left: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`,
+                            );
+                            this.broadcastToClients({
+                                event: 'playerLeave',
+                                data: { name: playerName, uuid: player.uuid },
+                            });
                             this.getWorld().triggerEvent('playerLeave', playerName);
                             leftPlayers.push(playerName);
                         }
@@ -789,7 +709,11 @@ export class WsServer {
 
                     // 4. データ整合性チェック
                     for (const player of playerData) {
-                        if (player.isOnline && !this.onlinePlayerNamesCache.includes(player.name) && !leftPlayers.includes(player.name)) {
+                        if (
+                            player.isOnline &&
+                            !this.onlinePlayerNamesCache.includes(player.name) &&
+                            !leftPlayers.includes(player.name)
+                        ) {
                             player.isOnline = false;
                             player.left = this.formatTimestamp();
                             console.log(`Data fixed: Player ${player.name} marked as offline.`);
@@ -804,9 +728,11 @@ export class WsServer {
                             playerData[playerIndex].isOnline = false;
                             playerData[playerIndex].left = this.formatTimestamp();
                             console.log(`Player left (list failed): ${playerName}`);
-                            this.broadcastToClients({ event: 'playerLeave', data: { name: playerName, uuid: player.uuid } });
+                            this.broadcastToClients({
+                                event: 'playerLeave',
+                                data: { name: playerName, uuid: player.uuid },
+                            });
                             this.getWorld().triggerEvent('playerLeave', playerName);
-
                         }
                     }
                     // 全員をオフラインにする(playerData.json)
@@ -818,7 +744,6 @@ export class WsServer {
                     }
                 }
                 await this.savePlayerData(playerData);
-
             } else {
                 // list コマンドが失敗した場合
                 for (const [playerName, player] of this.activePlayers) {
@@ -829,9 +754,11 @@ export class WsServer {
                         playerData[playerIndex].isOnline = false;
                         playerData[playerIndex].left = this.formatTimestamp();
                         console.log(`Player left (list failed or no status): ${playerName}`);
-                        this.broadcastToClients({ event: 'playerLeave', data: { name: playerName, uuid: player.uuid } });
+                        this.broadcastToClients({
+                            event: 'playerLeave',
+                            data: { name: playerName, uuid: player.uuid },
+                        });
                         this.getWorld().triggerEvent('playerLeave', playerName);
-
                     }
                 }
                 // 全員をオフラインにする(playerData.json)
@@ -847,7 +774,6 @@ export class WsServer {
             console.error('Error in checkOnlineStatus:', error);
         }
     }
-
     private async handleWorldRemoveEvent() {
         try {
             const playerData = await this.loadPlayerData();
@@ -866,6 +792,7 @@ export class WsServer {
             console.error('Error handling worldRemove event:', error);
         }
     }
+
     private async handleMinecraftServerData(event: string, data: any) {
         switch (event) {
             case 'worldAdd':
@@ -961,6 +888,7 @@ export class WsServer {
     }
 }
 
+
 export const wsserver = new WsServer(19133);
 export const world = wsserver.getWorld();
 
@@ -977,17 +905,4 @@ process.on('SIGINT', () => {
 process.on('SIGTERM', () => {
     console.log('SIGTERM signal received. Closing server...');
     wsserver.close();
-    process.exit(0);
-});
-
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
-    wsserver.close();
-    process.exit(1);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    wsserver.close();
-    process.exit(1);
-});
+})

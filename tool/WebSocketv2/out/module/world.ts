@@ -1,4 +1,5 @@
-import { WsServer, Player, PlayerData } from '../backend';
+import { WsServer, PlayerData, world } from '../backend';
+import { createPlayerObject, Player } from './player';
 
 // ScoreboardObjective クラス
 export class ScoreboardObjective {
@@ -177,7 +178,7 @@ export class World {
 
     // プレイヤー情報を常に最新にするため、キャッシュを使用しないように変更
     public async getEntityByName(playerName: string): Promise<Player | null> {
-        const player = await this.wsServer.createPlayerObject(playerName);
+        const player = await createPlayerObject(this.wsServer, playerName, world);
         return player;
     }
 

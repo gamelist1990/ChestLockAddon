@@ -1,4 +1,5 @@
-import { registerCommand, Player } from '../backend';
+import { registerCommand } from '../backend';
+import { Player } from '../module/player';
 import { ver } from '../version';
 import * as os from 'os';
 

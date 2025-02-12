@@ -14,7 +14,7 @@ import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
 import * as ngrok from "ngrok";
-import { world } from "../../backend";
+import { prefix, world } from "../../backend";
 import { calculateUptime } from "../../module/Data";
 import sharp from 'sharp';
 
@@ -339,7 +339,7 @@ async function sendMinecraftToDiscord(playerName: string, message: string) {
         try {
             const channel = (await discordClient.channels.fetch(discordChannelId)) as TextChannel;
             if (channel) {
-                const maxLength = 500;
+                const maxLength = 200;
                 if (message.length > maxLength) {
                     const parts = message.match(new RegExp(`.{1,${maxLength}}`, 'g'));
                     if (parts) {
@@ -465,6 +465,8 @@ async function sendDiscordToMinecraft(message: Message) {
     if (world && discordClient.user && message.member) {
         if (message.author.id !== discordClient.user.id && message.guild?.id === discordGuildId) {
             let content = message.content;
+
+            if (content.length >= 200) return 
 
             // メンションの処理
             const mentions = message.mentions.members;
@@ -699,6 +701,8 @@ if (world) {
                 if (type === "chat") {
                     const player = await world.getRealname(sender);
                     if (player) {
+                        //コマンドは送信しない
+                        if (message.startsWith(`${prefix}`)) return;
                         // §と§から続く文字一つを削除
                         let cleanedMessage = message.replace(/§./g, "");
                         // @here を ?here に置換

@@ -1,4 +1,5 @@
-import { registerCommand, Player, world } from "../backend";
+import { registerCommand } from "../backend";
+import { Player } from '../module/player';
 import { ver } from "../version";
 
 registerCommand({

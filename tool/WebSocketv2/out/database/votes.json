@@ -1,0 +1,39 @@
+{
+  "test": {
+    "name": "test",
+    "title": "好きな食べ物は?",
+    "options": [
+      {
+        "id": 1,
+        "text": "魚",
+        "count": 0
+      },
+      {
+        "id": 2,
+        "text": "肉",
+        "count": 0
+      },
+      {
+        "id": 3,
+        "text": "悪魔",
+        "count": 1
+      },
+      {
+        "id": 4,
+        "text": "ウーパールーパー",
+        "count": 0
+      },
+      {
+        "id": 5,
+        "text": "死体",
+        "count": 0
+      }
+    ],
+    "duration": 90000,
+    "endTime": null,
+    "voters": {
+      "PEXkurann": 3
+    },
+    "isActive": false
+  }
+}

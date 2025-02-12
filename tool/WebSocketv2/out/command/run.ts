@@ -1,4 +1,8 @@
-import { registerCommand, Player } from "../backend";
+import {
+    registerCommand,
+} from "../backend";
+import { Player } from '../module/player';
+
 
 registerCommand({
     name: 'run',

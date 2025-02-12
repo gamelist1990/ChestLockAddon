@@ -1,4 +1,6 @@
-import { registerCommand, Player, wsserver, Command, prefix } from '../backend';
+import { registerCommand, wsserver, Command, prefix } from '../backend';
+import { Player } from '../module/player';
+
 
 function showHelp(player: Player, commands: Record<string, Command>, commandPrefix: string, pageOrCommand: string | number = 1) {
     const commandsPerPage = 5;

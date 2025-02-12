@@ -1,5 +1,6 @@
-import { registerCommand, Player, world } from '../backend';
+import { registerCommand, world } from '../backend';
 import { PlayerBAN } from './ban';
+import { Player } from '../module/player';
 
 class AntiCheatFeature {
     public name: string;

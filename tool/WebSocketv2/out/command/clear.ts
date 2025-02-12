@@ -1,4 +1,6 @@
-import { registerCommand, Player, world } from '../backend';
+import { registerCommand, world } from '../backend';
+import { Player } from '../module/player';
+
 
 // 自動クリアの設定を保持するオブジェクト
 const autoClearSettings = {

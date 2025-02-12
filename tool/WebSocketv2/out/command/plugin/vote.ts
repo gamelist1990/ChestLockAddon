@@ -1,5 +1,6 @@
-import { Player, world, registerCommand, prefix } from "../../backend";
-import JsonDB from "../../module/DataBase";
+import { world, registerCommand, prefix } from "../../backend"; // 適切なパスに変更
+import JsonDB from "../../module/DataBase"; //  JsonDB を import
+import { Player } from "../../module/player";
 
 interface VoteOption {
     id: number;
@@ -11,31 +12,40 @@ interface VoteData {
     name: string;
     title: string;
     options: VoteOption[];
-    endTime: number;
+    duration: number; // 投票期間 (ミリ秒)
+    endTime: number | null; // 投票終了時刻 (ミリ秒、UNIXタイムスタンプ)。開始前はnull
     voters: { [playerName: string]: number };
     isActive: boolean;
 }
 
 class VoteManager {
     private db: JsonDB;
-    private filePath: string = 'votes.json';
-    private timerIds: { [voteName: string]: NodeJS.Timer } = {}; // タイマーIDを保存
+    private db_name: string = 'votes';
+    private timerIds: { [voteName: string]: NodeJS.Timer } = {};
 
     constructor() {
-        this.db = new JsonDB(this.filePath);
-        this.initializeTimers(); // 既存の投票のタイマーを初期化
+        this.db = new JsonDB(this.db_name);
+        this.initializeVotes(); // サーバー起動時に投票を読み込み、タイマーを初期化
     }
 
-    // サーバー起動時に既存の投票のタイマーをセット
-    private async initializeTimers() {
+    // サーバー起動時に投票データを読み込み、タイマーをセット
+    private async initializeVotes() {
         const allVotes = await this.getAllVotes();
         for (const voteName in allVotes) {
             const vote = allVotes[voteName];
-            if (vote.isActive && vote.endTime > Date.now()) {
+            // 投票が有効、かつ終了時刻が設定されていて、まだ未来の場合
+            if (vote.isActive && vote.endTime && vote.endTime > Date.now()) {
                 this.setTimer(voteName, vote.endTime - Date.now());
+            } else if (vote.isActive) {
+                // 有効なのに終了時刻がおかしい場合は、無効化
+                vote.isActive = false;
+                vote.endTime = null; // 終了時刻をリセット
+                await this.db.set(voteName, vote);
             }
         }
+        console.log("[VoteManager] 投票データを読み込み、タイマーを初期化しました。");
     }
+
 
     private setTimer(voteName: string, delay: number) {
         // 既存のタイマーがあればクリア
@@ -48,6 +58,7 @@ class VoteManager {
             if (vote && vote.isActive) {
                 // 投票終了処理
                 vote.isActive = false;
+                vote.endTime = null; // 終了時刻をリセット
                 await this.db.set(voteName, vote);
                 const resultMessage = await this.getVoteResults(voteName);
 
@@ -58,7 +69,6 @@ class VoteManager {
                         p.sendMessage(resultMessage);
                     });
                 });
-
             }
             delete this.timerIds[voteName]; // タイマーIDを削除
         }, delay);
@@ -83,13 +93,12 @@ class VoteManager {
             return "§c空の選択肢は許可されていません。§r"
         }
 
-        const endTime = Date.now() + durationMs;
-
         const newVote: VoteData = {
             name,
             title,
             options,
-            endTime,
+            duration: durationMs, // 投票期間を保存
+            endTime: null,       // 開始前はnull
             voters: {},
             isActive: false,
         };
@@ -99,24 +108,26 @@ class VoteManager {
     }
 
     async startVote(name: string, player: Player): Promise<string> {
-        const votes = await this.db.getAll() as { [name: string]: VoteData };
-        if (!votes[name]) {
+        const vote = await this.getVote(name);
+        if (!vote) {
             return `§c投票 '${name}' は存在しません。§r`;
         }
-        if (votes[name].isActive) {
+        if (vote.isActive) {
             return `§c投票 '${name}' は既に開始されています。§r`;
         }
 
-        votes[name].isActive = true;
-        await this.db.set(name, votes[name]);
+        // 投票開始時に終了時刻を計算
+        vote.endTime = Date.now() + vote.duration;
+        vote.isActive = true;
+        await this.db.set(name, vote);
 
         // タイマーをセット
-        this.setTimer(name, votes[name].endTime - Date.now());
+        this.setTimer(name, vote.duration); // duration を渡す
 
-        const optionsText = votes[name].options.map(opt => `§3#${opt.id}§r: §b${opt.text}§r`).join(', ');
+        const optionsText = vote.options.map(opt => `§3#${opt.id}§r: §b${opt.text}§r`).join('、 ');
         world.getPlayers().then(players => {
             players.forEach(async p => {
-                p.sendMessage(`§6[投票開始]§r §b${votes[name].title}§r (${optionsText})`);
+                p.sendMessage(`§6[投票開始]§r §b${vote.title}§r (${optionsText})`);
                 p.sendMessage(`投票するにはチャットで番号(例: §3#1§r)を入力してください。 制限時間: §e${await this.formatTimeRemaining(name)}§r`);
             });
         });
@@ -126,8 +137,8 @@ class VoteManager {
 
 
     private async formatTimeRemaining(name: string): Promise<string> {
-        const vote = await this.db.get(name) as VoteData | undefined;
-        if (!vote) return "§c不明§r";
+        const vote = await this.getVote(name);
+        if (!vote || !vote.endTime) return "§c不明§r"; // endTime が null の場合も考慮
         const timeLeft = vote.endTime - Date.now();
         if (timeLeft <= 0) return "§e終了§r";
 
@@ -138,15 +149,16 @@ class VoteManager {
     }
 
     async stopVote(name: string, player: Player): Promise<string> {
-        const votes = await this.db.getAll() as { [name: string]: VoteData };
-        if (!votes[name]) {
+        const vote = await this.getVote(name);
+        if (!vote) {
             return `§c投票 '${name}'は存在しません§r`
         }
-        if (!votes[name].isActive) {
+        if (!vote.isActive) {
             return `§c投票 '${name}'は開始していません§r`
         }
-        votes[name].isActive = false;
-        await this.db.set(name, votes[name]);
+        vote.isActive = false;
+        vote.endTime = null; // 終了時刻をリセット
+        await this.db.set(name, vote);
 
         // タイマーをクリア
         if (this.timerIds[name]) {
@@ -158,7 +170,7 @@ class VoteManager {
 
         world.getPlayers().then(players => {
             players.forEach(p => {
-                p.sendMessage(`§6[投票終了]§r §b${votes[name].title}§r の投票が手動で終了されました。`);
+                p.sendMessage(`§6[投票終了]§r §b${vote.title}§r の投票が手動で終了されました。`);
                 p.sendMessage(resultMessage); // 結果を表示
             });
         });
@@ -192,7 +204,7 @@ class VoteManager {
 
 
     async recordVote(playerName: string, voteName: string, optionId: number): Promise<string> {
-        const vote = await this.db.get(voteName) as VoteData | undefined;
+        const vote = await this.db.get(voteName);
 
         if (!vote) {
             return "§cその投票は存在しません。§r";
@@ -203,7 +215,7 @@ class VoteManager {
         if (vote.voters[playerName]) {
             return "§cあなたは既に投票済みです。§r";
         }
-        if (Date.now() > vote.endTime) {
+        if (vote.endTime && Date.now() > vote.endTime) { // endTime が null でないことを確認
             return "§c投票は締め切られました。§r";
         }
 
@@ -219,7 +231,7 @@ class VoteManager {
     }
 
     async getVoteResults(voteName: string): Promise<string> {
-        const vote = await this.db.get(voteName) as VoteData | undefined;
+        const vote = await this.db.get(voteName);
         if (!vote) {
             return "§cその投票は存在しません。§r";
         }
@@ -247,7 +259,7 @@ registerCommand({
     maxArgs: Infinity,
     minArgs: 1,
     config: { enabled: true, adminOnly: false, requireTag: [] },
-    usage: `${prefix}vote <create|config|start|remove|stop|result|list> ...`,
+    usage: `<create|config|start|remove|stop|result|list> ...`, // 英語の usage
     executor: async (player: Player, args: string[]) => {
         const subCommand = args[0];
 
@@ -259,22 +271,21 @@ registerCommand({
                 let durationMsStr = args[4];
 
                 if (!name || !title || !options || !durationMsStr) {
-                    player.sendMessage(`§c引数が不足しています。使用法: ${prefix}vote create <name> <title> <options> <durationMs>§r`);
+                    player.sendMessage(`§c引数が不足しています。使用法: ${prefix}vote create <名前> <タイトル> <選択肢> <期間>§r`);
                     return;
                 }
 
-                // 時間を評価 (evalを使用)
                 let durationMs;
                 try {
                     durationMs = eval(durationMsStr);
                     if (typeof durationMs !== 'number') {
-                        throw new Error("時間は数値または計算式である必要があります。");
+                        throw new Error("期間は数値または計算式である必要があります。");
                     }
                     if (durationMs <= 0) {
-                        throw new Error("時間は正の数")
+                        throw new Error("期間は正の数である必要があります。")
                     }
                 } catch (error) {
-                    player.sendMessage(`§c時間の指定が不正です: ${error.message} 例: 1000 * 60 (60秒)§r`);
+                    player.sendMessage(`§c期間の指定が不正です: ${error.message} 例: 1000 * 60 (60秒)§r`);
                     return;
                 }
 
@@ -287,7 +298,7 @@ registerCommand({
                 const action = args[2];
 
                 if (!name || !action) {
-                    player.sendMessage(`§c引数が不足しています。 使用法: ${prefix}vote config <name> <list|save>§r`);
+                    player.sendMessage(`§c引数が不足しています。 使用法: ${prefix}vote config <名前> <一覧|保存>§r`);
                     return;
                 }
 
@@ -301,8 +312,8 @@ registerCommand({
                     case 'list':
                         player.sendMessage(`§6--- 投票 '${name}' の設定 ---§r`);
                         player.sendMessage(`§aタイトル:§r §b${vote.title}§r`);
-                        player.sendMessage(`§a選択肢:§r ${vote.options.map(opt => `§3#${opt.id}§r: §b${opt.text}§r`).join(', ')}`);
-                        player.sendMessage(`§a終了時間:§r §e${new Date(vote.endTime).toLocaleString()}§r`);
+                        player.sendMessage(`§a選択肢:§r ${vote.options.map(opt => `§3#${opt.id}§r: §b${opt.text}§r`).join('、 ')}`);
+                        player.sendMessage(`§a期間:§r §e${vote.duration} ミリ秒§r`); // 期間を表示
                         break;
                     case 'save':
                         player.sendMessage(`§a投票 '${name}' の設定を保存しました(JsonDB制御)§r`);
@@ -315,17 +326,17 @@ registerCommand({
             case 'start': {
                 const name = args[1];
                 if (!name) {
-                    player.sendMessage(`§c引数が不足しています。使用法: ${prefix}vote start <name>§r`);
+                    player.sendMessage(`§c引数が不足しています。使用法: ${prefix}vote start <名前>§r`);
                     return;
                 }
                 const result = await voteManager.startVote(name, player);
                 player.sendMessage(result);
                 break;
             }
-            case "stop": {
+            case 'stop': {
                 const name = args[1];
                 if (!name) {
-                    player.sendMessage(`§c引数が不足しています。使用法: ${prefix}vote stop <name>§r`);
+                    player.sendMessage(`§c引数が不足しています。使用法: ${prefix}vote stop <名前>§r`);
                     return;
                 }
                 const result = await voteManager.stopVote(name, player);
@@ -336,17 +347,17 @@ registerCommand({
             case 'remove': {
                 const name = args[1];
                 if (!name) {
-                    player.sendMessage(`§c引数が不足しています。使用法: ${prefix}vote remove <name>§r`);
+                    player.sendMessage(`§c引数が不足しています。使用法: ${prefix}vote remove <名前>§r`);
                     return;
                 }
                 const result = await voteManager.removeVote(name);
                 player.sendMessage(result);
                 break;
             }
-            case "result": {
+            case 'result': {
                 const name = args[1];
                 if (!name) {
-                    player.sendMessage(`§c引数が不足しています。使用法: ${prefix}vote result <name>§r`);
+                    player.sendMessage(`§c引数が不足しています。使用法: ${prefix}vote result <名前>§r`);
                     return;
                 }
                 const result = await voteManager.getVoteResults(name);
@@ -372,7 +383,6 @@ registerCommand({
     },
 });
 
-
 world.on(
     'playerChat',
     async (sender: string, message: string, type: string) => {
@@ -387,7 +397,7 @@ world.on(
                     if (vote && vote.isActive) {
                         const result = await voteManager.recordVote(player.name, voteName, optionId);
                         player.sendMessage(result);
-                        break;
+                        break; // 有効な投票を見つけたら、投票を記録してループを抜ける
                     }
                 }
             }

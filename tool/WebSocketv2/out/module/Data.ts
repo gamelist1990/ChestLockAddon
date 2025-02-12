@@ -18,6 +18,22 @@ export function calculateUptime(startTime: Date): string {
 }
 
 
+/**
+ * Retrieves player data from the game world.
+ *
+ * @param {string} [playerName] - Optional player name to filter the results.
+ * @returns {Promise<any | undefined>} A promise that resolves to the player data or undefined if an error occurs or the player is not found.
+ *
+ * @example
+ * // Get data for a specific player
+ * const playerData = await getData('PlayerName');
+ *
+ * @example
+ * // Get data for the first player in the list
+ * const firstPlayerData = await getData();
+ *
+ * @throws Will return undefined if there is an error executing the command or parsing the response.
+ */
 export async function getData(playerName?: string): Promise<any | undefined> {
     try {
         const res = await world.runCommand('listd stats');
