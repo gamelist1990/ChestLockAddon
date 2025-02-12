@@ -26,13 +26,12 @@ export function detectAirJump(player: Player, playerDataManager: PlayerDataManag
     if (data.positionHistory.length < ticksToUse + 1) return null;
 
     const pastPositions = data.positionHistory.slice(-ticksToUse - 1);
-    const isJumping = player.inputInfo.getButtonState(InputButton.Jump) === ButtonState.Pressed; // Input APIを使用
+    const isJumping = player.inputInfo.getButtonState(InputButton.Jump) === ButtonState.Pressed; 
     const isOnGround = player.isOnGround;
     const currentPosition = player.location;
     let previousPosition = pastPositions[pastPositions.length - 2];
-
-
-    if (isOnGround) {
+    
+    if (isOnGround && isJumping) {
         updatePlayerData(player, playerDataManager, {
             isJumping: false,
             jumpCounter: 0, // 地面についたらリセット

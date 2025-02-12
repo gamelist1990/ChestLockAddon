@@ -7,7 +7,7 @@ import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import { calculateUptime } from '../../module/Data';
 import fetch from 'node-fetch';
-import { banListCache, loadBanList, PlayerBAN, PlayerUNBAN } from '../ban';
+import { loadBanList, PlayerBAN, PlayerUNBAN } from '../ban'; // 修正: loadBanList をインポート
 import { ver } from '../../version';
 import { ngrokUrls } from '../discord/discord';
 
@@ -134,7 +134,7 @@ app.get('/api', (req, res) => {
 });
 
 app.get('/get_url', (req, res) => {
-    let wsUrl2 = "ws://example.com";
+    let wsUrl2 = "ws://localhost:80";
     if (ngrokUrls) {
         wsUrl2 = ngrokUrls.web.url
     }
@@ -276,6 +276,7 @@ app.post('/get_api', async (req, res) => {
 
 // BAN処理のエンドポイント
 //@ts-ignore
+
 app.post('/ban', async (req, res) => {
     // 認証情報の確認
     const authHeader = req.headers.authorization;
@@ -305,8 +306,10 @@ app.post('/ban', async (req, res) => {
             // プレイヤー名からプレイヤーオブジェクトを取得
             const playerToBan = await world.getEntityByName(playerName);
             if (playerToBan) {
-                await PlayerBAN(bannedBy, playerName, reason, `[${duration}]`);
-                broadcast('banList', banListCache);
+                await PlayerBAN(bannedBy, playerName, reason, duration ? `[${duration}]` : undefined); // duration が undefined の場合も考慮
+
+                const banList = await loadBanList(); // BANリストをロード
+                broadcast('banList', banList); // BANリストをブロードキャスト
                 res.json({ success: true });
             } else {
                 res.status(404).json({ success: false, error: 'プレイヤーが見つかりません' });
@@ -346,9 +349,9 @@ app.post('/unban', async (req, res) => {
 
     try {
         if (world) {
-            // プレイヤー名からプレイヤーオブジェクトを取得
             await PlayerUNBAN(unbannedBy, playerName);
-            broadcast('banList', banListCache);
+            const banList = await loadBanList(); // BANリストをロード
+            broadcast('banList', banList);  // BANリストをブロードキャスト
             res.json({ success: true });
 
         }
@@ -405,7 +408,8 @@ wss.on('connection', (ws: WebSocket) => {
         }
         // BANリスト取得リクエストの処理
         if (isAuthenticated && data.type === 'getBanList') {
-            sendDataToClient(ws, 'banList', banListCache);
+            const banList = await loadBanList(); // BANリストをロード
+            sendDataToClient(ws, 'banList', banList); // BANリストを送信
         }
         // プレイヤーリスト取得リクエストの処理
         if (isAuthenticated && data.type === 'getPlayerList') {
@@ -458,10 +462,9 @@ if (world) {
         broadcast('uptime', calculateUptime(serverStartTime));
         const onlinePlayers = await getOnlinePlayersInfo();
         broadcast('onlinePlayers', onlinePlayers);
-        const load = await loadBanList();
-        if (load) {
-            broadcast('banList', banListCache);
-        }
+        const banList = await loadBanList();  // BANリストをロード
+        broadcast('banList', banList); // BANリストをブロードキャスト
+
         let userData: PlayerData;
         const playerDataObject = await world.getPlayerData();
         const playerDataArray = Object.values(playerDataObject);

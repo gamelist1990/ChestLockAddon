@@ -1,3 +1,4 @@
+
 export const badWords = [
     "3P",
     "AV女優",

@@ -1,6 +1,5 @@
 import { registerCommand, world, prefix } from "../backend";
-import { Player } from '../module/player';
-
+import { InputPermissionCategories, Player } from '../module/player';
 
 registerCommand({
     name: 'info',
@@ -27,6 +26,8 @@ registerCommand({
                         player.sendMessage(`§lName:§r ${target.name}`);
                         player.sendMessage(`§lUUID:§r ${target.uuid}`);
                         player.sendMessage(`§lID:§r ${target.id}`);
+                        player.sendMessage(`§lGamemode:§r ${await target.getGameMode()}`);
+                        player.sendMessage(`§lCamera:§r ${await target.isPermissionCategoryEnabled(InputPermissionCategories.camera)}`);
                         player.sendMessage(`§lDimension:§r ${target.dimension}`);
                         player.sendMessage(`§lPing:§r ${target.ping}`);
 

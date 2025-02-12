@@ -14,4 +14,8 @@ import './command/scoreboard';
 import './command/miniAC';
 import './command/invsee';
 import './module/DataBase';
-import './command/plugin/vote';
+import './command/plugin/module/vote';
+import './command/plugin/module/lunaChat';
+
+import './command/plugin/plugin';
+

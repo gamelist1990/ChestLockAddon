@@ -14,7 +14,7 @@
     "build4": "cd tool/WebSocketv2 && bun build index.ts --compile --outfile ClientV3 --external neo-blessed"
   },
   "dependencies": {
-    "@minecraft/server": "^1.17.0-beta.1.21.50-stable",
+    "@minecraft/server": "^1.18.0-beta.1.21.60-stable",
     "@minecraft/server-admin": "^1.0.0-beta.1.21.51-stable",
     "@minecraft/server-ui": "^1.4.0-beta.1.21.50-stable",
     "adm-zip": "^0.5.16",

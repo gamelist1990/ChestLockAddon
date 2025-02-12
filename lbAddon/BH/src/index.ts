@@ -1,12 +1,10 @@
 import { world, system } from "@minecraft/server";
 import "./modules/commands";
 import "./modules/Leaderboard";
+import { loadLeaderboards } from "./modules/Leaderboard";
 
 
 export const db_leaderboards: { [objective: string]: any } = {};
-
-
-
 
 
 let start = false;
@@ -26,9 +24,9 @@ function syncPlayerXP() {
     }
   }
 
-  
 
-  
+
+
 }
 
 /**
@@ -41,18 +39,19 @@ function initializeScoreboard() {
 
 
 
-  if(start) {
+  if (start) {
     if (!xpObjective) {
       xpObjective = scoreboard.addObjective("xp", "XP Level");
       console.warn("スコアボード 'xp' を作成しました。");
     }
   }
 
- 
+
 }
 
 // スコアボードの初期化は一度だけ実行
 system.run(() => {
   syncPlayerXP()
   initializeScoreboard();
+  loadLeaderboards()
 });

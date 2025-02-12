@@ -1,10 +1,5 @@
 import { world } from '../backend';
-import * as fs from 'fs';
-import { promisify } from 'util';
 import { Player } from '../module/player';
-
-const readFileAsync = promisify(fs.readFile);
-const writeFileAsync = promisify(fs.writeFile);
 
 interface BanData {
     uuid: string;
@@ -15,44 +10,38 @@ interface BanData {
     expiresAt: number | null;
 }
 
-const banListPath = './banList.json';
-export let banListCache: BanData[] | null = null; // キャッシュ用の変数
+const db = new JsonDB('banList'); // 'banList'という名前のデータベースを使用
 
-// BANリストをファイルから読み込み、キャッシュに格納
+// BANリストをデータベースから読み込み
 export async function loadBanList(): Promise<BanData[]> {
-    if (banListCache) {
-        return banListCache ?? [];
-    }
-
     try {
-        await fs.promises.access(banListPath);
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            console.log('banList.json does not exist. Creating...');
-            await saveBanList([]); // 空のリストで初期化
-            console.log('banList.json created.');
-        } else {
-            console.error('Error accessing ban list:', error);
+        const data = await db.getAll();
+        // データベースが空の場合、空の配列を返す
+        if (Object.keys(data).length === 0) {
+            return [];
         }
-    }
 
-    try {
-        const data = await readFileAsync(banListPath, 'utf-8');
-        banListCache = JSON.parse(data);
-        return banListCache ?? [];
+        // オブジェクトをBanDataの配列に変換 (キーは無視)
+        const banList: BanData[] = Object.values(data).map(item => item as BanData);
+        return banList;
     } catch (error) {
         console.error('Error reading ban list:', error);
-        banListCache = []; // エラー時は空のリストで初期化
-        return banListCache;
+        return []; // エラー時は空のリストを返す
     }
 }
 
-// BANリストをファイルに保存
+// BANリストをデータベースに保存
 async function saveBanList(banList: BanData[]): Promise<void> {
-    banListCache = banList; // キャッシュを更新
     try {
-        const data = JSON.stringify(banList, null, 2);
-        await writeFileAsync(banListPath, data, 'utf-8');
+        // BanData配列をオブジェクトに変換 (nameをキーにする)
+        const dataToSave: { [key: string]: BanData } = {};
+        banList.forEach(ban => {
+            dataToSave[ban.name] = ban;
+        });
+        await db.clear();  // 既存データをクリア
+        for (const key in dataToSave) {  //書き込み
+            await db.set(key, dataToSave[key]);
+        }
     } catch (error) {
         console.error('Error saving ban list:', error);
     }
@@ -190,6 +179,7 @@ async function unbanPlayer(unbannedBy: Player | "Server", playerName: string): P
 
 // コマンド登録
 import { registerCommand } from '../backend';
+import JsonDB from '../module/DataBase';
 
 registerCommand({
     name: 'ban',
@@ -234,7 +224,7 @@ if (world) {
                 checkAndKickBannedPlayer(player);
             })
         }
-    }, 10000)
+    }, 1000 * 60)
 }
 
 export { banPlayer as PlayerBAN, unbanPlayer as PlayerUNBAN };

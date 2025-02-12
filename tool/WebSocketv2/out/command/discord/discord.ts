@@ -48,7 +48,7 @@ export let ngrokUrls: {
     web: { port: number; url: string };
     api: { port: number; url: string };
 } | null = null;
-export let ngrokEnabled = true; // ngrokの起動状態を管理する変数
+export let ngrokEnabled = false; // ngrokの起動状態を管理する変数
 
 // 権限レベルを.envから読み込む
 const ROLE_LEVEL_1 = process.env.ROLE_LEVEL_1

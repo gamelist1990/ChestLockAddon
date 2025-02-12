@@ -4,13 +4,15 @@ import {
   Dimension,
   Player,
   DimensionLocation,
-  Entity} from "@minecraft/server";
+  Entity,
+  ScoreboardObjective
+} from "@minecraft/server";
 import { db_leaderboards } from "../index";
 
 export class Leaderboard {
-  private _name: string; // プライベート変数に変更
-  title: string;
-  entity: Entity | null; // エンティティをオプショナルに変更
+  private _name: string;
+  private _title: string;
+  entity: Entity | null;
   dimension: Dimension;
   lastUpdate: number;
   updateInterval: number;
@@ -24,13 +26,6 @@ export class Leaderboard {
   location: DimensionLocation;
   shouldFilterByWorldPlayers: boolean;
 
-  /**
-   * Creates a new leaderboard instance
-   * @param name Name of the leaderboard
-   * @param location Location of the leaderboard (must be a floating text entity)
-   * @param sender player that excute the command
-   * @param register Whether to add this to the db_leaderboard right now. default false.
-   */
   constructor(
     name: string,
     location: DimensionLocation,
@@ -38,11 +33,11 @@ export class Leaderboard {
     register: boolean = false
   ) {
     this._name = name;
-    this.title = `§l§b${name}`;
+    this._title = `§l§b${name}`; // 初期値を設定
     this.location = location;
     this.dimension = location.dimension;
     this.lastUpdate = 0;
-    this.updateInterval = 20 * 5; // 5秒ごとに更新
+    this.updateInterval = 20 * 5;
     this.maxEntries = 10;
     this.ascending = false;
     this.format = "§l§b#§a.{rank} §6{player}§b {score}pt§r";
@@ -50,8 +45,7 @@ export class Leaderboard {
     this.defaultText = "---";
     this.recordOfflinePlayers = true;
     this.objectiveSource = name;
-    this.shouldFilterByWorldPlayers = true; // デフォルトでtrueに設定
-    //浮遊テキストエンティティをスポーンさせる
+    this.shouldFilterByWorldPlayers = true;
     const entity = this.dimension.spawnEntity(
       "mcbehub:floating_text",
       this.location
@@ -65,10 +59,7 @@ export class Leaderboard {
 
     this.entity = entity;
     this.initializeEntity();
-
-    // スコアボードオブジェクトを作成（存在しない場合）
     this.createScoreboardObjective(this.name);
-    //オフライン用のスコアボードを作成する。
     this.createScoreboardObjective(`lb_${this.name}`);
 
     if (register) {
@@ -77,19 +68,23 @@ export class Leaderboard {
 
     this.update();
   }
-  /**
-   * エンティティが存在しない場合に、スコアボードオブジェクトを作成します。
-   * @param objectiveName 作成するスコアボードオブジェクトの名前
-   */
+
+  get title(): string {
+    return this._title;
+  }
+
+  set title(newTitle: string) {
+    this._title = newTitle;
+    this.saveDynamicProperties();
+    this.update();
+  }
+
   private createScoreboardObjective(objectiveName: string): void {
     if (!world.scoreboard.getObjective(objectiveName)) {
       world.scoreboard.addObjective(objectiveName, objectiveName);
     }
   }
 
-  /**
-   * Initializes the entity with default values and tags.
-   */
   private initializeEntity(): void {
     if (!this.entity) return;
 
@@ -97,9 +92,6 @@ export class Leaderboard {
     this.saveDynamicProperties();
   }
 
-  /**
-   * Creates a new Leaderboard (Initializes)
-   */
   create(): void {
     if (this.entity) {
       this.entity.nameTag = "Updating...";
@@ -109,28 +101,21 @@ export class Leaderboard {
     }
   }
 
-  /**
- * 定期的に update() を呼び出す関数
- */
   scheduleUpdates(): void {
     system.runInterval(() => {
       this.update();
     }, this.updateInterval);
   }
 
-  /**
-   * Saves the dynamic properties to the entity's NBT data
-   */
   saveDynamicProperties(): void {
     if (!this.entity) return;
 
-    // 古いタグを削除
     if (this.entity.getTags().find((tag) => tag.startsWith("lb_"))) {
       this.entity.removeTag(this.entity.getTags().find((tag) => tag.startsWith("lb_"))!);
     }
 
     this.entity.setDynamicProperty("name", this.name);
-    this.entity.setDynamicProperty("title", this.title);
+    this.entity.setDynamicProperty("title", this._title);
     this.entity.setDynamicProperty("maxEntries", this.maxEntries);
     this.entity.setDynamicProperty("ascending", this.ascending);
     this.entity.setDynamicProperty("format", this.format);
@@ -140,17 +125,16 @@ export class Leaderboard {
     this.entity.setDynamicProperty("objectiveSource", this.objectiveSource);
     this.entity.setDynamicProperty("shouldFilterByWorldPlayers", this.shouldFilterByWorldPlayers);
     this.entity.addTag("isLeaderboard");
-    this.entity.addTag(`lb_${this.name}`); // リーダーボード名でタグを追加
+    this.entity.addTag(`lb_${this.name}`);
   }
 
-  /**
-   * Loads the dynamic properties from the entity's NBT data
-   */
+
+
   loadDynamicProperties(): void {
     if (!this.entity) return;
 
     this._name = (this.entity.getDynamicProperty("name") as string) ?? this._name;
-    this.title = (this.entity.getDynamicProperty("title") as string) ?? this.title;
+    this._title = (this.entity.getDynamicProperty("title") as string) ?? this._title;
     this.maxEntries = (this.entity.getDynamicProperty("maxEntries") as number) ?? this.maxEntries;
     this.ascending = (this.entity.getDynamicProperty("ascending") as boolean) ?? this.ascending;
     this.format = (this.entity.getDynamicProperty("format") as string) ?? this.format;
@@ -161,14 +145,10 @@ export class Leaderboard {
     this.shouldFilterByWorldPlayers = (this.entity.getDynamicProperty("shouldFilterByWorldPlayers") as boolean) ?? this.shouldFilterByWorldPlayers;
   }
 
-  /**
-   * Tries to delete this leaderboard
-   * @returns True if successful, false otherwise
-   */
   delete(): boolean {
     try {
       if (this.entity) {
-        this.entity.remove(); // エンティティを削除
+        this.entity.remove();
       }
 
       const lbObjective = world.scoreboard.getObjective(`lb_${this.name}`);
@@ -183,7 +163,6 @@ export class Leaderboard {
     }
   }
 
-  // name プロパティの getter と setter
   get name(): string {
     return this._name;
   }
@@ -199,7 +178,6 @@ export class Leaderboard {
       this.saveDynamicProperties();
       this.update();
 
-      // 古い名前のスコアボードを削除
       const oldLbObjective = world.scoreboard.getObjective(`lb_${oldName}`);
       if (oldLbObjective) {
         world.scoreboard.removeObjective(oldLbObjective);
@@ -207,12 +185,10 @@ export class Leaderboard {
     }
   }
 
-  /**
-   * リーダーボードを更新します。
-   */
+
   update(): void {
     this.lastUpdate = system.currentTick;
-    if (!this.entity || !this.entity.isValid()) {
+    if (!this.entity) {
       return;
     }
 
@@ -221,48 +197,41 @@ export class Leaderboard {
 
     if (!sourceObjective) return;
 
-    // recordOfflinePlayers が true の場合、lbObjective に sourceObjective の内容をコピー
     if (this.recordOfflinePlayers) {
       if (!lbObjective) {
         this.createScoreboardObjective(`lb_${this.objectiveSource}`);
       }
+      if (lbObjective) {
+        this.copyScores(sourceObjective, lbObjective);
+      }
 
-      this.copyScores(sourceObjective, lbObjective);
     } else if (lbObjective) {
-      // recordOfflinePlayers が false で lbObjective が存在する場合は削除
       world.scoreboard.removeObjective(lbObjective);
     }
+    const scoresToDisplay = this.getScoresToDisplay(
+      this.recordOfflinePlayers && lbObjective ? lbObjective : sourceObjective!
+    );
 
-    // 表示用のスコアを取得
-    const scoresToDisplay = this.getScoresToDisplay(this.recordOfflinePlayers ? lbObjective : sourceObjective);
-
-    // スコアでソート
     const sortedScores = scoresToDisplay
       .sort((a, b) => (this.ascending ? a.score - b.score : b.score - a.score))
       .slice(0, this.maxEntries);
 
-    // エンティティの nameTag を更新
     if (this.entity) {
       this.updateEntityNameTag(sortedScores);
     }
   }
 
-  /**
-   * スコアをコピーするヘルパー関数
-   * @param source ソースのスコアボード
-   * @param destination コピー先のスコアボード
-   */
-  private copyScores(source: any, destination: any): void {
+
+
+  private copyScores(source: ScoreboardObjective, destination: ScoreboardObjective): void {
     const offlinePlayerNames = "commands.scoreboard.players.offlinePlayerName";
 
     source.getScores()
       .filter(score => {
         const participant = score.participant;
 
-        // オフラインプレイヤーを除外
         let shouldInclude = !offlinePlayerNames.includes(participant.displayName);
 
-        // ワールド内のプレイヤーで絞り込む
         if (this.shouldFilterByWorldPlayers) {
           shouldInclude = shouldInclude && world.getAllPlayers().some(player => player.name === participant.displayName);
         }
@@ -271,32 +240,23 @@ export class Leaderboard {
       })
       .forEach(score => {
         const participant = score.participant;
-        destination?.setScore(`${participant.displayName}`, score.score);
+        destination.setScore(participant.displayName, score.score);
       });
   }
 
-  /**
-   * 表示用のスコアを取得するヘルパー関数
-   * @param objective スコアを取得するスコアボード
-   * @returns 表示用のスコアの配列
-   */
-  private getScoresToDisplay(objective: any): { playerName: string; score: number; }[] {
+
+  private getScoresToDisplay(objective: ScoreboardObjective): { playerName: string; score: number; }[] {
     if (!objective) return [];
+    const offlinePlayerNames = "commands.scoreboard.players.offlinePlayerName";
 
     return objective.getScores()
       .filter(score => {
         const participant = score.participant;
-        const isOfflinePlayer = participant.type === 3; // 3 は偽のプレイヤー (オフラインプレイヤー) を表す
-
-        // オフラインプレイヤーを除外
-        let shouldInclude = !isOfflinePlayer;
-
-        // ワールド内のプレイヤーで絞り込む
+        let shouldInclude = !offlinePlayerNames.includes(participant.displayName);
         if (this.shouldFilterByWorldPlayers) {
           shouldInclude = shouldInclude && world.getAllPlayers().some(player => player.name === participant.displayName);
         }
-
-        return shouldInclude;
+        return shouldInclude
       })
       .map(score => ({
         playerName: score.participant.displayName,
@@ -304,16 +264,14 @@ export class Leaderboard {
       }));
   }
 
-  /**
-   * エンティティの nameTag を更新するヘルパー関数
-   * @param sortedScores ソートされたスコアの配列
-   */
+
+
   private updateEntityNameTag(sortedScores: { playerName: string; score: number; }[]): void {
-    const leaderboardTitle = this.title;
+    const leaderboardTitle = this._title.replace(/\{br\}/g, "\n");
+
     const formattedScores = sortedScores.map((v, i) => {
       const replaceIfPlaceholder = (format: string, playerName: string): string => {
         const ifRegex = /\{if=\{([^}]+)\}\}/g;
-
         return format.replace(ifRegex, (_ifMatch, ifContent) => {
           const conditions = ifContent.split(",");
           let defaultValue = conditions.pop()?.trim() ?? "";
@@ -332,9 +290,9 @@ export class Leaderboard {
               defaultValue = "{error}";
             }
           }
-
           return defaultValue;
         });
+
       };
 
       let formattedScore = this.format
@@ -347,30 +305,23 @@ export class Leaderboard {
       return formattedScore;
     });
 
-    const color = `§l§9-§f-§9-§f-§9-§f-§9-§f-§9-§f-§9-§f-§9-§f-§9-§f-§9-§f-§9-§f-§r`;
+    const currentShowDefault = this.entity?.getDynamicProperty("showDefault") as boolean ?? this.showDefault;
+
+    // デフォルトの区切り線を削除。条件によって表示を制御する
+    const color = ""; // 区切り線を空にする
+
     this.entity!.nameTag =
       formattedScores.length > 0
         ? `${leaderboardTitle}\n${color}\n${formattedScores.join("\n")}`
-        : this.showDefault
-          ? `${leaderboardTitle}\n${color}\n${this.defaultText}`
+        : currentShowDefault
+          ? `${leaderboardTitle}\n${this.defaultText}` //区切り線を除外
           : "";
   }
 
-  /**
-  * 空のリーダーボードオブジェクトを作成します。
-  * @returns 空の Leaderboard オブジェクト
-  */
   static createEmpty(): Leaderboard {
     return Object.create(Leaderboard.prototype);
   }
 
-
-
-  /**
-  * ファクトリメソッド: 既存のエンティティからリーダーボードを復元します。
-  * @param entity リーダーボード情報を持つエンティティ
-  * @returns 復元された Leaderboard オブジェクト、または null (復元に失敗した場合)
-  */
   static fromEntity(entity: Entity): Leaderboard | null {
     const name = entity.getDynamicProperty("name") as string;
     if (!name) {
@@ -379,11 +330,7 @@ export class Leaderboard {
       );
       return null;
     }
-
-    // 空のリーダーボードオブジェクトを作成
     const leaderboard = Leaderboard.createEmpty();
-
-    // エンティティからプロパティを復元
     leaderboard._name = name;
     leaderboard.entity = entity;
     leaderboard.dimension = entity.dimension;
@@ -393,12 +340,9 @@ export class Leaderboard {
     return leaderboard;
   }
 }
-
-// 既にチェックしたリーダーボードを記録するオブジェクト(エンティティのUUIDをキーとしたオブジェクトに変更)
 const checkedLeaderboards: { [entityUUID: string]: Leaderboard } = {};
 
 export function loadLeaderboards(): void {
-  // system.runTimeout 内で実行されるように修正
   system.runTimeout(() => {
     const leaderboardEntities = world
       .getDimension("overworld")
@@ -415,30 +359,22 @@ export function loadLeaderboards(): void {
     const loadedLeaderboardNames: string[] = [];
 
     for (const entity of leaderboardEntities) {
-      // エンティティからリーダーボードを復元
       const leaderboard = Leaderboard.fromEntity(entity);
       if (!leaderboard) {
         continue;
       }
 
       if (loadedLeaderboardNames.includes(leaderboard.name)) {
-        continue; // 既にロードされている場合はスキップ
+        continue;
       }
 
-      // db_leaderboards に登録
       db_leaderboards[leaderboard.name] = leaderboard;
-
       leaderboard.update();
       leaderboard.scheduleUpdates();
 
       checkedLeaderboards[entity.id] = leaderboard;
-      loadedLeaderboardNames.push(leaderboard.name);
+      loadedLeaderboardNames.push(leaderboard.name)
     }
-
     console.log(`Loaded ${loadedLeaderboardNames.length} leaderboards.`);
-  }, 40); // 40 ticks (2秒) 後に実行
+  }, 40);
 }
-
-system.runTimeout(() => {
-  loadLeaderboards();
-}, 40);

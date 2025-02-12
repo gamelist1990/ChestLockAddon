@@ -71,8 +71,6 @@ export class WsServer {
     private playerDataFile: string = 'playerData.json';
     private timeout: number = 5000;
     private activePlayers: Map<string, Player> = new Map();
-    private lastSeenPlayers: Map<string, number> = new Map();
-    private joinLeaveCooldown: number = 1000;
     private isSaving: boolean = false;
     private saveQueue: PlayerData[] | null = null;
     constructor(port: number, commandPrefix: string = prefix) {
@@ -205,6 +203,7 @@ export class WsServer {
                 }
             };
 
+            this.minecraftClient?.setMaxListeners(0)
             this.minecraftClient?.on('message', listener);
             timeoutId = setTimeout(() => {
                 if (!resolved) {
@@ -642,7 +641,7 @@ export class WsServer {
                                     }
                                     existingPlayer.join = this.formatTimestamp();
                                     existingPlayer.isOnline = true;
-                                    existingPlayer.uuid = player.uuid; // UUIDも更新
+                                    existingPlayer.uuid = player.uuid;
                                     playerData[playerIndex] = existingPlayer;
                                     console.log(
                                         `Player re-joined: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`,
@@ -658,7 +657,6 @@ export class WsServer {
                         } else {
                             // 4.  すでにアクティブなプレイヤーの名前変更処理
                             const existingPlayer = this.activePlayers.get(playerName)!;
-                            // UUID を使って playerData 内のプレイヤーを特定
                             let playerIndex = playerData.findIndex((p) => p.uuid === existingPlayer.uuid);
                             if (playerIndex !== -1) {
                                 const p = playerData[playerIndex];
@@ -669,8 +667,8 @@ export class WsServer {
                                             p.oldNames.pop();
                                         }
                                     }
-                                    p.name = playerName; // playerDataの名前も更新
-                                    playerData[playerIndex] = p; // 変更を保存
+                                    p.name = playerName; 
+                                    playerData[playerIndex] = p; 
                                     console.log(`Player ${p.oldNames[0]} name changed: ${playerName}`);
                                     this.broadcastToClients({
                                         event: 'playerNameChange',
@@ -836,28 +834,6 @@ export class WsServer {
         }
     }
 
-    private async getPlayerUUID(playerName: string): Promise<string | null> {
-        if (world) {
-            let playerData = await world.getRealname(playerName);
-            if (playerData) {
-            }
-        } else {
-        }
-        const queryResult = await this.executeMinecraftCommand(`querytarget @a[name=${playerName}]`);
-        if (queryResult?.statusCode === 0 && queryResult?.details) {
-            try {
-                const playerData = JSON.parse(queryResult.details.replace(/\\/g, ''))[0];
-                if (playerData?.uniqueId) {
-                    return playerData.uniqueId;
-                }
-            } catch (error) {
-                console.error(`Error parsing UUID for ${playerName}:`, error);
-                return null;
-            }
-        }
-        return null;
-    }
-
     public sendToMinecraft(data: any) {
         if (!this.minecraftClient || this.minecraftClient.readyState !== WebSocket.OPEN) {
             return;
@@ -894,6 +870,15 @@ export const world = wsserver.getWorld();
 
 export function registerCommand(command: Command) {
     wsserver.commands[command.name] = command;
+}
+
+export function removeCommand(name: string) {
+    if (typeof wsserver !== 'undefined' && wsserver.commands && wsserver.commands[name]) {
+        delete wsserver.commands[name];
+        console.log(`[CommandManager] Command '${name}' removed.`);
+    } else {
+        console.warn(`[CommandManager] Command '${name}' not found or wsserver.commands is not accessible.`);
+    }
 }
 
 process.on('SIGINT', () => {

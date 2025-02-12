@@ -104,7 +104,9 @@ function checkTpsAndDisableModules(): void {
         if (configs.antiCheat.modules.editionFake && !disabledModules.includes("editionFake")) {
             modulesToDisable.push("editionFake");
         }
-
+        if (configs.antiCheat.modules.spam && !disabledModules.includes("spam")) {
+            modulesToDisable.push("spam");
+        }
 
         if (modulesToDisable.length > 0) {
             disabledModules.push(...modulesToDisable);
@@ -165,7 +167,7 @@ world.beforeEvents.playerBreakBlock.subscribe((event: any) => {
 });
 
 world.beforeEvents.chatSend.subscribe((event: any) => {
-    if (!monitoring || !configs.antiCheat.enabled || !configs.antiCheat.modules.spam || disabledModules.includes("spam")) return;
+    if (!monitoring || !configs.antiCheat.enabled || !configs.antiCheat.modules.spam || disabledModules.includes("spam") || event.sender.hasTag("bypass")) return;  // bypassタグのチェックを追加
     Spam.detectSpam(event, playerDataManager, configs);
 });
 

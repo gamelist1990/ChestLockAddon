@@ -1,6 +1,6 @@
-import { WsServer } from "../backend";
-import { getData } from "./Data";
-import { World } from "./world";
+import { WsServer } from '../backend';
+import { getData } from './Data';
+import { World } from './world';
 
 export interface Player {
     name: string;
@@ -20,8 +20,9 @@ export interface Player {
     hasTag: (tag: string) => Promise<boolean>;
     getTags: () => Promise<string[]>;
     getXp: () => Promise<number>;
-    isPermissionCategoryEnabled: (permissionCategory: InputPermissionCategory) => Promise<boolean>;
-    setPermissionCategory: (permissionCategory: InputPermissionCategory, isEnabled: boolean) => Promise<void>;
+    isPermissionCategoryEnabled(permissionCategory: string): Promise<boolean>;
+    setPermissionCategory(permissionCategory: string, isEnabled: boolean): Promise<void>;
+    getGameMode(): Promise<GameMode>;
 }
 
 export interface ScreenDisplay {
@@ -30,12 +31,37 @@ export interface ScreenDisplay {
 }
 
 export interface InputPermissionCategory {
-    camera: boolean;
-    microphone: boolean
-    movement: boolean;
+    camera: string;
+    sneak: string;
+    jump: string;
+    dismount: string;
+    lateral_movement: string;
+    mount: string;
+    move_backward: string;
+    move_forward: string;
+    move_left: string;
+    move_right: string;
+    movement: string;
 }
 
-export class PlayerImpl implements Player { 
+export const InputPermissionCategories: InputPermissionCategory = {
+    camera: "camera",
+    sneak: "sneak",
+    jump: "jump",
+    dismount: "dismount",
+    lateral_movement: "lateral_movement",
+    mount: "mount",
+    move_backward: "move_backward",
+    move_forward: "move_forward",
+    move_left: "move_left",
+    move_right: "move_right",
+    movement: "movement",
+} as const;
+
+
+export type GameMode = 'survival' | 'creative' | 'adventure' | 'spectator';
+
+export class PlayerImpl implements Player {
     constructor(
         public name: string,
         public uuid: string,
@@ -44,12 +70,15 @@ export class PlayerImpl implements Player {
         public ping: number,
         public bps: number,
         public position: { x: number; y: number; z: number },
-        private server: WsServer, // WsServer への参照を保持
-        private world: World
+        private server: WsServer,
+        private world: World,
     ) { }
     onScreenDisplay: ScreenDisplay = {
         setActionBar: async (text: string[] | string): Promise<void> => {
-            const textJson = typeof text === 'string' ? `{"rawtext":[{"text":"${text}"}]}` : JSON.stringify({ rawtext: text.map(t => ({ text: t })) });
+            const textJson =
+                typeof text === 'string'
+                    ? `{"rawtext":[{"text":"${text}"}]}`
+                    : JSON.stringify({ rawtext: text.map((t) => ({ text: t })) });
             const command = `/titleraw ${this.name} actionbar ${textJson}`;
             const result = await this.server.executeMinecraftCommand(command);
             if (!result || result.statusCode !== 0) {
@@ -58,7 +87,10 @@ export class PlayerImpl implements Player {
             }
         },
         setTitle: async (text: string[] | string): Promise<void> => {
-            const textJson = typeof text === 'string' ? `{"rawtext":[{"text":"${text}"}]}` : JSON.stringify({ rawtext: text.map(t => ({ text: t })) });
+            const textJson =
+                typeof text === 'string'
+                    ? `{"rawtext":[{"text":"${text}"}]}`
+                    : JSON.stringify({ rawtext: text.map((t) => ({ text: t })) });
             const command = `/titleraw ${this.name} title ${textJson}`;
             const result = await this.server.executeMinecraftCommand(command);
             if (!result || result.statusCode !== 0) {
@@ -66,13 +98,15 @@ export class PlayerImpl implements Player {
                 throw new Error(`Failed to set Title for ${this.name}`);
             }
         },
-    }
+    };
     sendMessage(message: string) {
         this.server.sendToMinecraft({ command: `sendMessage`, message, playerName: this.name });
     }
 
     async runCommand(command: string): Promise<any> {
-        return this.server.executeMinecraftCommand(`execute as @a[name=${this.name}] at @s run ${command}`);
+        return this.server.executeMinecraftCommand(
+            `execute as @a[name=${this.name}] at @s run ${command}`,
+        );
     }
 
     async hasTag(tag: string): Promise<boolean> {
@@ -98,34 +132,59 @@ export class PlayerImpl implements Player {
         }
         return Number(resonse.level);
     }
-    async isPermissionCategoryEnabled(
-        permissionCategory: InputPermissionCategory,
-    ): Promise<boolean> {
+
+    async isPermissionCategoryEnabled(permissionCategory: string): Promise<boolean> {
         const command = `inputpermission query ${this.name} ${permissionCategory}`;
         const result = await this.server.executeMinecraftCommand(command);
+
         if (result && result.statusCode === 0 && result.statusMessage) {
-            const regex = new RegExp(`<${permissionCategory}>:\\s*(\\d)\\s*オン.+?(\\d)\\s*オフ`);
+            const regex = /:\s*(\d)\s*オン.*?(\d)\s*オフ/;
             const match = result.statusMessage.match(regex);
             if (match) {
-                const [_, onValue] = match;
-                return onValue === '1';
+                const [_, onValue, offValue] = match;
+                if (onValue === '1') {
+                    return true;
+                } else if (offValue === '1') {
+                    return false;
+                }
             }
         }
         return false;
     }
-    async setPermissionCategory(permissionCategory: InputPermissionCategory, isEnabled: boolean): Promise<void> {
+
+    async setPermissionCategory(permissionCategory: string, isEnabled: boolean): Promise<void> {
         const state = isEnabled ? 'enabled' : 'disabled';
         const command = `inputpermission set ${this.name} ${permissionCategory} ${state}`;
         const result = await this.server.executeMinecraftCommand(command);
 
         if (!result || result.statusCode !== 0) {
-            //console.error(`Failed to set ${permissionCategory} permission for ${playerName}: ${result?.statusMessage || 'Unknown error'}`);
             throw new Error(`Failed to set ${permissionCategory} permission for ${this.name}`);
         }
     }
+
+    async getGameMode(): Promise<GameMode> {
+        const gameModes: GameMode[] = ['survival', 'creative', 'adventure', 'spectator'];
+        for (const gameMode of gameModes) {
+            const command = `/testfor @a[name=${this.name},m=${gameMode}]`;
+            const result = await this.server.executeMinecraftCommand(command);
+            if (
+                result &&
+                result.statusCode === 0 &&
+                result.statusMessage &&
+                result.statusMessage.includes('が見つかりました')
+            ) {
+                return gameMode;
+            }
+        }
+        return 'survival';
+    }
 }
 
-export async function createPlayerObject(server: WsServer, playerName: string, world: World): Promise<Player | null> {
+export async function createPlayerObject(
+    server: WsServer,
+    playerName: string,
+    world: World,
+): Promise<Player | null> {
     if (world) {
         const isplayer = await world.isPlayer(playerName);
         if (!isplayer) {
@@ -165,14 +224,13 @@ export async function createPlayerObject(server: WsServer, playerName: string, w
             y: playerDataRaw.position.y - 2,
             z: playerDataRaw.position.z,
         };
-
     }
 
     if (storedPlayerData) {
         await server.savePlayerData(storedPlayerData);
     }
 
-    return new PlayerImpl( 
+    return new PlayerImpl(
         playerName,
         playerDataRaw.uniqueId,
         playerDataRaw.id,
@@ -185,6 +243,6 @@ export async function createPlayerObject(server: WsServer, playerName: string, w
             z: playerDataRaw.position.z,
         },
         server,
-        world
+        world,
     );
 }

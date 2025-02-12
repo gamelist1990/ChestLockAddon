@@ -3,7 +3,7 @@ import { Player } from '../module/player';
 
 
 function showHelp(player: Player, commands: Record<string, Command>, commandPrefix: string, pageOrCommand: string | number = 1) {
-    const commandsPerPage = 5;
+    const commandsPerPage = 10;
 
     if (typeof pageOrCommand === 'string') {
         const command = commands[pageOrCommand.toLowerCase()];

@@ -1,8 +1,8 @@
-import { Player, world } from '@minecraft/server';
+import { ChatSendBeforeEvent, Player, world } from '@minecraft/server';
 import { config } from './Util';
 import { translate } from '../command/langs/list/LanguageManager';
 
-export const prefix = '!';
+export const prefix = '#';
 
 const commands: Record<
   string,
@@ -132,9 +132,8 @@ function levenshteinDistance(a: string, b: string): number {
 }
 
 // チャットイベントリスナー
-world.beforeEvents.chatSend.subscribe((event: any) => {
-  const { message, sender: player } = event;
-
+world.beforeEvents.chatSend.subscribe((event: ChatSendBeforeEvent) => {
+  const { message, sender } = event;
   if (!message.startsWith(prefix)) return;
 
   const args = message
@@ -144,30 +143,30 @@ world.beforeEvents.chatSend.subscribe((event: any) => {
     ?.map((match: string) => match.replace(/"/g, ''));
   if (!args) return;
 
-  const commandName = args.shift()?.toLowerCase().trim();
+  const commandName = args.shift()?.toLowerCase().trim() || '';
   event.cancel = true;
 
-  if (commandName === 'yes' && pendingCommand && pendingCommand.player === player) {
+  if (commandName === 'yes' && pendingCommand && pendingCommand.player === sender) {
     const { command, args: pendingArgs } = pendingCommand;
     const correctCommandOptions = commands[command];
-    if (correctCommandOptions && verifier(player, config().commands[command])) {
-      correctCommandOptions.executor(player, pendingArgs); // 引数を渡す
+    if (correctCommandOptions && verifier(sender, config().commands[command])) {
+      correctCommandOptions.executor(sender, pendingArgs); // 引数を渡す
     }
     pendingCommand = null;
     event.cancel = true;
     return;
   }
 
-  const commandOptions = commands[commandName];
+  const commandOptions = commandName ? commands[commandName] : undefined;
 
   if (commandOptions) {
-    if (verifier(player, config().commands[commandName])) {
-      commandOptions.executor(player, args);
+    if (commandName && verifier(sender, config().commands[commandName])) {
+      commandOptions.executor(sender, args);
     }
   } else {
-    const suggestedCommand = suggestCommand(player, commandName, args); // 引数を渡す
+    const suggestedCommand = suggestCommand(sender, commandName!, args); // 引数を渡す
     if (!suggestedCommand) {
-      player.sendMessage(translate(player, 'server.invalidCom', { commandName: `${commandName}` }));
+      sender.sendMessage(translate(sender, 'server.invalidCom', { commandName: `${commandName}` }));
     }
   }
 
