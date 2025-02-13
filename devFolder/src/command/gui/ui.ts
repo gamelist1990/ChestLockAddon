@@ -1,4 +1,4 @@
-import { ActionFormData, ActionFormResponse, ModalFormData } from '@minecraft/server-ui';
+import { ActionFormData, ActionFormResponse, FormCancelationReason, ModalFormData } from '@minecraft/server-ui';
 import { Player } from '@minecraft/server';
 import { runCommand } from '../../Modules/Handler';
 import { getTpaRequests } from '../utility/tpa';
@@ -35,6 +35,10 @@ export function showBasicUI(player: Player): Promise<void> {
     //@ts-ignore
     .show(player)
     .then((response) => {
+      if(response.cancelationReason === FormCancelationReason.UserBusy) {
+        showBasicUI(player);
+        return;
+      }
       if (response.canceled) {
         return; // キャンセルされた場合は何もしない
       }

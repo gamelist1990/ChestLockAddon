@@ -12,7 +12,6 @@ import './vote';
 import './sumo';
 import './AntiCheat/import';
 import './transfer';
-import './UI';
 import './woolwars';
 import './ikaGame';
 

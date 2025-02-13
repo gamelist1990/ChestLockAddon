@@ -3,7 +3,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { IncomingMessage } from 'http';
 import { promises as fsPromises } from 'fs';
 import { World } from './module/world';
-import { Player, createPlayerObject } from './module/player'; 
+import { Player, createPlayerObject } from './module/player';
 
 
 
@@ -91,7 +91,7 @@ export class WsServer {
             this.initPlayerData(); // Initialize or load player data
             setInterval(() => {
                 this.checkOnlineStatus();
-            }, 3000);
+            }, 10000);
         });
     }
 
@@ -576,6 +576,7 @@ export class WsServer {
         return Array.from(this.activePlayers.values());
     }
 
+
     private onlinePlayerNamesCache: string[] = [];
     private currentOnlineCache: number = 0;
     private maxOnlineCache: number = 0;
@@ -586,172 +587,150 @@ export class WsServer {
             const listResult = await this.executeMinecraftCommand('list');
             let playerData = await this.loadPlayerData();
 
-            if (listResult?.statusCode === 0 && listResult?.statusMessage) {
-                const parts = listResult.statusMessage.split('\n');
-                if (parts.length > 1) {
-                    const countParts = parts[0].split(' ');
-                    if (countParts.length > 1) {
-                        const counts = countParts[0].split('/');
-                        if (counts.length === 2) {
-                            this.currentOnlineCache = parseInt(counts[0]);
-                            this.maxOnlineCache = parseInt(counts[1]);
-                            this.world.World_player = this.currentOnlineCache;
-                            this.world.Max_player = this.maxOnlineCache;
-                        }
+            if (listResult?.statusCode === 0 && listResult?.players && listResult?.statusMessage) {
+                // 人数情報を取得
+                const countParts = listResult.statusMessage.split(' ');
+                if (countParts.length > 1) {
+                    const counts = countParts[0].split('/');
+                    if (counts.length === 2) {
+                        this.currentOnlineCache = parseInt(counts[0]);
+                        this.maxOnlineCache = parseInt(counts[1]);
+                        this.world.World_player = this.currentOnlineCache;
+                        this.world.Max_player = this.maxOnlineCache;
                     }
+                }
 
-                    // プレイヤー名のリストを取得し、トリムしてカンマと空白文字を取り除く
-                    this.onlinePlayerNamesCache = parts[1].split(',').map((name) => name.trim());
+                // statusMessage の \n 以降の文字列からプレイヤー名を抽出
+                const statusMessagePlayers = listResult.statusMessage.split('\n')[1] || '';
+                const playerCandidates = statusMessagePlayers
+                    .split(/[, ]*\s*[, ]+/)
+                    .map(name => name.trim())
+                    .filter(name => name !== "");
 
-                    // 2. 参加処理
-                    for (const playerName of this.onlinePlayerNamesCache) {
-                        if (!this.activePlayers.has(playerName)) {
-                            // 新規参加または再参加
-                            const player = await createPlayerObject(this, playerName, this.world); 
-                            if (player) {
-                                this.activePlayers.set(playerName, player);
+                // players の情報を使って、候補を検証・修正 (nameTag の不整合対策)
+                const playersTagInfo = listResult.players
+                    .split(/[, ]*\s*[, ]+/)
+                    .map(name => name.trim())
+                    .filter(name => name !== "");
 
-                                // playerData.json の更新
-                                let playerIndex = playerData.findIndex((p) => p.name === playerName);
-                                if (playerIndex === -1) {
-                                    // 新規プレイヤー
-                                    playerData.push({
-                                        name: playerName,
-                                        oldNames: [],
-                                        uuid: player.uuid,
-                                        join: this.formatTimestamp(),
-                                        left: '',
-                                        isOnline: true,
-                                    });
-                                    console.log(
-                                        `New player joined: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`,
-                                    );
-                                } else {
-                                    // 既存プレイヤー (再参加)
-                                    const existingPlayer = playerData[playerIndex];
-                                    //名前変更処理
-                                    if (existingPlayer.name !== playerName) {
-                                        if (!existingPlayer.oldNames.includes(existingPlayer.name)) {
-                                            existingPlayer.oldNames.unshift(existingPlayer.name);
-                                            if (existingPlayer.oldNames.length > 3) {
-                                                existingPlayer.oldNames.pop();
-                                            }
-                                        }
-                                        existingPlayer.name = playerName;
-                                    }
-                                    existingPlayer.join = this.formatTimestamp();
-                                    existingPlayer.isOnline = true;
-                                    existingPlayer.uuid = player.uuid;
-                                    playerData[playerIndex] = existingPlayer;
-                                    console.log(
-                                        `Player re-joined: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`,
-                                    );
-                                }
+                this.onlinePlayerNamesCache = playerCandidates.filter(candidate => {
+                    return playersTagInfo.some(tag => tag === candidate);
+                });
 
-                                this.broadcastToClients({
-                                    event: 'playerJoin',
-                                    data: { name: playerName, uuid: player.uuid },
-                                });
-                                this.getWorld().triggerEvent('playerJoin', playerName);
-                            }
-                        } else {
-                            // 4.  すでにアクティブなプレイヤーの名前変更処理
-                            const existingPlayer = this.activePlayers.get(playerName)!;
-                            let playerIndex = playerData.findIndex((p) => p.uuid === existingPlayer.uuid);
-                            if (playerIndex !== -1) {
-                                const p = playerData[playerIndex];
-                                if (p.name !== playerName) {
-                                    if (!p.oldNames.includes(p.name)) {
-                                        p.oldNames.unshift(p.name);
-                                        if (p.oldNames.length > 3) {
-                                            p.oldNames.pop();
-                                        }
-                                    }
-                                    p.name = playerName; 
-                                    playerData[playerIndex] = p; 
-                                    console.log(`Player ${p.oldNames[0]} name changed: ${playerName}`);
-                                    this.broadcastToClients({
-                                        event: 'playerNameChange',
-                                        data: {
-                                            oldName: p.oldNames[0],
-                                            newName: playerName,
-                                            uuid: existingPlayer.uuid,
-                                        },
-                                    });
-                                }
-                            }
-                        }
-                    }
+                // 2. 参加処理
+                for (const playerName of this.onlinePlayerNamesCache) {
+                    if (!this.activePlayers.has(playerName)) {
+                        // 新規参加または再参加
+                        const player = await createPlayerObject(this, playerName, this.world);
+                        if (player) {
+                            this.activePlayers.set(playerName, player);
 
-                    // 3. 退出処理
-                    const leftPlayers: string[] = [];
-                    for (const [playerName, player] of this.activePlayers) {
-                        if (!this.onlinePlayerNamesCache.includes(playerName)) {
-                            this.activePlayers.delete(playerName);
+                            // playerData.json の更新
                             let playerIndex = playerData.findIndex((p) => p.name === playerName);
-                            if (playerIndex !== -1) {
-                                playerData[playerIndex].isOnline = false;
-                                playerData[playerIndex].left = this.formatTimestamp();
+                            if (playerIndex === -1) {
+                                // 新規プレイヤー
+                                playerData.push({
+                                    name: playerName,
+                                    oldNames: [],
+                                    uuid: player.uuid,
+                                    join: this.formatTimestamp(),
+                                    left: '',
+                                    isOnline: true,
+                                });
+                                console.log(
+                                    `New player joined: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`,
+                                );
+                            } else {
+                                // 既存プレイヤー (再参加)
+                                const existingPlayer = playerData[playerIndex];
+                                //名前変更処理
+                                if (existingPlayer.name !== playerName) {
+                                    if (!existingPlayer.oldNames.includes(existingPlayer.name)) {
+                                        existingPlayer.oldNames.unshift(existingPlayer.name);
+                                        if (existingPlayer.oldNames.length > 3) {
+                                            existingPlayer.oldNames.pop();
+                                        }
+                                    }
+                                    existingPlayer.name = playerName;
+                                }
+                                existingPlayer.join = this.formatTimestamp();
+                                existingPlayer.isOnline = true;
+                                existingPlayer.uuid = player.uuid;
+                                playerData[playerIndex] = existingPlayer;
+                                console.log(
+                                    `Player re-joined: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`,
+                                );
+                                existingPlayer.join = this.formatTimestamp(); //再参加時にjoinを更新するのは一回でOK
+                                existingPlayer.isOnline = true;
+                                existingPlayer.uuid = player.uuid;
                             }
-                            console.log(
-                                `Player left: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`,
-                            );
+
                             this.broadcastToClients({
-                                event: 'playerLeave',
+                                event: 'playerJoin',
                                 data: { name: playerName, uuid: player.uuid },
                             });
-                            this.getWorld().triggerEvent('playerLeave', playerName);
-                            leftPlayers.push(playerName);
+                            this.getWorld().triggerEvent('playerJoin', playerName);
+                        }
+                    } else {
+                        // 4.  すでにアクティブなプレイヤーの名前変更処理
+                        const existingPlayer = this.activePlayers.get(playerName)!;
+                        let playerIndex = playerData.findIndex((p) => p.uuid === existingPlayer.uuid);
+                        if (playerIndex !== -1) {
+                            const p = playerData[playerIndex];
+                            if (p.name !== playerName) {
+                                if (!p.oldNames.includes(p.name)) {
+                                    p.oldNames.unshift(p.name);
+                                    if (p.oldNames.length > 3) {
+                                        p.oldNames.pop();
+                                    }
+                                }
+                                p.name = playerName;
+                                playerData[playerIndex] = p;
+                                console.log(`Player ${p.oldNames[0]} name changed: ${playerName}`);
+                                this.broadcastToClients({
+                                    event: 'playerNameChange',
+                                    data: {
+                                        oldName: p.oldNames[0],
+                                        newName: playerName,
+                                        uuid: existingPlayer.uuid,
+                                    },
+                                });
+                            }
                         }
                     }
+                }
 
-                    // 4. データ整合性チェック
-                    for (const player of playerData) {
-                        if (
-                            player.isOnline &&
-                            !this.onlinePlayerNamesCache.includes(player.name) &&
-                            !leftPlayers.includes(player.name)
-                        ) {
-                            player.isOnline = false;
-                            player.left = this.formatTimestamp();
-                            console.log(`Data fixed: Player ${player.name} marked as offline.`);
-                        }
-                    }
-                } else {
-                    // list コマンドの結果が予期せぬ形式の場合 (通常は起こらない)
-                    for (const [playerName, player] of this.activePlayers) {
+                // 3. 退出処理
+                const leftPlayers: string[] = [];
+                for (const [playerName, player] of this.activePlayers) {
+                    if (!this.onlinePlayerNamesCache.includes(playerName)) {
                         this.activePlayers.delete(playerName);
                         let playerIndex = playerData.findIndex((p) => p.name === playerName);
                         if (playerIndex !== -1) {
                             playerData[playerIndex].isOnline = false;
                             playerData[playerIndex].left = this.formatTimestamp();
-                            console.log(`Player left (list failed): ${playerName}`);
-                            this.broadcastToClients({
-                                event: 'playerLeave',
-                                data: { name: playerName, uuid: player.uuid },
-                            });
-                            this.getWorld().triggerEvent('playerLeave', playerName);
                         }
-                    }
-                    // 全員をオフラインにする(playerData.json)
-                    for (const player of playerData) {
-                        if (player.isOnline) {
-                            player.isOnline = false;
-                            player.left = this.formatTimestamp();
-                        }
+                        console.log(
+                            `Player left: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`,
+                        );
+                        this.broadcastToClients({
+                            event: 'playerLeave',
+                            data: { name: playerName, uuid: player.uuid },
+                        });
+                        this.getWorld().triggerEvent('playerLeave', playerName);
+                        leftPlayers.push(playerName); //データ整合性チェックには不要なので削除可能
                     }
                 }
-                await this.savePlayerData(playerData);
+
             } else {
-                // list コマンドが失敗した場合
+                // list コマンド失敗時、または必要なキーがない場合
                 for (const [playerName, player] of this.activePlayers) {
                     this.activePlayers.delete(playerName);
                     let playerIndex = playerData.findIndex((p) => p.name === playerName);
-
                     if (playerIndex !== -1) {
                         playerData[playerIndex].isOnline = false;
                         playerData[playerIndex].left = this.formatTimestamp();
-                        console.log(`Player left (list failed or no status): ${playerName}`);
+                        console.log(`Player left (list failed): ${playerName}`);
                         this.broadcastToClients({
                             event: 'playerLeave',
                             data: { name: playerName, uuid: player.uuid },
@@ -766,12 +745,28 @@ export class WsServer {
                         player.left = this.formatTimestamp();
                     }
                 }
-                await this.savePlayerData(playerData);
             }
+
+            // 5. データ整合性チェック (最終的なデータ修正)
+            for (const player of playerData) {
+                const isOnline = this.onlinePlayerNamesCache.includes(player.name);
+                if (player.isOnline !== isOnline) {
+                    player.isOnline = isOnline;
+                    if (!isOnline) {
+                        player.left = this.formatTimestamp();
+                    }
+                    console.log(`Data fixed: Player ${player.name} isOnline status corrected to ${isOnline}.`);
+                }
+            }
+
+            await this.savePlayerData(playerData);
+
         } catch (error) {
             console.error('Error in checkOnlineStatus:', error);
         }
     }
+
+
     private async handleWorldRemoveEvent() {
         try {
             const playerData = await this.loadPlayerData();
