@@ -14,6 +14,7 @@ class LunaChat {
     private chatHistory: ChatMessage[] = [];
     private maxHistoryLength: number = 20;
     private japaneseConversionEnabled: { [playerName: string]: boolean } = {};
+    private autoTranslationEnabled: { [playerName: string]: boolean } = {}; 
 
     constructor() {
         this.registerChatListener();
@@ -26,14 +27,29 @@ class LunaChat {
             const player = await world.getEntityByName(sender);
             if (!player) return;
 
-            //日本語変換設定が有効になっているか確認
+
             if (this.japaneseConversionEnabled[player.name] && this.shouldTranslate(message)) {
                 const translatedMessage = await this.translateToJapanese(message);
                 this.addMessageToHistory(player.name, translatedMessage, true, message);
-                this.broadcastMessage(player.name, translatedMessage, message); // オリジナルメッセージも渡す
-            } else {
+                this.broadcastMessage(player.name, translatedMessage, message, translatedMessage);
+            }
+
+            else if (this.autoTranslationEnabled[player.name]) {
+                const detectedLanguage = await this.detectLanguage(message);
+                let translatedMessage = message;
+                if (detectedLanguage !== "ja") {
+                    translatedMessage = await this.translateToJapanese(message);
+                    this.addMessageToHistory(player.name, translatedMessage, true, message);
+                    this.broadcastMessage(player.name, translatedMessage, message, translatedMessage);
+                } else {
+                    this.addMessageToHistory(player.name, translatedMessage, false, message);
+                    this.broadcastMessage(player.name, translatedMessage, message);
+                }
+            }
+
+            else {
                 this.addMessageToHistory(player.name, message, false, message);
-                if (this.shouldTranslate(message) === false) this.broadcastMessage(player.name, message); 
+                if (this.shouldTranslate(message) === false) this.broadcastMessage(player.name, message);
             }
         });
     }
@@ -54,11 +70,11 @@ class LunaChat {
         }
     }
 
-    private broadcastMessage(sender: string, message: string, originalMessage?: string) {
+    private broadcastMessage(sender: string, message: string, originalMessage?: string, translatedMessage?: string) {
         world.getPlayers().then(players => {
             players.forEach(player => {
-                if (originalMessage) {
-                    player.sendMessage(`§f§l[${sender}]§r: ${originalMessage} §6(${message})§r`); // ここを変更
+                if (originalMessage && translatedMessage) {
+                    player.sendMessage(`§f§l[${sender}]§r: ${originalMessage} §6(${translatedMessage})§r`);
                 }
             });
         });
@@ -73,7 +89,7 @@ class LunaChat {
     }
 
     private async translateToJapanese(text: string): Promise<string> {
-        const url = `https://script.google.com/macros/s/AKfycbxPh_IjkSYpkfxHoGXVzK4oNQ2Vy0uRByGeNGA6ti3M7flAMCYkeJKuoBrALNCMImEi_g/exec?romaji=${encodeURIComponent(text)}`;
+        const url = `https://script.google.com/macros/s/AKfycbxPh_IjkSYpkfxHoGXVzK4oNQ2Vy0uRByGeNGA6ti3M7flAMCYkeJKuoBrALNCMImEi_g/exec?text=${encodeURIComponent(text)}&from=auto&to=ja`; // ★ 変更: romaji -> text, from=auto
         try {
             const response = await fetch(url);
             if (!response.ok) {
@@ -81,19 +97,36 @@ class LunaChat {
                 return text;
             }
             const data: any = await response.json();
-            return data?.japanese || text;
+            return data?.translation || text; 
         } catch (error) {
             console.error('Error during translation:', error);
             return text;
         }
     }
 
+    private async detectLanguage(text: string): Promise<string> {
+        // 簡単な言語検出 (正規表現で日本語の文字かそれ以外かで判断)
+        if (/[ぁ-んァ-ン]/.test(text)) {
+            return "ja"; 
+        }
+        return "en"; 
+    }
+
     public toggleJapaneseConversion(playerName: string, enabled: boolean) {
         this.japaneseConversionEnabled[playerName] = enabled;
     }
 
+
+    public toggleAutoTranslation(playerName: string, enabled: boolean) {
+        this.autoTranslationEnabled[playerName] = enabled;
+    }
+
     public getJapaneseConversionSetting(playerName: string): boolean {
         return this.japaneseConversionEnabled[playerName] ?? false;
+    }
+
+    public getAutoTranslationSetting(playerName: string): boolean {
+        return this.autoTranslationEnabled[playerName] ?? false;
     }
 }
 
@@ -106,8 +139,8 @@ registerPlugin(
 
         registerCommand({
             name: 'lunaChat',
-            description: 'ローマ字を日本語化してくれます',
-            usage: '/lunaChat <jpch|history> [true|false]',
+            description: 'チャットを便利にするコマンド',
+            usage: '/lunaChat <jpch|history|translate> [true|false]', // ★ 変更: コマンドヘルプを更新
             config: { enabled: true, adminOnly: false, requireTag: [] },
             executor: async (player: Player, args: string[]) => {
                 const subCommand = args[0];
@@ -130,15 +163,26 @@ registerPlugin(
                     case 'jpch': {
                         const enabled = args[1];
                         if (enabled !== 'true' && enabled !== 'false') {
-                            player.sendMessage('§c使用法: /lunachat main <true|false>§r');
+                            player.sendMessage('§c使用法: /lunachat jpch <true|false>§r');
                             return;
                         }
                         lunaChat.toggleJapaneseConversion(player.name, enabled === 'true');
-                        player.sendMessage(`§a日本語変換を ${enabled === 'true' ? '有効' : '無効'} にしました。§r`);
+                        player.sendMessage(`§aローマ字 -> 日本語変換を ${enabled === 'true' ? '有効' : '無効'} にしました。§r`);
+                        break;
+                    }
+                    // ★ 追加: translate コマンド
+                    case 'translate': {
+                        const enabled = args[1];
+                        if (enabled !== 'true' && enabled !== 'false') {
+                            player.sendMessage('§c使用法: /lunachat translate <true|false>§r');
+                            return;
+                        }
+                        lunaChat.toggleAutoTranslation(player.name, enabled === 'true');
+                        player.sendMessage(`§a自動翻訳を ${enabled === 'true' ? '有効' : '無効'} にしました。§r`);
                         break;
                     }
                     default:
-                        player.sendMessage('§c無効なサブコマンドです。 使用法: /lunachat <main|history> [true|false]§r');
+                        player.sendMessage('§c無効なサブコマンドです。 使用法: /lunachat <jpch|history|translate> [true|false]§r'); // ★ 変更: コマンドヘルプを更新
                 }
             },
         });

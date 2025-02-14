@@ -198,6 +198,7 @@ export class WsServer {
                 if (message.event === 'commandResult' && message.data.commandId === commandId) {
                     resolved = true;
                     this.minecraftClient?.off('message', listener);
+                    //@ts-ignore
                     clearTimeout(timeoutId);
                     resolve(message.data.result);
                 }
@@ -252,6 +253,7 @@ export class WsServer {
 
         // スパムチェック (短期間に同じsenderからのメッセージを拒否)
         const now = Date.now();
+        //@ts-ignore
         const lastMessageFromSender = this.recentChatMessages.findLast(
             (msg) => msg.sender === chatSender,
         );
