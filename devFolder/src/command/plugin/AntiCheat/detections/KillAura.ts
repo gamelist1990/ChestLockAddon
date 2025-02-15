@@ -14,7 +14,7 @@ class KillAuraDetector {
     }
 
     private detectReach(attackingPlayer: Player, attackedEntity: Player): { isDetected: boolean; distance: number } {
-        const maxReach = 7; // 妥当なリーチ範囲に調整
+        const maxReach = 8.2; // 妥当なリーチ範囲に調整
         const distanceToTarget = calculateDistance(attackingPlayer.location, attackedEntity.location);
         return { isDetected: distanceToTarget > maxReach, distance: distanceToTarget };
     }

@@ -61,12 +61,16 @@ async function checkMessageScores() {
     if (!ScoreSettings['message'].enabled) return;
 
     const messageObjective = await world.scoreboard.getObjective(ScoreSettings['message'].objective);
-    if (!messageObjective) return;
+
+    if (!messageObjective) {
+        return;
+    }
 
     const scores = await messageObjective.getScores();
 
     for (const scoreEntry of scores) {
         const scoreName = scoreEntry.participant;
+
 
         if (scoreName && scoreName.includes('{') && scoreName.includes('}')) {
             const startIndex = scoreName.indexOf('{') + 1;
@@ -83,9 +87,7 @@ async function checkMessageScores() {
 
                 if (!lastChatTimes[key] || now - lastChatTimes[key] > 1000) { // クールダウンチェック
                     if (world) {
-                        setTimeout(() => {
-                            wsserver.onPlayerChat(sender, message, "scoreboard", "");
-                        })
+                        wsserver.onPlayerChat(sender, message, "scoreboard", "");
                         lastChatTimes[key] = now; // 最終チャット時刻を更新
                     } else {
                         console.warn("world is undefined");

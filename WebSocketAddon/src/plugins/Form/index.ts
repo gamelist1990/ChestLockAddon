@@ -15,8 +15,31 @@ interface FormDefinition {
 class FormCreationModule implements Module {
     name = "FormCreator";
     enabledByDefault = true;
-    docs = "JSON形式で定義されたフォームを作成し、結果をDBに保存します。\n/scriptevent ws:form <action|message> <json_definition> コマンドで使用します。";
-
+    docs = `JSONでフォームを作成、結果をDBに保存。\n
+§r- コマンド: §9/scriptevent ws:form <action|message> <JSON定義>\n
+§r- JSON定義:\n
+§r  - §9type§r: "action" | "message"\n
+§r  - §9title§r: タイトル\n
+§r  - §9body§r: (任意)説明文\n
+§r  - §9buttons§r: (任意)ボタンテキスト配列\n
+§r  - §9iconPaths§r: (actionのみ, 任意)アイコンパス配列\n
+§r- 例:\n
+§r  §lAction Form§r:\n
+§r  §8{\n
+§r  §8  "type": "action",\n
+§r  §8  "title": "質問",\n
+§r  §8  "body": "好きな果物は？",\n
+§r  §8  "buttons": ["りんご", "バナナ", "みかん"],\n
+§r  §8  "iconPaths": ["textures/items/apple", "", "textures/items/orange"]\n
+§r  §8}\n
+\n
+§r  §lMessage Form§r:\n
+§r  §8{\n
+§r  §8  "type": "message",\n
+§r  §8  "title": "確認",\n
+§r  §8  "body": "本当に削除しますか？",\n
+§r  §8  "buttons": ["はい", "いいえ"]\n
+§r  §8}\n`;
     private db: Database;
 
     constructor() {
@@ -24,7 +47,7 @@ class FormCreationModule implements Module {
     }
 
     async createAndShowForm(player: Player, formDefinition: FormDefinition): Promise<void> {
-        console.warn(`createAndShowForm called: formDefinition=${JSON.stringify(formDefinition)}`);
+        // console.warn(`createAndShowForm called: formDefinition=${JSON.stringify(formDefinition)}`);
 
         try {
             let form: ActionFormData | MessageFormData;

@@ -1,4 +1,4 @@
-import JsonDB from "../../../module/DataBase"; //JsonDBの実装に依存しないように修正を施してください。
+import JsonDB from "./DataBase"; //JsonDBの実装に依存しないように修正を施してください。
 
 interface WordEntry {
     kanji: string;
@@ -12,7 +12,7 @@ interface TrieNode {
     entry?: WordEntry[]; // このノードで終わる単語のエントリ (複数対応)
 }
 
-class RomajiKanjiConverter {
+export class RomajiKanjiConverter {
     private romajiToHiragana: { [key: string]: string } = {
         a: "あ", i: "い", u: "う", e: "え", o: "お",
         ka: "か", ki: "き", ku: "く", ke: "け", ko: "こ",

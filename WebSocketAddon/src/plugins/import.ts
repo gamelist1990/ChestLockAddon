@@ -6,5 +6,7 @@ import "./module/index"
 import "./scoreboard/index"
 import "./Form/index"
 import "./Lore/index"
+import "./ScoreModule/index"
+
 
 

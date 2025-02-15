@@ -15,9 +15,9 @@ export const globalPlayerSpeeds: {
 class GameDataModule implements Module {
   name = 'Speed_And_Health_Monitor';
   enabledByDefault = true;
-  docs = `
-  (ドキュメントは変更なしなので省略)
-  `;
+  docs = `使用可能DB:\n
+§r- §9ws_db_hp\n
+§r- §9ws_db_speed`;
 
   private healthDb: Database;
   private speedDb: Database;

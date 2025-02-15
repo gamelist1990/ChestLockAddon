@@ -76,29 +76,38 @@ export class ScoreboardObjective {
         }
 
         const scores: { participant: string, score: number }[] = [];
-        const scoreLines = listRes.statusMessage.split("\n");
+        const lines = listRes.statusMessage.split("\n");
+        let currentParticipant: string | null = null;
 
-        // スコアボード名が this.id であるエントリーを探す
-        for (let i = 0; i < scoreLines.length; i++) {
-            const playerInfoRegex = new RegExp(`§a選択された \\d+ 個のオブジェクトを (.*?) に表示:`);
-            const playerMatch = playerInfoRegex.exec(scoreLines[i]);
+        for (const line of lines) {
+            // プレイヤー名の取得 (パターン1: "§a選択された..." の行)
+            const playerInfoRegex1 = /§a選択された \d+ 個のオブジェクトを (.*?) に表示:/;
+            const playerMatch1 = playerInfoRegex1.exec(line);
+            if (playerMatch1) {
+                currentParticipant = playerMatch1[1].trim();
+                continue;
+            }
 
-            if (playerMatch) {
-                const playerName = playerMatch[1].trim();
+            // プレイヤー名の取得(パターン2: "プレイヤー XXX にはスコアの記録はありません")
+            const playerInfoRegex2 = /プレイヤー (.*?) にはスコアの記録はありません/;
+            const playerMatch2 = playerInfoRegex2.exec(line);
+            if (playerMatch2) {
+                currentParticipant = null; // スコアがないプレイヤーなのでnullにする
+                continue;
+            }
 
-                // 次の行から、対象のスコアボードのエントリを探す
-                for (let j = i + 1; j < scoreLines.length; j++) {
-                    const scoreRegex = new RegExp(`- ${this.id}: (\\d+) \\(${this.id}\\)`);
-                    const scoreMatch = scoreRegex.exec(scoreLines[j]);
 
-                    if (scoreMatch) {
-                        const score = parseInt(scoreMatch[1]);
-                        scores.push({ participant: playerName, score: score });
-                        break; // このプレイヤーに対するスコアは見つかったので、内側のループを抜ける
-                    } else if (scoreLines[j].startsWith("§a")) {
-                        break; // 他のプレイヤーの情報が始まったら、内側のループを抜ける
-                    }
+            // スコア情報の取得
+            const scoreRegex = new RegExp(`- (.+?): (\\d+) \\((${this.id})\\)`);
+            const scoreMatch = scoreRegex.exec(line);
+
+            if (scoreMatch && scoreMatch[3] === this.id) {
+                const score = parseInt(scoreMatch[2]);
+                // currentParticipantがnullでないことを確認してからpush
+                if (currentParticipant !== null) {
+                    scores.push({ participant: currentParticipant, score: score });
                 }
+
             }
         }
 

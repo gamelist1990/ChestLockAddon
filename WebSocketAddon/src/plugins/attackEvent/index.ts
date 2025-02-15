@@ -1,3 +1,4 @@
+import { EntityInventoryComponent } from '@minecraft/server';
 // AttackModule.ts
 import {
     EntityDamageCause,
@@ -16,23 +17,19 @@ import { Database } from '../../module/DataBase';
 class AttackModule implements Module {
     name = 'Attack_Manager';
     enabledByDefault = true;
-    docs = `
-プレイヤー間の攻撃、キル、死亡、攻撃回数を追跡し、データベースに記録します。
-攻撃時には、攻撃に使用されたアイテムのIDをタグとしてプレイヤーに付与します。
-
-**データベース:**
-- \`ws_attack_kill_counts\`: 各プレイヤーのキル数を記録します。
-- \`ws_attack_death_counts\`: 各プレイヤーの死亡数を記録します。
-- \`ws_attack_counts\`: 各プレイヤーの攻撃回数 (殴打回数) を記録します。
-
-**タグ:**
-- \`w:kill\`: プレイヤーが他のプレイヤーをキルしたときに付与されます。
-- \`w:dead\`: プレイヤーが死亡したときに付与されます。
-- \`w:attack\`: プレイヤーが他のエンティティを攻撃したときに付与されます。
-- \`w:damaged\`: プレイヤーがダメージを受けたときに付与されます。
-- \`w:attack_<item_id>\`: プレイヤーが攻撃に使用したアイテムのID (例: \`w:attack_diamond_sword\`)。
-- \`w:dead_case_<cause>\`: プレイヤーが死亡した原因 (例: \`w:dead_case_entity_attack\`)。
-`;
+    docs = `プレイヤーの攻撃/キル/死亡/被ダメージを記録します。\n
+**データ**\n
+§r- キル数: §9ws_attack_kill_counts\n
+§r- 死亡数: §9ws_attack_death_counts\n
+§r- 攻撃数: §9ws_attack_counts\n
+\n
+**タグ**\n
+§r- キル: §9w:kill\n
+§r- 死亡: §9w:dead\n
+§r- 攻撃: §9w:attack\n
+§r- 被ダメージ: §9w:damaged\n
+§r- 攻撃アイテム: §9w:attack_<アイテムID>\n
+§r- 死亡原因: §9w:dead_case_<原因>\n`;
 
 
     private playerAttackMap = new Map<string, string>(); // 攻撃者と被攻撃者のマッピング
@@ -108,7 +105,7 @@ class AttackModule implements Module {
             this.removeTagWithTimeout(attacker, AttackModule.ATTACK_TAG, this.tagTimeout);
 
             // 攻撃アイテムのタグを追加
-            const inventory = attacker.getComponent('inventory') as any;
+            const inventory = attacker.getComponent('inventory') as EntityInventoryComponent;
             if (inventory && inventory.container) {
                 const itemStack = inventory.container.getItem(
                     attacker.selectedSlotIndex
@@ -134,7 +131,7 @@ class AttackModule implements Module {
         const tag = `${AttackModule.ATTACK_ITEM_TAG}${itemStack.typeId.replace(
             ':',
             '_'
-        )}`; //prefixなし
+        )}`;
 
         attacker.addTag(tag);
         this.removeTagWithTimeout(attacker, tag, this.tagTimeout); //タグは上書きではなく、時間経過で消えるようにする
@@ -215,7 +212,7 @@ class AttackModule implements Module {
     private async incrementKillCount(player: Player): Promise<void> {
         const currentKillCount = (await this.killCountDb.get(player)) ?? 0;
         const newKillCount = currentKillCount + 1;
-        await this.killCountDb.set(player, newKillCount); 
+        await this.killCountDb.set(player, newKillCount);
     }
 
     /**
@@ -233,7 +230,7 @@ class AttackModule implements Module {
     private async incrementAttackCount(player: Player): Promise<void> {
         const currentAttackCount = (await this.attackCountDb.get(player)) ?? 0;
         const newAttackCount = currentAttackCount + 1;
-        await this.attackCountDb.set(player, newAttackCount); 
+        await this.attackCountDb.set(player, newAttackCount);
     }
 
 
@@ -286,7 +283,10 @@ class AttackModule implements Module {
      * 死亡原因に基づいたタグを追加する
      */
     private addDeathCauseTag(player: Player, cause: EntityDamageCause): void {
-        player.addTag(`w:dead_case_${cause}`);
+        console.log(`w:dead_case_${cause}`)
+        system.run(() => {
+            player.addTag(`w:dead_case_${cause}`);
+        })
     }
 }
 

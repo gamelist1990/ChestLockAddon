@@ -16,6 +16,7 @@ import './command/invsee';
 import './module/DataBase';
 import './command/plugin/module/vote';
 import './command/plugin/module/lunaChat';
+import './module/jpch';
 
 import './command/plugin/plugin';
 

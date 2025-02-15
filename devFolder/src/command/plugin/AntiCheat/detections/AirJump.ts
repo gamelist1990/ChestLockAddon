@@ -3,7 +3,7 @@ import { Player } from '@minecraft/server';
 import { PlayerDataManager } from '../PlayerData';
 import { updatePlayerData } from '../DataUpdate';
 import { getGamemode } from '../../../../Modules/Util';
-import { InputButton, ButtonState } from '@minecraft/server';
+import { InputButton } from '@minecraft/server';
 
 export function detectAirJump(player: Player, playerDataManager: PlayerDataManager): { cheatType: string } | null {
     const data = playerDataManager.get(player);
@@ -26,7 +26,7 @@ export function detectAirJump(player: Player, playerDataManager: PlayerDataManag
     if (data.positionHistory.length < ticksToUse + 1) return null;
 
     const pastPositions = data.positionHistory.slice(-ticksToUse - 1);
-    const isJumping = player.inputInfo.getButtonState(InputButton.Jump) === ButtonState.Pressed; 
+    const isJumping = player.inputInfo.getButtonState(InputButton.Jump); 
     const isOnGround = player.isOnGround;
     const currentPosition = player.location;
     let previousPosition = pastPositions[pastPositions.length - 2];

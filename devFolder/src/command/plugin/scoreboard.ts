@@ -140,7 +140,6 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
 
     if (event.id === "ch:team") {
         const args = event.message.replace(/^\/ch:team\s+/, "").split(/\s+/);
-        // コマンドブロックで実行された場合に備えてメッセージ送信関数を作成
         const sendMessage = (message: string) => {
             if (event.sourceType === ScriptEventSource.Entity) {
                 const player: Player = event.sourceEntity as Player;

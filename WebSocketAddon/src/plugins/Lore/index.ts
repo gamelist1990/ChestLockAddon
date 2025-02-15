@@ -13,13 +13,12 @@ interface LoreFormDefinition {
 class LoreEditorModule implements Module {
     name = "LoreEditor";
     enabledByDefault = true;
-    docs = `Loreを編集するモジュール\n/scriptevent ws:lore <json> コマンドで使用。
-    JSONフォーマット:
-    {
-      "type": "rename" | "add" | "remove" | "clear",
-      "body": "string", // rename, add, removeで使用
-      "slot": number // 任意。指定がない場合はメインハンド
-    }`;
+    docs = `Loreを編集。\n
+§r- コマンド: §9/scriptevent ws:lore <JSON>\n
+§r- JSON形式:\n
+  §r  - §9type§r: "rename" | "add" | "remove" | "clear"\n
+  §r  - §9body§r: 文字列 (rename, add, removeで使用)\n
+  §r  - §9slot§r: (任意)スロット番号。無指定はメインハンド`;
 
 
     constructor() {

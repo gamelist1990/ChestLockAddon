@@ -466,7 +466,7 @@ async function sendDiscordToMinecraft(message: Message) {
         if (message.author.id !== discordClient.user.id && message.guild?.id === discordGuildId) {
             let content = message.content;
 
-            if (content.length >= 200) return 
+            if (content.length >= 200) return
 
             // メンションの処理
             const mentions = message.mentions.members;
@@ -503,7 +503,7 @@ async function sendDiscordToMinecraft(message: Message) {
                 // HTMLタグを取り除く
                 const cleanedContent = content.replace(/<[^>]+>/g, '');
 
-                if (cleanedContent.trim() !== "") { 
+                if (cleanedContent.trim() !== "") {
                     world.sendMessage(`§l§f<§b${message.member.displayName}§f>§r ${cleanedContent}`);
                 }
 
@@ -707,7 +707,19 @@ if (world) {
                         let cleanedMessage = message.replace(/§./g, "");
                         // @here を ?here に置換
                         cleanedMessage = cleanedMessage.replace(/@here/g, "?here");
-                        sendMinecraftToDiscord(player.name, cleanedMessage); 
+                        sendMinecraftToDiscord(player.name, cleanedMessage);
+                    }
+                }
+                if (type === "scoreboard") {
+                    const player = await world.getRealname(sender);
+                    if (player) {
+                        //コマンドは送信しない
+                        if (message.startsWith(`${prefix}`)) return;
+                        // §と§から続く文字一つを削除
+                        let cleanedMessage = message.replace(/§./g, "");
+                        // @here を ?here に置換
+                        cleanedMessage = cleanedMessage.replace(/@here/g, "?here");
+                        sendMinecraftToDiscord(player.name, cleanedMessage);
                     }
                 } else {
                     let formattedMessage = "";
