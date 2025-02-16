@@ -14,9 +14,13 @@ import './command/scoreboard';
 import './command/miniAC';
 import './command/invsee';
 import './module/DataBase';
+import './module/jpch';
+import './module/form';
+import './command/plugin/plugin';
+
+
 import './command/plugin/module/vote';
 import './command/plugin/module/lunaChat';
-import './module/jpch';
+import './command/plugin/module/memo';
 
-import './command/plugin/plugin';
 

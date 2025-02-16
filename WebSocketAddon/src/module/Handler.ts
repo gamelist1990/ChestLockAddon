@@ -22,7 +22,7 @@ export class Handler {
     }
 
     registerCommand(commandId: string, handler: CommandHandler) {
-        console.log(`Command registered: ${commandId}`);
+      //  console.log(`Command registered: ${commandId}`);
         if (!this.commandHandlers[commandId]) {
             this.commandHandlers[commandId] = [];
         }
@@ -58,7 +58,7 @@ export class Handler {
                 }
             });
         } else {
-            console.warn(`Unknown command: ${commandId}`);
+           // console.warn(`Unknown command: ${commandId}`);
         }
         //   console.log("----- Event Handling Finished -----");
     }

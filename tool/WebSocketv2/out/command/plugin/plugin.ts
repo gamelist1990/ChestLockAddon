@@ -49,7 +49,7 @@ export function registerPlugin(
 }
 
 // プラグイン有効化関数
-async function enablePlugin(name: string) {
+export async function enablePlugin(name: string) {
     const plugin = plugins[name];
     if (!plugin) {
         console.warn(`[PluginManager] Plugin '${name}' is not registered.`);
@@ -66,14 +66,13 @@ async function enablePlugin(name: string) {
         plugin.onEnable();
     }
     plugin.execute().catch((error) => {
-        // 非同期エラーハンドリング
         console.error(`[PluginManager] Error executing plugin '${name}':`, error);
     });
     console.log(`[PluginManager] Plugin '${name}' enabled.`);
 }
 
 // プラグイン無効化関数
-function disablePlugin(pluginName: string) {
+export function disablePlugin(pluginName: string) {
     const plugin = plugins[pluginName];
     if (!plugin) {
         console.warn(`[PluginManager] Plugin '${pluginName}' is not registered.`);

@@ -64,7 +64,7 @@ class FormCreationModule implements Module {
                             form.button(buttonText, iconPath);
                         }
                     }
-                    console.warn("Action form created");
+                    //console.warn("Action form created");
                     break;
                 case "message":
                     form = new MessageFormData()
@@ -72,27 +72,27 @@ class FormCreationModule implements Module {
                         .body(formDefinition.body || "")
                         .button1(formDefinition.buttons && formDefinition.buttons[0] ? formDefinition.buttons[0] : "OK")
                         .button2(formDefinition.buttons && formDefinition.buttons[1] ? formDefinition.buttons[1] : "Cancel");
-                    console.warn("Message form created");
+                  //  console.warn("Message form created");
                     break;
 
                 default:
                     player.sendMessage("§cエラー: 不明なフォームタイプです。");
-                    console.warn(`Invalid form type: ${formDefinition.type}`);
+                    //console.warn(`Invalid form type: ${formDefinition.type}`);
                     return;
             }
 
             system.run(async () => {
                 //@ts-ignore
                 const response: ActionFormResponse | MessageFormResponse = await form.show(player);
-                console.warn(`Form shown. Response: ${JSON.stringify(response)}`);
+                //console.warn(`Form shown. Response: ${JSON.stringify(response)}`);
 
                 if (response.cancelationReason === FormCancelationReason.UserBusy) {
-                    console.warn("Form canceled (UserBusy). Retrying...");
+                  //  console.warn("Form canceled (UserBusy). Retrying...");
                     this.createAndShowForm(player, formDefinition);
                     return;
                 }
 
-                let resultValue = 0; // デフォルトは 0 (キャンセル)
+                let resultValue = 0; 
 
                 if (!response.canceled) {
                     switch (formDefinition.type) {
@@ -108,24 +108,24 @@ class FormCreationModule implements Module {
                     }
                     console.warn(`Form result: ${resultValue}`);
                 } else {
-                    console.warn("Form canceled.");
+                  //  console.warn("Form canceled.");
                 }
                 this.saveFormResponse(player, resultValue);
             });
 
         } catch (error) {
             player.sendMessage(`§cフォーム定義エラー: ${error}`);
-            console.error(`Form definition error: ${error}`);
+        //    console.error(`Form definition error: ${error}`);
         }
     }
 
 
 
     async saveFormResponse(player: Player, result: number): Promise<void> {
-        console.warn(`saveFormResponse called: player=${player.name}, result=${result}`);
+       // console.warn(`saveFormResponse called: player=${player.name}, result=${result}`);
         try {
             await this.db.set(player.name, result);
-            player.sendMessage(`§aフォームの回答を保存しました`);
+           // player.sendMessage(`§aフォームの回答を保存しました`);
 
             // 2秒後にデータを削除
             system.runTimeout(() => {
@@ -140,11 +140,11 @@ class FormCreationModule implements Module {
     }
 
     async deleteFormResponse(playerName: string): Promise<void> {
-        console.warn(`deleteFormResponse called: playerName=${playerName}`); // DEBUG
+     //   console.warn(`deleteFormResponse called: playerName=${playerName}`); // DEBUG
         try {
             await this.db.delete(playerName);
         } catch (error) {
-            console.error("Error deleting form response:", error);
+      //      console.error("Error deleting form response:", error);
         }
     }
 

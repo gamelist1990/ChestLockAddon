@@ -1,5 +1,5 @@
-import { Entity, EntityDieAfterEvent, EntityHurtAfterEvent, Player, PlayerSoundOptions, ScoreboardIdentity, ScriptEventCommandMessageAfterEvent, ScriptEventSource, system, world } from "@minecraft/server";
-import { getServerUptime, tps } from "../utility/server";
+import { Player, PlayerSoundOptions, ScoreboardIdentity, ScriptEventCommandMessageAfterEvent, ScriptEventSource, system, world } from "@minecraft/server";
+import { getServerUptime } from "../utility/server";
 import { ver } from "../../Modules/version";
 import { banPlayers } from "../../Modules/globalBan";
 import { config, formatTimestampJST } from "../../Modules/Util";
@@ -788,96 +788,10 @@ system.afterEvents.scriptEventReceive.subscribe((event: ScriptEventCommandMessag
     }
 
 
-   //if (event.id === "ch:match_") {
-   //    pvpMatchingSystem.handleCommand(event);
-   //}
-});
-
-
-
-const playerAttackMap = new Map<string, string>();
-const tagTimeout = 40;
-
-world.afterEvents.entityHurt.subscribe((event: EntityHurtAfterEvent) => {
-    const attacked = event.hurtEntity;
-    const damageSource = event.damageSource;
-    if (config().module.ScoreSystem.enabled === false) return;
-    if (!(attacked instanceof Player)) {
-        //  console.log(`[EntityHurt] ${attacked.typeId} is not a player, skipping.`);
-        return;
-    }
-    let attacker: Entity | undefined = damageSource.damagingEntity;
-
-    if (!attacker && damageSource.damagingProjectile) {
-        attacker = damageSource.damagingProjectile;
-    }
-
-    if (attacker && attacker instanceof Player) {
-        playerAttackMap.set(attacked.id, attacker.id);
-    }
-});
-
-world.afterEvents.entityDie.subscribe((event: EntityDieAfterEvent) => {
-    const deadEntity = event.deadEntity;
-    if (config().module.ScoreSystem.enabled === false) return;
-
-    if (!(deadEntity instanceof Player)) {
-        return;
-    }
-
-    //const damageSource = event.damageSource;
-    //if (damageSource.cause === 'suicide' || damageSource.cause === 'void') {
-    //    playerAttackMap.delete(deadEntity.id);
-    //    return;
+    //if (event.id === "ch:match_") {
+    //    pvpMatchingSystem.handleCommand(event);
     //}
-
-    const lastAttackerId = playerAttackMap.get(deadEntity.id);
-
-    // 攻撃者と死亡者が同一でないことを確認
-    if (lastAttackerId && lastAttackerId !== deadEntity.id) {
-        const lastAttacker = Array.from(world.getAllPlayers()).find(p => p.id === lastAttackerId);
-
-        if (lastAttacker) {
-            lastAttacker.addTag('lasta');
-            deadEntity.addTag('lastb');
-
-            system.runTimeout(() => {
-                if (lastAttacker.hasTag('lasta')) {
-                    lastAttacker.removeTag('lasta');
-                }
-            }, tagTimeout);
-
-            system.runTimeout(() => {
-                if (deadEntity.hasTag('lastb')) {
-                    deadEntity.removeTag('lastb');
-                }
-            }, tagTimeout);
-        }
-    }
-    playerAttackMap.delete(deadEntity.id);
-    
 });
-
-
-
-function scoreboardData() {
-    // スコアボードの目的「TPSData」を取得または作成
-    let tpsObjective = world.scoreboard.getObjective('TPSData');
-    if (!tpsObjective) {
-        tpsObjective = world.scoreboard.addObjective('TPSData', 'TPS'); // 目的の名前と表示名を設定
-    }
-
-    // TPSスコア「tps」を取得または作成
-    let tpsScore = tpsObjective.getScore('tps');
-    if (!tpsScore) {
-        tpsScore = tpsObjective.addScore('tps',0); // スコアの名前を設定
-    }
-    if (tpsScore) {
-        tpsObjective.setScore('tps', Math.round(tps));
-    }
-}
-
-scoreboardData();
 
 
 
@@ -898,13 +812,13 @@ registerRank(defaultRank);
 //const options: MatchingOptions = {
 //    maxPlayersPerMatch: 16,
 //    matchingInterval: 20,
-//    rankSystem: defaultRank, 
+//    rankSystem: defaultRank,
 //    rankRange: undefined,
 //    allowCrossRankMatching: false,
 //    minPlayersToStart: 8,
 //    countdownDuration: 10,
 //    rankMatchSettings: {
-//        enabled: true, 
+//        enabled: true,
 //        rankGroups: [
 //            { name: 'Rookie-Bronze', startRank: 'Rookie', endRank: 'Bronze' },
 //            { name: 'Bronze-Gold', startRank: 'Bronze', endRank: 'Gold' },

@@ -15,6 +15,6 @@ registerCommand({
     player.sendMessage(translate(player, 'server.closeChat'));
     system.runTimeout(()=>{
       showBasicUI(player);
-    },20 * 5)
+    })
   },
 });
