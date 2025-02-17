@@ -26,7 +26,6 @@ class ItemEventModule implements Module {
 
 
     onEnable(): void {
-        this.log('Module Enabled');
         this.registerEventListeners();
     }
 
@@ -35,7 +34,6 @@ class ItemEventModule implements Module {
     }
 
     onDisable(): void {
-        this.log('Module Disabled');
         this.unregisterEventListeners();
     }
 
@@ -49,10 +47,6 @@ class ItemEventModule implements Module {
         world.afterEvents.itemUseOn.unsubscribe(this.handleItemUseOn);
     }
 
-    private log(message: string): void {
-        console.log(`${this.name}: ${message}`);
-        // world.sendMessage(`${this.name}: ${message}`); // デバッグ用
-    }
 
     private handleItemUse = (event: ItemUseAfterEvent) => {
         const player = event.source;

@@ -1,5 +1,5 @@
 import { ActionFormData, ActionFormResponse, FormCancelationReason, MessageFormData, MessageFormResponse } from "@minecraft/server-ui";
-import { Player, world, system } from "@minecraft/server";
+import { Player, system } from "@minecraft/server";
 import { Handler } from "../../module/Handler";
 import { Module, moduleManager } from "../../module/module";
 
@@ -100,6 +100,8 @@ class ActionFormModule implements Module {
     registerCommands(handler: Handler): void {
         handler.registerCommand("module", {
             moduleName: this.name,
+            description: `モジュールの有効/無効を切り替えるためのUIを表示します。`,
+            usage: `module`,
             execute: (_message, event) => {
                 if (event.sourceEntity instanceof Player) {
                     this.showModuleListForm(event.sourceEntity);
@@ -108,15 +110,6 @@ class ActionFormModule implements Module {
         });
     }
 
-    onEnable(): void {
-        console.log(`${this.name}: onEnable`);
-        world.sendMessage(`${this.name}: Module Enable`);
-    }
-
-    onDisable(): void {
-        console.log(`${this.name}: onDisable`);
-        world.sendMessage(`${this.name}: Module Disable`);
-    }
 }
 
 const actionFormModule = new ActionFormModule();

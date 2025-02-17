@@ -1,4 +1,4 @@
-// Database.ts (再生成機能付き - スコアはバックアップしない)
+// Database.ts (最終版)
 import { world, ScoreboardObjective, Player, system } from "@minecraft/server";
 
 export class Database {
@@ -14,10 +14,15 @@ export class Database {
     }
 
     private initializeObjective() {
-        this.objective = world.scoreboard.getObjective(this.objectiveName) || world.scoreboard.addObjective(this.objectiveName, this.objectiveName);
-        this.loadParticipantsBackup();
+        try {
+            this.objective = world.scoreboard.getObjective(this.objectiveName) || world.scoreboard.addObjective(this.objectiveName, this.objectiveName);
+            this.loadParticipantsBackup();
+        }
+        catch (error) {
+            console.error("initializeObjective Error:", error);
+            throw error; // 重要な初期化エラーなので、上に投げる
+        }
     }
-
     private setupObjectiveDeletionListener() {
         system.runInterval(() => {
             if (!world.scoreboard.getObjective(this.objectiveName) && !this.isRecreating) {
@@ -26,34 +31,25 @@ export class Database {
                 this.recreateObjective();
                 this.isRecreating = false;
             }
-        }, 20);
+        }, 100);
     }
 
     private recreateObjective() {
-        this.objective = world.scoreboard.addObjective(this.objectiveName, this.objectiveName);
-        this.restoreParticipants();
-        console.log(`Recreated scoreboard "${this.objectiveName}" and restored participants.`);
+        try {
+            this.objective = world.scoreboard.addObjective(this.objectiveName, this.objectiveName);
+            console.log(`Recreated scoreboard "${this.objectiveName}" and restored participants.`);
+        }
+        catch (error) {
+            console.error("recreateObjective error", error);
+        }
     }
+
 
     private loadParticipantsBackup() {
         this.participantsBackup.clear(); // Clear existing backup
         const participants = this.objective.getParticipants();
         for (const participant of participants) {
             this.participantsBackup.add(participant.displayName);
-        }
-    }
-
-    private restoreParticipants() {
-        // 参加者のみを復元。スコアは復元しない。
-        for (const participantName of this.participantsBackup) {
-            // スコアは設定しない
-            try {
-                this.objective.getScore(participantName)
-
-            }
-            catch (e) {
-                console.error("restoreParticipants error", e)
-            }
         }
     }
 
@@ -72,11 +68,10 @@ export class Database {
             }
             this.participantsBackup.add(keyString); // 参加者リストに追加/更新
         } catch (error) {
-            console.error("Failed to set data:", error);
+            console.error(`Failed to set data for key "${keyString}":`, error); // より詳細なエラーメッセージ
             throw error;
         }
     }
-
     async get(key: string | Player): Promise<number | undefined> {
         const keyString = key instanceof Player ? key.name : key;
         try {
@@ -88,11 +83,21 @@ export class Database {
             }
 
         } catch (error) {
-            if (error instanceof ReferenceError) {
-                return undefined;
-            }
+
             console.error("Failed to get data:", error);
-            throw error;
+            throw error;//objectiveがないなど、根本的な問題
+        }
+    }
+
+    async has(key: string | Player): Promise<boolean> {
+        const keyString = key instanceof Player ? key.name : key;
+        try {
+            // スコアの取得を試みる。例外が発生しなければ存在するとみなす
+            this.objective.getScore(keyString);
+            return true;
+        } catch (error) {
+            //console.error("has method error", error)
+            return false; // スコアボードまたはキーが存在しない
         }
     }
 

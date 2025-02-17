@@ -14,7 +14,7 @@ export class ScoreboardObjective {
     }
 
     async getScore(playerName: string): Promise<number | null> {
-        console.debug(`[getScore] ${this.id} の ${playerName} のスコアを取得します。`);
+        //console.debug(`[getScore] ${this.id} の ${playerName} のスコアを取得します。`);
         // 直接 /scoreboard players list <playerName> <objective> でスコアを取得する
         const scoreRes = await this.world.runCommand(`scoreboard players list "${playerName}"`);
         // console.debug(`[getScore] ${playerName} の ${this.id} スコア取得結果:`, scoreRes);

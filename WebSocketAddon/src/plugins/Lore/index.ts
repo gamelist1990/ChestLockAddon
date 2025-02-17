@@ -1,4 +1,4 @@
-import { Player, world, system, EntityInventoryComponent } from "@minecraft/server";
+import { Player, system, EntityInventoryComponent } from "@minecraft/server";
 import { Handler } from "../../module/Handler";
 import { Module, moduleManager } from "../../module/module";
 
@@ -170,6 +170,8 @@ class LoreEditorModule implements Module {
     registerCommands(handler: Handler): void {
         handler.registerCommand("lore", {
             moduleName: this.name,
+            description: `手に持っているアイテム、または指定したスロットのアイテムのLoreを編集します。`,
+            usage: `lore {"type": "add", "body": "追加する説明", "slot": 0}\nlore {"type": "remove", "body": "削除する説明"}\nlore {"type":"rename", "body": "新しい名前"}\nlore {"type": "clear"}`,
             execute: (message, event) => {
                 if (!(event.sourceEntity instanceof Player)) return;
 
@@ -195,16 +197,6 @@ class LoreEditorModule implements Module {
                 }
             }
         });
-    }
-
-    onEnable(): void {
-        console.log(`${this.name}: onEnable`);
-        world.sendMessage(`${this.name}: Module Enable`);
-    }
-
-    onDisable(): void {
-        console.log(`${this.name}: onDisable`);
-        world.sendMessage(`${this.name}: Module Disable`);
     }
 }
 

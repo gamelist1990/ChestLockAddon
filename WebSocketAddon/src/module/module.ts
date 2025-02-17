@@ -1,11 +1,11 @@
-// modules.ts (修正版 - docs 追加)
+// modules.ts
 import { world, system, WorldAfterEvents } from "@minecraft/server";
 import { Handler } from "./Handler";
 import { Database } from "./DataBase";
 
 interface Module {
     name: string;
-    docs?: string; // 追加: モジュールの説明
+    docs?: string;
     execute?: (context: any, ...args: any[]) => any;
     onInitialize?: (context: any) => void;
     onShutdown?: (context: any) => void;
@@ -13,7 +13,7 @@ interface Module {
     onEnable?: (context: any) => void;
     onDisable?: (context: any) => void;
     registerCommands?: (handler: Handler) => void;
-    enabledByDefault?: boolean;
+    enabledByDefault?: boolean; // Module interface: Add enabledByDefault
 }
 
 type EventHandler<T> = (eventData: T) => void;
@@ -121,83 +121,100 @@ class ModuleManager {
     private enabled: { [moduleName: string]: boolean } = {};
     private database: Database;
     private handler: Handler;
-    private moduleStatusDB: Database; // モジュールステータス専用の Database
+    private moduleStatusDB: Database; // Module status database
 
     constructor(context: any) {
         this.context = context;
         this.database = new Database();
         this.handler = new Handler(this.eventManager);
-        this.moduleStatusDB = Database.create("ws_module"); // 専用のスコアボード
+        this.moduleStatusDB = Database.create("ws_module"); // Dedicated scoreboard
         this.initializeModuleStatus();
     }
 
     private async initializeModuleStatus() {
         const allModules = this.getAllModules();
         for (const module of allModules) {
-            const enabled =
-                (await this.moduleStatusDB.get(module.name)) ??
-                (module.enabledByDefault ? 1 : 0);
-            this.enabled[module.name] = enabled === 1;
-            if (enabled === 1) {
+            const defaultValue = module.enabledByDefault ?? false; // Use enabledByDefault
+
+            // If the value doesn't exist in the database, set the default value
+            if (!(await this.moduleStatusDB.has(module.name))) {
+                await this.moduleStatusDB.set(module.name, defaultValue ? 1 : 0);
+            }
+
+            // Get the value from the database and reflect it in enabled (number to boolean)
+            this.enabled[module.name] = (await this.moduleStatusDB.get(module.name)) === 1;
+
+            // Register with EventManager based on enabled state
+            if (this.enabled[module.name]) {
                 this.eventManager.enableModule(module.name);
             }
         }
+
+        // Call onEnable (at initialization)
         for (const moduleName in this.enabled) {
             if (this.enabled[moduleName]) {
                 const module = this.getModule(moduleName);
                 if (module && module.onEnable) {
-                    module.onEnable(this.context);
+                    try {
+                        module.onEnable(this.context);
+                    } catch (error) {
+                        console.error(`Error enabling module ${moduleName}:`, error);
+                    }
                 }
             }
         }
     }
+
 
     private async updateModuleStatus(moduleName: string, enabled: boolean) {
         await this.moduleStatusDB.set(moduleName, enabled ? 1 : 0);
     }
 
-    registerModule(module: Module) {
-        if (this.modules[module.name]) {
-            console.warn(`Module "${module.name}" already registered. Overwriting.`);
+    async registerModule(module: Module) {
+        try {
+            if (this.modules[module.name]) {
+                console.warn(`Module "${module.name}" already registered. Overwriting.`);
+            }
+            this.modules[module.name] = module;
+
+            // If the module's status does not exist in the database, set the default value
+            const defaultValue = module.enabledByDefault ?? false;
+            if (!(await this.moduleStatusDB.has(module.name))) {
+                await this.moduleStatusDB.set(module.name, defaultValue ? 1 : 0);
+            }
+
+            // Get the enabled state from the database and convert from number to boolean
+            this.enabled[module.name] = (await this.moduleStatusDB.get(module.name)) === 1;
+
+            // Register with EventManager based on enabled state
+            if (this.enabled[module.name]) {
+                this.eventManager.enableModule(module.name);
+            }
+
+            // Update the database value (save as a number)
+            await this.updateModuleStatus(module.name, this.enabled[module.name]);
+
+            // Call onInitialize (when registering the module)
+            if (this.enabled[module.name] && module.onInitialize) {
+                module.onInitialize(this.context);
+            }
+
+            // Register commands
+            if (module.registerCommands) {
+                module.registerCommands(this.handler);
+            }
+        } catch (error) {
+            console.error(`Error registering module "${module.name}":`, error);
+            console.warn("Attempting to reset module status to default.");
+            await this.resetModuleStatusToDefault(); // Call reset function
         }
-        this.modules[module.name] = module;
-        this.moduleStatusDB
-            .get(module.name)
-            .then((value) => {
-                const enabled = value ?? (module.enabledByDefault ? 1 : 0);
-                this.enabled[module.name] = enabled === 1;
-
-                if (this.enabled[module.name]) {
-                    this.eventManager.enableModule(module.name);
-                }
-
-                if (module.onInitialize) {
-                    module.onInitialize(this.context);
-                }
-                if (module.registerCommands) {
-                    module.registerCommands(this.handler);
-                }
-            })
-            .catch(async (_error) => {
-                this.enabled[module.name] = !!module.enabledByDefault;
-                if (this.enabled[module.name]) {
-                    this.eventManager.enableModule(module.name);
-                }
-                await this.updateModuleStatus(module.name, this.enabled[module.name]);
-
-                if (module.onInitialize) {
-                    module.onInitialize(this.context);
-                }
-                if (module.registerCommands) {
-                    module.registerCommands(this.handler);
-                }
-            });
     }
+
 
     getModule(name: string): Module | undefined {
         return this.modules[name];
     }
-    // 追加: モジュールの説明を取得するメソッド
+    // Added: Method to get module description
     getModuleDocs(moduleName: string): string | undefined {
         const module = this.getModule(moduleName);
         return module ? module.docs : undefined;
@@ -296,12 +313,17 @@ class ModuleManager {
         return this.database;
     }
 
-    async getModuleStatus(): Promise<{ [moduleName: string]: boolean }> {
-        const status: { [moduleName: string]: boolean } = {};
-        for (const moduleName in this.modules) {
-            status[moduleName] = this.enabled[moduleName];
+    getModuleStatus(): { [moduleName: string]: boolean } {
+        return { ...this.enabled };  // Return a copy of the enabled object
+    }
+
+
+    async resetModuleStatusToDefault(): Promise<void> {
+        for (const module of this.getAllModules()) {
+            const defaultValue = module.enabledByDefault ?? false;
+            await this.updateModuleStatus(module.name, defaultValue); // Update DB with default value
         }
-        return status;
+        await this.initializeModuleStatus(); // Reinitialize enabled object and EventManager
     }
 }
 

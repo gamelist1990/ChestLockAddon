@@ -1,8 +1,12 @@
-import { prefix, registerCommand, world } from "../../../backend";
-import JsonDB from "../../../module/DataBase"; 
-import { MessageFormData } from "../../../module/form";
+import { registerCommand, world } from "../../../backend";
+import JsonDB from "../../../module/DataBase";
+import { MessageFormData, ModalFormData, ActionFormData, FormResponse } from "../../../module/form";
 import { Player } from "../../../module/player";
 import { disablePlugin, registerPlugin } from "../plugin";
+
+interface MemoData {
+    [memoName: string]: string;
+}
 
 class MemoManager {
     private db: JsonDB;
@@ -28,23 +32,139 @@ class MemoManager {
         }
     }
 
-    async loadMemo(player: Player): Promise<string> {
+    async loadMemos(player: Player): Promise<MemoData> {
         const playerName = player.name;
-        const memo = await this.db.get(playerName);
-        return memo ?? "";
+        const memos = await this.db.get(playerName);
+        return memos ?? {};
     }
 
-    async saveMemo(player: Player, content: string): Promise<void> {
+    async saveMemos(player: Player, memos: MemoData): Promise<void> {
         const playerName = player.name;
-        await this.db.set(playerName, content);
+        await this.db.set(playerName, memos);
     }
 
-    async clearMemo(player: Player): Promise<void> {
-        const playerName = player.name;
-        await this.db.delete(playerName);
+    async createMemo(player: Player, memoName: string): Promise<void> {
+        const memos = await this.loadMemos(player);
+        if (memos[memoName]) {
+            player.sendMessage(`[Memo] §c'${memoName}' という名前のメモは既に存在します。`);
+            return;
+        }
+        memos[memoName] = ""; // 空のメモを作成
+        await this.saveMemos(player, memos);
+        player.sendMessage(`[Memo] §a'${memoName}' という名前のメモを作成しました。`);
+    }
+
+    async viewMemo(player: Player, memoName: string): Promise<void> {
+        const memos = await this.loadMemos(player);
+        if (memos[memoName] === undefined) {
+            player.sendMessage(`[Memo] §c'${memoName}' という名前のメモは見つかりません。`);
+            return;
+        }
+        const memoContent = memos[memoName];
+
+        if (isFormCreatorEnabled) {
+            const form = new MessageFormData()
+                .title(memoName)
+                .body(memoContent)
+                .button1("閉じる")
+                .button2("編集");
+
+
+            const response = await form.show(player);
+            if (response) {
+                if (response.canceled) {
+                    player.sendMessage(`[Memo] 表示をキャンセルしました`);
+                    return;
+                }
+                switch (response.selection) {
+                    case 0:
+                        player.sendMessage(`[Memo] Memoを閉じました`);
+                        break;
+                    case 1:
+                        this.editMemo(player, memoName)
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+        } else {
+            player.sendMessage(`[Memo] §a'${memoName}':\n${memoContent}`);
+        }
+    }
+
+    async editMemo(player: Player, memoName: string): Promise<void> {
+        const memos = await this.loadMemos(player);
+        if (memos[memoName] === undefined) {
+            player.sendMessage(`[Memo] §c'${memoName}' という名前のメモは見つかりません。`);
+            return;
+        }
+
+        const currentMemoContent = memos[memoName];
+        const modalForm = new ModalFormData();
+        modalForm
+            .title(`'${memoName}' の編集`)
+            .textField("内容", "ここにメモを入力", currentMemoContent);
+
+        const response: FormResponse = await modalForm.show(player);
+        if (response.canceled) {
+            player.sendMessage("[Memo] §7メモの編集がキャンセルされました。");
+            return;
+        }
+
+        if (response.result && response.result.length > 0 && typeof response.result[0] === 'string') {
+            memos[memoName] = response.result[0];
+            await this.saveMemos(player, memos);
+            player.sendMessage(`[Memo] §a'${memoName}' を更新しました。`);
+        } else {
+            player.sendMessage("§c[Memo] データの取得に失敗しました");
+        }
+    }
+
+    async deleteMemo(player: Player, memoName: string): Promise<void> {
+        const memos = await this.loadMemos(player);
+        if (memos[memoName] === undefined) {
+            player.sendMessage(`[Memo] §c'${memoName}' という名前のメモは見つかりません。`);
+            return;
+        }
+
+        delete memos[memoName];
+        await this.saveMemos(player, memos);
+        player.sendMessage(`[Memo] §a'${memoName}' を削除しました。`);
+    }
+
+    async listMemos(player: Player): Promise<void> {
+        const memos = await this.loadMemos(player);
+        const memoNames = Object.keys(memos);
+
+        if (memoNames.length === 0) {
+            player.sendMessage("[Memo] §7保存されているメモはありません。");
+            return;
+        }
+        if (isFormCreatorEnabled) {
+            const actionForm = new ActionFormData();
+            actionForm.title("メモリスト");
+            actionForm.body("利用可能なメモの一覧:");
+
+            for (const memoName of memoNames) {
+                actionForm.button(memoName);
+            }
+            const response = await actionForm.show(player);
+            if (response.canceled || response.selection === null || typeof response.selection !== 'number') {
+                return;
+            }
+            const selectedMemoName = memoNames[response.selection];
+            await memoManager.viewMemo(player, selectedMemoName);
+        } else {
+            player.sendMessage("[Memo] §a保存されているメモ:");
+            for (const memoName of memoNames) {
+                player.sendMessage(`- ${memoName}`);
+            }
+        }
     }
 }
 
+let isFormCreatorEnabled: boolean;
 const memoManager = new MemoManager();
 
 registerPlugin(
@@ -59,7 +179,6 @@ registerPlugin(
     },
     true,
     async () => {
-        let isFormCreatorEnabled: boolean;
 
         setTimeout(async () => {
             isFormCreatorEnabled = await memoManager.checkFormCreatorEnabled();
@@ -67,11 +186,11 @@ registerPlugin(
 
         registerCommand({
             name: 'memo',
-            description: 'メモ機能(実験)',
+            description: 'メモ機能',
             maxArgs: Infinity,
             minArgs: 1,
             config: { enabled: true, adminOnly: false, requireTag: [] },
-            usage: `<show/save/clear> [内容]`,
+            usage: `<list/create/view/edit/delete> [メモ名]`,
             executor: async (player: Player, args: string[]) => {
                 const command = args[0].toLowerCase();
 
@@ -80,46 +199,48 @@ registerPlugin(
                     return;
                 }
 
-                if (command === 'show') {
-                    const memoContent = await memoManager.loadMemo(player);
-                    if (isFormCreatorEnabled) {
-                        const messageForm = new MessageFormData
-
-                        messageForm
-                            .title("メモ")
-                            .body(memoContent)
-                            .button1("Ok");
-
-                        const response = await messageForm.show(player);
-                        if (response.canceled) {
-                            player.sendMessage(`cancelしました`);
+                switch (command) {
+                    case 'list':
+                        await memoManager.listMemos(player);
+                        break;
+                    case 'create': {
+                        const memoName = args[1];
+                        if (!memoName) {
+                            player.sendMessage("§c[Memo] メモ名を指定してください。");
                             return;
                         }
-                        switch (response.selection) {
-                            case 0:
-                                player.sendMessage(`メモを閉じました`)
-                                break;
-                            case 1:
-                                player.sendMessage(`メモを閉じました`)
-                                break;
-                            default:
-                                break;
-                        }
-                    } else {
-                        const lines = memoContent.split('\n');
-                        for (const line of lines) {
-                            player.sendMessage(`[Memo] ${line}`);
-                        }
+                        await memoManager.createMemo(player, memoName);
+                        break;
                     }
-                } else if (command === 'save') {
-                    const content = args.slice(1).join(' ');
-                    await memoManager.saveMemo(player, content);
-                    player.sendMessage("[Memo] §6メモをセーブしました");
-                } else if (command === 'clear') {
-                    await memoManager.clearMemo(player);
-                    player.sendMessage("[Memo] §aメモをクリアしました");
-                } else {
-                    player.sendMessage(`§c[Memo] コマンドが間違ってるよ. 使い方: ${prefix}memo <show/save/clear>`);
+                    case 'view': {
+                        const memoName = args[1];
+                        if (!memoName) {
+                            player.sendMessage("§c[Memo] メモ名を指定してください。");
+                            return;
+                        }
+                        await memoManager.viewMemo(player, memoName);
+                        break;
+                    }
+                    case 'edit': {
+                        const memoName = args[1];
+                        if (!memoName) {
+                            player.sendMessage("§c[Memo] メモ名を指定してください。");
+                            return;
+                        }
+                        await memoManager.editMemo(player, memoName);
+                        break;
+                    }
+                    case 'delete': {
+                        const memoName = args[1];
+                        if (!memoName) {
+                            player.sendMessage("§c[Memo] メモ名を指定してください。");
+                            return;
+                        }
+                        await memoManager.deleteMemo(player, memoName);
+                        break;
+                    }
+                    default:
+                        player.sendMessage(`§c[Memo] コマンドが間違っています。使い方:  /memo <list/create/view/edit/delete> [メモ名]`);
                 }
             }
         });

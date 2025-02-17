@@ -110,54 +110,45 @@ class ScoreModule implements Module {
     name = 'ScoreModule';
     enabledByDefault = true;
     docs = `§lコマンド一覧§r\n
-§r- §9/ws:resetScore <スコアボード名|-all>§r: スコアリセット。\n
-§r  - §9-all§r: 全スコアボードをリセット。\n
-§r- §9/ws:number <数値1>,<数値2>,...§r: ランダム値をws_numberに設定。\n
-§r- §9/ws:score=<スコアボード名>§r: 値をws_<スコアボード名>にコピー。\n
-§r  - プレースホルダー:\n
-§r    - §9[allPlayer]§r: 全プレイヤー数\n
-§r    - §9[uptime]§r: サーバー稼働時間\n
-§r    - §9[ver]§r: スクリプトVer\n
-§r    - §9[time]§r: 現在時刻\n
-§r    - §9[tag=<タグ名>]§r: タグ数\n
-§r    - §9[score=<スコアボード名>]§r: 最高スコア\n
-§r    - §9[score=<スコアボード名>,<プレイヤー名>]§r: プレイヤースコア\n
-§r- §9/ws:team set <チーム数>:<チーム内上限人数> <タグ名> <スコアボード名>§r: チーム分け。\n
-§r- §9/ws:scoreDelete form§r: スコアボード削除フォーム表示。\n
-  §r  - §9all§r: ws_module以外全て削除\n
-§r- §9/ws:teamCount <チームタグ1,...> <JSON> [true]§r: 人数でコマンド実行。\n
-§r  - §9<JSON>§r: 例:[{"team1":"cmd1"},{"team2":"cmd2"}]\n
-§r  - §9[true]§r: 最大人数チーム。無指定で0人チーム,同数はsame
-§r- §9/ws:meiro <json配列>§r: 迷路生成。\n
-  §r  - §9<json>§r: 例:\n
-  §r   {\n
-  §r     "start": ["emerald_block"],\n
-  §r     "end": ["redstone_block"],\n
-  §r     "level": "easy",\n
-  §r     "height": 10,\n
-  §r     "wall": "oak_log",\n
-  §r     "floor": "stone",\n
-  §r   }`;
+§b- resetScore <スコアボード名|-all>§r: 指定したスコアボード、または全てのスコアボードのスコアをリセットします。\n
+  §7<スコアボード名>§r: リセットするスコアボードの名前。\n
+  §7-all§r: 全てのスコアボードをリセット。\n
+§b- number <数値1>,<数値2>,...§r: 指定された数値の中からランダムに1つを選び、'ws_number' スコアボードに設定します。\n
+  §7<数値1>,<数値2>,...§r: カンマ区切りの数値リスト。\n
+§b- score=<コピー元スコアボード名>§r: 指定したスコアボードの値を 'ws_<スコアボード名>' にコピー。以下のプレースホルダーが使用可能です:\n
+  §7[allPlayer]§r: 全プレイヤー数\n
+  §7[uptime]§r: サーバー稼働時間\n
+  §7[ver]§r: スクリプトバージョン\n
+  §7[time]§r: 現在時刻 (時:分)\n
+  §7[tag=<タグ名>]§r: 指定したタグを持つプレイヤー数\n
+  §7[score=<スコアボード名>]§r: 指定したスコアボードの最高スコア\n
+  §7[score=<スコアボード名>,<プレイヤー名>]§r: 指定したスコアボードの指定したプレイヤーのスコア\n
+  §7[scoreN=<スコアボード名>]§r: 指定したスコアボードの最初の参加者の名前（参加者がいない場合は'0'）\n
+  §7[scoreN=<スコアボード名>, <プレイヤー名>]§r: 指定したスコアボードの指定したプレイヤーの名前。見つからない場合は'0'\n
+§b- team set <チーム数>:<チーム内上限人数> <タグ名> <スコアボード名>§r: 指定した条件でプレイヤーをチーム分けし、スコアボードに記録します。\n
+  §7<チーム数>§r: 作成するチームの数。\n
+  §7<チーム内上限人数>§r: 各チームの最大人数。\n
+  §7<タグ名>§r: チーム分けの対象となるプレイヤーが持つタグ。\n
+  §7<スコアボード名>§r: チーム番号を記録するスコアボード名。\n
+§b- scoreDelete form§r: スコアボードを削除するためのフォームを表示します。\n
+§b- scoreDelete all§r: 'ws_module' 以外の 'ws_' で始まる全てのスコアボードを一括削除します。\n
+§b- teamCount <チームタグ1,チームタグ2,...> <JSON> [true]§r: 指定したタグを持つプレイヤー数に基づき、コマンドを実行します。\n
+  §7<チームタグ1,チームタグ2,...>§r: カンマ区切りのチームタグ。\n
+  §7<JSON>§r: チームタグとコマンドの対応を記述したJSON配列。例: [{"team1":"cmd1"},{"team2":"cmd2"}]\n
+  §7[true]§r: (オプション) 最大人数のチームを比較してコマンド実行。指定がない場合は、0人になったチームを検知してコマンド実行。同人数の場合は"same"キーのコマンド実行。\n
+§b- meiro <JSON>§r: 指定したJSON設定に基づいて迷路を生成します（※ コマンド未実装）。\n
+  §7<JSON>§r: 迷路の構造を定義するJSON。例: {"start": ["emerald_block"], "end": ["redstone_block"], "level": "easy", "height": 10, "wall": "oak_log", "floor": "stone"}`;
 
-    onEnable(): void {
-        this.log('Module Enabled');
-    }
+    
 
-    onInitialize(): void { }
 
-    onDisable(): void {
-        this.log('Module Disabled');
-    }
-
-    private log(message: string): void {
-        console.log(`${this.name}: ${message}`);
-        world.sendMessage(`${this.name}: ${message}`);
-    }
 
     // Handler を使ったコマンド登録
     registerCommands(handler: Handler): void {
         handler.registerCommand('resetScore', {
             moduleName: this.name,
+            description: `指定したスコアボード、または全てのスコアボードのスコアをリセットします。`,
+            usage: `resetScore <スコアボード名|-all>\n  <スコアボード名>: リセットするスコアボードの名前。\n  -all: 全てのスコアボードをリセット。`,
             execute: (message, event) => {
                 const args = message.split(/\s+/);
 
@@ -194,6 +185,8 @@ class ScoreModule implements Module {
 
         handler.registerCommand('number', {
             moduleName: this.name,
+            description: `指定された数値の中からランダムに1つを選び、'ws_number' スコアボードに設定します。`,
+            usage: `number <数値1>,<数値2>,...\n  <数値1>,<数値2>,...: カンマ区切りの数値リスト。`,
             execute: (message, event) => {
                 const consoleOutput = (message: string) => {
                     console.warn(message);
@@ -244,6 +237,8 @@ class ScoreModule implements Module {
 
         handler.registerCommand('score', {
             moduleName: this.name,
+            description: `指定したスコアボードの値を 'ws_<スコアボード名>' にコピーします。特殊なプレースホルダーも置換します。`,
+            usage: `score=<コピー元スコアボード名>\n  [allPlayer], [uptime], [ver], [time], [tag=<タグ名>], [score=<スコアボード名>], [score=<スコアボード名>,<プレイヤー名>], [scoreN=<スコアボード名>], [scoreN=<スコアボード名>, <プレイヤー名>]が使用可能`,
             execute: (message, event) => {
                 try {
                     const scoreboardName = message.split('=')[1];
@@ -294,6 +289,8 @@ class ScoreModule implements Module {
 
         handler.registerCommand('team', {
             moduleName: this.name,
+            description: `指定した条件に基づいてプレイヤーをチーム分けし、スコアボードに記録します。`,
+            usage: `team set <チーム数>:<チーム内上限人数> <タグ名> <スコアボード名>\n  <チーム数>: 作成するチームの数。\n  <チーム内上限人数>: 各チームの最大人数。\n  <タグ名>: チーム分け対象のプレイヤーが持つタグ。\n  <スコアボード名>: チーム番号を記録するスコアボードの名前。`,
             execute: (message, event) => {
                 const args = message.replace(/^\/team\s+/, '').split(/\s+/);
 
@@ -388,6 +385,8 @@ class ScoreModule implements Module {
 
         handler.registerCommand('scoreDelete', {
             moduleName: this.name,
+            description: `スコアボードを削除するためのフォームを表示、または 'ws_module' 以外の 'ws_' で始まる全てのスコアボードを一括削除します。`,
+            usage: `scoreDelete form\n  form: 削除するスコアボードを選択するフォームを表示します。\nscoreDelete all\n all: 'ws_module' 以外の 'ws_' で始まる全てのスコアボードを削除します。`,
             execute: async (message, event) => {
                 if (!(event.sourceEntity instanceof Player)) {
                     console.warn('このコマンドはプレイヤーからのみ実行できます。');
@@ -405,13 +404,16 @@ class ScoreModule implements Module {
                         await confirmAndDeleteAll(player);
                         break;
                     default:
-                        // 何もしない、またはヘルプメッセージを表示
+                        player.sendMessage(`scoreDelete form\n  form: 削除するスコアボードを選択するフォームを表示します。\nscoreDelete all\n all: 'ws_module' 以外の 'ws_' で始まる全てのスコアボードを削除します。`,)
                         break;
                 }
             },
         });
         handler.registerCommand('teamCount', {
             moduleName: this.name,
+            description: `指定したタグを持つプレイヤーの人数に基づいて、条件分岐しコマンドを実行します。`,
+            usage: `teamCount <チームタグ1,チームタグ2,...> <JSON> [true]\n  <チームタグ1,チームタグ2,...>: カンマ区切りのチームタグ。\n  <JSON>: チームタグとコマンドの対応を記述したJSON配列。 例: [{"team1":"cmd1"},{"team2":"cmd2"}]\n  [true]: (オプション) 最大人数のチームを比較。指定がない場合は、0人になったチームを検知。`,
+
             execute: (message, event) => {
                 const consoleOutput = (message: string) => {
                     console.warn(message);
@@ -534,6 +536,8 @@ class ScoreModule implements Module {
                 }
             },
         });
+
+
 
 
         /**

@@ -13,13 +13,13 @@ export const globalPlayerSpeeds: {
 
 
 class GameDataModule implements Module {
-  name = 'Speed_And_Health_Monitor';
+  name = 'scoreboard';
   enabledByDefault = true;
   docs = `使用可能DB:\n
 §r- §9ws_db_hp\n
 §r- §9ws_db_speed\n
 §r- §9ws_db_tps\n
-§r- §9ws_db_lag`;  // lag DB を追加
+§r- §9ws_db_lag`;
 
   private healthDb: Database;
   private speedDb: Database;
@@ -44,7 +44,6 @@ class GameDataModule implements Module {
   }
 
   onEnable(): void {
-    this.log('Module Enabled');
     this.cachePlayers();
     this.registerEventListeners();
     this.startMonitoring();
@@ -59,7 +58,6 @@ class GameDataModule implements Module {
   }
 
   onDisable(): void {
-    this.log('Module Disabled');
     this.unregisterEventListeners();
     this.stopMonitoring();
     this.unsubscribeFromTickEvent();
@@ -93,10 +91,7 @@ class GameDataModule implements Module {
       }
     }
   }
-  private log(message: string): void {
-    console.log(`${this.name}: ${message}`);
-    world.sendMessage(`${this.name}: ${message}`);
-  }
+ 
 
   private startMonitoring(): void {
     this.mainIntervalId = system.runInterval(() => {
@@ -141,68 +136,73 @@ class GameDataModule implements Module {
   }
 
   private updatePositionAndSpeedData(): void {
-    for (const player of this.cachedPlayers) {
-      if (!player) continue;
+    system.run(() => {
+      for (const player of this.cachedPlayers) {
+        if (!player) continue;
 
-      const currentPosition = player.location;
-      const lastPosition = this.lastPositionMap.get(player.id);
+        const currentPosition = player.location;
+        const lastPosition = this.lastPositionMap.get(player.id);
 
-      if (!currentPosition) continue;
+        if (!currentPosition) continue;
 
-      if (!lastPosition) {
-        this.lastPositionMap.set(player.id, currentPosition);
-        continue;
+        if (!lastPosition) {
+          this.lastPositionMap.set(player.id, currentPosition);
+          continue;
+        }
+
+        try {
+          const dx = currentPosition.x - lastPosition.x;
+          const dy = currentPosition.y - lastPosition.y;
+          const dz = currentPosition.z - lastPosition.z;
+
+          const speed = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          this.speedDb.set(player, speed);
+
+          globalPlayerSpeeds[player.id] = globalPlayerSpeeds[player.id] || {};
+          globalPlayerSpeeds[player.id].speed = speed;
+
+          this.lastPositionMap.set(player.id, currentPosition);
+
+        } catch (error) {
+          console.error(`Error updating speed for player: ${player.name}: ${error}`);
+        }
       }
+    })
 
-      try {
-        const dx = currentPosition.x - lastPosition.x;
-        const dy = currentPosition.y - lastPosition.y;
-        const dz = currentPosition.z - lastPosition.z;
-
-        const speed = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        this.speedDb.set(player, speed);
-
-        globalPlayerSpeeds[player.id] = globalPlayerSpeeds[player.id] || {};
-        globalPlayerSpeeds[player.id].speed = speed;
-
-        this.lastPositionMap.set(player.id, currentPosition);
-
-      } catch (error) {
-        console.error(`Error updating speed for player: ${player.name}: ${error}`);
-      }
-    }
   }
 
   private updateRealtimeSpeedData(): void {
-    for (const player of this.cachedPlayers) {
-      if (!player) continue;
+    system.run(() => {
+      for (const player of this.cachedPlayers) {
+        if (!player) continue;
 
-      const currentPosition = player.location;
-      const previousPosition = this.previousPositionMap.get(player.id);
+        const currentPosition = player.location;
+        const previousPosition = this.previousPositionMap.get(player.id);
 
-      if (!currentPosition) continue;
+        if (!currentPosition) continue;
 
-      if (!previousPosition) {
-        this.previousPositionMap.set(player.id, currentPosition);
-        continue;
+        if (!previousPosition) {
+          this.previousPositionMap.set(player.id, currentPosition);
+          continue;
+        }
+
+        try {
+          const dx = currentPosition.x - previousPosition.x;
+          const dy = currentPosition.y - previousPosition.y;
+          const dz = currentPosition.z - previousPosition.z;
+
+          const realtimeSpeed = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+          globalPlayerSpeeds[player.id] = globalPlayerSpeeds[player.id] || {};
+          globalPlayerSpeeds[player.id].realtimeSpeed = realtimeSpeed;
+
+          this.previousPositionMap.set(player.id, currentPosition);
+
+        } catch (error) {
+          console.error(`Error updating realtime speed for player: ${player.name}: ${error}`);
+        }
       }
-
-      try {
-        const dx = currentPosition.x - previousPosition.x;
-        const dy = currentPosition.y - previousPosition.y;
-        const dz = currentPosition.z - previousPosition.z;
-
-        const realtimeSpeed = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-        globalPlayerSpeeds[player.id] = globalPlayerSpeeds[player.id] || {};
-        globalPlayerSpeeds[player.id].realtimeSpeed = realtimeSpeed;
-
-        this.previousPositionMap.set(player.id, currentPosition);
-
-      } catch (error) {
-        console.error(`Error updating realtime speed for player: ${player.name}: ${error}`);
-      }
-    }
+    })
   }
 
   private subscribeToTickEvent(): void {

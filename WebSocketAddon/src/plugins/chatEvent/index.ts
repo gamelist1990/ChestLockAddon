@@ -21,7 +21,6 @@ class ChatModule implements Module {
 
 
   onEnable(): void {
-    console.log(`${this.name}: onEnable`);
     world.sendMessage(`${this.name}: Module Enabled`);
     this.registerChatListener();
   }
@@ -33,7 +32,6 @@ class ChatModule implements Module {
 
 
   onDisable(): void {
-    console.log(`${this.name}: onDisable`);
     world.sendMessage(`${this.name}: Module Disabled`);
     this.unregisterChatListener();
   }
@@ -46,7 +44,7 @@ class ChatModule implements Module {
   }
 
   private handleChatEvent = (event: { sender: Player; message: string; cancel: boolean }) => {
-    if (event.message.length > 150) {
+    if (event.message.length > 3) {
       event.cancel = true;
       event.sender.sendMessage("§c[ChatManager]§r: 150文字を超えるメッセージは送信できません。");
       return;

@@ -63,7 +63,6 @@ class AttackModule implements Module {
     }
 
     onEnable(): void {
-        this.log('Module Enabled');
         this.cachePlayers();
         this.registerEventListeners();
     }
@@ -74,7 +73,6 @@ class AttackModule implements Module {
     }
 
     onDisable(): void {
-        this.log('Module Disabled');
         this.unregisterEventListeners();
     }
 
@@ -98,10 +96,6 @@ class AttackModule implements Module {
 
     private cachePlayers(): void {
         this.cachedPlayers = Array.from(world.getAllPlayers());
-    }
-
-    private log(message: string): void {
-        console.log(`${this.name}: ${message}`);
     }
 
     /**
