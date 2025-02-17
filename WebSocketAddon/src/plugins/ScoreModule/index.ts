@@ -7,7 +7,7 @@ import {
 } from '@minecraft/server';
 import { Module, moduleManager } from '../../module/module';
 import { Handler } from '../../module/Handler';
-import { ActionFormData, MessageFormData } from '@minecraft/server-ui';
+import { ActionFormData, MessageFormData, uiManager } from '@minecraft/server-ui';
 
 /**
  * Formats a given timestamp into a string with the format `YYYY/MM/DD HH:mm:ss` adjusted for a specified timezone offset.
@@ -139,7 +139,7 @@ class ScoreModule implements Module {
 §b- meiro <JSON>§r: 指定したJSON設定に基づいて迷路を生成します（※ コマンド未実装）。\n
   §7<JSON>§r: 迷路の構造を定義するJSON。例: {"start": ["emerald_block"], "end": ["redstone_block"], "level": "easy", "height": 10, "wall": "oak_log", "floor": "stone"}`;
 
-    
+
 
 
 
@@ -536,6 +536,24 @@ class ScoreModule implements Module {
                 }
             },
         });
+        handler.registerCommand('closeForm', {
+            moduleName: this.name,
+            description: `ユーザーが開いているフォームを強制的に閉じます`,
+            usage: `closeForm execute as @a at @s run scriptevent ws:closeForm　で使用してください`,
+            execute: (message, event) => {
+                const args = message.split(/\s+/);
+                if (args) {
+                    const player = event.sourceEntity;
+                    if (player instanceof Player) {
+                        //@ts-ignore
+                        uiManager.closeAllForms(player);
+                    }
+                }
+            }
+        });
+
+
+
 
 
 

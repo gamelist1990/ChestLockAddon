@@ -44,7 +44,7 @@ class ChatModule implements Module {
   }
 
   private handleChatEvent = (event: { sender: Player; message: string; cancel: boolean }) => {
-    if (event.message.length > 3) {
+    if (event.message.length > 150) {
       event.cancel = true;
       event.sender.sendMessage("§c[ChatManager]§r: 150文字を超えるメッセージは送信できません。");
       return;

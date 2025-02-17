@@ -184,6 +184,7 @@ registerPlugin(
             isFormCreatorEnabled = await memoManager.checkFormCreatorEnabled();
         }, 40);
 
+        
         registerCommand({
             name: 'memo',
             description: 'メモ機能',
@@ -193,6 +194,7 @@ registerPlugin(
             usage: `<list/create/view/edit/delete> [メモ名]`,
             executor: async (player: Player, args: string[]) => {
                 const command = args[0].toLowerCase();
+                const closeChat = `[Memo] §a=== §fチャット欄を§6閉じて下さい §a===`
 
                 if (isFormCreatorEnabled === undefined) {
                     player.sendMessage("§c[Memo] 読み込み中です... もう少しお待ちください.");
@@ -201,6 +203,7 @@ registerPlugin(
 
                 switch (command) {
                     case 'list':
+                        player.sendMessage(closeChat);
                         await memoManager.listMemos(player);
                         break;
                     case 'create': {
@@ -218,6 +221,7 @@ registerPlugin(
                             player.sendMessage("§c[Memo] メモ名を指定してください。");
                             return;
                         }
+                        player.sendMessage(closeChat);
                         await memoManager.viewMemo(player, memoName);
                         break;
                     }
@@ -227,6 +231,7 @@ registerPlugin(
                             player.sendMessage("§c[Memo] メモ名を指定してください。");
                             return;
                         }
+                        player.sendMessage(closeChat);
                         await memoManager.editMemo(player, memoName);
                         break;
                     }
