@@ -150,8 +150,12 @@ class AttackModule implements Module {
      */
     private removeTagWithTimeout(entity: Entity, tag: string, timeout: number): void {
         system.runTimeout(() => {
-            if (entity.hasTag(tag)) {
-                entity.removeTag(tag);
+            try {
+                if (entity.hasTag(tag)) {
+                    entity.removeTag(tag);
+                }
+            } catch (error) {
+
             }
         }, timeout);
     }
@@ -166,7 +170,7 @@ class AttackModule implements Module {
         const { cause } = damageSource;
 
         this.addDeathCauseTag(deadEntity, cause);
-        system.run(()=>{
+        system.run(() => {
             deadEntity.addTag(`${AttackModule.DEAD_TAG}`);
         })
         this.incrementDeathCount(deadEntity);
@@ -307,27 +311,36 @@ class AttackModule implements Module {
      * ProjectileHitBlockAfterEventのハンドラ
      */
     private handleProjectileHitBlock = (event: ProjectileHitBlockAfterEvent) => {
-        const { source } = event;
+        const { source, projectile } = event;
         const hitBlock = event.getBlockHit()?.block;
 
-        if (!(source instanceof Player)) return;
+        if (!(source instanceof Entity)) return;
         if (!hitBlock) return;
 
 
+        try {
+            projectile.addTag(AttackModule.HIT_BLOCK_TAG);
+            this.removeTagWithTimeout(projectile, AttackModule.HIT_BLOCK_TAG, this.tagTimeout);
+        } catch (error) {
+        }
         source.addTag(AttackModule.HIT_BLOCK_TAG);
         this.removeTagWithTimeout(source, AttackModule.HIT_BLOCK_TAG, this.tagTimeout);
-
 
         const blockIdTag = `${AttackModule.HIT_BLOCK_ID_TAG}${hitBlock.typeId.replace(':', '_')}`;
         source.addTag(blockIdTag);
         this.removeTagWithTimeout(source, blockIdTag, this.tagTimeout);
+        try {
+            projectile.addTag(blockIdTag);
+            this.removeTagWithTimeout(projectile, blockIdTag, this.tagTimeout);
+        } catch (error) {
+        }
     };
 
     /**
       * ProjectileHitEntityAfterEventのハンドラ
       */
     private handleProjectileHitEntity = (event: ProjectileHitEntityAfterEvent) => {
-        const { source } = event;
+        const { source, } = event;
         const hitEntity = event.getEntityHit()?.entity;
 
         if (!(source instanceof Player)) return;
@@ -335,6 +348,7 @@ class AttackModule implements Module {
 
         source.addTag(AttackModule.HIT_ENTITY_TAG);
         this.removeTagWithTimeout(source, AttackModule.HIT_ENTITY_TAG, this.tagTimeout);
+
 
         // Get the entity type ID and add the tag.
         const entityTypeIdTag = `${AttackModule.HIT_ENTITY_ITEM_TAG}${hitEntity.typeId.replace(':', '_')}`;

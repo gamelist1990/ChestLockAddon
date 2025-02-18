@@ -173,7 +173,7 @@ class GameDataModule implements Module {
 
   private updateRealtimeSpeedData(): void {
     system.run(() => {
-      for (const player of this.cachedPlayers) {
+      for (const player of world.getAllPlayers()) {
         if (!player) continue;
 
         const currentPosition = player.location;

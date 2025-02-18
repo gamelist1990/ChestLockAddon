@@ -323,7 +323,6 @@ class ModuleManager {
             const defaultValue = module.enabledByDefault ?? false;
             await this.updateModuleStatus(module.name, defaultValue); // Update DB with default value
         }
-        await this.initializeModuleStatus(); // Reinitialize enabled object and EventManager
     }
 }
 
