@@ -1,4 +1,5 @@
 import { registerCommand, world } from "../../../backend";
+import { closeChat } from "../../../module/Data";
 import JsonDB from "../../../module/DataBase";
 import { MessageFormData, ModalFormData, ActionFormData, FormResponse } from "../../../module/form";
 import { Player } from "../../../module/player";
@@ -104,7 +105,8 @@ class MemoManager {
         const modalForm = new ModalFormData();
         modalForm
             .title(`'${memoName}' の編集`)
-            .textField("内容", "ここにメモを入力", currentMemoContent);
+            .textField("内容", "ここにメモを入力", currentMemoContent)
+            .toggle(`送信後に確認`, false)
 
         const response: FormResponse = await modalForm.show(player);
         if (response.canceled) {
@@ -116,6 +118,10 @@ class MemoManager {
             memos[memoName] = response.result[0];
             await this.saveMemos(player, memos);
             player.sendMessage(`[Memo] §a'${memoName}' を更新しました。`);
+        } else if (response.result && typeof response.result[1] === "boolean") {
+            if (response.result[1] !== true) {
+                this.viewMemo(player, memoName)
+            }
         } else {
             player.sendMessage("§c[Memo] データの取得に失敗しました");
         }
@@ -184,7 +190,7 @@ registerPlugin(
             isFormCreatorEnabled = await memoManager.checkFormCreatorEnabled();
         }, 40);
 
-        
+
         registerCommand({
             name: 'memo',
             description: 'メモ機能',
@@ -194,7 +200,6 @@ registerPlugin(
             usage: `<list/create/view/edit/delete> [メモ名]`,
             executor: async (player: Player, args: string[]) => {
                 const command = args[0].toLowerCase();
-                const closeChat = `[Memo] §a=== §fチャット欄を§6閉じて下さい §a===`
 
                 if (isFormCreatorEnabled === undefined) {
                     player.sendMessage("§c[Memo] 読み込み中です... もう少しお待ちください.");

@@ -80,3 +80,5 @@ export async function getData(playerName?: string): Promise<any | undefined> {
         return undefined;
     }
 }
+
+export const closeChat = `§a=== §fチャット欄を§6閉じて下さい §a===`
