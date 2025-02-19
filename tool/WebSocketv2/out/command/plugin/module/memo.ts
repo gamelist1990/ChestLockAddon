@@ -193,7 +193,7 @@ registerPlugin(
 
         registerCommand({
             name: 'memo',
-            description: 'メモ機能',
+            description: 'メモ機能(WebScoketアドオンの実験的Form機能をサポートしています)',
             maxArgs: Infinity,
             minArgs: 1,
             config: { enabled: true, adminOnly: false, requireTag: [] },
