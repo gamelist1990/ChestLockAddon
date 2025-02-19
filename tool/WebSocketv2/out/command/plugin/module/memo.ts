@@ -109,17 +109,23 @@ class MemoManager {
             .toggle(`送信後に確認`, false)
 
         const response: FormResponse = await modalForm.show(player);
+        if (response.notFound) {
+            player.sendMessage("[Memo] §7WebScoketアドオンのFormCreatorが使用できない為キャンセルしました");
+            return;
+        }
         if (response.canceled) {
             player.sendMessage("[Memo] §7メモの編集がキャンセルされました。");
             return;
         }
 
         if (response.result && response.result.length > 0 && typeof response.result[0] === 'string') {
-            memos[memoName] = response.result[0];
+            memos[memoName] = response.result[0].replaceAll("\\\\n","\n");
             await this.saveMemos(player, memos);
             player.sendMessage(`[Memo] §a'${memoName}' を更新しました。`);
-        } else if (response.result && typeof response.result[1] === "boolean") {
-            if (response.result[1] !== true) {
+        }
+        if (response.result && typeof response.result[1] === "boolean") {
+            if (response.result[1] === true) {
+                //念の為trueであることの条件追加しとく(さっきバグったから)
                 this.viewMemo(player, memoName)
             }
         } else {

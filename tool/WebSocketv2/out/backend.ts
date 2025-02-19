@@ -525,7 +525,9 @@ export class WsServer {
                 existingData = Object.values(existingData);
             }
 
-            const mergedData = this.mergePlayerData(existingData, newPlayerData);
+            // マージと重複削除、古いデータの削除を統合
+            const mergedData = this.mergeAndCleanPlayerData(existingData, newPlayerData);
+
             const validPlayerData = mergedData.filter((player) => player.name && player.uuid);
             const data = JSON.stringify(validPlayerData, null, 2);
             await fsPromises.writeFile(this.playerDataFile, data, 'utf8');
@@ -541,23 +543,35 @@ export class WsServer {
         }
     }
 
-    private mergePlayerData(existingData: PlayerData[], newPlayerData: PlayerData[]): PlayerData[] {
-        const playerMap: { [key: string]: PlayerData } = {};
+    private mergeAndCleanPlayerData(existingData: PlayerData[], newPlayerData: PlayerData[]): PlayerData[] {
+        const playerMap: { [uuid: string]: PlayerData } = {};
+
+        // 既存データを処理
         for (const player of existingData) {
-            if (player.name && player.uuid) {
-                const key = `${player.name}-${player.uuid}`;
-                playerMap[key] = player;
+            if (player.uuid) {
+                playerMap[player.uuid] = player;
             }
         }
 
+        // 新しいデータで上書き/追加
         for (const player of newPlayerData) {
-            if (player.name && player.uuid) {
-                const key = `${player.name}-${player.uuid}`;
-                playerMap[key] = player;
+            if (player.uuid) {
+                playerMap[player.uuid] = player;
             }
         }
-        return Object.values(playerMap);
+
+        // 重複していないかチェックしマージされたデータを返す
+        const mergedData: PlayerData[] = [];
+
+        for (const uuid in playerMap) {
+            if (playerMap.hasOwnProperty(uuid)) {
+                mergedData.push(playerMap[uuid])
+            }
+        }
+
+        return mergedData
     }
+
 
     private isValidJson(jsonString: string): boolean {
         try {
@@ -590,7 +604,7 @@ export class WsServer {
             let playerData = await this.loadPlayerData();
 
             if (listResult?.statusCode === 0 && listResult?.players && listResult?.statusMessage) {
-                // 人数情報を取得
+                // 人数情報を取得 (既存のコード)
                 const countParts = listResult.statusMessage.split(' ');
                 if (countParts.length > 1) {
                     const counts = countParts[0].split('/');
@@ -602,14 +616,14 @@ export class WsServer {
                     }
                 }
 
-                // statusMessage の \n 以降の文字列からプレイヤー名を抽出
+                // statusMessage の \n 以降の文字列からプレイヤー名を抽出 (既存のコード)
                 const statusMessagePlayers = listResult.statusMessage.split('\n')[1] || '';
                 const playerCandidates = statusMessagePlayers
                     .split(/[, ]*\s*[, ]+/)
                     .map(name => name.trim())
                     .filter(name => name !== "");
 
-                // players の情報を使って、候補を検証・修正 (nameTag の不整合対策)
+                // players の情報を使って、候補を検証・修正 (nameTag の不整合対策) (既存のコード)
                 const playersTagInfo = listResult.players
                     .split(/[, ]*\s*[, ]+/)
                     .map(name => name.trim())
@@ -619,7 +633,9 @@ export class WsServer {
                     return playersTagInfo.some(tag => tag === candidate);
                 });
 
-                // 2. 参加処理
+
+
+                // 2. 参加処理 (既存のコード + 名前変更処理の統合)
                 for (const playerName of this.onlinePlayerNamesCache) {
                     if (!this.activePlayers.has(playerName)) {
                         // 新規参加または再参加
@@ -628,7 +644,7 @@ export class WsServer {
                             this.activePlayers.set(playerName, player);
 
                             // playerData.json の更新
-                            let playerIndex = playerData.findIndex((p) => p.name === playerName);
+                            let playerIndex = playerData.findIndex((p) => p.uuid === player.uuid); // UUIDで検索
                             if (playerIndex === -1) {
                                 // 新規プレイヤー
                                 playerData.push({
@@ -643,9 +659,10 @@ export class WsServer {
                                     `New player joined: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`,
                                 );
                             } else {
-                                // 既存プレイヤー (再参加)
+                                // 既存プレイヤー (再参加 または 名前変更)
                                 const existingPlayer = playerData[playerIndex];
-                                //名前変更処理
+
+                                // 名前変更処理
                                 if (existingPlayer.name !== playerName) {
                                     if (!existingPlayer.oldNames.includes(existingPlayer.name)) {
                                         existingPlayer.oldNames.unshift(existingPlayer.name);
@@ -653,18 +670,22 @@ export class WsServer {
                                             existingPlayer.oldNames.pop();
                                         }
                                     }
-                                    existingPlayer.name = playerName;
+                                    console.log(`Player ${existingPlayer.name} name changed: ${playerName}`);
+                                    this.broadcastToClients({
+                                        event: 'playerNameChange',
+                                        data: { oldName: existingPlayer.name, newName: playerName, uuid: existingPlayer.uuid },
+                                    });
+                                    existingPlayer.name = playerName; // 名前を更新
+
                                 }
+
                                 existingPlayer.join = this.formatTimestamp();
                                 existingPlayer.isOnline = true;
-                                existingPlayer.uuid = player.uuid;
-                                playerData[playerIndex] = existingPlayer;
+                                // existingPlayer.uuid = player.uuid; // UUIDは変わらないので更新不要 (必要ならコメントアウトを外す)
+                                playerData[playerIndex] = existingPlayer;  // 更新したデータを保存
                                 console.log(
-                                    `Player re-joined: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`,
+                                    `Player re-joined/updated: ${playerName} - World: ${this.currentOnlineCache} / ${this.maxOnlineCache}`,
                                 );
-                                existingPlayer.join = this.formatTimestamp(); //再参加時にjoinを更新するのは一回でOK
-                                existingPlayer.isOnline = true;
-                                existingPlayer.uuid = player.uuid;
                             }
 
                             this.broadcastToClients({
@@ -673,8 +694,9 @@ export class WsServer {
                             });
                             this.getWorld().triggerEvent('playerJoin', playerName);
                         }
-                    } else {
-                        // 4.  すでにアクティブなプレイヤーの名前変更処理
+                    }
+                    else {
+                        // 4.  すでにアクティブなプレイヤーの名前変更処理 (UUID を使用するように変更)
                         const existingPlayer = this.activePlayers.get(playerName)!;
                         let playerIndex = playerData.findIndex((p) => p.uuid === existingPlayer.uuid);
                         if (playerIndex !== -1) {
@@ -686,28 +708,25 @@ export class WsServer {
                                         p.oldNames.pop();
                                     }
                                 }
-                                p.name = playerName;
-                                playerData[playerIndex] = p;
-                                console.log(`Player ${p.oldNames[0]} name changed: ${playerName}`);
+                                console.log(`Player ${p.name} name changed: ${playerName}`);
                                 this.broadcastToClients({
                                     event: 'playerNameChange',
-                                    data: {
-                                        oldName: p.oldNames[0],
-                                        newName: playerName,
-                                        uuid: existingPlayer.uuid,
-                                    },
+                                    data: { oldName: p.name, newName: playerName, uuid: existingPlayer.uuid },
                                 });
+                                p.name = playerName; // 名前を更新
+                                playerData[playerIndex] = p;
+
                             }
                         }
                     }
                 }
 
-                // 3. 退出処理
+                // 3. 退出処理 (既存のコード)
                 const leftPlayers: string[] = [];
                 for (const [playerName, player] of this.activePlayers) {
                     if (!this.onlinePlayerNamesCache.includes(playerName)) {
                         this.activePlayers.delete(playerName);
-                        let playerIndex = playerData.findIndex((p) => p.name === playerName);
+                        let playerIndex = playerData.findIndex((p) => p.uuid === player.uuid); // UUID で検索
                         if (playerIndex !== -1) {
                             playerData[playerIndex].isOnline = false;
                             playerData[playerIndex].left = this.formatTimestamp();
@@ -725,10 +744,10 @@ export class WsServer {
                 }
 
             } else {
-                // list コマンド失敗時、または必要なキーがない場合
+                // list コマンド失敗時、または必要なキーがない場合 (既存のコード + UUID で検索)
                 for (const [playerName, player] of this.activePlayers) {
                     this.activePlayers.delete(playerName);
-                    let playerIndex = playerData.findIndex((p) => p.name === playerName);
+                    let playerIndex = playerData.findIndex((p) => p.uuid === player.uuid); // UUID で検索
                     if (playerIndex !== -1) {
                         playerData[playerIndex].isOnline = false;
                         playerData[playerIndex].left = this.formatTimestamp();
@@ -749,18 +768,38 @@ export class WsServer {
                 }
             }
 
-            // 5. データ整合性チェック (最終的なデータ修正)
+            // 5. データ整合性チェック (最終的なデータ修正, UUID を使うように修正)
             for (const player of playerData) {
-                const isOnline = this.onlinePlayerNamesCache.includes(player.name);
-                if (player.isOnline !== isOnline) {
-                    player.isOnline = isOnline;
-                    if (!isOnline) {
-                        player.left = this.formatTimestamp();
+                // UUID を持つプレイヤーのみ処理 (重要: UUID が無いと正しく判定できない)
+                if (player.uuid) {
+                    const onlinePlayer = Array.from(this.activePlayers.values()).find(p => p.uuid === player.uuid);
+                    const isOnline = !!onlinePlayer; // onlinePlayer が存在すれば true
+
+                    if (player.isOnline !== isOnline) {
+                        player.isOnline = isOnline;
+                        if (!isOnline) {
+                            player.left = this.formatTimestamp();
+                        }
+                        console.log(`Data fixed: Player ${player.name} isOnline status corrected to ${isOnline}.`);
                     }
-                    console.log(`Data fixed: Player ${player.name} isOnline status corrected to ${isOnline}.`);
+                    // 名前が一致しない場合も修正
+                    if (isOnline && onlinePlayer.name !== player.name) {
+                        if (!player.oldNames.includes(player.name)) {
+                            player.oldNames.unshift(player.name);
+                            if (player.oldNames.length > 3) {
+                                player.oldNames.pop();
+                            }
+
+                        }
+                        console.log(`Data fixed and Player ${player.name} name changed: ${onlinePlayer.name}`);
+                        this.broadcastToClients({
+                            event: 'playerNameChange',
+                            data: { oldName: player.name, newName: onlinePlayer.name, uuid: player.uuid },
+                        });
+                        player.name = onlinePlayer.name;
+                    }
                 }
             }
-
             await this.savePlayerData(playerData);
 
         } catch (error) {
@@ -868,6 +907,7 @@ export const world = wsserver.getWorld();
 export function registerCommand(command: Command) {
     wsserver.commands[command.name] = command;
 }
+
 
 export function removeCommand(name: string) {
     if (typeof wsserver !== 'undefined' && wsserver.commands && wsserver.commands[name]) {

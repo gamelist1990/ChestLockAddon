@@ -1007,7 +1007,7 @@ const explosiveRedWool = new CustomItem({
     lore: ["§7投げた場所に羊をスポーンさせ、", "§7着地、または何かに当たると爆発する", `§7爆発範囲: §a${EXPLOSIVE_SHEEP.explosionRadius}`],
     item: "minecraft:red_wool",
     placeableOn: ["minecraft:allow"],
-    remove:true,
+    remove: true,
 }).then((player: Player) => {
     launchExplosiveSheep(player);
 
@@ -1142,7 +1142,7 @@ const boostFeather = new CustomItem({
 
         // 移動速度上昇のエフェクトを付与 (3秒間)
         player.addEffect(EffectTypes.get("speed")!, 60, {
-            amplifier: 2,  
+            amplifier: 2,
             showParticles: false
         });
 
@@ -1270,9 +1270,9 @@ const barrierItem = new CustomItem({
                         });
                         damageTicks += 1;
                     } else {
-                        system.clearRun(damageInterval); 
+                        system.clearRun(damageInterval);
                     }
-                }, 20); 
+                }, 20);
 
             }
 

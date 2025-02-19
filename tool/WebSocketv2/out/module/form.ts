@@ -22,6 +22,7 @@ interface FormResponse {
     canceled: boolean;
     selection: number | null | (number | string | boolean | null)[]; // ModalForm の場合は配列
     result?: (number | string | boolean | null)[]; // Modal Formの結果を格納するプロパティを追加
+    notFound?: boolean; // 追加: オブジェクティブやスコアが見つからない場合
 }
 
 // フォームの種類を表す型
@@ -60,8 +61,8 @@ abstract class BaseFormData {
         logDebug(`[BaseFormData.show] プレイヤー ${player.name} にフォームを表示します。`);
         const objective = await world.scoreboard.getObjective('ws_module');
         if (!objective) {
-            logError("[BaseFormData.show] ws_module オブジェクティブが見つかりません。");
-            return Promise.reject();
+            logWarn("[BaseFormData.show] ws_module オブジェクティブが見つかりません。");
+            return { canceled: true, selection: null, notFound: true }; // キャンセルされた応答を返す
         }
 
         let formCreatorScore = 0;
@@ -70,10 +71,11 @@ abstract class BaseFormData {
             formCreatorScore = score === null ? 0 : score;
         } catch (error) {
             logWarn("[BaseFormData.show] FormCreator のスコア取得中にエラーが発生しましたが、続行します。", error);
+            // エラーが発生しても続行し、formCreatorScore は 0 のまま
         }
         if (formCreatorScore !== 1) {
-            logError("[BaseFormData.show] FormCreator のスコアが 1 ではありません。フォームは表示できません。");
-            return Promise.reject();
+            logWarn("[BaseFormData.show] FormCreator のスコアが 1 ではありません。フォームは表示できません。");
+            return { canceled: true, selection: null, notFound: true };  // キャンセルされた応答を返す
         }
 
         return new Promise((resolve, reject) => {
@@ -121,6 +123,12 @@ abstract class BaseFormData {
         const objective = await world.scoreboard.getObjective("ws_form_results");
         if (!objective) {
             logWarn("[BaseFormData.checkResponse] ws_form_results オブジェクティブが見つかりません。");
+            if (this.currentPromise && !this.isResolved) {
+                this.currentPromise.resolve({ canceled: true, selection: null });
+                this.currentPromise = undefined;
+                this.isResolved = true;
+            }
+            this.stopChecking();
             return;
         }
 
@@ -128,6 +136,12 @@ abstract class BaseFormData {
 
         if (!scores) {
             logWarn("[BaseFormData.checkResponse] スコアが取得できませんでした。");
+            if (this.currentPromise && !this.isResolved) {
+                this.currentPromise.resolve({ canceled: true, selection: null });
+                this.currentPromise = undefined;
+                this.isResolved = true;
+            }
+            this.stopChecking();
             return;
         }
         const formDefinition = this.getFormDefinition();

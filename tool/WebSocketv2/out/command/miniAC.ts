@@ -107,8 +107,7 @@ function detectSpam(player: Player, message: string): void {
     }
 
     const playerData = spamLog.get(playerName)!;
-
-    // 古いメッセージの削除
+    
     playerData.recentMessages = playerData.recentMessages.filter(msg => {
         const isRecent = now - msg.time <= timeWindow;
         return isRecent;
@@ -123,7 +122,7 @@ function detectSpam(player: Player, message: string): void {
         if (playerData.warningCount >= maxWarnings) {
             spamAction(player, 3);  // BAN
         } else {
-            spamAction(player, playerData.warningCount); // 警告レベルに応じた処置 (1, 2)
+            spamAction(player, playerData.warningCount);
         }
     }
 }
@@ -134,7 +133,6 @@ if (world) {
     world.on(
         'playerChat',
         async (sender: string, message: string, type: string) => {
-            console.log(`[world.on(playerChat)] Event triggered. Sender: ${sender}, Message: ${message}, Type: ${type}`);
             const player = await world.getEntityByName(sender);
             if (player) {
                 if (type === "chat" || type === "scoreboard")

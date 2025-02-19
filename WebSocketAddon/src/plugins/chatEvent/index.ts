@@ -1,5 +1,4 @@
-import { system } from '@minecraft/server';
-import { world, Player, ScoreboardObjective } from '@minecraft/server';
+import { system, world, Player, ScoreboardObjective } from '@minecraft/server';
 import { Module, moduleManager } from '../../module/module';
 
 // Chat Module
@@ -14,6 +13,7 @@ class ChatModule implements Module {
 §r- モジュール有効化時、既存ログをクリア。\n
 §r- 150文字を超えるチャットは送信不可。\n
 §r- 記録されたチャットは3秒後に削除。\n
+§r- "ws:chat_ここにメッセージ" という形式のタグをプレイヤーに追加し、1秒後に削除\n
 
 **注意点**\n
 §r- '{', '}', '_'を含むメッセージは注意。\n
@@ -50,7 +50,23 @@ class ChatModule implements Module {
       return;
     }
     this.addOrUpdateScoreboardMessage(event.sender.name, event.message);
+    this.addAndRemoveChatTag(event.sender, event.message); // タグ追加の処理を呼び出す
   };
+
+  private addAndRemoveChatTag(player: Player, message: string) {
+    const tag = `w:chat_${message}`;
+    system.run(() => {
+      try {
+        player.addTag(tag.substring(0, 32767));
+
+        system.runTimeout(() => {
+          player.removeTag(tag.substring(0, 32767));
+        }, 20);
+      } catch (error) {
+      }
+
+    });
+  }
 
   private addOrUpdateScoreboardMessage(sender: string, message: string) {
     const objectiveId = 'message';
