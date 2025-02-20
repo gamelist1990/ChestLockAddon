@@ -1,4 +1,3 @@
-//AntiCheat/detections/AirJump.ts
 import { Player } from '@minecraft/server';
 import { PlayerDataManager } from '../PlayerData';
 import { updatePlayerData } from '../DataUpdate';
@@ -14,8 +13,8 @@ export function detectAirJump(player: Player, playerDataManager: PlayerDataManag
         data.isTeleporting ||
         player.isGliding ||
         player.isInWater ||
-        getGamemode(player.name) === 1 || // creative は除外
-        getGamemode(player.name) === 3 || // spectator は除外
+        getGamemode(player.name) === 1 || 
+        getGamemode(player.name) === 3 ||
         player.isFlying ||
         data.recentlyUsedEnderPearl
     ) {
@@ -26,11 +25,17 @@ export function detectAirJump(player: Player, playerDataManager: PlayerDataManag
     if (data.positionHistory.length < ticksToUse + 1) return null;
 
     const pastPositions = data.positionHistory.slice(-ticksToUse - 1);
-    const isJumping = player.inputInfo.getButtonState(InputButton.Jump); 
+    let isJumping: any;
+    try {
+        isJumping = player.inputInfo.getButtonState(InputButton.Jump)
+    } catch (error) {
+        //inputInfoで謎のバグ？が起きているからその場合はisJumpingで代用
+        isJumping = player.isJumping;
+    }
     const isOnGround = player.isOnGround;
     const currentPosition = player.location;
     let previousPosition = pastPositions[pastPositions.length - 2];
-    
+
     if (isOnGround && isJumping) {
         updatePlayerData(player, playerDataManager, {
             isJumping: false,
@@ -38,7 +43,7 @@ export function detectAirJump(player: Player, playerDataManager: PlayerDataManag
             airJumpDetected: false,
             lastGroundY: currentPosition.y,
             lastOnGroundTime: Date.now(),
-            allowedJumps: 2, // 許容ジャンプ回数をリセット
+            allowedJumps: 2, 
         });
     } else if (isJumping && !data.isJumping) {
         // ジャンプ開始時の処理
@@ -74,7 +79,7 @@ export function detectAirJump(player: Player, playerDataManager: PlayerDataManag
             }
         }
     } else if (data.isJumping && !isOnGround) {
-        if (Date.now() - data.lastOnGroundTime < 150) return null; 
+        if (Date.now() - data.lastOnGroundTime < 150) return null;
     }
 
     return null;
