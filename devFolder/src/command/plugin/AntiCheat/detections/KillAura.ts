@@ -14,7 +14,7 @@ class KillAuraDetector {
     }
 
     private detectReach(attackingPlayer: Player, attackedEntity: Player): { isDetected: boolean; distance: number } {
-        const maxReach = 8.2; // 妥当なリーチ範囲に調整
+        const maxReach = 8.2;
         const distanceToTarget = calculateDistance(attackingPlayer.location, attackedEntity.location);
         return { isDetected: distanceToTarget > maxReach, distance: distanceToTarget };
     }
@@ -25,8 +25,6 @@ class KillAuraDetector {
 
         // プレイヤーの視線ベクトルを計算（正規化済み）
         const viewDirection = attackingPlayer.getViewDirection();
-
-        // 攻撃対象へのベクトルを計算（高さ補正、正規化）
         let vectorToTarget = {
             x: attackedEntity.location.x - attackingPlayer.location.x,
             y: (attackedEntity.location.y + attackedEntity.getHeadLocation().y) / 2 - (attackingPlayer.location.y + attackingPlayer.getHeadLocation().y) / 2, // 中間の高さ

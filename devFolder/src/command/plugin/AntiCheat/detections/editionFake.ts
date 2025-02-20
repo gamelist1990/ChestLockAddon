@@ -8,9 +8,8 @@ export function detectEditionFake(player: Player, playerDataManager: PlayerDataM
     let cheatType = 'EditionFake';
     let details = '';
 
-
     if (maxRenderDistance < 6 || maxRenderDistance > 96) {
-        details = 'Invalid render distance on Client';
+        details = 'Invalid render distance on Client(描画距離が不正です)';
     }
 
 

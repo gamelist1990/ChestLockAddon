@@ -26,7 +26,7 @@ function getMaxAllowedSpeed(player: Player, _data: any, horizontal: boolean): nu
         baseSpeed *= 1.3; // ダッシュ時の速度倍率
     }
 
-    if (hasEffect(player, "speed",3)) {
+    if (hasEffect(player, "speed", 3)) {
         const amplifier = player.getEffect("speed")?.amplifier ?? 0
         baseSpeed *= (1 + (0.2 * (amplifier + 1)))
     }
@@ -50,12 +50,11 @@ class SpeedDetector {
     public detectSpeed(player: Player): { cheatType: string; horizontalSpeed?: number; verticalSpeed?: number } | null {
         const data = this.playerDataManager.get(player);
         if (!data) return null;
-        // 除外条件のチェック
         if (
             data.isTeleporting ||
             player.isGliding ||
-            player.isInWater ||  // 水中判定は複雑なので一旦除外
-            player.isFalling || // 落下判定は垂直速度でチェック
+            player.isInWater ||
+            player.isFalling ||
             hasEffect(player, "speed", 3) || // スピード効果は getMaxAllowedSpeed で考慮
             hasEffect(player, "jump_boost", 3) || // ジャンプブーストは垂直速度で考慮
             hasEffect(player, "levitation", 1) ||
@@ -125,11 +124,13 @@ class SpeedDetector {
 
             // 最終的な速度違反判定
             if (violation) {
-                this.playerDataManager.update(player, { speedData: {
-                    horizontalViolationCount: 0, verticalViolationCount: 0, lastSpeedCheck: now, lastPosition: currentPos,
-                    speedViolationCount: 0,
-                    violationCount: 0
-                } });
+                this.playerDataManager.update(player, {
+                    speedData: {
+                        horizontalViolationCount: 0, verticalViolationCount: 0, lastSpeedCheck: now, lastPosition: currentPos,
+                        speedViolationCount: 0,
+                        violationCount: 0
+                    }
+                });
                 return { cheatType, horizontalSpeed, verticalSpeed }; // 詳細な速度情報を返す
 
             }
@@ -139,7 +140,6 @@ class SpeedDetector {
 
         } catch (error) {
             console.error("速度計算でエラーが発生しました:", error);
-            // エラー発生時は速度違反カウントをリセット
             this.playerDataManager.update(player, { speedData: { ...data.speedData, horizontalViolationCount: 0, verticalViolationCount: 0 } });
             return null;
         }
