@@ -144,8 +144,8 @@ export class PlayerDataManager {
                 ...existingData,
                 ...newData,
                 aimAccuracyReadings: existingData.aimAccuracyReadings ?? [],
-                allowedJumps: existingData.allowedJumps ?? 0 
-                
+                allowedJumps: existingData.allowedJumps ?? 0
+
             };
             this.playerDataMap.set(player.name, updatedData);
         } else {
