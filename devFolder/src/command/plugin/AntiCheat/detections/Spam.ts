@@ -53,6 +53,8 @@ class SpamDetector {
         return pattern;
     }
 
+    
+
     private generateSimilarWordRegex(word: string): string {
         let pattern = word.replace(/\*/g, '.*');
         return `\\b${pattern}\\b`;
@@ -90,6 +92,7 @@ class SpamDetector {
         }
         return false;
     }
+
 
     private mutePlayer(player: Player, data: PlayerData, playerDataManager: PlayerDataManager, message: string, configs: any, reason: string): void {
         const muteDurationSeconds = reason === "BadWord" ? muteDurationSecondsBadWord : muteDurationSecondsSpam;
@@ -153,7 +156,7 @@ class SpamDetector {
             return;
         }
 
-        if (message.startsWith("!")) return;
+        if (message.startsWith("#")) return;
 
         if (message.length > maxMessageLength) {
             event.cancel = true;

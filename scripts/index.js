@@ -1,140 +1,165 @@
-import { ItemStack, ItemTypes, world, ItemLockMode, system } from '@minecraft/server';
-class CustomItemImpl {
-    name;
-    lore;
-    item;
-    amount;
-    keepOnClose;
-    rollback;
-    placeableOn;
-    notPlaceableOn;
-    itemLock;
-    remove;
-    callback;
-    constructor(options) {
-        this.name = options.name;
-        this.lore = options.lore;
-        this.item = options.item;
-        this.amount = options.amount ?? 1;
-        this.keepOnClose = options.keepOnClose ?? false;
-        this.rollback = options.rollback ?? false;
-        this.placeableOn = options.placeableOn;
-        this.notPlaceableOn = options.notPlaceableOn;
-        this.itemLock = options.itemLock ?? ItemLockMode.none;
-        this.remove = options.remove ?? false;
-        world.beforeEvents.itemUse.subscribe((event) => {
-            this.handleItemUse(event);
-        });
-        world.beforeEvents.playerPlaceBlock.subscribe((event) => {
-            this.handleBlockPlacement(event);
-        });
-    }
-    then(callback) {
-        this.callback = callback;
-        return this;
-    }
-    get() {
-        const itemType = ItemTypes.get(this.item);
-        if (!itemType) {
-            throw new Error(`Invalid item type: ${this.item}`);
-        }
-        const itemStack = new ItemStack(itemType, this.amount);
-        itemStack.nameTag = this.name;
-        itemStack.setLore(this.lore);
-        itemStack.lockMode = (this.itemLock);
-        return itemStack;
-    }
-    give(player, amount) {
-        const inventory = player.getComponent('inventory');
-        if (inventory) {
-            const giveAmount = amount ?? this.amount;
-            const itemStack = this.get();
-            itemStack.amount = giveAmount;
-            if (itemStack.maxAmount > 1) {
-                let remainingAmount = giveAmount;
-                if (!inventory?.container)
-                    return;
-                for (let i = 0; i < inventory.container.size; i++) {
-                    const currentItem = inventory?.container?.getItem(i);
-                    if (currentItem && currentItem.typeId === itemStack.typeId && currentItem.nameTag === itemStack.nameTag && currentItem.amount < currentItem.maxAmount) {
-                        const addAmount = Math.min(remainingAmount, currentItem.maxAmount - currentItem.amount);
-                        currentItem.amount += addAmount;
-                        inventory?.container?.setItem(i, currentItem);
-                        remainingAmount -= addAmount;
-                        if (remainingAmount <= 0)
-                            break;
-                    }
-                }
-                if (remainingAmount > 0) {
-                    while (remainingAmount > 0) {
-                        const itemToAdd = itemStack.clone();
-                        itemToAdd.amount = Math.min(remainingAmount, itemToAdd.maxAmount);
-                        inventory?.container?.addItem(itemToAdd);
-                        remainingAmount -= itemToAdd.amount;
-                    }
-                }
-            }
-            else {
-                for (let i = 0; i < giveAmount; i++) {
-                    inventory?.container?.addItem(itemStack.clone());
-                }
-            }
+/**
+ * Minecraft Bedrock Edition (BE) Script API を利用した、
+ * 簡単なスパム検知と不適切な単語検知のサンプルコードです。 (Create by @PEXkurann & ChatGPT)
+ *
+ * 注意:
+ * - これはあくまで基本的なサンプルであり、完全なアンチスパム/不適切発言対策ではありません。
+ * - 実際の運用では、より高度な検知ロジック、ホワイトリスト/ブラックリスト、
+ *   ミュート/BAN機能などを組み込む必要があります。
+ * - Minecraft BE のバージョンによっては、API の仕様が変更されている可能性があります。
+ */
+
+import { world, system, Player } from "@minecraft/server";
+
+// --- 設定 ---
+const SPAM_THRESHOLD = 3; // スパムとみなすメッセージ数 (短時間にこれ以上のメッセージを送信するとスパムと判定)
+const SPAM_INTERVAL = 5; // スパム判定のインターバル(秒) (この時間内に閾値以上のメッセージを送信するとスパム)
+const BAD_WORDS = ["badword1", "badword2", "不適切な単語"]; // 不適切な単語のリスト (小文字で登録)
+const WARN_MESSAGE = "§c[警告] 発言に注意してください。";  // 警告メッセージ
+const SPAM_WARN_MESSAGE = "§c[警告] スパム行為は禁止されています。"; // スパム警告
+const KICK_MESSAGE = "§c不適切な発言/スパム行為のため、キックされました。"; // キック時のメッセージ
+const MUTE_DURATION = 60; // ミュート時間（秒）
+
+
+// --- 変数 ---
+//  プレイヤーごとのメッセージ送信履歴を保持するMap
+//  { playerId:  { timestamp: number, count: number }[] }
+const playerMessageHistory = new Map();
+// ミュートされているプレイヤーを管理
+const mutedPlayers = new Map(); // { playerId: unmuteTime }
+
+
+
+// --- 関数 ---
+
+/**
+ * 不適切な単語が含まれているかチェックする関数
+ * @param {string} message
+ * @returns {boolean} 不適切な単語が含まれていれば true, そうでなければ false
+ */
+function containsBadWords(message) {
+    const lowerMessage = message.toLowerCase();
+    for (const word of BAD_WORDS) {
+        if (lowerMessage.includes(word)) {
+            return true;
         }
     }
-    handleItemUse(event) {
-        const player = event.source;
-        const usedItemStack = event.itemStack;
-        if (usedItemStack.typeId === this.item && usedItemStack.nameTag === this.name) {
-            if (this.callback) {
-                event.cancel = true;
-                this.callback(player, usedItemStack);
-                if (this.remove) {
-                    this.removeItem(player, usedItemStack);
-                }
-            }
-        }
-    }
-    handleBlockPlacement(event) {
-        const player = event.player;
-        const block = event.block;
-        const itemStack = player.getComponent('inventory')?.container?.getItem(player.selectedSlotIndex);
-        if (!itemStack || itemStack.typeId !== this.item || itemStack.nameTag !== this.name)
-            return;
-        if (this.placeableOn && !this.placeableOn.includes(block.typeId)) {
-            event.cancel = true;
-            player.sendMessage("そこには配置できません。(placeableOn)");
-        }
-        if (this.notPlaceableOn && this.notPlaceableOn.includes(block.typeId)) {
-            event.cancel = true;
-            player.sendMessage("そこには配置できません。(notPlaceableOn)");
-        }
-    }
-    removeItem(player, usedItemStack) {
-        const inventory = player.getComponent("inventory");
-        if (!inventory || !inventory.container)
-            return;
-        system.run(() => {
-            if (inventory.container) {
-                for (let i = 0; i < inventory.container.size; i++) {
-                    const currentItem = inventory.container.getItem(i);
-                    if (currentItem && currentItem.typeId === usedItemStack.typeId && currentItem.nameTag === usedItemStack.nameTag) {
-                        if (currentItem.amount <= 1) {
-                            system.run(() => {
-                                inventory.container?.setItem(i, undefined);
-                            });
-                        }
-                        else {
-                            system.run(() => {
-                                currentItem.amount -= 1;
-                                inventory.container?.setItem(i, currentItem);
-                            });
-                        }
-                        return;
-                    }
-                }
-            }
-        });
+    return false;
+}
+
+
+/**
+ * プレイヤーをミュートする
+ * @param {Player} player
+ * @param {number} duration ミュート時間(秒)
+ */
+function mutePlayer(player, duration) {
+    const playerId = player.id;
+    const unmuteTime = Date.now() + duration * 1000;  //ミリ秒で管理
+    mutedPlayers.set(playerId, unmuteTime);
+    player.sendMessage(`§cあなたは${duration}秒間ミュートされました。`);
+}
+
+/**
+ *  プレイヤーのミュートを解除する
+ * @param {Player} player
+ */
+function unmutePlayer(player) {
+    const playerId = player.id;
+    if (mutedPlayers.has(playerId)) {
+        mutedPlayers.delete(playerId);
+        player.sendMessage("§aミュートが解除されました。");
     }
 }
-const CustomItem = CustomItemImpl;
-export { CustomItem };
+
+
+// --- イベントハンドラ ---
+
+// プレイヤーがチャットメッセージを送信したときのイベント
+world.beforeEvents.chatSend.subscribe((event) => {
+    const player = event.sender;
+    const playerId = player.id;
+    const message = event.message;
+
+    // 1. ミュートチェック
+    if (mutedPlayers.has(playerId)) {
+        const unmuteTime = mutedPlayers.get(playerId);
+        if (Date.now() < unmuteTime) {
+            event.cancel = true;
+            player.sendMessage("§cあなたはミュートされています。");
+            return;
+        } else {
+            //ミュート時間終了
+            unmutePlayer(player);
+        }
+    }
+
+
+    // 2. 不適切な単語のチェック
+    if (containsBadWords(message)) {
+        event.cancel = true; // メッセージの送信をキャンセル
+        player.sendMessage(WARN_MESSAGE);
+        // 不適切な単語を送信したプレイヤーへの対応 (警告、キック、ログ記録など)
+        world.sendMessage(`§c[不適切発言検知] ${player.name}: ${message}`); // 全員に警告(管理者向け)
+        // より厳しい対応の例：　即時キック
+        //  player.kick(KICK_MESSAGE);
+        mutePlayer(player, MUTE_DURATION);
+        return;
+    }
+
+
+    // 3. スパムチェック
+    const now = Date.now();
+    let history = playerMessageHistory.get(playerId) || [];
+
+    // 過去のメッセージ履歴をクリーンアップ (SPAM_INTERVAL より古いものは削除)
+    history = history.filter((entry) => now - entry.timestamp <= SPAM_INTERVAL * 1000);
+
+    // 現在のメッセージを履歴に追加
+    history.push({ timestamp: now, count: 1 });
+    playerMessageHistory.set(playerId, history);
+
+    // スパム判定
+    let totalMessages = 0;
+    for (const entry of history) {
+        totalMessages += entry.count;
+    }
+
+    if (totalMessages > SPAM_THRESHOLD) {
+        event.cancel = true; // メッセージの送信をキャンセル
+        player.sendMessage(SPAM_WARN_MESSAGE);
+
+        world.sendMessage(`§c[スパム検知] ${player.name} (メッセージ数: ${totalMessages})`); // 管理者向け
+        // スパム行為を行ったプレイヤーへの対応 (警告、キック、BAN、ミュートなど)
+        // 例： 一定時間ミュート
+        mutePlayer(player, MUTE_DURATION);
+
+        // 履歴をクリアして、連続スパムと判定されないようにする。
+        playerMessageHistory.delete(playerId);
+    }
+});
+
+
+// 定期的にミュート時間を確認する
+system.runInterval(() => {
+    const now = Date.now();
+    for (const [playerId, unmuteTime] of mutedPlayers) {
+        if (now >= unmuteTime) {
+            // get player object from id.  World.getAllPlayers() does not always work.
+            let player = null;
+            for (const p of world.getAllPlayers()) {
+                if (p.id === playerId) {
+                    player = p;
+                    break;
+                }
+            }
+
+            if (player) {
+                unmutePlayer(player);
+            } else {
+                // player is offline
+                mutedPlayers.delete(playerId);
+            }
+        }
+    }
+}, 20); // 1秒ごとにチェック (20 ticks = 1 second)

@@ -90,10 +90,12 @@ class FormCreationModule implements Module {
       ]
   }
 `;
-    private db: Database;
+    private dbResults: Database;
+    private dbResponses: Database;
 
     constructor() {
-        this.db = Database.create("ws_form_results");
+        this.dbResults = Database.create("ws_form_results");
+        this.dbResponses = Database.create("ws_form_responses");
     }
 
     async createAndShowForm(player: Player, formDefinition: FormDefinition): Promise<void> {
@@ -171,38 +173,47 @@ class FormCreationModule implements Module {
                     return;
                 }
 
-                let dbKey: string;
-                let resultValue: number;
+                let dbResultsKey: string;
+                let dbResponsesKey: Player = player;
+                let resultValue: number = 0;
+                let responseValue: number;
+
 
                 if (!response.canceled) {
                     switch (formDefinition.type) {
                         case "action":
                             const actionResponse = response as ActionFormResponse;
-                            dbKey = player.name + JSON.stringify(formDefinition);
+                            dbResultsKey = player.name + JSON.stringify(formDefinition);
                             resultValue = actionResponse.selection !== undefined ? actionResponse.selection + 1 : 1;
+                            responseValue = actionResponse.selection !== undefined ? actionResponse.selection + 1 : 1;
                             break;
                         case "message":
                             const messageResponse = response as MessageFormResponse;
-                            dbKey = player.name + JSON.stringify(formDefinition);
+                            dbResultsKey = player.name + JSON.stringify(formDefinition);
                             resultValue = messageResponse.selection !== undefined ? messageResponse.selection + 1 : 1;
+                            responseValue = messageResponse.selection !== undefined ? messageResponse.selection + 1 : 1;
                             break;
                         case "modal":
                             const modalResponse = response as ModalFormResponse;
-                            dbKey = player.name + JSON.stringify(formDefinition) + JSON.stringify(modalResponse.formValues);
+                            dbResultsKey = player.name + JSON.stringify(formDefinition) + JSON.stringify(modalResponse.formValues);
                             resultValue = 1;
+                            responseValue = 1;
                             break;
                         default:
-                            dbKey = player.name + JSON.stringify(formDefinition);
+                            dbResultsKey = player.name + JSON.stringify(formDefinition);
                             resultValue = 0;
+                            responseValue = 0
                             break;
-
                     }
-                } else {
-                    dbKey = player.name + JSON.stringify(formDefinition);
-                    resultValue = 0;
-                }
 
-                this.saveAndDeleteFormResponse(player, resultValue, dbKey);
+
+                } else {
+                    dbResultsKey = player.name + JSON.stringify(formDefinition);
+                    resultValue = 0;
+                    responseValue = 0;
+                }
+                this.saveFormResponse(dbResponsesKey, responseValue);
+                this.saveAndDeleteFormResult(player, resultValue, dbResultsKey);
             });
 
         } catch (error) {
@@ -210,16 +221,36 @@ class FormCreationModule implements Module {
         }
     }
 
-
-    async saveAndDeleteFormResponse(player: Player, result: number, key: string): Promise<void> {
+    async saveFormResponse(key: Player, response: number): Promise<void> {
         try {
-            await this.db.set(key, result);
+            await this.dbResponses.set(key, response);
+            //   console.log(key, result)
+            //player.sendMessage(`§aフォームの回答を保存しました: ${result}`);
+            system.runTimeout(async () => {
+                try {
+                    await this.dbResponses.delete(key);
+                    //player.sendMessage(`§aフォームの回答を削除しました`);
+                } catch (deleteError) {
+                    console.error("Error deleting form response:", deleteError);
+                    key.sendMessage("§cフォーム結果の削除中にエラーが発生しました。");
+                }
+            }, 20);
+        } catch (saveError) {
+            console.error("Error saving form response:", saveError);
+
+        }
+    }
+
+
+    async saveAndDeleteFormResult(player: Player, result: number, key: string): Promise<void> {
+        try {
+            await this.dbResults.set(key, result);
             //   console.log(key, result)
             //player.sendMessage(`§aフォームの回答を保存しました: ${result}`);
 
             system.runTimeout(async () => {
                 try {
-                    await this.db.delete(key);
+                    await this.dbResults.delete(key);
                     //player.sendMessage(`§aフォームの回答を削除しました`);
                 } catch (deleteError) {
                     console.error("Error deleting form response:", deleteError);

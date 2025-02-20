@@ -599,7 +599,7 @@ class ScoreModule implements Module {
                 if (changedCount > 0) {
                     //sendMessage(`${changedCount} 人のプレイヤーのタグを ${oldTag} から ${newTag} に変更しました。`);
                 } else {
-                   // sendMessage(`タグ ${oldTag} を持つプレイヤーは見つかりませんでした。`);
+                    // sendMessage(`タグ ${oldTag} を持つプレイヤーは見つかりませんでした。`);
                 }
             },
         });
@@ -824,16 +824,18 @@ function resolvePlayerName(key: string): string {
                 }
                 return '0'; // or perhaps return an empty string
             } else {
-                // プレイヤー名が指定されていない場合、最初の参加者の名前を返す（または適切なデフォルト値）
-
-                //参加者がいない場合のことを考慮
                 const participants = targetScoreboard.getParticipants();
-                if (participants.length > 0) {
-                    return participants[0].displayName;
+                let highestScore = -Infinity;
+                let highestScoreParticipantName = '0';
+
+                for (const participant of participants) {
+                    const scoreValue = targetScoreboard.getScore(participant);
+                    if (scoreValue !== undefined && scoreValue > highestScore) {
+                        highestScore = scoreValue;
+                        highestScoreParticipantName = participant.displayName;
+                    }
                 }
-                else {
-                    return '0' // or any other appropriate default
-                }
+                return highestScoreParticipantName;
 
             }
         }

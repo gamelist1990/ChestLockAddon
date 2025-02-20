@@ -793,7 +793,7 @@ export const translations = {
   },
   "command.lang.lang_change": {
     msgid: "§a Language changed to: {language}",
-    msgstr: "§a 言語を{language}に変更しました"
+    msgstr: "§a 言語を§b{language}§rに変更しました"
   },
   "command.lang.lang_failed": {
     msgid: "§c Failed to change language to: {language}",
@@ -873,7 +873,7 @@ export const translations = {
   },
   "command.chest.chest_lookstate": {
     msgid: "§a Chest protection: {lcokstate}",
-    msgstr: "§aチェスト保護: §6{lcokstate}"
+    msgstr: "§aチェスト保護状態: §6{lcokstate}"
   },
   "command.chest.chest_removeData": {
     msgid: "§a All chest protection data has been reset.",

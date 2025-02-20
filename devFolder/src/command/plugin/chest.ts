@@ -203,7 +203,7 @@ function protectChest(player: Player, lockState: boolean) {
     saveProtectedChests();
     player.sendMessage(
       translate(player, `command.chest.chest_lookstate`, {
-        lcokstate: `§a(${lockState ? 'locked' : 'unlocked'} !!)`,
+        lcokstate: `§f(${lockState ? '§alocked§r' : '§cunlocked§f'} !!)`,
       }),
     );
     player.sendMessage(
@@ -332,7 +332,6 @@ system.run(() => {
 
     for (const block of attachBlocks) {
       if (await isWithinProtectedChestArea(block.location)) {
-        // piston.blockからBlockVolumeを生成
         const blockVolume = new BlockVolume(piston.block.location, piston.block.location);
         dimension.fillBlocks(blockVolume, "minecraft:air");
         return;
@@ -504,9 +503,6 @@ function parseChestKey(chestKey: string): any {
 function handleChestInteraction(event: any) {
   const chestLocation = event.block.location;
   const chestKey = getChestKey(chestLocation);
-
-
-  // chestKey が protectedChests のいずれかの locations に含まれているかを確認
   const chestDataKey = Object.keys(protectedChests).find(key =>
     Object.values(protectedChests[key].locations).includes(chestKey)
   );
