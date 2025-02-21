@@ -804,7 +804,7 @@ export const translations = {
     msgstr: ""
   },
   "command.chest.chest_help": {
-    msgid: "§c Invalid command.\n§a Chest protection command usage:\n  §bchest lock        - Locks the chest\n  §bchest info       - Displays information about the nearest chest\n  §bchest unlock      - Unlocks the chest\n  §bchest protect <lock/unlock> - Toggles chest protection\n  §bchest add <playername>   - Adds a member to the chest\n  §bchest remove <playername>  - Removes a member from the chest\n  §bchest all        - Displays a list of chest members\n  §bchest list        - Displays a list of chests\n  §b_______________________________________\n  §bAuthor: Koukun        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn",
+    msgid: "§c Invalid command.\n§a Chest protection command usage:\n  §bchest lock        - Locks the chest\n  §bchest info       - Displays information about the nearest chest\n  §bchest unlock      - Unlocks the chest\n  §bchest add <playername>   - Adds a member to the chest\n  §bchest remove <playername>  - Removes a member from the chest\n  §bchest all        - Displays a list of chest members\n  §bchest list        - Displays a list of chests\n  §b_______________________________________\n  §bAuthor: Koukun        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn",
     msgstr: ""
   },
   "command.chest.MaxChestLimitReached": {
@@ -894,10 +894,6 @@ export const translations = {
   "command.chest.ProChestBreak": {
     msgid: "§a Protected chest destroyed. Protection data also deleted.",
     msgstr: "§a 보호된 상자가 파괴되었습니다. 보호된 데이터도 삭제되었습니다."
-  },
-  "command.chest.lockChange": {
-    msgid: "§a Chest protection state changed to: {lock}",
-    msgstr: "§a 상자의 보호 상태가 다음으로 변경되었습니다"
   },
   "command.chest.NotChest": {
     msgid: "§c You are not authorized to access this chest.",

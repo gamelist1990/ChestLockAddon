@@ -880,7 +880,6 @@
       "  §bchest lock        - Locks the chest",
       "  §bchest info       - Displays information about the nearest chest",
       "  §bchest unlock      - Unlocks the chest",
-      "  §bchest protect <lock/unlock> - Toggles chest protection",
       "  §bchest add <playername>   - Adds a member to the chest",
       "  §bchest remove <playername>  - Removes a member from the chest",
       "  §bchest all        - Displays a list of chest members",
@@ -992,10 +991,6 @@
   "command.chest.ProChestBreak": {
     "msgid": "§a Protected chest destroyed. Protection data also deleted.",
     "msgstr": "§a 受保护的箱子已被破坏。保护数据也被删除。"
-  },
-  "command.chest.lockChange": {
-    "msgid": "§a Chest protection state changed to: {lock}",
-    "msgstr": "§a 箱子的保护状态已更改为：{lock}"
   },
   "command.chest.NotChest": {
     "msgid": "§c You are not authorized to access this chest.",

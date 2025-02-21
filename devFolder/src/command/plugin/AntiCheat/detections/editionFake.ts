@@ -1,9 +1,7 @@
 import { Player } from '@minecraft/server';
 import { PlayerDataManager } from '../PlayerData';
 
-export function detectEditionFake(player: Player, playerDataManager: PlayerDataManager): { cheatType: string; details?: string } | null {
-    const data = playerDataManager.get(player);
-    if (!data) return null;
+export function detectEditionFake(player: Player, _playerDataManager: PlayerDataManager): { cheatType: string; details?: string } | null {
     const maxRenderDistance = player.clientSystemInfo.maxRenderDistance;
     let cheatType = 'EditionFake';
     let details = '';

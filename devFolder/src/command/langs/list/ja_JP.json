@@ -880,7 +880,6 @@
       "  §bchest lock        - Locks the chest",
       "  §bchest info       - Displays information about the nearest chest",
       "  §bchest unlock      - Unlocks the chest",
-      "  §bchest protect <lock/unlock> - Toggles chest protection",
       "  §bchest add <playername>   - Adds a member to the chest",
       "  §bchest remove <playername>  - Removes a member from the chest",
       "  §bchest all        - Displays a list of chest members",
@@ -895,7 +894,6 @@
       "  §bchest lock        - チェストをロックします",
       "  §bchest info       - 最寄りのチェストの情報を表示します",
       "  §bchest unlock      - チェストのロックを解除します",
-      "  §bchest protect <lock/unlock> - チェストの保護を切り替えます",
       "  §bchest add <playername>   - チェストにメンバーを追加します",
       "  §bchest remove <playername>  - チェストからメンバーを削除します",
       "  §bchest all        - チェストメンバーのリストを表示します",
@@ -992,10 +990,6 @@
   "command.chest.ProChestBreak": {
     "msgid": "§a Protected chest destroyed. Protection data also deleted.",
     "msgstr": "§a保護されたチェストを破壊しました。保護データも削除されました。"
-  },
-  "command.chest.lockChange": {
-    "msgid": "§a Chest protection state changed to: {lock}",
-    "msgstr": "§aチェストの保護状態が{lock}に変更されました。"
   },
   "command.chest.NotChest": {
     "msgid": "§c You are not authorized to access this chest.",

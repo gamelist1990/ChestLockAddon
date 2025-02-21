@@ -19,7 +19,7 @@ function calculateVerticalSpeed(prevPos: Vector3, currentPos: Vector3, deltaTime
     return Math.abs(dy) / (deltaTime / 1000);
 }
 // プレイヤーの状態を考慮した最大許容速度を計算
-function getMaxAllowedSpeed(player: Player, _data: any, horizontal: boolean): number {
+function getMaxAllowedSpeed(player: Player, horizontal: boolean): number {
     let baseSpeed = 4.3; // 通常の歩行速度 (m/s)
 
     if (player.isSprinting) {
@@ -48,10 +48,16 @@ class SpeedDetector {
     }
 
     public detectSpeed(player: Player): { cheatType: string; horizontalSpeed?: number; verticalSpeed?: number } | null {
-        const data = this.playerDataManager.get(player);
-        if (!data) return null;
+        // データ取得と初期化
+        if (!this.playerDataManager.has(player)) this.playerDataManager.initialize(player);
+        const lastPosition = this.playerDataManager.getData(player, "lastPosition");
+        const lastSpeedCheck = this.playerDataManager.getData(player, "lastSpeedCheck") ?? 0;
+        let horizontalViolationCount = this.playerDataManager.getData(player, "horizontalViolationCount") ?? 0;
+        let verticalViolationCount = this.playerDataManager.getData(player, "verticalViolationCount") ?? 0;
+
+
         if (
-            data.isTeleporting ||
+            this.playerDataManager.getData(player, "isTeleporting") ||
             player.isGliding ||
             player.isInWater ||
             player.isFalling ||
@@ -62,38 +68,43 @@ class SpeedDetector {
             player.isFlying ||
             getGamemode(player.name) === 1 || // クリエイティブ
             getGamemode(player.name) === 3 ||  // スペクテイター
-            data.recentlyUsedEnderPearl
+            this.playerDataManager.getData(player, "recentlyUsedEnderPearl")
         ) {
             // 速度違反カウントをリセット
-            this.playerDataManager.update(player, { speedData: { ...data.speedData, horizontalViolationCount: 0, verticalViolationCount: 0 } });
+            this.playerDataManager.updateData(player, "horizontalViolationCount", 0);
+            this.playerDataManager.updateData(player, "verticalViolationCount", 0);
+
             return null;
         }
 
         const now = Date.now();
-        if (now - data.speedData.lastSpeedCheck < checkInterval) {
+        if (now - lastSpeedCheck < checkInterval) {
             return null; // チェック間隔内はスキップ
         }
 
         try {
-            const prevPos = data.speedData.lastPosition;
+            const prevPos = lastPosition;
             const currentPos = player.location;
 
             // 最初の位置情報を保存
             if (!prevPos) {
-                this.playerDataManager.update(player, { speedData: { ...data.speedData, lastSpeedCheck: now, lastPosition: currentPos, horizontalViolationCount: 0, verticalViolationCount: 0 } });
+                this.playerDataManager.updateData(player, "lastSpeedCheck", now);
+                this.playerDataManager.updateData(player, "lastPosition", currentPos);
+                this.playerDataManager.updateData(player, "horizontalViolationCount", 0);
+                this.playerDataManager.updateData(player, "verticalViolationCount", 0);
                 return null;
             }
 
-            const deltaTime = now - data.speedData.lastSpeedCheck;
+            const deltaTime = now - lastSpeedCheck;
 
             // 水平方向と垂直方向の速度を計算
             const horizontalSpeed = calculateHorizontalSpeed(prevPos, currentPos, deltaTime);
             const verticalSpeed = calculateVerticalSpeed(prevPos, currentPos, deltaTime);
 
             // 水平方向の最大許容速度
-            const maxHorizontalSpeed = getMaxAllowedSpeed(player, data, true);
+            const maxHorizontalSpeed = getMaxAllowedSpeed(player, true);
             // 垂直方向の最大許容速度
-            const maxVerticalSpeed = getMaxAllowedSpeed(player, data, false);  // 垂直方向はより厳しく
+            const maxVerticalSpeed = getMaxAllowedSpeed(player, false);  // 垂直方向はより厳しく
 
             let violation = false;
             let cheatType = "Speed";
@@ -101,46 +112,50 @@ class SpeedDetector {
 
             // 水平方向の速度違反をチェック
             if (horizontalSpeed > maxHorizontalSpeed) {
-                data.speedData.horizontalViolationCount++;
-                if (data.speedData.horizontalViolationCount >= violationThreshold) {
+                horizontalViolationCount++;
+                if (horizontalViolationCount >= violationThreshold) {
                     violation = true;
                     cheatType = 'Speed (Horizontal)';
 
                 }
             } else {
-                data.speedData.horizontalViolationCount = Math.max(0, data.speedData.horizontalViolationCount - 1); // 違反していない場合は徐々にカウントを減らす
+                horizontalViolationCount = Math.max(0, horizontalViolationCount - 1); // 違反していない場合は徐々にカウントを減らす
             }
 
             // 垂直方向の速度違反をチェック
             if (verticalSpeed > maxVerticalSpeed) {
-                data.speedData.verticalViolationCount++;
-                if (data.speedData.verticalViolationCount >= violationThreshold) {
+                verticalViolationCount++;
+                if (verticalViolationCount >= violationThreshold) {
                     violation = true;
                     cheatType = 'Speed (Vertical)';
                 }
             } else {
-                data.speedData.verticalViolationCount = Math.max(0, data.speedData.verticalViolationCount - 1);
+                verticalViolationCount = Math.max(0, verticalViolationCount - 1);
             }
 
             // 最終的な速度違反判定
             if (violation) {
-                this.playerDataManager.update(player, {
-                    speedData: {
-                        horizontalViolationCount: 0, verticalViolationCount: 0, lastSpeedCheck: now, lastPosition: currentPos,
-                        speedViolationCount: 0,
-                        violationCount: 0
-                    }
-                });
+                //リセット
+                this.playerDataManager.updateData(player, "horizontalViolationCount", 0);
+                this.playerDataManager.updateData(player, "verticalViolationCount", 0);
+                this.playerDataManager.updateData(player, "lastSpeedCheck", now);
+                this.playerDataManager.updateData(player, "lastPosition", currentPos);
+
                 return { cheatType, horizontalSpeed, verticalSpeed }; // 詳細な速度情報を返す
 
             }
             // データを更新
-            this.playerDataManager.update(player, { speedData: { ...data.speedData, lastSpeedCheck: now, lastPosition: currentPos } });
+            this.playerDataManager.updateData(player, "lastSpeedCheck", now);
+            this.playerDataManager.updateData(player, "lastPosition", currentPos);
+            this.playerDataManager.updateData(player, "horizontalViolationCount", horizontalViolationCount);  // 違反カウントを更新
+            this.playerDataManager.updateData(player, "verticalViolationCount", verticalViolationCount);    // 違反カウントを更新
 
 
         } catch (error) {
             console.error("速度計算でエラーが発生しました:", error);
-            this.playerDataManager.update(player, { speedData: { ...data.speedData, horizontalViolationCount: 0, verticalViolationCount: 0 } });
+            this.playerDataManager.updateData(player, "horizontalViolationCount", 0);
+            this.playerDataManager.updateData(player, "verticalViolationCount", 0);
+
             return null;
         }
         return null;

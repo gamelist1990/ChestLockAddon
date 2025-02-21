@@ -41,11 +41,48 @@ let lastTpsCheck = 0;
 const tpsCheckInterval = 20 * 5;
 let disabledModules: (keyof typeof configs.antiCheat.modules)[] = [];
 
+// イベントハンドラの登録と解除を管理するオブジェクト
+const eventHandlers: { [moduleName: string]: { [eventName: string]: any } } = {};
+
+
+/**
+ * モジュールを登録し、関連するイベントハンドラを登録します。
+ * @param {keyof typeof configs.antiCheat.modules} moduleName モジュール名
+ * @param {{ [eventName: string]: (event: any) => void }} handlers イベントハンドラのオブジェクト
+ */
+export function registerModule(moduleName: keyof typeof configs.antiCheat.modules, handlers: { [eventName: string]: (event: any) => void }): void {
+    if (!eventHandlers[moduleName]) {
+        eventHandlers[moduleName] = {};
+    }
+
+    for (const eventName in handlers) {
+        if (handlers.hasOwnProperty(eventName)) {
+            //ここでは何もしない
+        }
+    }
+}
+/**
+ * 指定されたモジュールのイベントハンドラを登録解除します。
+ * @param {keyof typeof configs.antiCheat.modules} moduleName モジュール名
+ */
+
+export function unregisterModule(moduleName: keyof typeof configs.antiCheat.modules): void {
+    if (eventHandlers[moduleName]) {
+        for (const eventName in eventHandlers[moduleName]) {
+            if (eventHandlers[moduleName].hasOwnProperty(eventName)) {
+                //ここでは何もしない
+            }
+        }
+        // モジュールのハンドラ情報を削除
+        delete eventHandlers[moduleName];
+    }
+}
+
+
 function runTick(): void {
     currentTick++;
     if (!monitoring) return;
 
-    const currentTime = Date.now();
 
     if (currentTick - lastTpsCheck >= tpsCheckInterval) {
         lastTpsCheck = currentTick;
@@ -55,62 +92,70 @@ function runTick(): void {
     for (const player of world.getPlayers()) {
         if (!playerDataManager.has(player) || player.hasTag("bypass")) continue;
 
-        const data = playerDataManager.get(player);
-        if (!data) continue;
-        if (!configs.antiCheat.enabled) return;
+        addPositionHistory(player, playerDataManager);
 
-        addPositionHistory(player, playerDataManager, configs);
-
-        if (data.isFrozen) {
+        if (playerDataManager.getData(player, "isFrozen")) {
             player.teleport(player.location, { dimension: player.dimension });
         } else {
-            if (configs.antiCheat.modules.xray && !disabledModules.includes("xray")) {
-                Xray.detectXrayOnSight(player, configs, playerDataManager);
-            }
-            if (configs.antiCheat.modules.airJump && !disabledModules.includes("airJump")) {
-                const airJumpResult = AirJump.detectAirJump(player, playerDataManager);
-                if (airJumpResult) handleCheatDetection(player, airJumpResult, configs, playerDataManager);
-            }
-            if (configs.antiCheat.modules.speed && !disabledModules.includes("speed")) {
-                const speedResult = Speed.detectSpeed(player, playerDataManager);
-                if (speedResult) handleCheatDetection(player, speedResult, configs, playerDataManager);
-            }
-            if (configs.antiCheat.modules.editionFake && !disabledModules.includes("editionFake")) {
-                const response = editionFake.detectEditionFake(player, playerDataManager);
-                if (response) handleCheatDetection(player, response, configs, playerDataManager);
-            }
-
-            cleanupSuspiciousBlocks(data, currentTime);
-            updateEnderPearlInterval(player, playerDataManager);
+            // 各モジュールの検出関数を呼び出す
+            executeDetectionModules(player);
         }
     }
+}
+/**
+ * 有効な各モジュールの検出関数を実行する
+ * @param {Player} player
+ */
+function executeDetectionModules(player: Player): void {
+    const currentTime = Date.now();
+
+    if (configs.antiCheat.modules.xray && !disabledModules.includes("xray")) {
+        Xray.detectXrayOnSight(player, configs, playerDataManager);
+        cleanupSuspiciousBlocks(player, currentTime, playerDataManager); // Xrayが有効な時だけクリーンアップ
+    }
+    if (configs.antiCheat.modules.airJump && !disabledModules.includes("airJump")) {
+        const airJumpResult = AirJump.detectAirJump(player, playerDataManager);
+        if (airJumpResult) handleCheatDetection(player, airJumpResult, configs, playerDataManager);
+    }
+    if (configs.antiCheat.modules.speed && !disabledModules.includes("speed")) {
+        const speedResult = Speed.detectSpeed(player, playerDataManager);
+        if (speedResult) handleCheatDetection(player, speedResult, configs, playerDataManager);
+    }
+    if (configs.antiCheat.modules.editionFake && !disabledModules.includes("editionFake")) {
+        const response = editionFake.detectEditionFake(player, playerDataManager);
+        if (response) handleCheatDetection(player, response, configs, playerDataManager);
+    }
+    updateEnderPearlInterval(player, playerDataManager)
 }
 
 function checkTpsAndDisableModules(): void {
     if (tps < 10) {
         const modulesToDisable: (keyof typeof configs.antiCheat.modules)[] = [];
-        if (configs.antiCheat.modules.killAura && !disabledModules.includes("killAura")) {
-            modulesToDisable.push("killAura");
-        }
-        if (configs.antiCheat.modules.xray && !disabledModules.includes("xray")) {
-            modulesToDisable.push("xray");
-        }
-        if (configs.antiCheat.modules.speed && !disabledModules.includes("speed")) {
-            modulesToDisable.push("speed");
-        }
-        if (configs.antiCheat.modules.airJump && !disabledModules.includes("airJump")) {
-            modulesToDisable.push("airJump");
-        }
-        if (configs.antiCheat.modules.editionFake && !disabledModules.includes("editionFake")) {
-            modulesToDisable.push("editionFake");
-        }
-        if (configs.antiCheat.modules.spam && !disabledModules.includes("spam")) {
-            modulesToDisable.push("spam");
+
+        // 各モジュールについて、無効化が必要かどうかをチェックし、必要なら配列に追加
+        for (const moduleName in configs.antiCheat.modules) {
+            if (configs.antiCheat.modules.hasOwnProperty(moduleName)) {
+                const typedModuleName = moduleName as keyof typeof configs.antiCheat.modules;
+                if (configs.antiCheat.modules[typedModuleName] && !disabledModules.includes(typedModuleName)) {
+                    modulesToDisable.push(typedModuleName);
+                }
+            }
         }
 
         if (modulesToDisable.length > 0) {
             disabledModules.push(...modulesToDisable);
             world.sendMessage(`§c現在ワールドのTPSが${tps}の為緊急停止し\nモジュール ${modulesToDisable.join(", ")} を一時的に無効化しました。`);
+            // モジュールを無効化（イベントハンドラの登録解除）
+            modulesToDisable.forEach(module => unregisterModule(module));
+            modulesToDisable.forEach(module => {
+                if (module === "killAura") {
+                    world.afterEvents.entityHurt.unsubscribe(handleEntityHurt);
+                } else if (module === "xray") {
+                    world.beforeEvents.playerBreakBlock.unsubscribe(handlePlayerBreakBlock);
+                } else if (module === "spam") {
+                    world.beforeEvents.chatSend.unsubscribe(handleChatSend);
+                }
+            })
         }
 
     } else if (tps >= 15) {
@@ -118,63 +163,104 @@ function checkTpsAndDisableModules(): void {
             const modulesToEnable = [...disabledModules];
             disabledModules = [];
             world.sendMessage(`§aワールドのTPSが回復した為、モジュール ${modulesToEnable.join(", ")} を再度有効化しました。`);
+            // モジュールを有効化（イベントハンドラの再登録）
+            modulesToEnable.forEach(module => {
+                // ここで、モジュールを再度初期化（イベントハンドラを登録）
+                initializeModule(module);
+            });
         }
     }
 }
 
 
-world.afterEvents.entityHurt.subscribe((event: EntityHurtAfterEvent) => {
-    if (!monitoring || !configs.antiCheat.enabled || !configs.antiCheat.modules.killAura || disabledModules.includes("killAura")) return;
+// 各モジュールの初期化関数
+
+const handleEntityHurt = (event: EntityHurtAfterEvent) => {
+    if (!configs.antiCheat.enabled) return;
 
     const hurtEntity = event.hurtEntity;
     if (hurtEntity instanceof Player) {
-        const data = playerDataManager.get(hurtEntity);
-        if (data) {
-            data.recentlyUsedEnderPearl = true;
-            data.enderPearlInterval = configs.antiCheat.enderPearlCooldown;
-            playerDataManager.update(hurtEntity, data);
-        }
+        if (!playerDataManager.has(hurtEntity)) playerDataManager.initialize(hurtEntity);
+        playerDataManager.updateData(hurtEntity, "recentlyUsedEnderPearl", true);
+        playerDataManager.updateData(hurtEntity, "enderPearlInterval", configs.antiCheat.enderPearlCooldown);
     }
-
 
     const attackingPlayer = event.damageSource.damagingEntity as Player;
-    if (attackingPlayer && event.hurtEntity instanceof Player) {
-        if (event.damageSource.cause === 'entityAttack') {
-            const killAuraResult = KillAura.detectKillAura(attackingPlayer, event, playerDataManager, getPlayerCPS);
-            if (killAuraResult) handleCheatDetection(attackingPlayer, killAuraResult, configs, playerDataManager);
-        }
+    if (attackingPlayer && event.hurtEntity instanceof Player && event.damageSource.cause === 'entityAttack') {
+        const killAuraResult = KillAura.detectKillAura(attackingPlayer, event, playerDataManager, getPlayerCPS);
+        if (killAuraResult) handleCheatDetection(attackingPlayer, killAuraResult, configs, playerDataManager);
     }
-});
+}
+
+function initializeKillAura(): void {
+    registerModule("killAura", {
+        afterEntityHurt: handleEntityHurt
+    });
+    eventHandlers["killAura"]["afterEntityHurt"] = world.afterEvents.entityHurt.subscribe(handleEntityHurt);
+}
+
+const handlePlayerBreakBlock = (event: any) => {
+    if (!configs.antiCheat.enabled) return;
+    Xray.handleBlockBreak(event, playerDataManager, configs);
+}
+
+function initializeXray(): void {
+    registerModule("xray", {
+        beforePlayerBreakBlock: handlePlayerBreakBlock
+    });
+    eventHandlers["xray"]["beforePlayerBreakBlock"] = world.beforeEvents.playerBreakBlock.subscribe(handlePlayerBreakBlock);
+}
+
+const handleChatSend = (event: any) => {
+    if (!configs.antiCheat.enabled || event.sender.hasTag("bypass")) return;
+    Spam.detectSpam(event, playerDataManager, configs);
+}
+
+function initializeSpam(): void {
+    registerModule("spam", {
+        beforeChatSend: handleChatSend
+    });
+    eventHandlers["spam"]["beforeChatSend"] = world.beforeEvents.chatSend.subscribe(handleChatSend);
+}
+
+// 他のモジュールも同様に初期化関数を作成
+function initializeModule(moduleName: keyof typeof configs.antiCheat.modules): void {
+    switch (moduleName) {
+        case "killAura":
+            initializeKillAura();
+            break;
+        case "xray":
+            initializeXray();
+            break;
+        case "spam":
+            initializeSpam();
+            break;
+        case "airJump":
+        case "speed":
+        case "editionFake":
+            break;
+    }
+}
+
 
 world.afterEvents.itemUse.subscribe((event) => {
     const player = event.source as Player;
     const item = event.itemStack;
 
     if (player && item && (item.typeId === 'minecraft:ender_pearl' || item.typeId === 'minecraft:wind_charge')) {
-        const data = playerDataManager.get(player);
-        if (!data) {
-            playerDataManager.initialize(player);
-            return;
-        }
+        if (!playerDataManager.has(player)) playerDataManager.initialize(player);
 
-        playerDataManager.update(player, { recentlyUsedEnderPearl: true, enderPearlInterval: 20 * 9 });
+        playerDataManager.updateData(player, "recentlyUsedEnderPearl", true);
+        playerDataManager.updateData(player, "enderPearlInterval", 20 * 9);
     }
 });
 
-world.beforeEvents.playerBreakBlock.subscribe((event: any) => {
-    if (!monitoring || !configs.antiCheat.enabled || !configs.antiCheat.modules.xray || disabledModules.includes("xray")) return;
-    Xray.handleBlockBreak(event, playerDataManager, configs);
-});
 
-world.beforeEvents.chatSend.subscribe((event: any) => {
-    if (!monitoring || !configs.antiCheat.enabled || !configs.antiCheat.modules.spam || disabledModules.includes("spam") || event.sender.hasTag("bypass")) return;  // bypassタグのチェックを追加
-    Spam.detectSpam(event, playerDataManager, configs);
-});
 
 export function AddNewPlayers(): void {
     if (monitoring) {
         world.getPlayers().forEach((p) => {
-            if (!playerDataManager.get(p)) {
+            if (!playerDataManager.has(p)) {
                 playerDataManager.initialize(p);
             }
         });
@@ -183,10 +269,10 @@ export function AddNewPlayers(): void {
 }
 
 function freezePlayer(player: Player): void {
-    const data = playerDataManager.get(player);
-    if (!data) return;
+    if (!playerDataManager.has(player)) playerDataManager.initialize(player)
 
-    playerDataManager.update(player, { isFrozen: true, originalGamemode: player.getGameMode() });
+    playerDataManager.updateData(player, "isFrozen", true);
+    playerDataManager.updateData(player, "originalGamemode", player.getGameMode());
     player.setGameMode(GameMode.adventure);
     player.teleport(player.location, { dimension: player.dimension });
 
@@ -209,6 +295,21 @@ registerCommand({
                 break;
             case 'off':
                 monitoring = false;
+                // すべてのモジュールのイベントハンドラを登録解除
+                for (const moduleName in configs.antiCheat.modules) {
+                    if (configs.antiCheat.modules.hasOwnProperty(moduleName)) {
+                        unregisterModule(moduleName as keyof typeof configs.antiCheat.modules);
+                    }
+                }
+                if (eventHandlers["killAura"] && eventHandlers["killAura"]["afterEntityHurt"]) {
+                    world.afterEvents.entityHurt.unsubscribe(handleEntityHurt);
+                }
+                if (eventHandlers["xray"] && eventHandlers["xray"]["beforePlayerBreakBlock"]) {
+                    world.beforeEvents.playerBreakBlock.unsubscribe(handlePlayerBreakBlock);
+                }
+                if (eventHandlers["spam"] && eventHandlers["spam"]["beforeChatSend"]) {
+                    world.beforeEvents.chatSend.unsubscribe(handleChatSend);
+                }
                 player.sendMessage('チート対策を無効にしました');
                 break;
             case 'unfreeze':
@@ -242,6 +343,21 @@ registerCommand({
                     const moduleName = args[1].toLowerCase() as keyof typeof configs.antiCheat.modules;
                     if (moduleName in configs.antiCheat.modules) {
                         configs.antiCheat.modules[moduleName] = !configs.antiCheat.modules[moduleName];
+                        // モジュールの状態が変わったので、イベントハンドラの登録状態を更新
+                        if (configs.antiCheat.modules[moduleName]) {
+                            initializeModule(moduleName); // モジュールを有効化（初期化）
+                        } else {
+                            if (moduleName === "killAura") {
+                                unregisterModule("killAura");
+                                world.afterEvents.entityHurt.unsubscribe(handleEntityHurt);
+                            } else if (moduleName === "xray") {
+                                unregisterModule("xray");
+                                world.beforeEvents.playerBreakBlock.unsubscribe(handlePlayerBreakBlock);
+                            } else if (moduleName === "spam") {
+                                unregisterModule("spam")
+                                world.beforeEvents.chatSend.unsubscribe(handleChatSend);
+                            }
+                        }
                         player.sendMessage(`モジュール ${moduleName} を ${configs.antiCheat.modules[moduleName] ? '有効' : '無効'} にしました`);
                     } else {
                         player.sendMessage('無効なモジュール名です。');
@@ -269,5 +385,16 @@ export function initializeAntiCheat(): void {
     world.getPlayers().forEach(player => playerDataManager.initialize(player));
     monitoring = true;
     system.runInterval(runTick, 1);
+
+    // 有効なモジュールを初期化（イベントハンドラを登録）
+    for (const moduleName in configs.antiCheat.modules) {
+        if (configs.antiCheat.modules.hasOwnProperty(moduleName)) {
+            const typedModuleName = moduleName as keyof typeof configs.antiCheat.modules;
+            if (configs.antiCheat.modules[typedModuleName]) {
+                initializeModule(typedModuleName);
+            }
+        }
+    }
+
     console.warn('AntiCheat initialized.');
 }

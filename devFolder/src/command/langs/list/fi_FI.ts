@@ -804,7 +804,7 @@ export const translations = {
     msgstr: "§c Virheellinen komennon käyttö. Käytä /lang list tai /lang change <kielikoodi>"
   },
   "command.chest.chest_help": {
-    msgid: "§c Invalid command.\n§a Chest protection command usage:\n  §bchest lock        - Locks the chest\n  §bchest info       - Displays information about the nearest chest\n  §bchest unlock      - Unlocks the chest\n  §bchest protect <lock/unlock> - Toggles chest protection\n  §bchest add <playername>   - Adds a member to the chest\n  §bchest remove <playername>  - Removes a member from the chest\n  §bchest all        - Displays a list of chest members\n  §bchest list        - Displays a list of chests\n  §b_______________________________________\n  §bAuthor: Koukun        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn",
+    msgid: "§c Invalid command.\n§a Chest protection command usage:\n  §bchest lock        - Locks the chest\n  §bchest info       - Displays information about the nearest chest\n  §bchest unlock      - Unlocks the chest\n  §bchest add <playername>   - Adds a member to the chest\n  §bchest remove <playername>  - Removes a member from the chest\n  §bchest all        - Displays a list of chest members\n  §bchest list        - Displays a list of chests\n  §b_______________________________________\n  §bAuthor: Koukun        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn",
     msgstr: "§c Virheellinen komento.\n§a Arkun suojauskomennon käyttö:\n  §bchest lock        - Lukitsee arkun\n  §bchest info       - Näyttää tiedot lähimmästä arkusta\n  §bchest unlock      - Avaa arkun lukituksen\n  §bchest protect <lukitse/avaa> - Vaihtaa arkun suojauksen päälle/pois\n  §bchest add <pelaajan nimi>   - Lisää jäsenen arkkuun\n  §bchest remove <pelaajan nimi>  - Poistaa jäsenen arkusta\n  §bchest all        - Näyttää luettelon arkun jäsenistä\n  §bchest list        - Näyttää luettelon arkuista\n  §b_______________________________________\n  §bTekijä: Koukun        - Lisenssi AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
   },
   "command.chest.MaxChestLimitReached": {
@@ -894,10 +894,6 @@ export const translations = {
   "command.chest.ProChestBreak": {
     msgid: "§a Protected chest destroyed. Protection data also deleted.",
     msgstr: "§a Suojattu arkku tuhottu. Suojaustiedot myös poistettu."
-  },
-  "command.chest.lockChange": {
-    msgid: "§a Chest protection state changed to: {lock}",
-    msgstr: "§a Arkun suojaustila vaihdettu tilaan: {lock}"
   },
   "command.chest.NotChest": {
     msgid: "§c You are not authorized to access this chest.",

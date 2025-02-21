@@ -804,7 +804,7 @@ export const translations = {
     msgstr: "§c 无效的命令用法。请使用 /lang list 或 /lang change <语言代码>"
   },
   "command.chest.chest_help": {
-    msgid: "§c Invalid command.\n§a Chest protection command usage:\n  §bchest lock        - Locks the chest\n  §bchest info       - Displays information about the nearest chest\n  §bchest unlock      - Unlocks the chest\n  §bchest protect <lock/unlock> - Toggles chest protection\n  §bchest add <playername>   - Adds a member to the chest\n  §bchest remove <playername>  - Removes a member from the chest\n  §bchest all        - Displays a list of chest members\n  §bchest list        - Displays a list of chests\n  §b_______________________________________\n  §bAuthor: Koukun        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn",
+    msgid: "§c Invalid command.\n§a Chest protection command usage:\n  §bchest lock        - Locks the chest\n  §bchest info       - Displays information about the nearest chest\n  §bchest unlock      - Unlocks the chest\n  §bchest add <playername>   - Adds a member to the chest\n  §bchest remove <playername>  - Removes a member from the chest\n  §bchest all        - Displays a list of chest members\n  §bchest list        - Displays a list of chests\n  §b_______________________________________\n  §bAuthor: Koukun        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn",
     msgstr: "§c 无效的命令。\n§a 箱子保护命令用法：\n  §bchest lock        - 锁定箱子\n  §bchest info       - 显示最近的箱子信息\n  §bchest unlock      - 解锁箱子\n  §bchest protect <lock/unlock> - 切换箱子保护\n  §bchest add <玩家名称>   - 将成员添加到箱子\n  §bchest remove <玩家名称>  - 从箱子中移除成员\n  §bchest all        - 显示箱子成员列表\n  §bchest list        - 显示箱子列表\n  §b_______________________________________\n  §b作者：Koukun        - 许可证 AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
   },
   "command.chest.MaxChestLimitReached": {
@@ -894,10 +894,6 @@ export const translations = {
   "command.chest.ProChestBreak": {
     msgid: "§a Protected chest destroyed. Protection data also deleted.",
     msgstr: "§a 受保护的箱子已被破坏。保护数据也被删除。"
-  },
-  "command.chest.lockChange": {
-    msgid: "§a Chest protection state changed to: {lock}",
-    msgstr: "§a 箱子的保护状态已更改为：{lock}"
   },
   "command.chest.NotChest": {
     msgid: "§c You are not authorized to access this chest.",

@@ -1,5 +1,5 @@
 import { Player } from '@minecraft/server';
-import { PlayerDataManager, PlayerData } from '../PlayerData';
+import { PlayerDataManager } from '../PlayerData';
 import { handleCheatDetection } from '../actions';
 import { badWords } from './BadList';
 
@@ -19,8 +19,6 @@ const spamMessageThreshold = 4;
 const spamCheckInterval = 5000;
 
 class SpamDetector {
-    private learnedBadWords: string[] = [];
-    private badWordRegex: RegExp = /./;
     private exactBadWordRegex: RegExp = /./;
     private fuzzyBadWordRegex: RegExp[] = [];
     private similarBadWordRegex: RegExp[] = [];
@@ -30,7 +28,6 @@ class SpamDetector {
     }
 
     private initializeRegex(): void {
-        this.badWordRegex = new RegExp(badWords.join('|'), 'gi');
         this.exactBadWordRegex = new RegExp(`\\b(${badWords.join('|')})\\b`, 'gi');
         this.fuzzyBadWordRegex = badWords.map(word => new RegExp(this.generateFuzzyRegex(word), 'gi'));
         this.similarBadWordRegex = badWords.map(word => new RegExp(this.generateSimilarWordRegex(word), 'gi'));
@@ -53,7 +50,7 @@ class SpamDetector {
         return pattern;
     }
 
-    
+
 
     private generateSimilarWordRegex(word: string): string {
         let pattern = word.replace(/\*/g, '.*');
@@ -94,57 +91,53 @@ class SpamDetector {
     }
 
 
-    private mutePlayer(player: Player, data: PlayerData, playerDataManager: PlayerDataManager, message: string, configs: any, reason: string): void {
+    private mutePlayer(player: Player, playerDataManager: PlayerDataManager, message: string, configs: any, reason: string): void {
         const muteDurationSeconds = reason === "BadWord" ? muteDurationSecondsBadWord : muteDurationSecondsSpam;
-        const mutedUntil = data.mutedUntil ? data.mutedUntil + muteDurationSeconds * 1000 : Date.now() + muteDurationSeconds * 1000;
+        const mutedUntil = playerDataManager.getData(player, "mutedUntil") ? playerDataManager.getData(player, "mutedUntil") + muteDurationSeconds * 1000 : Date.now() + muteDurationSeconds * 1000;
 
         handleCheatDetection(player, { cheatType: reason, value: message }, configs, playerDataManager);
 
         const muteDuration = Math.floor((mutedUntil - Date.now()) / 1000);
         player.sendMessage(`§l§a[自作§3AntiCheat]§f ${reason === "BadWord" ? "卑猥な単語を複数回使用したため" : "スパム行為を検知したため"}、${muteDuration}秒間ミュートされました。`);
 
-        playerDataManager.update(player, {
-            lastMessages: [],
-            mutedUntil: mutedUntil,
-            lastMessageTimes: []
-        });
+        playerDataManager.updateData(player, "lastMessages", []);
+        playerDataManager.updateData(player, "mutedUntil", mutedUntil);
+        playerDataManager.updateData(player, "lastMessageTimes", []);
     }
 
-    private handleLongMessage(player: Player, data: PlayerData, playerDataManager: PlayerDataManager, message: string, configs: any): void {
-        this.mutePlayer(player, data, playerDataManager, message, configs, "LongMessage");
+    private handleLongMessage(player: Player, playerDataManager: PlayerDataManager, message: string, configs: any): void {
+        this.mutePlayer(player, playerDataManager, message, configs, "LongMessage");
     }
 
-    private handleBadWord(player: Player, data: PlayerData, playerDataManager: PlayerDataManager, message: string, configs: any): void {
+    private handleBadWord(player: Player, playerDataManager: PlayerDataManager, message: string, configs: any): void {
         const badWordScore = this.calculateBadWordScore(message);
+        let badWordCount = playerDataManager.getData(player, "badWordCount") ?? 0;
+        let mutedUntil = playerDataManager.getData(player, "mutedUntil") ?? 0;
         if (badWordScore >= threshold) {
-            data.badWordCount += 1;
-            if (data.badWordCount >= maxBadWordCount) {
-                this.mutePlayer(player, data, playerDataManager, message, configs, "BadWord");
-                data.badWordCount = 0;
-                const detectedWords = message.match(this.badWordRegex) || [];
-                detectedWords.forEach(word => {
-                    if (!this.learnedBadWords.includes(word)) {
-                        this.learnedBadWords.push(word);
-                        console.warn(`[AntiCheat] 新しい不適切単語を学習しました: ${word}`);
-                        badWords.push(word);
-                        this.initializeRegex();
-                    }
-                });
+            badWordCount += 1;
+            if (badWordCount >= maxBadWordCount) {
+                this.mutePlayer(player, playerDataManager, message, configs, "BadWord");
+                playerDataManager.updateData(player, "badWordCount", 0); // カウントをリセット
             } else {
-                player.sendMessage(`§l§a[自作§3AntiCheat]§f 卑猥な単語が含まれています。あと${maxBadWordCount - data.badWordCount}回でミュートされます。`);
+                player.sendMessage(`§l§a[自作§3AntiCheat]§f 卑猥な単語が含まれています。あと${maxBadWordCount - badWordCount}回でミュートされます。`);
             }
-            playerDataManager.update(player, { badWordCount: data.badWordCount, mutedUntil: data.mutedUntil });
+            playerDataManager.updateData(player, "badWordCount", badWordCount);
+            playerDataManager.updateData(player, "mutedUntil", mutedUntil)
         }
     }
 
     public detectSpam(event: any, playerDataManager: PlayerDataManager, configs: any): void {
         const player = event.sender;
         const message = event.message;
-        const data = playerDataManager.get(player);
 
-        if (!data) return;
+        // プレイヤーデータが存在しない場合は初期化
+        if (!playerDataManager.has(player)) {
+            playerDataManager.initialize(player);
+        }
+        let mutedUntil = playerDataManager.getData(player, "mutedUntil") ?? 0;
 
-        if (data.mutedUntil && Date.now() < data.mutedUntil) {
+
+        if (mutedUntil && Date.now() < mutedUntil) {
             event.cancel = true;
             player.sendMessage("§l§a[自作§3AntiCheat]§f あなたはメッセージの送信を禁止されています。");
             return;
@@ -152,7 +145,7 @@ class SpamDetector {
 
         if (this.calculateBadWordScore(message) >= threshold) {
             event.cancel = true;
-            this.handleBadWord(player, data, playerDataManager, message, configs);
+            this.handleBadWord(player, playerDataManager, message, configs);
             return;
         }
 
@@ -160,27 +153,26 @@ class SpamDetector {
 
         if (message.length > maxMessageLength) {
             event.cancel = true;
-            this.handleLongMessage(player, data, playerDataManager, "x", configs);
+            this.handleLongMessage(player, playerDataManager, "x", configs); //"x"は使用してないが記述。
             return;
         }
 
         const now = Date.now();
-        data.lastMessages.push(message);
-        data.lastMessageTimes.push(now);
+        const lastMessages = playerDataManager.getData(player, "lastMessages") ?? [];
+        const lastMessageTimes = playerDataManager.getData(player, "lastMessageTimes") ?? [];
+        lastMessages.push(message);
+        lastMessageTimes.push(now);
 
-        const recentMessages = data.lastMessages.filter((_, index) => now - data.lastMessageTimes[index] <= spamCheckInterval);
-        const recentMessageTimes = data.lastMessageTimes.filter(time => now - time <= spamCheckInterval);
+        const recentMessages = lastMessages.filter((_, index) => now - lastMessageTimes[index] <= spamCheckInterval);
+        const recentMessageTimes = lastMessageTimes.filter(time => now - time <= spamCheckInterval);
 
         if (recentMessages.length >= spamMessageThreshold && this.isSpam(recentMessages)) {
             event.cancel = true;
-            this.mutePlayer(player, data, playerDataManager, message, configs, "Spam");
+            this.mutePlayer(player, playerDataManager, message, configs, "Spam");
             return;
         }
-
-        playerDataManager.update(player, {
-            lastMessages: recentMessages,
-            lastMessageTimes: recentMessageTimes
-        });
+        playerDataManager.updateData(player, "lastMessages", recentMessages);
+        playerDataManager.updateData(player, "lastMessageTimes", recentMessageTimes);
     }
 }
 

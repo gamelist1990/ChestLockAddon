@@ -1,36 +1,35 @@
-//AntiCheat/actions.ts
 import { Player, GameMode, world, system } from "@minecraft/server";
 import { ServerReport } from "../../utility/report";
 import { PlayerDataManager } from "./PlayerData";
 
 
 export function executeRollback(player: Player, configs: any, playerDataManager: PlayerDataManager) {
-    const data = playerDataManager.get(player);
-    if (!data) return;
+    const positionHistory = playerDataManager.getData(player, "positionHistory") ?? [];
 
-    const rollbackIndex = data.positionHistory.length - configs.antiCheat.rollbackTicks - 1;
+    const rollbackIndex = positionHistory.length - configs.antiCheat.rollbackTicks - 1;
     if (rollbackIndex >= 0) {
         system.runTimeout(() => {
-            const rollbackPosition = data.positionHistory[rollbackIndex];
+            const rollbackPosition = positionHistory[rollbackIndex];
             player.teleport(rollbackPosition, { dimension: player.dimension });
             console.warn(`プレイヤー ${player.name} (ID: ${player.id}) をロールバックしました`);
         })
 
     }
-
-    playerDataManager.reset(player);
+    playerDataManager.reset(player); // ロールバック後にデータをリセット（必要に応じて調整）
 }
 
 export function executeFreeze(player: Player, configs: any, playerDataManager: PlayerDataManager) {
-    const data = playerDataManager.get(player);
-    if (!data) return;
+    if (!playerDataManager.has(player)) playerDataManager.initialize(player)
 
-    playerDataManager.update(player, { isFrozen: true, freezeStartTime: Date.now(), originalGamemode: player.getGameMode() });
-    player.setGameMode(GameMode.adventure); 
-    player.teleport(player.location, { dimension: player.dimension });
+    playerDataManager.updateData(player, "isFrozen", true);
+    playerDataManager.updateData(player, "freezeStartTime", Date.now());
+    playerDataManager.updateData(player, "originalGamemode", player.getGameMode());
+
+    player.setGameMode(GameMode.adventure);
+    player.teleport(player.location, { dimension: player.dimension }); //念のため
     player.inputPermissions.movementEnabled = false;
     player.inputPermissions.cameraEnabled = false;
-    player.addEffect("weakness", 50, { amplifier: 255, showParticles: false });
+    player.addEffect("weakness", 50, { amplifier: 255, showParticles: false }); //移動不可
 
 
 
@@ -43,28 +42,29 @@ export function executeFreeze(player: Player, configs: any, playerDataManager: P
 }
 
 export function unfreezePlayer(player: Player, playerDataManager: PlayerDataManager) {
-    const data = playerDataManager.get(player);
-    if (data && data.isFrozen) {
-        playerDataManager.update(player, { isFrozen: false });
-        player.setGameMode(data.originalGamemode); // 元のゲームモードに戻す
+    const isFrozen = playerDataManager.getData(player, "isFrozen")
+
+    if (isFrozen) {
+        playerDataManager.updateData(player, "isFrozen", false);
+        const originalGamemode = playerDataManager.getData(player, "originalGamemode") ?? GameMode.survival
+        player.setGameMode(originalGamemode); // 元のゲームモードに戻す
         player.inputPermissions.movementEnabled = true;
         player.inputPermissions.cameraEnabled = true;
         player.removeEffect("weakness");
         console.warn(`プレイヤー ${player.name} (ID: ${player.id}) のフリーズを解除しました`);
         player.sendMessage('フリーズを解除しました。');
-        playerDataManager.reset(player);
-        playerDataManager.update(player, { violationCount: 0 });
+        playerDataManager.reset(player)
+        playerDataManager.updateData(player, "violationCount", 0)
     }
 }
 
 export function handleCheatDetection(player: Player, detection: { cheatType: string; value?: string | number }, configs: any, playerDataManager: PlayerDataManager): void {
-    const data = playerDataManager.get(player);
-    if (!data) return;
+    if (!playerDataManager.has(player)) playerDataManager.initialize(player)
+    let violationCount = playerDataManager.getData(player, "violationCount") ?? 0;
 
-    const detectionThreshold = configs.antiCheat.detectionThreshold;
+    violationCount++; // violationCount をインクリメント
+    playerDataManager.updateData(player, "violationCount", violationCount);
 
-    data.violationCount++; // violationCount をインクリメント
-    playerDataManager.update(player, { violationCount: data.violationCount });
 
 
 
@@ -76,13 +76,13 @@ export function handleCheatDetection(player: Player, detection: { cheatType: str
     world.sendMessage(logMessage);
 
 
-    if (data.violationCount >= detectionThreshold * 4) { // 複数回違反したらフリーズ
+    if (violationCount >= configs.antiCheat.detectionThreshold * 4) { // 複数回違反したらフリーズ
         executeFreeze(player, configs, playerDataManager);
         let reason = `§f§a(ID: ${player.id})§b \n(チートの種類: ${detection.cheatType} ) \n§f|§6 (x: ${Math.floor(player.location.x)}, y: ${Math.floor(
             player.location.y,
         )}, z: ${Math.floor(player.location.z)})`;
         ServerReport(player, reason);
-    } else if (data.violationCount >= detectionThreshold) { // 初回違反はロールバック
+    } else if (violationCount >= configs.antiCheat.detectionThreshold) { // 初回違反はロールバック
         executeRollback(player, configs, playerDataManager);
     }
 }

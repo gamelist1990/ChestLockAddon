@@ -1,63 +1,65 @@
-//AntiCheat/utils.ts
 import { Player, system } from "@minecraft/server";
 import { PlayerDataManager } from "./PlayerData";
 
-export function cleanupSuspiciousBlocks(data: any, currentTime: number) {
-    for (const blockLocationString in data.xrayData.suspiciousBlocks) {
-        const suspiciousBlock = data.xrayData.suspiciousBlocks[blockLocationString];
-        if (currentTime - suspiciousBlock.timestamp >= 10000) {
-            delete data.xrayData.suspiciousBlocks[blockLocationString];
+export function cleanupSuspiciousBlocks(player: Player, currentTime: number, playerDataManager: PlayerDataManager) {
+    const suspiciousBlocks = playerDataManager.getData(player, "suspiciousBlocks") ?? {};
+
+    for (const blockLocationString in suspiciousBlocks) {
+        if (suspiciousBlocks.hasOwnProperty(blockLocationString)) {
+            const suspiciousBlock = suspiciousBlocks[blockLocationString];
+            if (currentTime - suspiciousBlock.timestamp >= 10000) {
+                delete suspiciousBlocks[blockLocationString];
+            }
         }
     }
+    playerDataManager.updateData(player, "suspiciousBlocks", suspiciousBlocks);
 }
 
 export function updateEnderPearlInterval(player: Player, playerDataManager: PlayerDataManager) {
-    const data = playerDataManager.get(player);
+    let enderPearlInterval = playerDataManager.getData(player, "enderPearlInterval") ?? 0;
 
-    if (data && data.enderPearlInterval > 0) { // enderPearlInterval が 0 より大きい場合のみ実行
-        data.enderPearlInterval--;
+    if (enderPearlInterval > 0) { // enderPearlInterval が 0 より大きい場合のみ実行
+        enderPearlInterval--;
 
         // 更新された data を playerDataManager に保存
-        playerDataManager.update(player, { enderPearlInterval: data.enderPearlInterval });
+        playerDataManager.updateData(player, "enderPearlInterval", enderPearlInterval);
 
-        if (data.enderPearlInterval <= 0) {
-            playerDataManager.update(player, { recentlyUsedEnderPearl: false, enderPearlInterval: 0 });
+        if (enderPearlInterval <= 0) {
+            playerDataManager.updateData(player, "recentlyUsedEnderPearl", false);
+            playerDataManager.updateData(player, "enderPearlInterval", 0);
         }
     }
 }
 
-export function addPositionHistory(player: Player, playerDataManager: PlayerDataManager, configs: any) {
-    const data = playerDataManager.get(player);
-    if (!data) return;
+export function addPositionHistory(player: Player, playerDataManager: PlayerDataManager) {
+    if (!playerDataManager.has(player)) playerDataManager.initialize(player);
 
+    let positionHistory = playerDataManager.getData(player, "positionHistory") ?? [];
+    let isTeleporting = playerDataManager.getData(player, "isTeleporting") ?? false;
     const currentPosition = player.location;
 
     // isTeleporting状態の更新
     if (player.isGliding) {
-        data.isTeleporting = true;
+        isTeleporting = true;
         system.runTimeout(() => {
-            data.isTeleporting = false;
-            playerDataManager.update(player, { isTeleporting: false }); // 非同期処理なので、ここで更新
+            playerDataManager.updateData(player, "isTeleporting", false); // 非同期処理なので、ここで更新
         }, 3 * 20);
     } else {
-        data.isTeleporting = false; // グライディング中でない場合はfalse
+        isTeleporting = false; // グライディング中でない場合はfalse
     }
 
     // 位置履歴の更新
-    data.positionHistory.push(currentPosition);
-    data.lastPosition = currentPosition;
+    positionHistory.push(currentPosition);
+    playerDataManager.updateData(player, "lastPosition", currentPosition)
 
 
-    if (data.positionHistory.length > configs.antiCheat.rollbackTicks + 1) {
-        data.positionHistory.shift();
+    if (positionHistory.length > 61) { //3 * 20 + 1
+        positionHistory.shift();
     }
 
 
-    playerDataManager.update(player, {
-        isTeleporting: data.isTeleporting, // isTeleporting の更新
-        positionHistory: data.positionHistory, // positionHistory の更新
-        lastPosition: data.lastPosition // lastPosition の更新
-    });
+    playerDataManager.updateData(player, "isTeleporting", isTeleporting);
+    playerDataManager.updateData(player, "positionHistory", positionHistory); // positionHistory 
 
 }
 
@@ -82,5 +84,5 @@ export function hasEffect(player: Player, effectName: any, level: number): boole
 import { Vector3 } from '@minecraft/server';
 
 export function calculateVerticalVelocity(currentPos: Vector3, previousPos: Vector3): number {
-    return (currentPos.y - previousPos.y) / 50; // 50ms (1 tick) での速度変化
+    return (currentPos.y - previousPos.y) / 0.05; // 50ms (1 tick) での速度変化、0除算を避けるため0.05
 }

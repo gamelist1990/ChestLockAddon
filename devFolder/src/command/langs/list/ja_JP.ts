@@ -804,8 +804,8 @@ export const translations = {
     msgstr: "§c コマンドの使用方法が無効です。/lang list または /lang change <language_code> を使用してください"
   },
   "command.chest.chest_help": {
-    msgid: "§c Invalid command.\n§a Chest protection command usage:\n  §bchest lock        - Locks the chest\n  §bchest info       - Displays information about the nearest chest\n  §bchest unlock      - Unlocks the chest\n  §bchest protect <lock/unlock> - Toggles chest protection\n  §bchest add <playername>   - Adds a member to the chest\n  §bchest remove <playername>  - Removes a member from the chest\n  §bchest all        - Displays a list of chest members\n  §bchest list        - Displays a list of chests\n  §b_______________________________________\n  §bAuthor: Koukun        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn",
-    msgstr: "§c 無効なコマンドです。\n§a チェスト保護コマンドの使い方:\n  §bchest lock        - チェストをロックします\n  §bchest info       - 最寄りのチェストの情報を表示します\n  §bchest unlock      - チェストのロックを解除します\n  §bchest protect <lock/unlock> - チェストの保護を切り替えます\n  §bchest add <playername>   - チェストにメンバーを追加します\n  §bchest remove <playername>  - チェストからメンバーを削除します\n  §bchest all        - チェストメンバーのリストを表示します\n  §bchest list        - チェストのリストを表示します\n  §b_______________________________________\n  §b作者: Koukun        - ライセンス AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
+    msgid: "§c Invalid command.\n§a Chest protection command usage:\n  §bchest lock        - Locks the chest\n  §bchest info       - Displays information about the nearest chest\n  §bchest unlock      - Unlocks the chest\n  §bchest add <playername>   - Adds a member to the chest\n  §bchest remove <playername>  - Removes a member from the chest\n  §bchest all        - Displays a list of chest members\n  §bchest list        - Displays a list of chests\n  §b_______________________________________\n  §bAuthor: Koukun        - License AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn",
+    msgstr: "§c 無効なコマンドです。\n§a チェスト保護コマンドの使い方:\n  §bchest lock        - チェストをロックします\n  §bchest info       - 最寄りのチェストの情報を表示します\n  §bchest unlock      - チェストのロックを解除します\n  §bchest add <playername>   - チェストにメンバーを追加します\n  §bchest remove <playername>  - チェストからメンバーを削除します\n  §bchest all        - チェストメンバーのリストを表示します\n  §bchest list        - チェストのリストを表示します\n  §b_______________________________________\n  §b作者: Koukun        - ライセンス AGPL-3.0\n  §bYoutubeURL         - https://www.youtube.com/@PEXkoukunn"
   },
   "command.chest.MaxChestLimitReached": {
     msgid: "§c The installation limit of §d{limit}§c has been reached.",
@@ -894,10 +894,6 @@ export const translations = {
   "command.chest.ProChestBreak": {
     msgid: "§a Protected chest destroyed. Protection data also deleted.",
     msgstr: "§a保護されたチェストを破壊しました。保護データも削除されました。"
-  },
-  "command.chest.lockChange": {
-    msgid: "§a Chest protection state changed to: {lock}",
-    msgstr: "§aチェストの保護状態が{lock}に変更されました。"
   },
   "command.chest.NotChest": {
     msgid: "§c You are not authorized to access this chest.",

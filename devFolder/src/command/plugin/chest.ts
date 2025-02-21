@@ -49,13 +49,6 @@ registerCommand({
       case 'unlock':
         protectChest(player, false);
         break;
-      case 'protect':
-        if (args.length === 2) {
-          toggleChestProtection(player, args[1]);
-        } else {
-          sendInvalidCommandMessage(player);
-        }
-        break;
       case 'dev':
         if (player.hasTag('op')) {
           if (args.length === 2 && args[1] === '-reset') {
@@ -278,7 +271,7 @@ system.run(() => {
 
     const block = eventData.block;
     handlePistonUse(eventData);
-    
+
 
 
 
@@ -344,8 +337,8 @@ system.run(() => {
     checkProtectedChests();
     saveProtectedChests();
   }, CHECK_INTERVAL);
-  
-  system.runInterval(()=>{
+
+  system.runInterval(() => {
     handleHopper();
   })
 });
@@ -491,7 +484,7 @@ function checkProtectedChests() {
     }
   }
   saveProtectedChests();
-  
+
 }
 
 function parseChestKey(chestKey: string): any {
@@ -646,29 +639,6 @@ function findAdjacentChest(
   return { isLargeChest: false };
 }
 
-
-// チェストの保護状態を切り替える関数
-function toggleChestProtection(player: Player, state: string) {
-  const nearbyChestLocation = findNearbyChest(player);
-
-  if (nearbyChestLocation) {
-    const chestKey = getChestKey(nearbyChestLocation);
-    const chestData = protectedChests[chestKey];
-
-    if (chestData && chestData.owner === player.name) {
-      const newLockState = state === 'lock';
-      chestData.isLocked = newLockState;
-      saveProtectedChests();
-      player.sendMessage(
-        translate(player, 'command.chest.lockChange', { lock: `${newLockState ? 'locked' : 'unlocked'}` }),
-      );
-    } else {
-      player.sendMessage(translate(player, 'command.chest.NotChest'));
-    }
-  } else {
-    player.sendMessage(translate(player, 'command.chest.notFound_chest'));
-  }
-}
 
 // メンバー追加関数
 function addMember(player: Player, memberName: string) {

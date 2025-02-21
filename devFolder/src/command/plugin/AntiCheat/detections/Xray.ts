@@ -1,4 +1,3 @@
-///AntiCheat/detections/Xray.ts
 import { Player, Block } from '@minecraft/server';
 import { PlayerDataManager } from '../PlayerData';
 import { calculateDistance } from '../utils';
@@ -43,8 +42,10 @@ export function getBlockFromReticle(player: Player, maxDistance: number): Block 
 
 
 export function detectXrayOnSight(player: Player, configs: any, playerDataManager: PlayerDataManager): void {
-    const data = playerDataManager.get(player);
-    if (!data) return;
+    // データ取得と初期化
+    if (!playerDataManager.has(player)) playerDataManager.initialize(player);
+    const suspiciousBlocks = playerDataManager.getData(player, "suspiciousBlocks") ?? {};
+
 
     const targetBlock = getBlockFromReticle(player, configs.antiCheat.xrayDetectionDistance);
 
@@ -54,12 +55,12 @@ export function detectXrayOnSight(player: Player, configs: any, playerDataManage
             const blockLocationString = `${targetBlock.location.x},${targetBlock.location.y},${targetBlock.location.z}`;
             const currentTime = Date.now();
 
-            if (data.xrayData.suspiciousBlocks[blockLocationString]) {
-                data.xrayData.suspiciousBlocks[blockLocationString].count++;
+            if (suspiciousBlocks[blockLocationString]) {
+                suspiciousBlocks[blockLocationString].count++;
             } else {
-                data.xrayData.suspiciousBlocks[blockLocationString] = { timestamp: currentTime, count: 1 };
+                suspiciousBlocks[blockLocationString] = { timestamp: currentTime, count: 1 };
             }
-            playerDataManager.update(player, { xrayData: data.xrayData }); // playerData を更新
+            playerDataManager.updateData(player, "suspiciousBlocks", suspiciousBlocks); // playerData を更新
         }
     }
 }
@@ -67,14 +68,14 @@ export function detectXrayOnSight(player: Player, configs: any, playerDataManage
 export function handleBlockBreak(event: any, playerDataManager: PlayerDataManager, configs: any) {
     const player = event.player;
     const blockLocation = event.block.location;
-    const data = playerDataManager.get(player);
 
-    if (!data) return;
+    if (!playerDataManager.has(player)) playerDataManager.initialize(player);
+    const suspiciousBlocks = playerDataManager.getData(player, "suspiciousBlocks") ?? {};
 
     const blockLocationString = `${blockLocation.x},${blockLocation.y},${blockLocation.z}`;
-    if (data.xrayData.suspiciousBlocks[blockLocationString]) {
+    if (suspiciousBlocks[blockLocationString]) {
         handleCheatDetection(player, { cheatType: 'Xray' }, configs, playerDataManager);
-        delete data.xrayData.suspiciousBlocks[blockLocationString];
-        playerDataManager.update(player, { xrayData: data.xrayData }); // playerData を更新
+        delete suspiciousBlocks[blockLocationString];
+        playerDataManager.updateData(player, "suspiciousBlocks", suspiciousBlocks); // playerData を更新
     }
 }

@@ -845,7 +845,6 @@
       "  §bchest lock        - Locks the chest",
       "  §bchest info       - Displays information about the nearest chest",
       "  §bchest unlock      - Unlocks the chest",
-      "  §bchest protect <lock/unlock> - Toggles chest protection",
       "  §bchest add <playername>   - Adds a member to the chest",
       "  §bchest remove <playername>  - Removes a member from the chest",
       "  §bchest all        - Displays a list of chest members",
@@ -943,10 +942,6 @@
   "command.chest.ProChestBreak": {
     "msgid": "§a Protected chest destroyed. Protection data also deleted.",
     "msgstr": "§a Защищенный сундук был уничтожен. Защищенные данные также удалены."
-  },
-  "command.chest.lockChange": {
-    "msgid": "§a Chest protection state changed to: {lock}",
-    "msgstr": "§a Состояние защиты сундука изменено на"
   },
   "command.chest.NotChest": {
     "msgid": "§c You are not authorized to access this chest.",
