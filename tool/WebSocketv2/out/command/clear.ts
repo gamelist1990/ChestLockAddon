@@ -6,11 +6,11 @@ import { Player } from '../module/player';
 const autoClearSettings = {
     enabled: false, // 全体の設定: これが無効(false)だと、チャットクリア、再起動、自動モブキルが機能しなくなります
     restartTime: 60, // 再起動までの時間（分） デフォルト60
-    maxHostileMobs: 100, // 敵対モブ総数の上限 デフォルト50から100に変更
-    items: { enabled: false, maxCount: 100 }, // アイテムの設定
+    maxHostileMobs: 50, // 敵対モブ総数の上限 デフォルト50から100に変更
+    items: { enabled: true, maxCount: 200 }, // アイテムの設定
     mobKill: {
         enabled: false, // 自動モブキルの有効/無効
-        interval: 5,  // 確認間隔（秒） デフォルト5
+        interval: 10,  // 確認間隔（秒） デフォルト5
     }
 };
 

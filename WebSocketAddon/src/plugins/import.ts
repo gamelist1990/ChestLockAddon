@@ -8,6 +8,8 @@ import "./scoreboard/tick"
 import "./Form/index"
 import "./Lore/index"
 import "./ScoreModule/index"
+import "./JoinEvent/index"
+
 
 
 

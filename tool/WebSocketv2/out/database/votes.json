@@ -1,32 +1,20 @@
 {
-  "sun": {
-    "name": "sun",
-    "title": "脳死のsunsunの呼び方について",
+  "test": {
+    "name": "test",
+    "title": "test",
     "options": [
       {
         "id": 1,
-        "text": "すんすん"
+        "text": "1"
       },
       {
         "id": 2,
-        "text": "さんさん"
-      },
-      {
-        "id": 3,
-        "text": "脳死すんすん"
-      },
-      {
-        "id": 4,
-        "text": "脳死さんさん"
+        "text": "2"
       }
     ],
-    "duration": 61000,
+    "duration": 3000,
     "endTime": null,
-    "voters": {
-      "イカ(pikmin)": 2,
-      "PEXkurann": 2,
-      "lupalupa5493": 1
-    },
+    "voters": {},
     "isActive": false
   }
 }
