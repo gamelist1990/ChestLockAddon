@@ -6,9 +6,9 @@ import {
 import { Module, moduleManager } from '../../module/module';
 
 class PlayerJoinLeaveModule implements Module {
-    name = 'PlayerJoinLeave_Manager';
+    name = 'JoinEvent';
     enabledByDefault = true;
-    docs = `プレイヤーの参加/退出を記録します。\n`;
+    docs = `プレイヤーの参加した際にw:join というタグを付与します\n`;
 
 
     constructor() {

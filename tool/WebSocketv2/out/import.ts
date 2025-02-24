@@ -13,6 +13,10 @@ import './command/info';
 import './command/scoreboard';
 import './command/miniAC';
 import './command/invsee';
+import './command/whitelist';
+
+
+
 import './module/DataBase';
 import './module/jpch';
 import './module/form';

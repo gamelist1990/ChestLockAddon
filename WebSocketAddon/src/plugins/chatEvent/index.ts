@@ -13,7 +13,8 @@ class ChatModule implements Module {
 §r- モジュール有効化時、既存ログをクリア。\n
 §r- 150文字を超えるチャットは送信不可。\n
 §r- 記録されたチャットは3秒後に削除。\n
-§r- "ws:chat_ここにメッセージ" という形式のタグをプレイヤーに追加し、1秒後に削除\n
+§r- "w:chat_ここにメッセージ" という形式のタグをプレイヤーに追加し、1秒後に削除\n
+§r- w:chat_cancel タグを持っているプレイヤーはメッセージ送信不可\n
 §r- スパム検知 (短時間に同一メッセージ、類似メッセージを検知)\n
 §r- 危険な単語リストによるブロック\n
 §r- スパム検知されたプレイヤーは30秒間メッセージ送信不可\n
@@ -85,6 +86,10 @@ class ChatModule implements Module {
   private handleChatEvent = (event: { sender: Player; message: string; cancel: boolean }) => {
     const { sender, message } = event;
     const senderName = sender.name;
+
+    if (sender.hasTag("w:chat_cancel")) {
+      event.cancel = true;
+    }
 
     // Check if the player is muted
     if (this.spamMutedPlayers.has(senderName)) {

@@ -7,7 +7,6 @@ interface ScoreSetting {
 }
 
 let ScoreSettings: { [key: string]: ScoreSetting } = {
-    speed: { enabled: true, objective: 'speed_m' },
     ping: { enabled: true, objective: 'Ping' },
     message: { enabled: true, objective: 'message' },
 };
@@ -16,34 +15,6 @@ const playerLastPosition: {
     [playerName: string]: { x: number; z: number };
 } = {};
 
-// speed
-async function updatePlayerSpeed(player: Player) {
-    const currentPosition = player.position;
-    const playerName = player.name;
-
-    if (playerLastPosition[playerName]) {
-        const lastPosition = playerLastPosition[playerName];
-
-        const distance = Math.sqrt(
-            Math.pow(currentPosition.x - lastPosition.x, 2) +
-            Math.pow(currentPosition.z - lastPosition.z, 2),
-        );
-
-        const speed = distance;
-
-        const speedObjective = await world.scoreboard.getObjective(ScoreSettings['speed'].objective);
-
-        if (speedObjective) {
-            speedObjective.setScore(player, Math.round(speed * 10) / 10);
-        }
-
-        playerLastPosition[playerName].x = currentPosition.x;
-        playerLastPosition[playerName].z = currentPosition.z;
-
-    } else {
-        playerLastPosition[playerName] = { x: currentPosition.x, z: currentPosition.z };
-    }
-}
 
 // ping
 async function updatePlayerPing(player: Player) {
@@ -104,12 +75,6 @@ async function checkMessageScores() {
 
 
 setInterval(async () => {
-    if (ScoreSettings['speed'].enabled) {
-        for (const player of await world.getPlayers()) {
-            updatePlayerSpeed(player);
-        }
-    }
-
     if (ScoreSettings['ping'].enabled) {
         for (const player of await world.getPlayers()) {
             updatePlayerPing(player);
