@@ -1,6 +1,7 @@
 
 
 import { system, world, } from '@minecraft/server';
+import { ver } from './plugins/ScoreModule';
 
 
 const startTime = Date.now();
@@ -35,7 +36,7 @@ async function main() {
         const endTime = Date.now();
         const loadTime = endTime - startTime;
 
-        world.sendMessage(`§f[§bServer§f]§l§aWebSocketAddonのデータの更新が ${loadTime} msで完了しました`)
+        world.sendMessage(`§f[§bServer§f]§l§aWebSocketAddon§6v${ver}§aのデータの更新が ${loadTime} msで完了しました`)
 
 
     }, 1)

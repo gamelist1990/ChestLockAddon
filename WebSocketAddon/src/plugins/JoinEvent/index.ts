@@ -8,7 +8,12 @@ import { Module, moduleManager } from '../../module/module';
 class PlayerJoinLeaveModule implements Module {
     name = 'JoinEvent';
     enabledByDefault = true;
-    docs = `プレイヤーの参加した際にw:join というタグを付与します\n`;
+    docs = `プレイヤーがワールドに参加時に発火\n
+**機能**\n
+§r- 参加時のタグ:\n
+  §r  - §9w:join§r: 参加タグ\n
+  §r  - §9w:join_cancel§r: 参加拒否タグ\n
+§r- タグは自動削除(デフォルト20tick後)。`;
 
 
     constructor() {
@@ -42,6 +47,9 @@ class PlayerJoinLeaveModule implements Module {
     private handlePlayerJoin = (event: PlayerJoinAfterEvent) => {
         const { playerName } = event;
         for (const player of world.getAllPlayers()) {
+            if (player.hasTag(`w:join_cancel`)) {
+                player.runCommand(`kick ${playerName} §l§f[§cError§f]§r\n\n§c§6サーバーにより参加が拒否されました。`);
+            }
             if (player.name === playerName) {
                 player.addTag('w:join');
             }
