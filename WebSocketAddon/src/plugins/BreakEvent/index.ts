@@ -7,7 +7,7 @@ import {
 } from '@minecraft/server';
 import { Module, moduleManager } from '../../module/module';
 
-class PlayerJoinLeaveModule implements Module {
+class BreakEvent implements Module {
     name = 'BreakEvent';
     enabledByDefault = true;
     docs = `プレイヤーがブロックを破壊/設置した際に\n
@@ -107,5 +107,5 @@ class PlayerJoinLeaveModule implements Module {
 }
 
 
-const playerJoinLeaveModule = new PlayerJoinLeaveModule();
-moduleManager.registerModule(playerJoinLeaveModule);
+const Break_Place_Event = new BreakEvent();
+moduleManager.registerModule(Break_Place_Event);
