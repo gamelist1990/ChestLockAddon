@@ -2,10 +2,8 @@
     "include": [
         "devFolder/src/**/*.ts",
         "lbAddon/BH/src/**/*.ts",
-        "WebSocketAddon/src/**/*.ts",
-       // "tool/WebSocket/vcSystem/**/*.ts",
         "gobal.d.ts"
-, "WebSocketAddon/src/plugins/ScoreModule/command/inputItem"    ],
+      ],
     "exclude": [
         "node_modules"
     ],
